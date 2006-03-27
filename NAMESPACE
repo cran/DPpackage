@@ -1,0 +1,58 @@
+useDynLib(DPpackage)
+
+export( 
+        DPbinary,
+        DPbinary.default,        
+        DPdensity,
+        DPdensity.default,        
+        DPelicit,
+        DPelicit.default,        
+        DPglmm,
+        DPglmm.default,
+        DPlmm,
+        DPlmm.default,
+        DPpsBF,
+        DPrandom,
+        DPrandom.default,
+        DPsurvint,
+        DPsurvint.default,
+        DPsurvpred,
+        DPsurvpred.default
+)
+
+
+importFrom(graphics, plot)
+
+## register S3 methods
+
+S3method(print, DPbinary)
+S3method(plot, DPbinary)
+S3method(summary, DPbinary)
+S3method(print, summaryDPbinary)
+
+S3method(print, DPdensity)
+S3method(plot, DPdensity)
+
+S3method(print, DPelicit)
+
+S3method(print, DPglmm)
+S3method(plot, DPglmm)
+S3method(summary, DPglmm)
+S3method(print, summaryDPglmm)
+
+S3method(print, DPlmm)
+S3method(plot, DPlmm)
+S3method(summary, DPlmm)
+S3method(print, summaryDPlmm)
+
+S3method(print, DPpsBF)
+
+S3method(print, DPrandom)
+S3method(plot, DPrandom)
+
+S3method(print, DPsurvint)
+S3method(plot, DPsurvint)
+S3method(summary, DPsurvint)
+S3method(print, summaryDPsurvint)
+
+S3method(plot, DPsurvpred)
