@@ -5,6 +5,58 @@ c=======================================================================
 c=======================================================================                  
 
 c=======================================================================
+      integer function efind(x,maxend,endp,npoints)
+c=======================================================================
+c     this function finds the position of x in the sorted vector 
+c     endp (of dimension maxend) using a binary search. The search is
+c     performed in the first npoints elements.
+c     A.J.V., 2006
+      integer maxend,i,j,k
+      real*8 x,endp(maxend)
+      
+      i=1
+      j=npoints
+      efind=0
+
+1     continue
+      
+      k=(i+j)/2
+
+      if(x.eq.endp(k))then
+          efind=k
+          return
+c       value is higher than list position
+        else if(x.gt.endp(k))then
+          i=k+1
+c       value is lower than list position
+        else
+          j=k-1
+      end if
+      go to 1          
+      return
+      end
+      
+c=======================================================================
+      subroutine sortvec(n,vec,i1,i2)
+c=======================================================================
+c     this routine sort the vector vec of dimension n in the positions
+c     i1,...,i2.
+c
+c     A.J.V., 2005
+      implicit none
+      integer n,i1,i2
+      real*8 vec(n)
+      
+      if(i1.ge.i2)then
+	call rexit("i1 >= i2 in subroutine sortvec")
+      end if
+      
+      call qsort3(vec,i1,i2)
+      
+      return
+      end
+
+c=======================================================================
       subroutine invdet2(a,np,n,ainv,detlog,indx,vv)
 c=======================================================================
 c     this routine returns the inverse of A in AINV and the log of the
@@ -110,7 +162,7 @@ c
 c     Given an N x N matrix A, with physical dimension NP, this routine
 c     replaces it by the LU decomposition of a rowwise permutation of
 c     itself. A and N are input. A is output, arranged as in equation
-c     (2.3.14, in Press et. al., pg 34.);	INDX is an output vector which
+c     (2.3.14, in Press et. al., pg 34.); INDX is an output vector which
 c     records the row permutation effected by the partial pivoting; D is
 c     output as +/-1.d0 depending on wheter the number of row interchanges
 c     was even or odd, respectively.  This routine is used in combination
@@ -135,9 +187,7 @@ c     A.J.V., 2005
 	       if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
  11	       continue
 	       if (aamax.eq.0.d0) then
-                  call intpr('ERROR: inverting a zero matrix',-1,0,0)
-                  call intpr('in dludcmp2 subroutine',-1,0,0)
-                  return 
+	          call rexit("matrix is not pd in dludcmp2 subroutine")
                end if
 	    vv(i)=1.d0/aamax
  12	    continue
@@ -213,9 +263,7 @@ c     A.J.V., 2005
 	       if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
  11	       continue
 	       if (aamax.eq.0.d0) then
-                  call intpr('ERROR: inverting a zero matrix',-1,0,0)
-                  call intpr('in dludcmp subroutine',-1,0,0) 
-                  return 
+	          call rexit("matrix is not pd in dludcmp subroutine")
                end if
 	    vv(i)=1.d0/aamax
  12	    continue
@@ -385,8 +433,7 @@ c     A.J.V., 2005
       do i = 1,n-1
          aii = l(ii)
          if (aii.le.0.d0) then
-            call intpr('matrix is not positive definite',-1,0,0)
-            call intpr('in chol subroutine',-1,0,0)            
+            call rexit("matrix is not pd in chol subroutine")
             return
          end if
          aii = sqrt(aii)
@@ -412,8 +459,7 @@ c     A.J.V., 2005
       end do
       aii = l(ii)
       if (aii.le.0.d0) then
-          call intpr('matrix is not positive definite',-1,0,0)
-          call intpr('in chol subroutine',-1,0,0)            
+            call rexit("matrix is not pd in chol subroutine")
           return 
       end if
       aii = sqrt(aii)

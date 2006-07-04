@@ -1,25 +1,35 @@
-DPbinary                Performs a Bayesian analysis for a
-                        semiparametric binary regression model
-DPdensity               Performs a Bayesian density estimation
+CSDPbinary              Bayesian analysis for a semiparametric logistic
+                        regression model
+DPbinary                Bayesian analysis for a semiparametric
+                        Bernoulli regression model
+DPdensity               Semiparametric Bayesian density estimation
 DPelicit                Performs a prior elicitation for the precision
                         parameter of a DP prior
-DPglmm                  Performs a Bayesian analysis for a
-                        semiparametric generalized linear mixed model
-DPlmm                   Performs a Bayesian analysis for a
-                        semiparametric linear mixed model
+DPglmm                  Bayesian analysis for a semiparametric
+                        generalized linear mixed model
+DPlmm                   Bayesian analysis for a semiparametric linear
+                        mixed model
+DPolmm                  Bayesian analysis for a semiparametric ordinal
+                        linear mixed model
 DPpsBF                  Computes Pseudo Bayes Factors from DPpackage
                         output
 DPrandom                Extracts Random Effects
-DPsurvint               Performs a Bayesian analysis for a
-                        semiparametric AFT regression model
-DPsurvpred              Computes the Survival Curve in a Bayesian
-                        analysis for a semiparametric AFT regression
-                        model
+DPsurvint               Bayesian analysis for a semiparametric AFT
+                        regression model
 fleabeetles             Flea-beetles
 fractionation           British Institute of Radiology Fractionation
                         Studies
 galaxy                  Galaxy velocities
 indon                   Indonesian Children's Health Study
+Pbinary                 Bayesian analysis for a parametric Bernoulli
+                        regression model
+predict.DPsurvint       Computes the Survival Curve in a Bayesian
+                        analysis for a semiparametric AFT regression
+                        model
+psychiatric             Psychiatric Clinical Trial
+PTlm                    Bayesian analysis for a semiparametric linear
+                        median regression model
 rats                    Rats
 schoolgirls             The Heights of Schoolgirls
 seizures                Epileptic seizures
+sports                  The Australian Athletes Data

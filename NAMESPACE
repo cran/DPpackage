@@ -1,8 +1,10 @@
 useDynLib(DPpackage)
 
 export( 
+        CSDPbinary,
+        CSDPbinary.default,
         DPbinary,
-        DPbinary.default,        
+        DPbinary.default,
         DPdensity,
         DPdensity.default,        
         DPelicit,
@@ -11,13 +13,17 @@ export(
         DPglmm.default,
         DPlmm,
         DPlmm.default,
-        DPpsBF,
+        DPolmm,
+        DPolmm.default,
+        DPpsBF,        
         DPrandom,
         DPrandom.default,
         DPsurvint,
         DPsurvint.default,
-        DPsurvpred,
-        DPsurvpred.default
+        Pbinary,
+        Pbinary.default,
+        PTlm,
+        PTlm.default
 )
 
 
@@ -25,10 +31,17 @@ importFrom(graphics, plot)
 
 ## register S3 methods
 
+S3method(print, CSDPbinary)
+S3method(plot, CSDPbinary)
+S3method(summary, CSDPbinary)
+S3method(print, summaryCSDPbinary)
+S3method(predict, CSDPbinary)
+
 S3method(print, DPbinary)
 S3method(plot, DPbinary)
 S3method(summary, DPbinary)
 S3method(print, summaryDPbinary)
+S3method(predict, DPbinary)
 
 S3method(print, DPdensity)
 S3method(plot, DPdensity)
@@ -45,6 +58,11 @@ S3method(plot, DPlmm)
 S3method(summary, DPlmm)
 S3method(print, summaryDPlmm)
 
+S3method(print, DPolmm)
+S3method(plot, DPolmm)
+S3method(summary, DPolmm)
+S3method(print, summaryDPolmm)
+
 S3method(print, DPpsBF)
 
 S3method(print, DPrandom)
@@ -54,5 +72,17 @@ S3method(print, DPsurvint)
 S3method(plot, DPsurvint)
 S3method(summary, DPsurvint)
 S3method(print, summaryDPsurvint)
+S3method(predict, DPsurvint)
 
-S3method(plot, DPsurvpred)
+S3method(plot, predict.DPsurvint)
+
+S3method(print, Pbinary)
+S3method(plot, Pbinary)
+S3method(summary, Pbinary)
+S3method(print, summaryPbinary)
+S3method(predict, Pbinary)
+
+S3method(print, PTlm)
+S3method(plot, PTlm)
+S3method(summary, PTlm)
+S3method(print, summaryPTlm)

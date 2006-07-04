@@ -30,20 +30,21 @@ DPrandom(object,centered=FALSE,predictive=FALSE)
       attach(schoolgirls)
 
     # Prior information
+    # Prior information
 
-      tinv<-diag(100,2)
-      prior<-list(a0=0.01,b0=0.01,nu0=2,tau1=0.001,tau2=0.001,
-      tinv=tinv,mub=rep(0,2),Sb=diag(10000,2))
+      tinv<-diag(10,2)
+      prior<-list(alpha=1,nu0=4.01,tau1=0.001,tau2=0.001,
+      tinv=tinv,mub=rep(0,2),Sb=diag(1000,2))
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
 
-      nburn<-100
-      nsave<-50
-      nskip<-10
-      ndisplay<-10
+      nburn<-5000
+      nsave<-25000
+      nskip<-20
+      ndisplay<-1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Fit the model

@@ -1,10 +1,35 @@
-###                    
+### DPelicit.R                   
 ### Function to Prior elicitation of the precision parameter of a 
 ### Dirichlet process prior.
 ### 
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 24-03-2006.
-
+### Last modification: 12-06-2006.
+###
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 2 of the License, or (at
+### your option) any later version.
+###
+### This program is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+### General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+###
+### The author's contact information:
+###
+###      Alejandro Jara Vallejos
+###      Biostatistical Centre
+###      Katholieke Universiteit Leuven
+###      U.Z. Sint-Rafaël
+###      Kapucijnenvoer 35
+###      B-3000 Leuven
+###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
+###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###
 
 DPelicit<-function(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 UseMethod("DPelicit")
@@ -29,8 +54,10 @@ DPelicit.default<-function(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 		else
 		{
 			mean<-(a0/b0)*(digamma((a0+n*b0)/n)-digamma(a0/b0))		
-			var<-(a0/b0)*log(1+n*b0/a0)-a0/b0+(((a0/b0)*(trigamma((a0+n*b0)/n)-
-			     trigamma(a0/b0))+digamma((a0+n*b0)/n)-digamma(a0/b0))**2)*(a0/b0**2)
+                        i<-seq(1,n,1)
+			var<-(a0/b0)*(sum(i/(a0/b0+i-1)**2)+trigamma(a0/b0+n)-trigamma(a0/b0))
+			     +(((a0/b0)*(trigamma((a0+n*b0)/n)-trigamma(a0/b0))+digamma((a0+n*b0)/n)
+			        -digamma(a0/b0))**2)*(a0/b0**2)
 			
 			inp<-matrix(c(a0,b0),ncol=2)
 			out<-matrix(c(mean,sqrt(var)),ncol=2)
@@ -84,9 +111,12 @@ fn1<-function(y,n,mean,var)
 # JGL
 {
 	x<-exp(y)
+	i<-seq(1,n,1)
 	fvec<-rep(0,2)
         fvec[1]<-mean-((x[1]/x[2])*(digamma((x[1]+n*x[2])/n)-digamma(x[1]/x[2])))
-        fvec[2]<-var-((x[1]/x[2])*log(1+n*x[2]/x[1])-x[1]/x[2]+(((x[1]/x[2])*(trigamma((x[1]+n*x[2])/n)-
+        fvec[2]<-var-( 
+                 (x[1]/x[2])*(sum(i/(x[1]/x[2]+i-1)**2)+trigamma(x[1]/x[2]+n)-trigamma(x[1]/x[2]))
+                 +(((x[1]/x[2])*(trigamma((x[1]+n*x[2])/n)-
 		 trigamma(x[1]/x[2]))+digamma((x[1]+n*x[2])/n)-digamma(x[1]/x[2]))**2)*(x[1]/x[2]**2))
 	return(fvec)         
 }
@@ -114,7 +144,7 @@ fjacb<-function(x,fvec,n,mean,var,fn)
 #   eps is the approximate square root of the machine precision
 #   A.J.V., 2006.
 {
-	eps<-1e-06
+	eps<-1e-08
 	fjac<-matrix(0,ncol=2,nrow=2)
 	for(j in 1:2)
 	{
@@ -170,3 +200,21 @@ newton<-function(x0,n,mean,var,fn,ntrial=200,tolx=0.00001,tolf=0.00001)
 	return(exp(x))
 }
 
+
+
+
+print.DPelicit<-function(x, digits = max(3, getOption("digits") - 3), ...)
+{
+	cat("\n","Prior elicitation for the precision parameter","\n\nCall:\n", deparse(x$call), "\n\n", sep = "")
+
+	cat("Prior information for alpha in DP(alpha G0):\n")
+        print.default(format(x$inp, digits = digits), print.gap = 2, 
+            quote = FALSE)	
+
+	cat("\nPrior information for the number of clusters:\n")
+        print.default(format(x$out, digits = digits), print.gap = 2, 
+            quote = FALSE)	
+
+        cat("\n")
+        invisible(x)
+}

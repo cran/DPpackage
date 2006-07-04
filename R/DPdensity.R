@@ -1,10 +1,35 @@
-###                    
+### DPdensity.R                   
 ### Fit a linear Dirichlet Process mixture of normal model for
 ### density estimation
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
 ### Last modification: 13-04-2006.
-
+###
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 2 of the License, or (at
+### your option) any later version.
+###
+### This program is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+### General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+###
+### The author's contact information:
+###
+###      Alejandro Jara Vallejos
+###      Biostatistical Centre
+###      Katholieke Universiteit Leuven
+###      U.Z. Sint-Rafaël
+###      Kapucijnenvoer 35
+###      B-3000 Leuven
+###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
+###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###
 
 
 DPdensity<-function(y,prior,mcmc,state,status,method="neal",data=sys.frame(sys.parent()),na.action=na.fail)
@@ -460,5 +485,259 @@ DPdensity.default<-function(y,prior,mcmc,state,status,method="neal",data,na.acti
  	 class(z)<-"DPdensity"
   	 return(z)
 }
+
+
+
+###                    
+### Tools
+###
+### Copyright: Alejandro Jara Vallejos, 2006
+### Last modification: 13-04-2006.
+###
+
+
+
+"print.DPdensity"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+{
+    cat("\n",x$modelname,"\n\nCall:\n", sep = "")
+    print(x$call)
+    cat("\n")
+
+    cat("Posterior Predictive Distributions (log):\n")	     
+    print.default(format(summary(log(x$cpo)), digits = digits), print.gap = 2, 
+            quote = FALSE) 
+            
+    cat("\nPosterior Inference of Parameters:\n")
+    print.default(format(x$coefficients, digits = digits), print.gap = 2, 
+            quote = FALSE)
+
+    cat("\nNumber of Observations:",x$nrec)
+    cat("\nNumber of Variables:",x$nvar,"\n")    
+    cat("\n\n")
+    invisible(x)
+}
+
+
+"plot.DPdensity"<-function(x, ask=TRUE, output="density", param=NULL, hpd=TRUE, nfigr=1, nfigc=1, col="#bdfcc9", ...) 
+{
+
+fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
+# Author: AJV, 2006
+#
+{
+	dens <- density(x,n=npts)
+	densx <- dens$x
+	densy <- dens$y
+
+	meanvar <- mean(x)
+	densx1 <- max(densx[densx<=meanvar])
+	densx2 <- min(densx[densx>=meanvar])
+        densy1 <- densy[densx==densx1]
+        densy2 <- densy[densx==densx2]
+        ymean <- densy1 + ((densy2-densy1)/(densx2-densx1))*(meanvar-densx1)
+        
+
+        if(hpd==TRUE)
+	{
+		alpha<-0.05
+		alow<-rep(0,2)
+        	aupp<-rep(0,2)
+        	n<-length(x)
+		a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(x),
+		                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+		xlinf<-a$alow[1]            
+		xlsup<-a$aupp[1]            
+	}
+	else
+	{
+		xlinf <- quantile(x,0.025)
+		xlsup <- quantile(x,0.975)
+	}
+
+	densx1 <- max(densx[densx<=xlinf])
+	densx2 <- min(densx[densx>=xlinf])
+	densy1 <- densy[densx==densx1]
+	densy2 <- densy[densx==densx2]
+	ylinf <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlinf-densx1)
+
+	densx1 <- max(densx[densx<=xlsup])
+	densx2 <- min(densx[densx>=xlsup])
+        densy1 <- densy[densx==densx1]
+        densy2 <- densy[densx==densx2]
+        ylsup <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlsup-densx1)
+
+        plot(0.,0.,xlim = c(min(densx), max(densx)), ylim = c(min(densy), max(densy)),
+             axes = F,type = "n" , xlab=xlab, ylab=ylab, main=main, cex=1.2)
+
+        
+        xpol<-c(xlinf,xlinf,densx[densx>=xlinf & densx <=xlsup],xlsup,xlsup)
+        ypol<-c(0,ylinf,densy[densx>=xlinf & densx <=xlsup] ,ylsup,0)
+             
+        polygon(xpol, ypol, border = FALSE,col=col)
+        
+        lines(c(min(densx), max(densx)),c(0,0),lwd=1.2)
+        
+        segments(min(densx),0, min(densx),max(densy),lwd=1.2)
+        
+        lines(densx,densy,lwd=1.2)
+             
+        segments(meanvar, 0, meanvar, ymean,lwd=1.2)
+        segments(xlinf, 0, xlinf, ylinf,lwd=1.2)
+        segments(xlsup, 0, xlsup, ylsup,lwd=1.2)
+
+	axis(1., at = round(c(xlinf, meanvar,xlsup), 2.), labels = T,pos = 0.)
+        axis(1., at = round(seq(min(densx),max(densx),length=15), 2.), labels = F,pos = 0.)
+        axis(2., at = round(seq(0,max(densy),length=5), 2.), labels = T,pos =min(densx))
+}
+
+
+
+"bivk"<-function(x, y, h, n = 25, lims = c(range(x), range(y))) 
+{
+    nx <- length(x)
+    if (length(y) != nx) 
+        stop("Data vectors must be the same length")
+    gx <- seq(lims[1], lims[2], length = n)
+    gy <- seq(lims[3], lims[4], length = n)
+    if (missing(h)) 
+        h <- c(band(x), band(y))
+    h <- h/4
+    ax <- outer(gx, x, "-")/h[1]
+    ay <- outer(gy, y, "-")/h[2]
+    z <- matrix(dnorm(ax), n, nx) %*% t(matrix(dnorm(ay), n, 
+        nx))/(nx * h[1] * h[2])
+    return(list(x = gx, y = gy, z = z))
+}
+
+"band"<-function(x) 
+{
+    r <- quantile(x, c(0.25, 0.75))
+    h <- (r[2] - r[1])/1.34
+    4 * 1.06 * min(sqrt(var(x)), h) * length(x)^(-1/5)
+}
+
+   if(is(x, "DPdensity"))
+   {
+
+      if(output=="density")
+      {
+
+      # Density estimation
+	
+	par(ask = ask)
+	layout(matrix(seq(1,nfigr*nfigc,1),nrow=nfigr,ncol=nfigc,byrow=TRUE))
+	start<-(x$nrec+1)*x$nvar+(x$nrec+1)*x$nvar*(x$nvar+1)/2
+	
+	for(i in 1:x$nvar)
+	{
+	    title1<-paste("Density of",x$varnames[i],sep=' ')
+	    
+	    aa<-hist(x$y[,i],plot=F)
+	    maxx<-max(aa$intensities+aa$density)+0.06
+	    miny<-min(x$y[,i])
+	    maxy<-max(x$y[,i])
+	    deltay<-(maxy-miny)*0.2
+	    miny<-miny-deltay
+	    maxy<-maxy+deltay
+	    hist(x$y[,i],probability=T,xlim=c(miny,maxy),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
+            lines(density(x$save.state$randsave[,(start+i)]),lwd=2)
+	}
+	
+	if(x$nvar>=2)
+	{
+	    for(i in 1:(x$nvar-1))
+	    {
+   	        for(j in (i+1):x$nvar)
+   	        {
+   	            varsn<-paste(x$varnames[i],x$varnames[j],sep="-")
+	    	    title1<-paste("Predictive Density of ",varsn,sep='')
+             	    xx<-x$save.state$randsave[,(start+i)]	    
+                    yy<-x$save.state$randsave[,(start+j)]	    
+		    est<-bivk(xx,yy,n=200)
+		    contour(est,main=title1)
+		    persp(est,theta=-30,phi=15,expand = 0.9, ltheta = 120,main=title1)
+	    	}
+	    }
+	}
+      }
+        
+      else
+      {
+
+        if(is.null(param))
+        {
+           pnames<-colnames(x$save.state$thetasave)
+           n<-dim(x$save.state$thetasave)[2]
+           cnames<-names(x$coefficients)
+           
+           par(ask = ask)
+           layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
+           for(i in 1:(n-1))
+           {
+               if(x$indip[i]==1)
+               {
+                 title1<-paste("Trace of",pnames[i],sep=" ")
+                 title2<-paste("Density of",pnames[i],sep=" ")       
+                 plot(x$save.state$thetasave[,i],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+                 if(pnames[i]=="ncluster")
+                 {
+                    hist(x$save.state$thetasave[,i],main=title2,xlab="values", ylab="probability",probability=TRUE)
+                 }
+                 else
+                 {
+                   fancydensplot1(x$save.state$thetasave[,i],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
+                 }
+               }
+           }
+           
+           if(is.null(x$prior$a0))
+           {
+               cat("")
+           }
+           else
+           {
+               title1<-paste("Trace of",pnames[n],sep=" ")
+               title2<-paste("Density of",pnames[n],sep=" ")       
+               plot(x$save.state$thetasave[,n],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               fancydensplot1(x$save.state$thetasave[,n],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
+           }
+        }
+   
+        else
+        {
+
+            pnames<-colnames(x$save.state$thetasave)
+            n<-dim(x$save.state$thetasave)[2]
+	    poss<-0 
+            for(i in 1:n)
+            {
+               if(pnames[i]==param)poss=i
+            }
+            if (poss==0) 
+	    {
+	      stop("This parameter is not present in the original model.\n")
+	    }
+	    
+	    par(ask = ask)
+	    layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
+            title1<-paste("Trace of",pnames[poss],sep=" ")
+            title2<-paste("Density of",pnames[poss],sep=" ")       
+            plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+            if(pnames[poss]=="ncluster")
+            {
+                hist(x$save.state$thetasave[,poss],main=title2,xlab="values", ylab="probability",probability=TRUE)
+            }
+            else
+            {
+               fancydensplot1(x$save.state$thetasave[,poss],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
+            }
+            
+        }
+
+
+      }	
+   }
+}
+
 
 

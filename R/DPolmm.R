@@ -1,8 +1,9 @@
-### DPlmm.R                   
-### Fit a linear Dirichlet Process mixture of normal model.
+### DPolmm.R                    
+### Fit a ordinal linear mixed model with a Dirichlet Process prior
+### for the random effect distribution.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 24-03-2006.
+### Last modification: 07-07-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -30,12 +31,12 @@
 ###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
 ###
 
-"DPlmm"<-
+"DPolmm"<-
 function(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
-UseMethod("DPlmm")
+UseMethod("DPolmm")
 
 
-"DPlmm.default"<-
+"DPolmm.default"<-
 function(fixed,
          random,
          prior,
@@ -43,14 +44,14 @@ function(fixed,
          state,
          status, 
          data,
-         na.action)
+         na.action=na.fail)
 {
          #########################################################################################
          # call parameters
          #########################################################################################
          m <- mcall <- cl <- match.call()
          nm <- names(m)[-1]
-         keep <- is.element(nm, c("data", "na.action"))
+         keep <- is.element(nm, c("data", "na.action","offset"))
          for (i in nm[!keep]) m[[i]] <- NULL
          cfixed<-all.vars(fixed)
          crandom<-all.vars(random)
@@ -80,8 +81,19 @@ function(fixed,
          #########################################################################################
          # data structure
          #########################################################################################
-     	 resp<- model.response(mf,"numeric")
+     	 resp<-model.response(mf,"numeric")
+
+         if(!is.factor(resp)) stop("the response must be a factor")
+         categ<-levels(resp)
+         ncateg<-length(categ)
+         if(ncateg <= 2) stop("the response must have 3 or more levels")
+         yr <- unclass(resp)
+         if(min(yr)==0)yr<-yr+1
+         if(min(yr)>1)yr<-yr+min(yr)+1
+         categn<-seq(1,ncateg)
+
 	 nrec<-length(resp)
+	 
 	 mat<-model.matrix(m$formula,mf)
 	 pp<-dim(mat)[2]
         
@@ -141,7 +153,7 @@ function(fixed,
               possf<-c(possf,i)
             }  
          }
-         
+
          #########################################################
          #### NOTE: Is there is no fixed effects in the model ####
          ####       nfixed=0 and p=1.                         ####
@@ -156,7 +168,7 @@ function(fixed,
             p<-nfixed
             colnames(x)<-colnames(mat)[possf]
          }
-        
+
          xtx<-t(x)%*%x
 
          #########################################################################################
@@ -177,9 +189,6 @@ function(fixed,
   	 }
   	 
   	 nu0<-prior$nu0
-  	 tau1<-prior$tau1
-  	 tau2<-prior$tau2
-  	 tau<-c(tau1,tau2)
   	 
 	 tinv<-prior$tinv
 	 
@@ -203,57 +212,108 @@ function(fixed,
          mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
          nsave<-mcmc$nsave
 
-
          #########################################################################################
          # output
          #########################################################################################
          nuniq<-(q*(q+1)/2)
          
          randsave<-matrix(0,nrow=nsave,ncol=q*(nsubject+1))
-         thetasave<-matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+2)
+         thetasave<-matrix(0,nrow=nsave,ncol=q+nfixed+q+nuniq+2+ncateg-2)
          
          cpo<-rep(0,nrec)
+
+
+         #########################################################################################
+         # MLE estimation
+         #########################################################################################
+         
+         MLEordprobit<-function(x,y,p,ncateg,nrec)
+         {
+   	     fn<-function(theta)
+	     {
+		eta<-x%*%theta[1:p]
+		cutoff<-c(0,theta[(p+1):(p+ncateg-2)])
+		cc<-cumsum(c(cutoff[1], exp(cutoff[-1])))
+		cutoff<-c(-100,cc,100)
+
+		like <- pnorm(cutoff[y+1] - eta) - pnorm(cutoff[y] - eta)
+                if (all(like > 0)) 
+                     eval<- -sum(log(like))
+                else eval<-Inf
+		return(eval)
+	     }
+	     
+	     z<-rep(0,nrec)
+	     for(i in 1:nrec)
+	     {
+	        if(y[i]==1)
+	        {
+	           z[i]<-0
+	        }
+	        else
+	        {
+	           z[i]<-1
+	        }
+	     }
+	     start<-coefficients(glm.fit(x, z, family= binomial(probit)))   
+	
+	     start<-c(start,seq(ncateg-2)/(ncateg-2))
+	     
+	     foo<-optim(start,fn=fn,method="BFGS",hessian=TRUE)
+
+	     out<-NULL
+	     out$beta<-foo$par
+	     out$stderr<-sqrt(diag(-solve(-foo$hessian)))
+	     out$covb<-(-solve(-foo$hessian))
+	     return(out)
+         }
 
          #########################################################################################
          # parameters depending on status
          #########################################################################################
+
     	 if(status==TRUE)
 	 {
 	        if(nfixed==0){
 	           beta<-matrix(0,nrow=1,ncol=1)
-	           fit0<- glm.fit(z, resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
+                   
+                   fit0<-MLEordprobit(z,yr,q,ncateg,nrec)
+                  
 	           b<-matrix(0,nrow=nsubject,ncol=q)
 		   bclus<-matrix(0,nrow=nsubject,ncol=q)
 		   
-	           bclus[1,]<-coefficients(fit0)
+	           bclus[1,]<-fit0$beta[1:q]
 	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)
+	               b[i,]<-fit0$beta[1:q]
 	           }
-	           mu<-coefficients(fit0)
-                   q1 <- 1:q
-	           Qr <- fit0$qr
-	           sigma<- chol2inv(Qr$qr[q1, q1, drop = FALSE])
+	           mu<-fit0$beta[1:q]
+	           sigma<- fit0$covb[1:q,1:q]
 	           sigmainv<-solve(sigma)
+
+		   cutoff<-c(0,fit0$beta[(q+1):(q+ncateg-2)])
+		   cutoff<-cumsum(c(cutoff[1], exp(cutoff[-1])))
+	           
 	        }
 
 	        if(nfixed>0){
-	           fit0<- glm.fit(cbind(x,z), resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
+
+                   fit0<-MLEordprobit(cbind(x,z),yr,(p+q),ncateg,nrec)
+
 	           b<-matrix(0,nrow=nsubject,ncol=q)
 		   bclus<-matrix(0,nrow=nsubject,ncol=q)
-                   beta<-coefficients(fit0)[1:p]
-		   bclus[1,]<-coefficients(fit0)[(p+1):(p+q)]
+
+                   beta<-fit0$beta[1:p]
+		   bclus[1,]<-fit0$beta[(p+1):(p+q)]
 
 	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)[(p+1):(p+q)]
+	               b[i,]<-fit0$beta[(p+1):(p+q)]
 	           }
-	           mu<-coefficients(fit0)[(p+1):(p+q)]
-	           
-	           q1 <- 1:(p+q)
-		   Qr <- fit0$qr
-		   sigma<- chol2inv(Qr$qr[q1, q1, drop = FALSE])[(p+1):(p+q),(p+1):(p+q)]
+	           mu<-fit0$beta[(p+1):(p+q)]
+	           sigma<- fit0$covb[(p+1):(p+q),(p+1):(p+q)]
 		   sigmainv<-solve(sigma)
+
+		   cutoff<-c(0,fit0$beta[(p+q+1):(p+q+ncateg-2)])
+		   cutoff<-cumsum(c(cutoff[1], exp(cutoff[-1])))
 	        }
 
                 betar<-rep(0,q)
@@ -267,14 +327,15 @@ function(fixed,
                 bclus<-state$bclus 
 	        beta<-state$beta
 	        betar<-state$betar
+	        cutoff<-state$cutoff
 	        mu<-state$mu
 	        ncluster<-state$ncluster
 	        sigma<-state$sigma
 	        sigmainv<-solve(sigma)
-	        sigma2e<-state$sigma2e         
 	        ss<-state$ss
 	 }
-         
+
+
          #########################################################################################
          # working space
          #########################################################################################
@@ -283,7 +344,6 @@ function(fixed,
          iflag2<-rep(0,maxni)
          iflagb<-rep(0,q) 
          prob<-rep(0,nsubject+1)
-         quadf<-matrix(0,nrow=q,ncol=q)
          res<-rep(0,nrec)
          seed1<-sample(1:29000,1)
          seed2<-sample(1:29000,1)
@@ -305,17 +365,19 @@ function(fixed,
          workvb1<-rep(0,q) 
          workvb2<-rep(0,q) 
          xty<-rep(0,p) 
+         y<-rep(0,nrec) 
          ywork<-rep(0,maxni) 
          zty<-rep(0,q) 
          ztz<-matrix(0,nrow=q,ncol=q) 
          ztzinv<-matrix(0,nrow=q,ncol=q) 
- 
+         
          #########################################################################################
          # calling the fortran code
          #########################################################################################
-         foo <- .Fortran("splme",
+         foo <- .Fortran("spolmmp",
          	datastr    =as.integer(datastr),
  	 	maxni      =as.integer(maxni),         
+ 	 	ncateg     =as.integer(ncateg),         
  	 	nrec       =as.integer(nrec),
  	 	nsubject   =as.integer(nsubject),
  	 	nfixed     =as.integer(nfixed),
@@ -324,7 +386,8 @@ function(fixed,
  	 	subject    =as.integer(newid),
  		x          =as.double(x),	 	
  		xtx        =as.double(xtx),	 	
- 		y          =as.double(resp),
+ 		y          =as.double(y),
+ 		yr         =as.integer(yr),
  		z          =as.double(z),	 
  		a0b0       =as.double(a0b0),
  		nu0        =as.integer(nu0),
@@ -332,7 +395,6 @@ function(fixed,
  		psiinv     =as.double(psiinv),	  		
  		sb         =as.double(sb),	  		
  		smu        =as.double(smu),	  		
- 		tau        =as.double(tau),	  		
  		tinv       =as.double(tinv),	  		 		
  		mcmc       =as.integer(mcmcvec),
  		nsave      =as.integer(nsave),
@@ -344,17 +406,16 @@ function(fixed,
                 bclus      =as.double(bclus),		
  		beta       =as.double(beta),
  		betar      =as.double(betar),
+ 		cutoff     =as.double(cutoff),
  		mu         =as.double(mu),
  		ncluster   =as.integer(ncluster),
  		sigma      =as.double(sigma),
- 		sigma2e    =as.double(sigma2e),
  		ss         =as.integer(ss),
  		ccluster   =as.integer(ccluster),
  		iflag      =as.integer(iflag),
  		iflag2     =as.integer(iflag2),
  		iflagb     =as.integer(iflagb),
  		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
  		res        =as.double(res),
  		seed       =as.integer(seed),
  		sigmainv   =as.double(sigmainv),
@@ -381,12 +442,11 @@ function(fixed,
  		ztzinv     =as.double(ztzinv), 		
 		PACKAGE    ="DPpackage")	
 
-
          #########################################################################################
          # save state
          #########################################################################################
 
-         dimen<-q+nfixed+1+q+nuniq+2
+         dimen<-q+nfixed+q+nuniq+2+ncateg-2
          thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=dimen)
          randsave<-matrix(foo$randsave,nrow=nsave, ncol=q*(nsubject+1))
          cpo<-foo$cpo
@@ -394,7 +454,6 @@ function(fixed,
  	 if(nfixed==0)pnames1<- c(colnames(mat)[possr])
  	 if(nfixed >0)pnames1<- c(colnames(mat)[possr],colnames(mat)[possf])
  	 
- 	 pnames2<-"residual"
  	 pnames3<- paste("mu",colnames(mat)[possr],sep="-")
          pnames4<-NULL
          
@@ -406,9 +465,11 @@ function(fixed,
             }
          }
          
-         pnames5<- c("ncluster","alpha")
-
-         colnames(thetasave)<-c(pnames1,pnames2,pnames3,pnames4,pnames5)
+         pnames5<-paste("cutoff",2:(ncateg-1))
+         
+         pnames6<- c("ncluster","alpha")
+         
+         colnames(thetasave)<-c(pnames1,pnames3,pnames4,pnames5,pnames6)
          
          qnames<-NULL
          for(i in 1:nsubject){
@@ -427,14 +488,11 @@ function(fixed,
          colnames(randsave)<-qnames
          
          
-	 model.name<-"Bayesian semiparametric linear mixed effect model"		
+	 model.name<-"Bayesian semiparametric ordinal linear mixed effect model"		
 
-         coeff<-rep(0,dimen)
-         for(i in 1:dimen){
-             coeff[i]<-mean(thetasave[,i])
-         }
-		
-	 names(coeff)<-c(pnames1,pnames2,pnames3,pnames4,pnames5)
+         coeff<-apply(thetasave, 2, mean)
+
+	 names(coeff)<-c(pnames1,pnames3,pnames4,pnames5,pnames6)
 
 
 	 state <- list(alpha=foo$alpha,b=matrix(foo$b,nrow=nsubject,ncol=q),
@@ -442,7 +500,7 @@ function(fixed,
 	               beta=foo$beta,betar=foo$betar,
 	               mu=foo$mu,ncluster=foo$ncluster,
 	               sigma=matrix(foo$sigma,nrow=q,ncol=q),
-	               sigma2e=foo$sigma2e,ss=foo$ss)
+	               ss=foo$ss)
 
 	 save.state <- list(thetasave=thetasave,randsave=randsave)
 
@@ -450,18 +508,23 @@ function(fixed,
                  prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
                  nsubject=foo$nsubject,nfixed=foo$nfixed,nrandom=foo$q,
                  cpo=foo$cpo,alphapr=alphapr,namesre1=namesre,namesre2=colnames(mat)[possr],
-                 z=z,x=x,mf=mf,dimen=dimen)
+                 z=z,x=x,mf=mf,dimen=dimen,ncateg=ncateg,nsave=nsave)
                  
          cat("\n\n")        
 
-         class(z)<-c("DPlmm")
+         class(z)<-c("DPolmm")
          return(z) 
 }
 
 
+###
+### Tools for DPolmm: print, summary, plot
+###
+### Copyright: Alejandro Jara Vallejos, 2006
+### Last modification: 07-07-2006.
 
 
-"print.DPlmm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.DPolmm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -485,47 +548,82 @@ function(fixed,
 }
 
 
-"summary.DPlmm"<-function(object, hpd=TRUE, ...) 
+"summary.DPolmm"<-function(object, hpd=TRUE, ...) 
 {
-    dimen1<-object$nrandom+object$nfixed+1
-    coef.p<-object$coefficients[1:(dimen1-1)]
-    
-    coef.sd<-rep(0,dimen1-1)
-    coef.se<-rep(0,dimen1-1)
-    coef.l<-rep(0,dimen1-1)
-    coef.u<-rep(0,dimen1-1)
-    coef.m<-rep(0,dimen1-1)
-    names(coef.sd)<-names(object$coefficients[1:(dimen1-1)])
-    names(coef.l)<-names(object$coefficients[1:(dimen1-1)])
-    names(coef.u)<-names(object$coefficients[1:(dimen1-1)])
-    
-    alpha<-0.05
-    
-    for(i in 1:(dimen1-1)){
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        coef.sd[i]<-sqrt(var(object$save.state$thetasave[,i]))
-        coef.m[i]<-median(object$save.state$thetasave[,i])
-        vec<-object$save.state$thetasave[,i]
-        n<-length(vec)
-        
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-                     
-        if(hpd){             
-           coef.l[i]<-a$alow[1]            
-           coef.u[i]<-a$aupp[1]
-        }   
-        else
-        {
-           coef.l[i]<-a$alow[2]            
-           coef.u[i]<-a$aupp[2]
-        }
+    stde<-function(x)
+    {
+    	n<-length(x)
+    	return(sd(x)/sqrt(n))
     }
 
-    coef.se<-coef.sd/sqrt(n)
+    hpdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[1],a$aupp[1]))
+    }
+    
+    pdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[2],a$aupp[2]))
+    }
+
+    #nsave<-object$nsave
+    #dimen<-length(object$coefficients)
+    #thetasave<-matrix(object$save.state$thetasave,nrow=nsave, ncol=dimen)
+    thetasave<-object$save.state$thetasave
+
+
+### Fixed part of the model
+
+    dimen1<-object$nrandom+object$nfixed
+
+    if(dimen1==1)
+    {
+       mat<-matrix(thetasave[,1:dimen1],ncol=1) 
+    }
+    else
+    {
+       mat<-thetasave[,1:dimen1]
+    }
+
+    coef.p<-object$coefficients[1:dimen1]
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
+
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+
+    names(coef.m)<-names(object$coefficients[1:dimen1])
+    names(coef.sd)<-names(object$coefficients[1:dimen1])
+    names(coef.se)<-names(object$coefficients[1:dimen1])
+    names(coef.l)<-names(object$coefficients[1:dimen1])
+    names(coef.u)<-names(object$coefficients[1:dimen1])
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
+
     if(hpd)
     {
        dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
@@ -538,92 +636,43 @@ function(fixed,
     }
     
     ans <- c(object[c("call", "modelname")])
+
     ans$coefficients<-coef.table
 
 
-    coef.p<-object$coefficients[dimen1]
-    coef.sd<-rep(0,1)
-    coef.se<-rep(0,1)
-    coef.l<-rep(0,1)
-    coef.u<-rep(0,1)
-    coef.m<-rep(0,1)
-    names(coef.sd)<-names(object$coefficients[dimen1])
-    names(coef.l)<-names(object$coefficients[dimen1])
-    names(coef.u)<-names(object$coefficients[dimen1])
-    for(i in 1:1){
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        coef.sd[i]<-sqrt(var(object$save.state$thetasave[,dimen1]))
-        coef.m[i]<-median(object$save.state$thetasave[,dimen1])
-        vec<-object$save.state$thetasave[,dimen1]
-        n<-length(vec)
-        
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-                     
-        if(hpd)
-        {
-            coef.l[i]<-a$alow[1]            
-            coef.u[i]<-a$aupp[1]            
-        }
-        else
-        {
-            coef.l[i]<-a$alow[2]            
-            coef.u[i]<-a$aupp[2]            
-        }
-    }
-    coef.se<-coef.sd/sqrt(n)
-    coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
-    if(hpd)
-    {
-        dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-                "95%HPD-Low","95%HPD-Upp"))
-    }
-    else
-    {
-        dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-                "95%CI-Low","95%CI-Upp"))
-    }
-    ans$resvar<-coef.table
-
-
+### CPO
     ans$cpo<-object$cpo
 
 
-    dimen2<-object$nrandom+object$nrandom*(object$nrandom+1)/2
-    coef.p<-object$coefficients[(dimen1+1):(dimen1+dimen2)]
-    coef.sd<-rep(0,dimen2)
-    coef.se<-rep(0,dimen2)
-    coef.l<-rep(0,dimen2)
-    coef.u<-rep(0,dimen2)
-    coef.m<-rep(0,dimen2)
-    names(coef.sd)<-names(object$coefficients[(dimen1+1):(dimen1+dimen2)])
-    names(coef.l)<-names(object$coefficients[(dimen1+1):(dimen1+dimen2)])
-    names(coef.u)<-names(object$coefficients[(dimen1+1):(dimen1+dimen2)])
-    for(i in 1:dimen2){
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        coef.sd[i]<-sqrt(var(object$save.state$thetasave[,dimen1+i]))
-        coef.m[i]<-median(object$save.state$thetasave[,dimen1+i])
-        vec<-object$save.state$thetasave[,dimen1+i]
-        n<-length(vec)
-        
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-        
-        if(hpd)
-        {
-            coef.l[i]<-a$alow[1]            
-            coef.u[i]<-a$aupp[1]            
-        }
-        else
-        {
-            coef.l[i]<-a$alow[2]            
-            coef.u[i]<-a$aupp[2]            
-        }
-    }
+### Baseline Information
 
-    coef.se<-coef.sd/sqrt(n)
+    dimen2<-object$nrandom+object$nrandom*(object$nrandom+1)/2
+    
+    if(dimen2==1)
+    {
+       mat<-matrix(thetasave[,(dimen1+1):(dimen1+dimen2)],ncol=1) 
+    }
+    else
+    {
+       mat<-thetasave[,(dimen1+1):(dimen1+dimen2)]
+    }
+    
+    coef.p<-object$coefficients[(dimen1+1):(dimen1+dimen2)]
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
+
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
     if(hpd)
@@ -639,48 +688,84 @@ function(fixed,
 
     ans$base<-coef.table
 
-    if(is.null(object$prior$a0))
+
+### Cutoff Points
+
+    dimen3<-object$ncateg-2
+    
+    if(dimen3==1)
     {
-      dimen3<-1
-      coef.p<-object$coefficients[(dimen1+dimen2+1)]
+       mat<-matrix(thetasave[,(dimen1+dimen2+1):(dimen1+dimen2+dimen3)],ncol=1) 
     }
     else
     {
-      dimen3<-length(object$coefficients)-(dimen1+dimen2)
-      coef.p<-object$coefficients[(dimen1+dimen2+1):length(object$coefficients)]
-    }  
+       mat<-thetasave[,(dimen1+dimen2+1):(dimen1+dimen2+dimen3)]
+    }
+    
+    coef.p<-object$coefficients[(dimen1+dimen2+1):(dimen1+dimen2+dimen3)]
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
 
-    coef.sd<-rep(0,dimen3)
-    coef.se<-rep(0,dimen3)
-    coef.l<-rep(0,dimen3)
-    coef.u<-rep(0,dimen3)
-    coef.m<-rep(0,dimen3)
-    names(coef.sd)<-names(coef.p)
-    names(coef.l)<-names(coef.p)
-    names(coef.u)<-names(coef.p)
-    for(i in 1:dimen3){
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        coef.sd[i]<-sqrt(var(object$save.state$thetasave[,dimen1+dimen2+i]))
-        coef.m[i]<-median(object$save.state$thetasave[,dimen1+dimen2+i])
-        vec<-object$save.state$thetasave[,dimen1+dimen2+i]
-        n<-length(vec)
-        
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-        if(hpd)
-        {
-            coef.l[i]<-a$alow[1]            
-            coef.u[i]<-a$aupp[1]            
-        }
-        else
-        {
-            coef.l[i]<-a$alow[2]            
-            coef.u[i]<-a$aupp[2]            
-        }
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
     }
 
-    coef.se<-coef.sd/sqrt(n)
+    coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
+    if(hpd)
+    {
+         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+    }
+    else
+    {
+         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%CI-Low","95%CI-Upp"))
+    }
+
+    ans$cutoff<-coef.table
+
+
+### Precision parameter
+
+    if(is.null(object$prior$a0))
+    {
+      dimen4<-1
+      coef.p<-object$coefficients[(dimen1+dimen2+dimen3+1)]
+      mat<-matrix(thetasave[,(dimen1+dimen2+dimen3+1):(dimen1+dimen2+dimen3+dimen4)],ncol=1)
+    }
+    else
+    {
+      dimen4<-length(object$coefficients)-(dimen1+dimen2+dimen3)
+      coef.p<-object$coefficients[(dimen1+dimen2+dimen3+1):length(object$coefficients)]
+      mat<-thetasave[,(dimen1+dimen2+dimen3+1):(dimen1+dimen2+dimen3+dimen4)]
+
+    }  
+
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
+
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
     
@@ -699,12 +784,12 @@ function(fixed,
     ans$nrec<-object$nrec
     ans$nsubject<-object$nsubject
 
-    class(ans) <- "summaryDPlmm"
+    class(ans) <- "summaryDPolmm"
     return(ans)
 }
 
 
-"print.summaryDPlmm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.summaryDPolmm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -721,8 +806,8 @@ function(fixed,
     }
     else cat("No coefficients\n")
 
-    cat("\nResidual variance:\n")
-    print.default(format(x$resvar, digits = digits), print.gap = 2, 
+    cat("\nThreshold:\n")
+    print.default(format(x$cutoff, digits = digits), print.gap = 2, 
           quote = FALSE)
 
     if (length(x$base)) {
@@ -746,7 +831,7 @@ function(fixed,
 }
 
 
-"plot.DPlmm"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
+"plot.DPolmm"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
 {
 
 fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
@@ -819,7 +904,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 }
 
 
-   if(is(x, "DPlmm"))
+   if(is(x, "DPolmm"))
    {
         if(is.null(param))
         {
@@ -833,7 +918,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
            {
                title1<-paste("Trace of",pnames[i],sep=" ")
                title2<-paste("Density of",pnames[i],sep=" ")       
-               plot(x$save.state$thetasave[,i],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               plot(ts(x$save.state$thetasave[,i]),main=title1,xlab="MCMC scan",ylab=" ")
                if(pnames[i]=="ncluster")
                {
                   hist(x$save.state$thetasave[,i],main=title2,xlab="values", ylab="probability",probability=TRUE)
@@ -852,7 +937,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
            {
                title1<-paste("Trace of",pnames[n],sep=" ")
                title2<-paste("Density of",pnames[n],sep=" ")       
-               plot(x$save.state$thetasave[,n],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               plot(ts(x$save.state$thetasave[,n]),main=title1,xlab="MCMC scan",ylab=" ")
                fancydensplot1(x$save.state$thetasave[,n],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
         }
@@ -876,7 +961,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 	    layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
             title1<-paste("Trace of",pnames[poss],sep=" ")
             title2<-paste("Density of",pnames[poss],sep=" ")       
-            plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+            plot(ts(x$save.state$thetasave[,poss]),main=title1,xlab="MCMC scan",ylab=" ")
             if(param=="ncluster")
             {
                hist(x$save.state$thetasave[,poss],main=title2,xlab="values", ylab="probability",probability=TRUE)
@@ -889,4 +974,5 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
    }
 
 }
+
 

@@ -2,7 +2,7 @@
 \alias{DPglmm}
 \alias{DPglmm.default}
 
-\title{Performs a Bayesian analysis for a semiparametric generalized linear mixed model}
+\title{Bayesian analysis for a semiparametric generalized linear mixed model}
 \description{
     This function generates a posterior density sample for a 
     semiparametric generalized linear mixed model. 
@@ -30,13 +30,13 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
                      be used in the model. This can be a character string naming a
                      family function, a family function or the result of a call to
                      a family function. The families(links) considered by 
-                     \code{DPglmm} so far are binomial(logit), binomial(probit), 
-                     and poisson(log). The gaussian(identity) case is implemented 
-                     separately in the function \code{DPlmm}.}
+                     \code{DPglmm} so far are binomial(logit), binomial(probit),
+                      Gamma(log), and poisson(log). The gaussian(identity) case is 
+                     implemented separately in the function \code{DPlmm}.}
                      
     \item{offset}{   this can be used to specify an a priori known component to
                      be included in the linear predictor during the fitting (only for
-                     poisson models).}
+                     poisson and gamma models).}
 
     \item{n}{        this can be used to indicate the total number of cases in a binomial
                      model (only implemented for the logistic link). If it is not specified
@@ -83,25 +83,25 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
 \details{
   This generic function fits a generalized linear mixed-effects model, where the linear
   predictor is modeled as follows:
-  \deqn{\eta_i = X_i \beta_F + Z_i \beta_R + Z_i b_i, i=1,\ldots,n}
-  \deqn{\theta_i | G \sim G}
-  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}
+  \deqn{\eta_i = X_i \beta_F + Z_i \beta_R + Z_i b_i, i=1,\ldots,n}{etai = Xi betaF + Zi betaR + Zi bi, i=1,\ldots,n}
+  \deqn{\theta_i | G \sim G}{thetai | G ~ G}
+  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
 
-  where, \eqn{\theta_i = \beta_R + b_i} , \eqn{\beta = \beta_F}, and \eqn{G_0 = N(\theta| \mu, \Sigma)}. To complete the model 
+  where, \eqn{\theta_i = \beta_R + b_i}{thetai = betaR + bi} , \eqn{\beta = \beta_F}{beta = betaF}, and \eqn{G_0 = N(\theta| \mu, \Sigma)}{G0 = N(theta| mu, Sigma)}. To complete the model 
   specification, independent hyperpriors are assumed,
-  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}
-  \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}
-  \deqn{\mu | \mu_b, S_b \sim N(mu_b,S_b)}
-  \deqn{\Sigma | \nu_0, T \sim IW(\nu_0,T)}
+  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
+  \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
+  \deqn{\mu | \mu_b, S_b \sim N(\mu_b,S_b)}{mu | mub, Sb ~ N(mub,Sb)}
+  \deqn{\Sigma | \nu_0, T \sim IW(\nu_0,T)}{Sigma | nu0, T ~ IW(nu0,T)}
 
   Note that the inverted-Wishart prior is parametrized such that
-  \eqn{E(\Sigma)= T^{-1}/(\nu_0-q-1)}.
+  \eqn{E(\Sigma)= T^{-1}/(\nu_0-q-1)}{E(Sigma)= Tinv/(nu0-q-1)}.
   
-  The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
-  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}, 
-  or fixed at some particular value. When \eqn{\alpha} is random the method described by
-  Escobar and West (1995) is used. To let \eqn{\alpha} to be fixed at a particular
-  value set, \eqn{a_0} to NULL in the prior specification.
+  The precision or total mass parameter, \eqn{\alpha}{alpha}, of the \code{DP} prior 
+  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
+  or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
+  Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
+  value set, \eqn{a_0}{a0} to NULL in the prior specification.
   
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and the MCMC is model-specific. 
@@ -115,18 +115,18 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   
   For conditonal bernoulli models, \code{binomial(probit)} and \code{binomial(logit)}, (i.e., the
   total number of cases is not specified) the following latent variable representation is used:
-  \deqn{y_{ij} = I(w_{ij} > 0), j=1,\ldots,n_i}
-  \deqn{w_{ij} | \beta, \theta_i, \lambda_i \sim N(X_{ij} \beta + Z_{ij} \theta_i, \lambda_{ij})}
+  \deqn{y_{ij} = I(w_{ij} > 0), j=1,\ldots,n_i}{yij = I(wij > 0), j=1,\ldots,ni}
+  \deqn{w_{ij} | \beta, \theta_i, \lambda_i \sim N(X_{ij} \beta + Z_{ij} \theta_i, \lambda_{ij})}{wij | beta, thetai, lambdai ~ N(Xij beta + Zij thetai, lambdaij)}
 
-  In the probit case, \eqn{\lambda_{ij}=1}  while in the logit case (see, Andrews and Mallows, 1974),
-  \deqn{\lambda_{ij} = (2 \phi_{ij})^2}
-  \deqn{\phi_{ij} \sim KS}
+  In the probit case, \eqn{\lambda_{ij}=1}{lambdaij=1}  while in the logit case (see, Andrews and Mallows, 1974),
+  \deqn{\lambda_{ij} = (2 \phi_{ij})^2}{lambdaij = (2 phiij)^2}
+  \deqn{\phi_{ij} \sim KS}{phiij ~ KS}
 
   where \eqn{KS} refers to the Kolmogorov Smirnov distribution. In this case, the computational 
   implementation of the model is based on the marginalization of
   the \code{DP} and on the use of MCMC methods for conjugate priors (Escobar, 1994;
   Escobar and West, 1998). For the logistic model, the full conditional distribution of the scale 
-  parameters, \eqn{\lambda_{ij}} are sampled via the rejection sampling algorithm as proposed by Holmes and
+  parameters, \eqn{\lambda_{ij}}{lambdaij} are sampled via the rejection sampling algorithm as proposed by Holmes and
   Held (2006).
 }
 
@@ -167,7 +167,7 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPlmm}}
+\code{\link{DPrandom}}, \code{\link{DPlmm}}, \code{\link{DPolmm}}
 }
 
 \references{
@@ -224,10 +224,10 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
     # MCMC parameters
 
-      nburn<-5
-      nsave<-100
-      nskip<-5
-      ndisplay<-100
+      nburn<-5000
+      nsave<-25000
+      nskip<-20
+      ndisplay<-1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Fit the Probit model

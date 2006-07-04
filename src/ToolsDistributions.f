@@ -5,6 +5,41 @@ c     SUBROUTINES AND FUNCTIONS TO EVALUATE THE DENSITY AND CDF OF RVs
 c=======================================================================                  
 c=======================================================================                  
 
+c=======================================================================
+      subroutine dgamma(y,mu,v,eval)        
+c=======================================================================
+c     return the log of a gamma distribution
+c     A.J.V., 2006
+      real*8 y,mu,v,eval
+      real*8 dgamlog
+      eval=(v-1)*log(y)-y*(v/mu)-v*log(mu/v)-dgamlog(v)
+      return
+      end
+
+
+c=======================================================================
+      subroutine dgamma2(y,alpha,beta,eval)        
+c=======================================================================
+c     return the log of a gamma distribution
+c     A.J.V., 2006
+      real*8 y,alpha,beta,eval
+      real*8 dgamlog
+      eval=alpha*log(beta)+(alpha-1.d0)*log(y) - beta*y - dgamlog(alpha) 
+      return
+      end
+
+
+c=======================================================================
+      subroutine dgammai(y,alpha,beta,eval)        
+c=======================================================================
+c     return the log of a inverted gamma distribution
+c     A.J.V., 2006
+      real*8 y,alpha,beta,eval
+      real*8 dgamlog
+      eval=alpha*log(beta)-(alpha+1.d0)*log(y) - beta/y - dgamlog(alpha) 
+      return
+      end
+
 
 c=======================================================================            	  
       double precision function cdfslogistic(x)
@@ -13,14 +48,8 @@ c     This function evaluate the cdf of a standard logistic distribution.
 c     A.J.V., 2005
       implicit none 
       real*8 x
-      
-c      if(x.lt.-50.d0)then
-c         cdfslogistic=0.d0
-c        else if(x.gt.50.d0)then
-c         cdfslogistic=1.d0
-c        else 
-         cdfslogistic=exp(x-log(1+exp(x)))
-c      end if   
+      real*8 cdflogis
+      cdfslogistic=cdflogis(x,0.d0,1.d0,1,0)
       return
       end
      
@@ -31,7 +60,8 @@ c     This function evaluate the cdf of a standard logistic distribution.
 c     A.J.V., 2005
       implicit none 
       real*8 p
-      invcdfslogistic=log(p)-log(1.d0-p)
+      real*8 invcdflogis
+      invcdfslogistic=invcdflogis(p,0.d0,1.d0,1,0)
       return
       end
 

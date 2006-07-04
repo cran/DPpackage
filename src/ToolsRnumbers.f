@@ -5,97 +5,59 @@ c     SUBROUTINES AND FUNCTIONS FOR RN GENERATION
 c=======================================================================                  
 c=======================================================================                  
 
-c=======================================================================            
-      subroutine setrand(seed1,seed2,seed3)
-c=======================================================================            
-c     This routine initialize the random number generator.
-c     A.J.V., 2005
-      integer seed1,seed2,seed3
-      common/rrunif/iix,iiy,iiz
-      iix=seed1
-      iiy=seed2
-      iiz=seed3
-      return
-      end
 
 c=======================================================================                  
       real function runif()
 c=======================================================================                  
-c     This function generates a uniform random variable using the
-c     algorithm of Wichman and Hill (1982) 
-c     A.J.V., 2005
-      integer ix,iy,iz
-      common/rrunif/ix,iy,iz
-      ix=171*mod(ix,177)-2*(ix/177)
-      iy=172*mod(iy,176)-35*(iy/176)
-      iz=170*mod(iz,178)-63*(iz/178)
-      if (ix.lt.0) ix=ix+30269
-      if (iy.lt.0) iy=iy+30307
-      if (iz.lt.0) iz=iz+30323
-      runif=amod(float(ix)/30269.0+float(iy)/30307.0+
-     +		    float(iz)/30323.0,1.0)
+c     This function generates a uniform random variable
+c     A.J.V., 2006
+      real ranf
+      runif=ranf()
       return
       end
 
+c=======================================================================                        
+      double precision function rexp(lambda)
+c=======================================================================                  
+c     This function generates a exp(lambda) random variable  
+c     A.J.V., 2005
+      implicit none
+      real*8 lambda
+      real runif
+      rexp=-log(1.d0-dble(runif()))/lambda
+      return
+      end     
 
 c=======================================================================                        
       subroutine rdisc(imin,imax,evali)
 c=======================================================================                  
 c     This subroutine generates a discrite uniform random variable in 
 c     {imin,...,imax}
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none 
-      integer imin,imax,evali
-      real runif
-      evali=imin+((imax-imin)*runif())
+      integer imin,imax,evali,ignuin
+
+      evali=ignuin(imin,imax)
+      if(evali.lt.imin)evali=imin
+      if(evali.gt.imax)evali=imax
       return
       end    
 
-
-c=======================================================================                        
-      double precision function rbeta(a0,b0)
 c=======================================================================                  
-c     This function generates a beta random variable  
-c     A.J.V., 2005
-      implicit none
-      real*8 a0,b0,rgamma
-      rbeta=0.d0
-      if(a0.gt.0.d0)then
-         if(b0.gt.0.d0)then
-            rbeta=rgamma(a0,1.d0) 
-            rbeta=rbeta/(rbeta+rgamma(b0,1.d0))
-          else
-            rbeta=1.d0
-         end if   
-      end if   
-      return
-      end         
-
-c=======================================================================                        
-      subroutine dirichlet(alpha,kreal,k,x)
+c      double precision function rgamma(alpha,beta)
 c=======================================================================                  
-c     This subroutine generates a dirichlet random vector x  
-c     A.J.V., 2005
-      implicit none
-      integer i,k,kreal
-      real*8 alpha(kreal),x(kreal),temp,rgamma,a0
+c     This function generates a random gamma value.
+c     The parametrization is such that E(X)=alpha/beta
+c     A.J.V., 2006 
+c      implicit none 
+c      real*8 beta,alpha
+c      real a,r,gengam
+c      a=beta
+c      r=alpha
+c      rgamma = gengam(a,r)
+c      return
+c      end      
 
-      temp=0.d0
-
-      do i=1,k
-         x(i)=0.d0 
-         a0=alpha(i)
-         if(a0.gt.0.d0)then
-            x(i)=rgamma(a0,1.d0) 
-            temp=temp+x(i)
-         end if   
-      end do
-      
-      do i=1,k
-         x(i)=x(i)/temp
-      end do   
-      return
-      end         
 
 c=======================================================================                  
       double precision function rgamma(alpha,beta)
@@ -170,13 +132,54 @@ c     A.J.V., 2005
         return
         end
 
+c=======================================================================                        
+      double precision function rbeta(a0,b0)
+c=======================================================================                  
+c     This function generates a beta random variable  
+c     A.J.V., 2006
+      implicit none
+      real*8 a0,b0
+      real genbet,a,b
+      a=a0
+      b=b0
+      rbeta=genbet(a,b)
+      return
+      end         
+
+c=======================================================================                        
+      subroutine dirichlet(alpha,kreal,k,x)
+c=======================================================================                  
+c     This subroutine generates a dirichlet random vector x  
+c     A.J.V., 2005
+      implicit none
+      integer i,k,kreal
+      real*8 alpha(kreal),x(kreal),tmp,rgamma,a0
+
+      tmp=0.d0
+
+      do i=1,k
+         x(i)=0.d0 
+         a0=alpha(i)
+         if(a0.gt.0.d0)then
+            x(i)=rgamma(a0,1.d0) 
+            tmp=tmp+x(i)
+         end if   
+      end do
+      
+      do i=1,k
+         x(i)=x(i)/tmp
+      end do   
+      return
+      end         
+
+
 c=======================================================================
       subroutine simdisc(prob,n,m,val)
 c=======================================================================
 c     generates a sample from a discrete distribution
 c     n= real dimension
 c     m= used dimension      
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none 
       integer n,m,val,i1,ok
       real*8 prob(n),temp1,u,total
@@ -188,8 +191,6 @@ c     A.J.V., 2005
       end do
 
       if(total.eq.0.d0)then
-c        call intpr('error in simdisc',-1,0,0)
-c        call dblepr('probability',-1,prob,m)
         call rdisc(1,m,val) 
         return
       end if  
@@ -211,6 +212,47 @@ c++++ Generating the rn
       
       return
       end           
+
+c=======================================================================
+      subroutine simdiscint(prob,n,imin,imax,val)
+c=======================================================================
+c     generates a sample from a discrete distribution
+c     n= real dimension
+c     m= used dimension      
+c     A.J.V., 2006
+      implicit none 
+      integer n,val,i1,ok,imin,imax
+      real*8 prob(n),temp1,u,total
+      real runif
+      
+      total=0.d0
+      do i1=imin,imax
+         total=total+prob(i1)
+      end do
+
+      if(total.eq.0.d0)then
+        call rdisc(imin,imax,val) 
+        return
+      end if  
+
+c++++ Generating the rn
+      temp1=0.d0
+      
+      u=dble(runif())
+      i1=imin
+      ok=1
+      do while(ok.eq.1.and.i1.le.imax)
+         temp1=temp1+(prob(i1)/total)
+         if(u.lt.temp1)then
+            val=i1
+            ok=0 
+         end if
+         i1=i1+1
+      end do
+      
+      return
+      end      
+
       
 c=======================================================================            	        
       double precision function rtslogistic(ind,eta)
@@ -254,7 +296,7 @@ c     A.J.V., 2005
       if(ainf.or.binf) go to 100
       
       if(a.gt.b)then
-        call intpr('error in limits',-1,0,0)
+        call rexit("error in limits rtslogistic2")
         rtslogistic2=a
         return
       end if  
@@ -278,18 +320,6 @@ c     A.J.V., 2005
       return
       end      
       
-c=======================================================================            
-      double precision function rnorm2(mu,sd)
-c=======================================================================            
-c     This function generates a N(mu,sd^2) random values.
-c     A.J.V., 2005
-      implicit none
-      real*8 mu,sd
-      real u,runif,ppnda
-      u=runif()
-      rnorm2 = mu+sd*ppnda(u)
-      return
-      end
 
 c=======================================================================            
       double precision function rnorm(mu,sd)
@@ -297,126 +327,15 @@ c=======================================================================
 c     This function generates a N(mu,sd^2) random values.
 c     A.J.V., 2006
       implicit none
-      real*8 mu,sd,stdnrm
-
-      rnorm = mu+stdnrm()*sd
-      return
-      end
-
-
-c=======================================================================            
-      double precision function stdnrm()
-c=======================================================================            
-c     Function to return a single standard normal (0,1) deviate.  
-c     This function calls the NORMAL subroutine for a value.
-c     A.J.V., 2006
-      implicit none
-      dimension temp(1)
-      real*8 temp
-
-      call normal(temp,1)
-      stdnrm= temp(1)
-      return
-      end
+      real*8 mu,sd
+      real gennor,av0,sd0
       
-c=======================================================================            
-      subroutine normal(sndvec,n)
-c=======================================================================            
-c     Draw n random numbers from a normal(0,1) distribution using the
-c     algorithm described by Kennedy & Gentle 'Statistical Computing'
-c     Marcel Dekker, New York, 1980 pp 205-207.
-c     A.J.V., 2006
-      implicit none
-      integer N
-      dimension sndvec(n)
-      real*8 sndvec
-      real runif
-      real*8 a,asq
-      parameter(a=2.216035867166471d0,asq=a*a)
-      real*8 u1,u2,u3,t,g
-      integer i
-
-      do i=1,n
-         u1 = dble(runif())
-         if (u1.lt.0.884070402298758d0) then
-            u2 = dble(runif())
-            sndvec(i) = a * (1.13113163544180d0 * u1 + u2 - 1.d0)
-            
-         else if (u1.ge.0.973310954173898d0) then
-            u2 = dble(runif())
-            u3 = dble(runif())
-            do while (u2*u2.ge.(asq/(asq-2.d0*dlog(U3))))
-               u2 = dble(runif())
-               u3 = dble(runif())
-            end do
-            if (u1.lt.0.986655477086949d0) then
-               sndvec(i) = dsqrt(asq-2.d0*dlog(u3))
-            else
-               sndvec(i) = -dsqrt(asq-2.d0*dlog(u3))
-            end if
-            
-         else if (u1.ge.0.958720824790463d0) then
-            u2 = dble(runif())
-            u3 = dble(runif())
-            t = a - (0.630834801921960d0 * dmin1(u2,u3))
-            g = .3989422804014327d0 * dexp(t * t * 0.5d0)
-     &           - 0.180025191068563d0 * (a - dabs(t))
-            do while ((dmax1(u2,u3).gt.0.755591531667601d0).and.
-     &            (0.034240503750111d0*dabs(u2-u3).gt.g))
-               u2 = dble(runif())
-               u3 = dble(runif())
-               t = a - (0.630834801921960d0 * dmin1(u2,u3))
-               g = .3989422804014327d0 * dexp(t * t * 0.5d0)
-     &               - 0.180025191068563d0 * (a - dabs(t))
-            end do
-
-            if (u2.lt.u3) then
-               sndvec(i)=t
-            else
-               sndvec(i)=-t
-            end if
-
-         else if (u1.ge.0.911312780288703d0) then
-            u2 = dble(runif())
-            u3 = dble(runif())
-            t = .479727404222441d0 +(1.105473661022070d0 * dmin1(u2,u3))
-            g = .3989422804014327d0 * dexp(t * t * 0.5d0)
-     &           - 0.180025191068563d0 * (a - dabs(t))
-            do while ((dmax1(u2,u3).gt.0.872834976671790d0).and.
-     &            (0.049264496373128d0*dabs(u2-u3).gt.g))
-               u2 = dble(runif())
-               u3 = dble(runif())
-               t = .479727404222441d0+(1.105473661022070d0*dmin1(u2,u3))
-               g = .3989422804014327d0 * dexp(t * t * 0.5d0)
-     &               - 0.180025191068563d0 * (a - dabs(t))
-            end do
-
-            if (u2.lt.u3) then
-               sndvec(i) = t
-            else
-               sndvec(i) = -t
-            end if
-
-         else
-            u2 = dble(runif())
-            u3 = dble(runif())
-            do while (dmax1(u2,u3).gt.0.805577924423817d0)
-               u2 = dble(runif())
-               u3 = dble(runif())
-            end do
-            t = 0.47972740422241d0 - (0.595507138015940d0*dmin1(u2,u3))
-
-            if (u2.lt.u3) then
-               sndvec(i) = t
-            else
-               sndvec(i) = -t
-            end if
-         end if
-      end do
+      av0=mu
+      sd0=sd
+      rnorm = gennor(av0,sd0)
       return
       end
 
-    
 c======================================================================      
       real*8 function rtnorm(mu,sd,a,b,ainf,binf)
 c=======================================================================            
@@ -427,7 +346,7 @@ c     sd is standard deviation of TN distribution
 c     a,b  = end points of interval (ainf = binf = .false.)   
 c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       real*8 mu,sd,a,b,a1,b1,rtsnorm
       logical ainf,binf
@@ -448,7 +367,7 @@ c     la      .true. if left endpoint is - infinity; in this
 c             case A is ignored.
 c     lb      .true. if right endpoint is + infinity; in this
 c             case B is ignored.
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit real*8 (a-h,o-z)
       logical la,lb,lflip
       real runif
@@ -535,7 +454,7 @@ c=======================================================================
       real*8 function dexpone(x)
 c=======================================================================                       
 c     evaluate a exponential function
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       real*8 x,expin
       expin=-.5d0*x**2
@@ -552,7 +471,7 @@ c=======================================================================
 c=======================================================================      
 c     Subroutine to generate vector of N normal variates with 
 c     mean = MEAN and variance = SIGMA
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       integer n
       real*8 mean(n),sigma(n,n),work1(n*(n+1)/2),work2(n),y(n)
@@ -572,7 +491,7 @@ c     WORK is a double precision work vector of at least N elements.
 c     The subroutine calls NORMAL for a vector of N iid normal(0,1)
 c     deviates (stored in work).  The new variables are calculated as 
 c     MEAN + L*WORK.
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       integer n,i,j,jj
       real*8 l(n*(n+1)/2),mean(n),work(n),y(n)
@@ -598,7 +517,7 @@ c=======================================================================
       subroutine normalvec(n,work)
 c=======================================================================
 c     generates a vector of normal variables
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       integer i,n
       real*8 work(n),rnorm
@@ -609,33 +528,23 @@ c     A.J.V., 2005
       return
       end
 
+
 c=======================================================================                        
       subroutine rbinom(n,p,evali)
 c=======================================================================                  
 c     This subroutine generates a Binomial(n,p) random variable 
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none 
-      integer n,evali,i
-      real*8 uni,p,c,pr,f
-      real runif
+      integer n,evali,ignbin
+      real*8 p
+      real pp
       
-      if(p.lt.0.d0)p=0.d0
-      if(p.gt.1.d0)p=1.d0
-      
-      uni=dble(runif())
-      c=exp(log(p)-log(1-p))
-      i=0
-      pr=exp(n*log(1-p))
-      f=pr
-      do while(uni.ge.f.and.i.le.n)
-         pr=pr*(c*(n-i)/(i+1))
-         f=f+pr
-         i=i+1
-      end do
-      evali=i
-      return
-      end         
+      pp=p
 
+      evali=ignbin(n,pp) 
+
+      return
+      end        
 
 c======================================================================      
       real*8 function rtlnorm(mu,sd,a,b,ainf,binf)
@@ -647,7 +556,7 @@ c     sd is standard deviation of log(variable)
 c     a,b  = end points of interval (ainf = binf = .false.)   
 c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
-c     A.J.V., 2005
+c     A.J.V., 2006
       implicit none
       real*8 mu,sd,a,b,a1,b1,rtsnorm,x
       logical ainf,binf
@@ -670,18 +579,17 @@ c     A.J.V., 2005
       return
       end   
       
-
 c=======================================================================                  
       double precision function rchisq(nu)
 c=======================================================================                  
 c     This function generates a random chi2 value.
-c     A.J.V., 2005 
+c     A.J.V., 2006
       implicit none 
-      real*8 nu,rgamma
+      real*8 nu
+      real*8 rgamma
       rchisq=rgamma(0.5d0*nu,0.5d0)
       return
       end            
-      
       
 c=======================================================================      
       subroutine riwishart(n,nu0,K0,workm1,workm2,workv1,workhs1,
@@ -732,7 +640,6 @@ c     A.J.V., 2005
       return
       end
 
-
 c=======================================================================      
       subroutine wishrt(l,s,maxn,nv,n)
 c=======================================================================      
@@ -774,10 +681,7 @@ c             is halfstored (upper triangle)
       real*8 rnorm,rchisq	
 	  
       if(nv.gt.maxvar)then
-           call intpr('"wishrt": rotuine dimension exceeded!',-1,0,0)
-           call intpr('current maximum is',-1,maxvar,0)            
-           call intpr('required size is',-1,nv,0)            
-           return      
+           call rexit("wishrt: routine dimension exceeded")
       end if
 
       nv1=nv+1
@@ -901,7 +805,7 @@ c     is a gamma(aa0, ab0).
 c
 c     ndis: the number of clusters.
 c     k   : Sample size
-c     A.J.V., 2005
+c     A.J.V., 2006
       integer ndis,k
       real*8 alpha, aa0, ab0, xalp,s,e,rgamma
       real runif
@@ -917,3 +821,49 @@ c     A.J.V., 2005
       return
       end
 
+
+c=======================================================================            	        
+      double precision function rtcauchy(mu,sd,a,b,ainf,binf)
+c=======================================================================            	  
+c     This function gerenates a truncated cauchy(alpha=0,beta=1) 
+c     random variable. The truncation region is (a,b) 
+c     a,b  = end points of interval (ainf = binf = .false.)   
+c     ainf = true, if left endpoint is infinite; otherwise = false
+c     binf = true, if right endpoint is infinite; otherwise = false      
+c     A.J.V., 2006
+      implicit none 
+      real*8 uni,mu,sd,cdfcauchy,invcdfcauchy,a,b
+      real runif
+      logical ainf,binf
+      
+      uni=dble(runif())
+      rtcauchy=0.d0
+      if(ainf.and.binf) go to 110
+      if(ainf.or.binf) go to 100
+      
+      if(a.gt.b)then
+        call rexit("error in limits rtcauchy")      
+        rtcauchy=a
+        return
+      end if  
+
+      rtcauchy=invcdfcauchy(cdfcauchy(a,mu,sd,1,0)+
+     &         uni*(cdfcauchy(b,mu,sd,1,0)-cdfcauchy(a,mu,sd,1,0)),
+     &         mu,sd,1,0)
+      go to 120
+
+100   if(ainf)then
+         rtcauchy=invcdfcauchy(uni*cdfcauchy(b,mu,sd,1,0),mu,sd,1,0)
+         go to 120
+      end if
+      if(binf)then
+         rtcauchy=invcdfcauchy(uni+(1.d0-uni)*cdfcauchy(a,mu,sd,1,0),
+     &                         mu,sd,1,0)
+         go to 120
+      end if
+
+110   rtcauchy=invcdfcauchy(uni,mu,sd,1,0)
+
+120   continue
+      return
+      end      

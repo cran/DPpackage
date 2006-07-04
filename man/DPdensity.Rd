@@ -2,7 +2,7 @@
 \alias{DPdensity}
 \alias{DPdensity.default}
 
-\title{Performs a Bayesian density estimation}
+\title{Semiparametric Bayesian density estimation}
 \description{
     This function generates a posterior density sample for a 
     Dirichlet process mixture of normals model.
@@ -70,31 +70,31 @@ DPdensity(y,prior,mcmc,state,status,method="neal",
 \details{
   This generic function fits a Dirichlet process mixture of normal model for density
   estimation (Escobar and West, 1995):
-  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}
-  \deqn{(\mu_i,\Sigma_i) | G \sim G}
-  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}
+  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}{y | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n}
+  \deqn{(\mu_i,\Sigma_i) | G \sim G}{(mui,Sigmai) | G ~ G}
+  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
   
   where, the baseline distribution is the conjugate normal-inverted-Wishart,
-  \deqn{G_0 = N(\mu| m_1, (1/k_0) \Sigma) IW (\Sigma | \nu_1, \psi_1)} 
+  \deqn{G_0 = N(\mu| m_1, (1/k_0) \Sigma) IW (\Sigma | \nu_1, \psi_1)}{G0 = N(mu| m1, (1/k0) Sigma) IW (Sigma | nu1, psi1)} 
   
   To complete the model specification, independent hyperpriors are assumed (optional),
-  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}
-  \deqn{m_1 | m_2, s_2 \sim N(m_2,s_2)}
-  \deqn{k_0 | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}
-  \deqn{\psi_1 | \nu_2, \psi_2 \sim IW(\nu_2,\psi_2)}
+  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
+  \deqn{m_1 | m_2, s_2 \sim N(m_2,s_2)}{m1 | m2, s2 ~ N(m2,s2)}
+  \deqn{k_0 | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{k0 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
+  \deqn{\psi_1 | \nu_2, \psi_2 \sim IW(\nu_2,\psi_2)}{psi1 | nu2, psi2 ~ IW(nu2,psi2)}
 
-  Note that the inverted-Wishart prior is parametrized such that if \eqn{A \sim IW_q(\nu, \psi)} then
-  \eqn{E(A)= \psi^{-1}/(\nu-q-1)}.
+  Note that the inverted-Wishart prior is parametrized such that if \eqn{A \sim IW_q(\nu, \psi)}{A ~ IWq(nu, psi)} then
+  \eqn{E(A)= \psi^{-1}/(\nu-q-1)}{E(A)= psiinv/(nu-q-1)}.
 
   To let part of the baseline distribution fixed at a particular
   value, set the corresponding hyperparameters of the prior distributions to NULL 
   in the hyperprior specification of the model.
 
-  Although the baseline distribution, \code{G0}, is a conjugate prior in
+  Although the baseline distribution, \eqn{G_0}{G0}, is a conjugate prior in
   this model specification, the algorithms with auxiliary parameters
   described in MacEachern and Muller (1998) and Neal (2000) are
   adopted. Specifically, the no-gaps algorithm of 
-  MacEachern and Muller (1998), \code{"no-gaps"} and the algorithm 8 with \code{m=1} 
+  MacEachern and Muller (1998), \code{"no-gaps"} and the algorithm 8 with \eqn{m=1} 
   of Neal (2000), \code{"neal"}, are considered in the \code{DPdensity} function. 
   The default method is the algorithm 8 of Neal.
 }

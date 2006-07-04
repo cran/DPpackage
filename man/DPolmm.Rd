@@ -1,17 +1,17 @@
-\name{DPlmm}
-\alias{DPlmm}
-\alias{DPlmm.default}
+\name{DPolmm}
+\alias{DPolmm}
+\alias{DPolmm.default}
 
-\title{Bayesian analysis for a semiparametric linear mixed model}
+\title{Bayesian analysis for a semiparametric ordinal linear mixed model}
 \description{
     This function generates a posterior density sample for a 
-    semiparametric linear mixed model. 
+    semiparametric ordinal linear mixed model. 
 }
   
   
 \usage{
 
-DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
+DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
       na.action=na.fail)
 }
 
@@ -37,9 +37,7 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
                      of the normal prior distribution for the mean of the normal
                      baseline distribution, \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the fixed effects
-                     (must be specified only if fixed effects are considered in the model)
-                     and, \code{tau1} and \code{tau2} giving the hyperparameters for the 
-                     prior distribution of the error variance. 
+                     (must be specified only if fixed effects are considered in the model). 
                      }
 
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
@@ -62,18 +60,19 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
     
     \item{na.action}{a function that indicates what should happen when the data
                      contain \code{NA}s. The default action (\code{na.fail}) causes 
-                     \code{DPlmm} to print an error message and terminate if there are any
+                     \code{DPolmm} to print an error message and terminate if there are any
                      incomplete observations.}       
 }
 
 \details{
-  This generic function fits a linear mixed-effects model (Verbeke 
-  and Molenberghs, 2000): 
-  \deqn{y_i \sim N(X_i \beta_F + Z_i \beta_R + Z_i b_i, \sigma^2_e I_{n_i}), i=1,\ldots,n}{yi ~ N(Xi betaF + Zi betaR + Zi bi, sigma2e Ini), i=1,\ldots,n}
+  This generic function fits an ordinal linear mixed-effects model with a probit link (see, e.g.,
+  Molenberghs and Verbeke, 2005):
+
+  \deqn{Y_{ij} = k, \mbox{\ if } \gamma_{k-1} \leq  W_{ij} < \gamma_{k}, k=1,\ldots,K}{Yij = k, if gammak-1 \leq Wij < gammak, k=1,\ldots,K}
+  \deqn{W_{ij} \mid \beta_F, \beta_R , b_i  \sim N(X_{ij} \beta_F + Z_{ij} \beta_R + Z_{ij} b_i, 1), i=1,\ldots,N, j=1,\ldots,n_i}{Wij | betaF, betaR , bi ~ N(Xij betaF + Zij betaR + Zij bi, 1), i=1,\ldots,N, j=1,\ldots,ni}
   \deqn{\theta_i | G \sim G}{thetai | G ~ G}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
-  \deqn{\sigma^{-2}_e | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma2e^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
-
+  
   where, \eqn{\theta_i = \beta_R + b_i}{thetai = betaR + bi}, \eqn{\beta = \beta_F}{beta = betaF}, and \eqn{G_0=N(\theta| \mu, \Sigma)}{G0=N(theta| mu, Sigma)}. To complete the model 
   specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
@@ -81,7 +80,7 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   \deqn{\mu | \mu_b, S_b \sim N(\mu_b,S_b)}{mu | mub, Sb ~ N(mub,Sb)}
   \deqn{\Sigma | \nu_0, T \sim IW(\nu_0,T)}{Sigma | nu0, T ~ IW(nu0,T)}
 
-  Note that the inverted-Wishart prior is parametrized such that
+  A uniform prior is used for the cutoff points. Note that the inverted-Wishart prior is parametrized such that
   \eqn{E(\Sigma)= T^{-1}/(\nu_0-q-1)}{E(Sigma)= T^{-1}/(nu0-q-1)}.
 
   The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
@@ -89,19 +88,18 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
   Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
   value, set \eqn{a_0}{a0} to NULL in the prior specification.
-  
+
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and on the use of MCMC methods for conjugate priors (Escobar, 1994;
   Escobar and West, 1998). 
-  
 }
 
 \value{
-  An object of class \code{DPlmm} representing the linear
+  An object of class \code{DPolmm} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. 
-  The results include \code{betaR}, \code{betaF}, \code{sigma2e}, 
-  \code{mu}, the elements of \code{Sigma}, \code{\alpha}, and the 
+  The results include \code{betaR}, \code{betaF}, \code{mu}, the elements of 
+  \code{Sigma}, \code{\alpha}, and the 
   number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -122,6 +120,9 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   \item{bclus}{ a matrix of dimension (nsubjects)*(nrandom effects) giving the value of the random
   effects for each clusters (only the first \code{ncluster}  are considered to start the chain).} 
 
+  \item{cutoff}{ a real vector defining the cutoff points. Note that the first cutoff must be fixed to
+                 0 in this function.}
+
   \item{ss}{ an interger vector defining to which of the \code{ncluster} clusters each subject belongs.}
   
   \item{beta}{ giving the value of the fixed effects.}
@@ -131,12 +132,10 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   \item{mu}{ giving the mean of the normal baseline distributions.} 
   
   \item{sigma}{ giving the variance matrix of the normal baseline distributions.}
- 
-  \item{sigma2e}{ giving the error variance.}
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPglmm}}, \code{\link{DPolmm}}
+\code{\link{DPrandom}}, \code{\link{DPglmm}}, \code{\link{DPlmm}}
 }
 
 \references{
@@ -151,60 +150,72 @@ Escobar, M.D. and West, M. (1998) Computing Bayesian Nonparametric Hierarchical 
   in Practical Nonparametric and Semiparametric Bayesian Statistics, 
   eds: D. Dey, P. Muller, D. Sinha, New York: Springer-Verlag, pp. 1-22.
 
-Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal data,
+Molenberghs, G. and Verbeke, G. (2005). Models for discrete longitudinal data,
   New York: Springer-Verlag.
-
 }
 
 \examples{
 \dontrun{
-    # School Girls Data Example
 
-      data(schoolgirls)
-      attach(schoolgirls)
+    # Schizophrenia Data
+      data(psychiatric)
+      attach(psychiatric)
 
-    # Prior information
-
-      tinv<-diag(10,2)
-      prior<-list(alpha=1,nu0=4.01,tau1=0.001,tau2=0.001,
-      tinv=tinv,mub=rep(0,2),Sb=diag(1000,2))
-
-    # Initial state
-      state <- NULL
+      sweekt<-sweek*tx
 
     # MCMC parameters
 
       nburn<-5000
-      nsave<-25000
+      nsave<-10000
       nskip<-20
-      ndisplay<-1000
+      ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
-    # Fit the model: First run
-    
-      fit1<-DPlmm(fixed=height~1,random=~age|child,prior=prior,mcmc=mcmc,
-                  state=state,status=TRUE)
+    # Initial state
+      state <- NULL
+
+
+    # Prior information
+
+      tinv<-diag(10,1)
+      prior<-list(alpha=1,nu0=4.01,tinv=tinv,mub=rep(0,1),Sb=diag(100,1),
+                  beta0=rep(0,3),Sbeta0=diag(1000,3))
+
+
+    # Fit the model
+
+
+      fit1<-DPolmm(fixed=imps79o~sweek+tx+sweekt,random=~1|id,prior=prior,
+                   mcmc=mcmc,state=state,status=TRUE)
       fit1
 
-    # Fit the model: Continuation
-      state<-fit1$state     
-    
-      fit2<-DPlmm(fixed=height~1,random=~age|child,prior=prior,mcmc=mcmc,
-                  state=state,status=FALSE)
-      fit2
 
     # Summary with HPD and Credibility intervals
-      summary(fit2)
-      summary(fit2,hpd=FALSE)
+      summary(fit1)
+      summary(fit1,hpd=FALSE)
 
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
-      plot(fit2,ask=FALSE)
-      plot(fit2,ask=FALSE,nfigr=2,nfigc=2)	
+    # Plot model parameters
+      plot(fit1)
 
-    # Plot an specific model parameter (to see the plots gradually set ask=TRUE)
-      plot(fit2,ask=FALSE,nfigr=1,nfigc=2,param="sigma-(Intercept)")	
-      plot(fit2,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
+
+    # Plot an specific model parameter
+      plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="sigma-(Intercept)")	
+      plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
+
+    # Extract random effects
+    
+      DPrandom(fit1)
+      DPrandom(fit1,centered=TRUE)
+
+
+    # Extract predictive information of random effects
+    
+      DPrandom(fit1,predictive=TRUE)
+      DPrandom(fit1,centered=TRUE,predictive=TRUE)
+      
+      plot(DPrandom(fit1,predictive=TRUE))
+      plot(DPrandom(fit1,centered=TRUE,predictive=TRUE))
 }
 }
 

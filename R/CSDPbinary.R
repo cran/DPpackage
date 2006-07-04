@@ -1,4 +1,4 @@
-### DPbinary.R
+### CSDPbinary.R
 ### Fit a semiparametric bernoulli regression model.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
@@ -30,15 +30,13 @@
 ###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
 ###
 
-"DPbinary"<-
-function(formula,inter=TRUE,baseline="logistic",prior,mcmc,state,status,misc=NULL,
+"CSDPbinary"<-
+function(formula,prior,mcmc,state,status,misc=NULL,
 data=sys.frame(sys.parent()),na.action=na.fail) 
-UseMethod("DPbinary")
+UseMethod("CSDPbinary")
 
-"DPbinary.default"<-
+"CSDPbinary.default"<-
 function(formula,
-         inter=TRUE,
-         baseline="logistic",
          prior,
          mcmc,
          state,
@@ -68,17 +66,6 @@ function(formula,
 	 x<-as.matrix(model.matrix(formula))
 	 p<-dim(x)[2]
 	 
-	 if(inter)
-	 {
-	    x<-x
-	    p<-p
-	 }
-	 else
-	 {
-	    x<-x[,2:p]
-	    p<-(p-1)
-	 }   
-
          #########################################################################################
          # misclassification
          #########################################################################################
@@ -93,10 +80,14 @@ function(formula,
 	 {
  		sens<-misc$sens
 	 	spec<-misc$spec
-		if(length(sens)==1)sens<-rep(sens,nrec)
-		if(length(spec)==1)spec<-rep(spec,nrec)
+		if(length(sens)==1)
+		{
+		   sens<-rep(misc$sens,nrec)
+  	  	   spec<-rep(misc$spec,nrec)
+		}
 		model<-1
 	 }
+	 
 
          #########################################################################################
          # mcmc specification
@@ -128,91 +119,14 @@ function(formula,
          }
          
 
-         MLEprobit<-function(x,y,sens,spec)
-         {
-   	     fn<-function(theta)
-	     {
-		eta<-x%*%theta
-                p<-pnorm(eta)
-		like <- sens*p+(1-spec)*(1-p)
-		
-                if (all(like > 0)) 
-                     eval<- -sum(log(like[y==1]))-sum(log(1-like[y==0]))
-                else eval<-Inf
-		return(eval)
-	     }
-	     
-	     start<-coefficients(glm(y~x-1,family=binomial(logit)))
-	
-	     foo<-optim(start,fn=fn,method="BFGS",hessian=TRUE)
-
-	     out<-NULL
-	     out$beta<-foo$par
-	     out$stderr<-sqrt(diag(-solve(-foo$hessian)))
-	     out$covb<-(-solve(-foo$hessian))
-	     return(out)
-         }
-
-
-         MLEcauchy<-function(x,y,sens,spec)
-         {
-   	     fn<-function(theta)
-	     {
-		eta<-x%*%theta
-                p<-pcauchy(eta)
-		like <- sens*p+(1-spec)*(1-p)
-		
-                if (all(like > 0)) 
-                     eval<- -sum(log(like[y==1]))-sum(log(1-like[y==0]))
-                else eval<-Inf
-		return(eval)
-	     }
-	     
-	     start<-coefficients(glm(y~x-1,family=binomial(logit)))
-	
-	     foo<-optim(start,fn=fn,method="BFGS",hessian=TRUE)
-
-	     out<-NULL
-	     out$beta<-foo$par
-	     out$stderr<-sqrt(diag(-solve(-foo$hessian)))
-	     out$covb<-(-solve(-foo$hessian))
-	     return(out)
-         }
-
-         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,mcmc$ntheta,model)
          nsave<-mcmc$nsave
           
-         if(inter)
-         {
-            xmatrix<-x
-         }
-         else
-         {
-            xmatrix<-cbind(rep(1,nrec),x) 
-         }   
+         xmatrix<-x
 
-         if(baseline=="logistic")
-         {
-	     fit0<- MLElogit(xmatrix,yobs,sens,spec)
-	 }
-         if(baseline=="normal")
-         {
-	     fit0<- MLEprobit(xmatrix,yobs,sens,spec)
-	 }
-         if(baseline=="cauchy")
-         {
-	     fit0<- MLEcauchy(xmatrix,yobs,sens,spec)
-	 }
-
-         if(inter)
-         {
-            propv<- fit0$covb
-         }
-         else
-         {
-            propv<- fit0$covb[2:(p+1),2:(p+1)]
-         }
-         
+         fit0<- MLElogit(xmatrix,yobs,sens,spec)
+         propv<- fit0$covb
+ 
          if(is.null(mcmc$tune))
          {
             tune=1
@@ -221,8 +135,6 @@ function(formula,
          {
             tune<-mcmc$tune
          }
-        
-         resop<-1
 
          #########################################################################################
          # prior information
@@ -230,19 +142,20 @@ function(formula,
 
 	 if(is.null(prior$a0))
 	 {
-		a0b0<-c(-1,-1)
+		a0b0<-c(-1,-1,prior$d,prior$p)
 		alpha<-prior$alpha
 	 }
 	 else
 	 {
-	 	a0b0<-c(prior$a0,prior$b0)
+	 	a0b0<-c(prior$a0,prior$b0,prior$d,prior$p)
 	 	alpha<-rgamma(1,prior$a0,prior$b0)
 	 }
 	 
   	 betapm<-prior$beta0
 	 betapv<-prior$Sbeta0
-	
+	 
 	 propv<-diag(tune,p)%*%solve(solve(betapv)+solve(propv))%*%diag(tune,p)
+	
 
          #########################################################################################
          # parameters depending on status
@@ -250,19 +163,13 @@ function(formula,
 
        	 if(status)
 	 {
-	        if(inter)
-	        {
-	           beta<-fit0$beta
-	        }
-	        else
-	        {
-     	           beta<-fit0$beta[2:(p+1)]
-     	        }   
+                beta<-fit0$beta
 		eta <- x %*% beta
 		v <- rep(0,nrec)
 		v[yobs==1]<-eta[yobs==1]-0.5
 		v[yobs==0]<-eta[yobs==0]+0.5
 		y<-yobs
+		theta<-log(3)
 	 }	
       	 else
 	 {
@@ -271,6 +178,7 @@ function(formula,
 		v<-state$v
 		y<-state$y
 		alpha<-state$alpha
+		theta<-state$theta
 	 }
 	 
 
@@ -280,21 +188,21 @@ function(formula,
          
          xlink=rev(seq(-6,6,length=34))
          nlink<-length(xlink)
-         fsave     <- matrix(0, nrow=mcmc$nsave, ncol=nlink)         
-	 thetasave <- matrix(0, nrow=mcmc$nsave, ncol=p+2)
-	 randsave  <- matrix(0, nrow=mcmc$nsave, ncol=nrec+1)
-
+         cpo<-rep(0,nrec)
+         fsave     <- matrix(0, nrow=nsave, ncol=nlink)         
+	 thetasave <- matrix(0, nrow=nsave, ncol=p+3)
+	 randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
 
          #########################################################################################
          # working space
          #########################################################################################
 
 	 ntotal<-nrec
-	 maxint<-2*ntotal+1
-	 maxend<-2*ntotal
+	 maxint<-2*(ntotal+3)+1
+	 maxend<-2*(ntotal+3)
 	 maxm<-log(0.0001)/log((ntotal+1)/(ntotal+2))
 
-         acrate<-0	 
+         acrate<-rep(0,2)
 	 betac<-rep(0,p)
 	 endp<-rep(0,maxend)
 	 endp2<-rep(0,maxend)
@@ -310,9 +218,17 @@ function(formula,
          lpsav<-rep(0,nrec)
          lpsavc<-rep(0,nrec)
 	 mass<-rep(0,maxint)
+	 massurn1<-rep(0,maxint)
+	 massurn2<-rep(0,maxint)
+	 massurn3<-rep(0,maxint)
+	 massurn4<-rep(0,maxint)
 	 ncluster<-nrec
 	 prob<-rep(0,maxint)
-	 prob2<-rep(0,maxint)
+	 proburn1<-rep(0,maxint)
+	 proburn2<-rep(0,maxint)
+	 proburn3<-rep(0,maxint)
+	 proburn4<-rep(0,maxint)
+	 urn<-rep(0,maxint)
 	 uvec<-rep(0,maxm)
 	 vvec<-rep(0,maxm)
 	 vnew<-rep(0,(nrec+1))
@@ -323,19 +239,13 @@ function(formula,
 	 workv1<-rep(0,p)
 	 workv2<-rep(0,p)
 	 wvec<-rep(0,maxm)
-	 seed1<-sample(1:29000,1)
-	 seed2<-sample(1:29000,1)
-	 cpo<-rep(0,nrec)
-
+	 seed<-c(sample(1:29000,1),sample(1:29000,1))
 
          #########################################################################################
          # calling the fortran code
          #########################################################################################
 
-         if(baseline=="logistic")
-         {
-   	    foo <- .Fortran("dpbinaryl2",
-	 	model     =as.integer(model),
+   	    foo <- .Fortran("csdpbinaryl2",
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		sens      =as.double(sens),
@@ -353,11 +263,12 @@ function(formula,
 		acrate    =as.double(acrate),
 		fsave     =as.double(fsave),
 		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),		
-		cpo       =as.double(cpo),		
+		thetasave =as.double(thetasave),
+                cpo       =as.double(cpo),
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
 		ncluster  =as.integer(ncluster),
+		theta     =as.double(theta),
 		y         =as.integer(y),
 		v         =as.double(v),
 		betac     =as.double(betac),
@@ -379,9 +290,17 @@ function(formula,
 		maxend    =as.integer(maxend),
 		maxm      =as.integer(maxm),
 		mass      =as.double(mass),
+		massurn1  =as.double(massurn1),
+		massurn2  =as.double(massurn2),
+		massurn3  =as.double(massurn3),
+		massurn4  =as.double(massurn4),
 		prob      =as.double(prob),
-		seed1     =as.integer(seed1),
-		seed2     =as.integer(seed2),
+		proburn1  =as.double(proburn1),
+		proburn2  =as.double(proburn2),
+		proburn3  =as.double(proburn3),
+		proburn4  =as.double(proburn4),
+		seed      =as.integer(seed),
+                urn       =as.integer(urn),
 		uvec      =as.double(uvec),
 		vvec      =as.double(vvec),
 		vnew      =as.double(vnew),
@@ -393,155 +312,24 @@ function(formula,
 		workv2    =as.double(workv2),
 		wvec      =as.double(wvec),
 		PACKAGE="DPpackage")	
-         }
-
-
-         if(baseline=="normal")
-         {
-   	    foo <- .Fortran("dpbinaryp2",
-	 	model     =as.integer(model),
-	 	nrec      =as.integer(nrec),
-	 	p         =as.integer(p),
-		sens      =as.double(sens),
-		spec      =as.double(spec),
-		x         =as.double(x),
-		yobs      =as.integer(yobs),
-		nlink     =as.integer(nlink),
-		xlink     =as.double(xlink),
-		a0b0      =as.double(a0b0),
-		betapm    =as.double(betapm),		
-		betapv    =as.double(betapv),		
-		mcmcvec   =as.integer(mcmcvec),
-		nsave     =as.integer(nsave),
-		propv     =as.double(propv),
-		acrate    =as.double(acrate),
-		fsave     =as.double(fsave),
-		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),		
-		cpo       =as.double(cpo),		
-		alpha     =as.double(alpha),		
-		beta      =as.double(beta),
-		ncluster  =as.integer(ncluster),
-		y         =as.integer(y),
-		v         =as.double(v),
-		betac     =as.double(betac),
-		endp      =as.double(endp),
-		endp2     =as.double(endp2),
-		eta       =as.double(eta),
-		etan      =as.double(etan),
-		fsavet    =as.integer(fsavet),
-		intcount  =as.integer(intcount),
-		intcount2 =as.integer(intcount2),
-		intind    =as.integer(intind),
-		intind2   =as.integer(intind2),
-		iflag     =as.integer(iflag),
-		intposso  =as.integer(intposso),
-		intpossn  =as.integer(intpossn),
-		lpsav     =as.integer(lpsav),
-		lpsavc    =as.integer(lpsavc),
-		maxint    =as.integer(maxint),
-		maxend    =as.integer(maxend),
-		maxm      =as.integer(maxm),
-		mass      =as.double(mass),
-		prob      =as.double(prob),
-		seed1     =as.integer(seed1),
-		seed2     =as.integer(seed2),
-		uvec      =as.double(uvec),
-		vvec      =as.double(vvec),
-		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
-		workm1    =as.double(workm1),
-		workm2    =as.double(workm2),
-		workmh1   =as.double(workmh1),
-		workv1    =as.double(workv1),
-		workv2    =as.double(workv2),
-		wvec      =as.double(wvec),
-		PACKAGE="DPpackage")	
-         }
-
-
-         if(baseline=="cauchy")
-         {
-   	    foo <- .Fortran("dpbinaryc2",
-	 	model     =as.integer(model),
-	 	nrec      =as.integer(nrec),
-	 	p         =as.integer(p),
-		sens      =as.double(sens),
-		spec      =as.double(spec),
-		x         =as.double(x),
-		yobs      =as.integer(yobs),
-		nlink     =as.integer(nlink),
-		xlink     =as.double(xlink),
-		a0b0      =as.double(a0b0),
-		betapm    =as.double(betapm),		
-		betapv    =as.double(betapv),		
-		mcmcvec   =as.integer(mcmcvec),
-		nsave     =as.integer(nsave),
-		propv     =as.double(propv),
-		acrate    =as.double(acrate),
-		fsave     =as.double(fsave),
-		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),		
-		cpo       =as.double(cpo),		
-		alpha     =as.double(alpha),		
-		beta      =as.double(beta),
-		ncluster  =as.integer(ncluster),
-		y         =as.integer(y),
-		v         =as.double(v),
-		betac     =as.double(betac),
-		endp      =as.double(endp),
-		endp2     =as.double(endp2),
-		eta       =as.double(eta),
-		etan      =as.double(etan),
-		fsavet    =as.integer(fsavet),
-		intcount  =as.integer(intcount),
-		intcount2 =as.integer(intcount2),
-		intind    =as.integer(intind),
-		intind2   =as.integer(intind2),
-		iflag     =as.integer(iflag),
-		intposso  =as.integer(intposso),
-		intpossn  =as.integer(intpossn),
-		lpsav     =as.integer(lpsav),
-		lpsavc    =as.integer(lpsavc),
-		maxint    =as.integer(maxint),
-		maxend    =as.integer(maxend),
-		maxm      =as.integer(maxm),
-		mass      =as.double(mass),
-		prob      =as.double(prob),
-		seed1     =as.integer(seed1),
-		seed2     =as.integer(seed2),
-		uvec      =as.double(uvec),
-		vvec      =as.double(vvec),
-		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
-		workm1    =as.double(workm1),
-		workm2    =as.double(workm2),
-		workmh1   =as.double(workmh1),
-		workv1    =as.double(workv1),
-		workv2    =as.double(workv2),
-		wvec      =as.double(wvec),
-		PACKAGE="DPpackage")	
-         }
-
-
 
          #########################################################################################
          # save state
          #########################################################################################
 	
-	 fsave<-matrix(foo$fsave,nrow=mcmc$nsave, ncol=nlink)
- 	 thetasave<-matrix(foo$thetasave,nrow=mcmc$nsave, ncol=(p+2))
- 	 randsave<-matrix(foo$randsave,nrow=mcmc$nsave, ncol=(nrec+1))
+	 fsave<-matrix(foo$fsave,nrow=nsave, ncol=nlink)
+ 	 thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=(p+3))
+ 	 randsave<-matrix(foo$randsave,nrow=nsave, ncol=(nrec+1))
 
          model.name<-"Bayesian semiparametric binary regression model"		
 
-  	 colnames(thetasave)<-c(dimnames(x)[[2]],"ncluster","alpha")
+  	 colnames(thetasave)<-c(dimnames(x)[[2]],"theta","ncluster","alpha")
   	 
-  	 coeff<-rep(0,(p+2))
-	 for(i in 1:(p+2)){
+  	 coeff<-rep(0,(p+3))
+	 for(i in 1:(p+3)){
 	     coeff[i]<-mean(thetasave[,i])
 	 }  
-	 names(coeff)<-c(dimnames(x)[[2]],"ncluster","alpha")
+	 names(coeff)<-c(dimnames(x)[[2]],"theta","ncluster","alpha")
 	
          qnames<-NULL
          for(i in 1:nrec){
@@ -552,21 +340,20 @@ function(formula,
          qnames<-c(qnames,"Prediction")
          colnames(randsave)<-qnames
 	
-	 state <- list(beta=foo$beta,v=foo$v,y=foo$y,alpha=foo$alpha)
+	 state <- list(beta=foo$beta,v=foo$v,y=foo$y,alpha=foo$alpha,theta=foo$theta)
 				  
 	 save.state <- list(thetasave=thetasave,fsave=fsave,randsave=randsave)
 
 	 z<-list(modelname=model.name,coefficients=coeff,acrate=foo$acrate,call=cl,
-	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
-	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,baseline=baseline,x=x)
+	         prior=prior,mcmc=mcmcvec,state=state,save.state=save.state,nrec=foo$nrec,
+	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,x=x,
+	         ppar=prior$p,d=prior$d)
 	         
 	 cat("\n\n")
 
-	 class(z)<-c("DPbinary")
+	 class(z)<-c("CSDPbinary")
 	 return(z) 
 }
-
-
 
 ###                    
 ### Estimate the probability curve for a fitted semiparametric binary 
@@ -575,25 +362,51 @@ function(formula,
 ### Copyright: Alejandro Jara Vallejos, 2006
 ### Last modification: 01-07-2006.
 
-
-"predict.DPbinary"<-
-function(object,xnew=NULL,hpd=TRUE, ...)
+predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
 {
-
    if(is.null(xnew))
    {
       xnew<-object$x
    }
-
-   if(is(object, "DPbinary"))
+   
+   pbaselinel<-function(x,theta,d,p)
    {
- 
+       if(x<=(theta-d))
+       {
+          area<-plogis(theta-d)
+          out<-((1-p)/2)*plogis(x)/area
+       }
+
+       if(x>(theta-d) && x<=0)
+       {
+          area<-0.5-plogis(theta-d)
+          out<-(1-p)/2+ (p/2)*plogis(x/area)
+       }
+
+       if(x>0 && x<=theta)
+       {
+          area<-plogis(theta)-0.5
+          out<-0.5+ (p/2)*plogis(x/area)
+       }
+
+       if(x>theta)
+       {
+          area<-1-plogis(theta)
+          out<-(1+p)/2+ ((1-p)/2)*plogis(x/area)
+       }
+       return(out)
+   }
+	
+   if(is(object, "CSDPbinary"))
+   {
    	 npred<-dim(xnew)[1]
    	 pnew<-dim(xnew)[2]
    	 nrec<-object$nrec
- 
-         baseline<-object$baseline
-   	 alpha<-object$save.state$thetasave[,(object$p+2)]
+
+   	 alpha<-object$save.state$thetasave[,(object$p+3)]
+   	 theta<-object$save.state$thetasave[,(object$p+1)]
+   	 ppar<-object$ppar
+   	 d<-object$d
    	 
    	 v<-matrix(object$save.state$randsave,nsave,nrec+1)
    	 vpred<-v[,(nrec+1)]
@@ -616,15 +429,15 @@ function(object,xnew=NULL,hpd=TRUE, ...)
              covn[i]<-covnw  
          }    
 
+         lp<-xnew%*%t(object$save.state$thetasave[,1:object$p]) 
+
  	 pm<-rep(0,npred)
 	 pmed<-rep(0,npred)
 	 psd<-rep(0,npred)
 	 pstd<-rep(0,npred)
 	 plinf<-rep(0,npred)
 	 plsup<-rep(0,npred)
-	     
-	 lp<-xnew%*%t(object$save.state$thetasave[,1:object$p])
-	        
+
 	 for(i in 1:npred)
          {
 	     prob<-rep(0,nsave)
@@ -634,9 +447,7 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 		awork<-alpha[k]
 		vwork<-v[k,]
 		Cdelta<- sum(vwork<=lsup)
-		if(baseline=="logistic")Cparam<- awork*plogis(lsup)
-		if(baseline=="normal")Cparam<- awork*pnorm(lsup)
-		if(baseline=="cauchy")Cparam<- awork*pcauchy(lsup)
+		Cparam<- awork*pbaselinel(lsup,theta[k],d,ppar)
 		prob[k]<-(Cparam+Cdelta)/(awork+nrec)	                
 	      }
 	      pm[i]<-mean(prob)
@@ -661,39 +472,33 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 		    plinf[i]<-quantile(surv[j,],0.025)		
 		    plsup[i]<-quantile(surv[j,],0.975)			                
               }
-   	 }
-   	 
-   	 names(pm)<-covn
-   	 names(pmed)<-covn
-   	 names(psd)<-covn
-   	 names(pstd)<-covn
-   	 names(plinf)<-covn
-   	 names(plsup)<-covn
-   	 
-   	 out<-NULL
-   	 out$pmean<-pm
-   	 out$pmedian<-pmed
-   	 out$psd<-psd
-   	 out$pstd<-pstd
-   	 out$plinf<-plinf
-   	 out$plsup<-plsup
-   	 out$vpred<-vpred
-   	 out$npred<-npred
+          }    
 
-   	 out$covn<-covn
+  	 
+   	  names(pm)<-covn
+   	  names(pmed)<-covn
+   	  names(psd)<-covn
+   	  names(pstd)<-covn
+   	  names(plinf)<-covn
+   	  names(plsup)<-covn
+   	 
+   	  out<-NULL
+   	  out$pmean<-pm
+   	  out$pmedian<-pmed
+   	  out$psd<-psd
+   	  out$pstd<-pstd
+   	  out$plinf<-plinf
+   	  out$plsup<-plsup
+   	  out$vpred<-vpred
+   	  out$npred<-npred
+
+   	  out$covn<-covn
    }
-  
-   out
-}   
+   return(out)   
+}
 
-###
-### Tools for DPbinary: print, summary, plot
-###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 01-07-2006.
-	
-	        
-"print.DPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+
+"print.CSDPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -715,7 +520,8 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 }
 
 
-"summary.DPbinary"<-function(object, hpd=TRUE, ...) 
+
+"summary.CSDPbinary"<-function(object, hpd=TRUE, ...) 
 {
     dimen<-object$p
     coef.p<-object$coefficients[1:dimen]
@@ -778,11 +584,11 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 
     if(is.null(object$prior$a0))
     {
-	dimen<-1	
+	dimen<-2	
     }
     else
     {
-	dimen<-2	    
+	dimen<-3	    
     }
 
     coef.p<-object$coefficients[(object$p+1):(object$p+dimen)]
@@ -843,7 +649,7 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 
 
 
-"print.summaryDPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.summaryCSDPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -878,7 +684,7 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 
 
 
-"plot.DPbinary"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...) 
+"plot.CSDPbinary"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...) 
 {
 
 fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
@@ -951,7 +757,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 }
 
 
-    if(is(x, "DPbinary")){
+    if(is(x, "CSDPbinary")){
         if(is.null(param))
 	{
            coef.p<-x$coefficients

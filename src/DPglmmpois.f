@@ -24,7 +24,34 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Author: A.J.V.
+c     Copyright: Alejandro Jara Vallejos, 2006
+c
+c     This program is free software; you can redistribute it and/or modify
+c     it under the terms of the GNU General Public License as published by
+c     the Free Software Foundation; either version 2 of the License, or (at
+c     your option) any later version.
+c
+c     This program is distributed in the hope that it will be useful, but
+c     WITHOUT ANY WARRANTY; without even the implied warranty of
+c     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+c     General Public License for more details.
+c
+c     You should have received a copy of the GNU General Public License
+c     along with this program; if not, write to the Free Software
+c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+c
+c     The author's contact information:
+c
+c     Alejandro Jara Vallejos
+c     Biostatistical Centre
+c     Katholieke Universiteit Leuven
+c     U.Z. Sint-Rafaël
+c     Kapucijnenvoer 35
+c     B-3000 Leuven
+c     Voice: +32 (0)16 336892 
+c     Fax  : +32 (0)16 337015 
+c     URL  : http://student.kuleuven.be/~s0166452/
+c     Email: Alejandro.JaraVallejos@med.kuleuven.be
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -289,6 +316,9 @@ c+++++Working space - GLM part
       real*8 eta,etac,gprime,gprimec,mean,meanc,offset,ytilde,ytildec
       real*8 logp
 
+c+++++CPU time
+      real*8 sec00,sec0,sec1,sec
+
 c++++ parameters
       nburn=mcmc(1)
       nskip=mcmc(2)
@@ -300,7 +330,8 @@ c++++ set random number generator
       seed1=seed(1)
       seed2=seed(2)
       seed3=seed(3)
-      call setrand(seed1,seed2,seed3)
+      
+      call setall(seed1,seed2)
      
 c++++ cluster structure
       do i=1,nsubject
@@ -315,6 +346,9 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       skipcount=0
       dispcount=0
       nscan=nburn+(nskip+1)*(nsave)
+
+      call cpu_time(sec0)
+      sec00=0.d0
       
       do iscan=1,nscan
 
@@ -1151,8 +1185,11 @@ c+++++++++++++ cpo
 c+++++++++++++ print
                skipcount = 0
                if(dispcount.ge.ndisplay)then
-c                  call intpr("isave",5,isave,1)
-                  tmp1=sprint(isave,nsave)
+                  call cpu_time(sec1)
+                  sec00=sec00+(sec1-sec0)
+                  sec=sec00
+                  sec0=sec1
+                  tmp1=sprint(isave,nsave,sec)
                   dispcount=0
                end if   
             end if

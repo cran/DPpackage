@@ -48,17 +48,15 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 
 \details{
 
-     The methods supported by this fucntion are based on the fact that a priori
+     The methods supported by these functions are based on the fact that a priori
      \code{E(alpha) = a0/b0} and \code{Var(alpha) = a0/b0^2}, and an additional 
      approximation based on Taylor series expansion.
 
-     The default method, \code{"JGL"}, is based on the exact value of the expected
-     value of the number of clusters given the precision parameter alpha (see, 
-     Jara, Garcia-Zatera and Lesaffre, 2006) and an approximation to the variance 
-     of the number of clusters given the precision parameter (Liu, 1996).
+     The default method, \code{"JGL"}, is based on the exact value of the mean and 
+     the variance of the number of clusters given the precision parameter 
+     alpha (see, Jara, Garcia-Zatera and Lesaffre, 2006).
     
-
-     The Method \code{"KMQ"} is base on the Liu (1996) approximation to both
+     The Method \code{"KMQ"} is base on the Liu (1996) approximation to 
      the expected value and the variance of the number of clusters given the
      precision parameter alpha (see, Kottas, Muller and Quintana, 2005).
      
@@ -71,7 +69,8 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 \references{
 
 Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) A Dirichlet Process mixture model for 
-  the analysis of correlated binary responses, Submitted.
+  the analysis of correlated binary responses. Computational Statistics and Data Analysis,
+  (Conditionally accepted).
 
 Kottas, A., Muller, P., Quintana, F. (2005) Nonparametric Bayesian modeling for multivariate
   ordinal data, Journal of Computational and Graphical Statistics 14: 610-625.
@@ -92,8 +91,8 @@ Liu, J.S. (1996) Nonparametric Hierarchical Bayes via Sequential Imputations, Th
     # Calculate the values of a0 and b0, given the expected value 
     # and the standard deviation of the number of clusters
 
-      DPelicit(200,mean=0.01633,std=1.90136,method="JGL")
-      DPelicit(200,mean=4.61500,std=4.09300,method="KMQ")
+      DPelicit(200,mean=3.1,std=2.7,method="JGL")
+      DPelicit(200,mean=3.1,std=2.7,method="KMQ")
 }
 
 \author{

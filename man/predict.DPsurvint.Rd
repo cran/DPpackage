@@ -1,7 +1,5 @@
-\name{DPsurvpred}
-\alias{DPsurvpred}
-\alias{DPsurvpred.default}
-
+\name{predict.DPsurvint}
+\alias{predict.DPsurvint}
 \title{Computes the Survival Curve in a Bayesian analysis for a semiparametric AFT regression model}
 \description{
     This function generates a posterior density sample
@@ -11,7 +9,7 @@
     
 \usage{
 
-DPsurvpred(object,grid,xnew=NULL,hpd=TRUE)
+predict.DPsurvint(object,grid,xnew=NULL,hpd=TRUE, ...)
 
 }
 
@@ -21,7 +19,7 @@ DPsurvpred(object,grid,xnew=NULL,hpd=TRUE)
 
     \item{grid}{     a vector of grid points where the survival curve should be evaluated.}
                
-    \item{xnew}{     an optinal matrix containing the value of the covariables 
+    \item{xnew}{     an optional matrix containing the value of the covariables 
                      with which to predict.  If omitted, the baseline survival
                      information is calculated.}   
 
@@ -29,19 +27,20 @@ DPsurvpred(object,grid,xnew=NULL,hpd=TRUE)
                      calculated, \code{TRUE}, or a  95Credibility interval is
                      caculated, \code{FALSE}, for the survival curve at each grid point.
                      The default value is \code{TRUE}.}
+    \item{...}{      further arguments to be passed.}     
 }
 
 \details{
   This function computes the survival curve based on the fit of a Mixture of Dirichlet 
   process in a AFT regression model for interval censored data (Hanson and Johnson, 2004).
   
-  A sample of the predictive survival curve for $X$ is calculated as follows:
-  \deqn{S(t|X,data) = (1/(\alpha+n))\{ \alpha G_0( (t*\exp(X \beta) , \infty) ) + \sum_{i=1}^n \delta_{V_i} ( (t*\exp(X \beta) , \infty) )\}}
+  A sample of the predictive survival curve for \eqn{X} is calculated as follows:
+  \deqn{S(t|X,data) = (1/(\alpha+n))\{ \alpha G_0( (t \exp(X \beta) , \infty) ) + \sum_{i=1}^n \delta_{V_i} ( (t \exp(X \beta) , \infty) )\}}{S(t|X,data) = (1/(alpha+n))\{ alpha G0( (t \exp(X beta) , +infty) ) + \sum_{i=1}^n \delta_{Vi} ( (t \exp(X beta) , +infty) )\}}
 }
 
 \value{
-  An object of class \code{DPsurvpred} representing the survival information
-  arising from a \code{DPsruvint} model fit. The results include the posterior mean (\code{pmean}), 
+  An object of class \code{predict.DPsurvint} representing the survival information
+  arising from a \code{DPsurvint} model fit. The results include the posterior mean (\code{pmean}), 
   the posterior median (\code{pmedian}), the posterior standard deviation (\code{psd}),
   the naive standard error (\code{pstd}) and the limits of the HPD or credibility intervals,
   \code{plinf} and \code{plsup}.
@@ -94,9 +93,9 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
 
     # MCMC parameters
 
-      nburn<-50
-      nsave<-100
-      nskip<-1
+      nburn<-5000
+      nsave<-10000
+      nskip<-10
       ndisplay<-50
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
                    tune=0.125)
@@ -127,7 +126,7 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
 
     # Predictive information for baseline survival
       grid<-seq(0.00001,14,0.5)
-      pred<-DPsurvpred(fit1,grid=grid)
+      pred<-predict(fit1,grid=grid)
       
     # Plot Baseline information with and without Credibility band
       plot(pred)
@@ -138,7 +137,7 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
       xnew<-cbind(rep(1,npred),seq(-1.5,1.5,length=npred))
       xnew<-rbind(xnew,cbind(rep(0,npred),seq(-1.5,1.5,length=npred)))
       grid<-seq(0.00001,14,0.5)
-      pred<-DPsurvpred(fit1,xnew=xnew,grid=grid)
+      pred<-predict(fit1,xnew=xnew,grid=grid)
 
     # Plot Baseline information with and without Credibility band
       plot(pred,band=TRUE)

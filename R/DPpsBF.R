@@ -1,8 +1,34 @@
-###                    
+### DPpsBF.R                   
 ### Calculates the Pseudo Bayes Factor.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 09-05-2006.
+### Last modification: 01-07-2006.
+###
+### This program is free software; you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation; either version 2 of the License, or (at
+### your option) any later version.
+###
+### This program is distributed in the hope that it will be useful, but
+### WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+### General Public License for more details.
+###
+### You should have received a copy of the GNU General Public License
+### along with this program; if not, write to the Free Software
+### Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+###
+### The author's contact information:
+###
+###      Alejandro Jara Vallejos
+###      Biostatistical Centre
+###      Katholieke Universiteit Leuven
+###      U.Z. Sint-Rafaël
+###      Kapucijnenvoer 35
+###      B-3000 Leuven
+###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
+###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###
 
 "DPpsBF"<-
 function(...) 
@@ -13,16 +39,16 @@ function(...)
 	this.call.string <- deparse(this.call)
 	model.names <- paste("Model", 1:M, sep=" ")
 	
-	for (i in 1:M)
-	{
-	    for(j in 1:M)
-	    {
-		if (class(model.list[[i]])!=class(model.list[[j]]))
-		{
-			stop("arguments are not of the same class\n")
-  	  	}
-            }
-  	}
+	#for (i in 1:M)
+	#{
+	#    for(j in 1:M)
+	#    {
+	#	if (class(model.list[[i]])!=class(model.list[[j]]))
+	#	{
+	#		stop("arguments are not of the same class\n")
+  	#  	}
+        #    }
+  	#}
   
   	PsBF.mat <- matrix(0, M, M)
   	PsBF2l.mat <- matrix(0, M, M)
@@ -39,8 +65,8 @@ function(...)
 			if (identical(attr(model.list[[i]], "y"), attr(model.list[[j]], "y")))
 			{
 				PsBF.mat[i,j] <- exp(sum(
-				                 model.list[[i]]$cpo -
-				                 model.list[[j]]$cpo
+				                 log(model.list[[i]]$cpo) -
+				                 log(model.list[[j]]$cpo)
 				                 ))
 				PsBF2l.mat[i,j] <- 2*log(PsBF.mat[i,j])
       			}	

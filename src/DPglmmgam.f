@@ -1,25 +1,25 @@
 
 c=======================================================================                      
-      subroutine splogitlme(datastr,maxni,nrec,nsubject,nfixed,p,q,
-     &                      subject,x,y,z,
-     &                      a0b0,b0,nu0,prec,psiinv,sb,smu,tinv,
-     &                      mcmc,nsave,
-     &                      acrate,cpo,randsave,thetasave,
-     &                      alpha,b,bclus,beta,betar,mu,ncluster,sigma,
-     &                      sigmainv,ss,
-     &                      betac,ccluster,iflag,iflagb,prob,quadf,seed,
-     &                      theta,thetac,work1,work2,work3,workb1,
-     &                      workb2,workmh1,workmh2,workmh3,workv1,
-     &                      workv2,workv3,workvb1,workvb2,workvb3,
-     &                      xtx,xty,zty,ztz,
-     &                      ztzinv)
+      subroutine spgammlme(datastr,maxni,nrec,nsubject,nfixed,p,q,
+     &                     subject,x,y,z,roffset,
+     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tau,tinv,
+     &                     mcmc,nsave,
+     &                     acrate,cpo,randsave,thetasave,
+     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,
+     &                     sigmainv,ss,
+     &                     betac,ccluster,iflag,iflagb,prob,quadf,seed,
+     &                     theta,thetac,work1,work2,work3,workb1,
+     &                     workb2,workmh1,workmh2,workmh3,workv1,workv2,
+     &                     workv3,workvb1,workvb2,workvb3,xtx,xty,
+     &                     zty,ztz,
+     &                     ztzinv)
 c=======================================================================                      
 c
 c     Version 1.0: 
-c     Last modification: 27-04-2006.
+c     Last modification: 30-05-2006.
 c
-c     Subroutine `splogitlme' to run a Markov chain in the  
-c     semiparametric logit mixed model. In this routine, inference 
+c     Subroutine `spgammlme' to run a Markov chain in the  
+c     semiparametric gamma mixed model. In this routine, inference 
 c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
@@ -66,12 +66,14 @@ c        nfixed      :  integer giving the number of fixed effects,
 c                       if nfixed is 0 then p=1.
 c        p           :  integer giving the number of fixed coefficients.
 c        q           :  integer giving the number of random effects.
+c        roffset     :  real vector giving the real offset for each
+c                       observation.
 c        subject     :  integer vector giving the subject for each.
 c                       observation, subject(nsubject).
 c        x           :  real matrix giving the design matrix for the 
 c                       fixed effects, x(nrec,p). 
-c        y           :  integer matrix giving the response variable,
-c                       y(nrec,2).
+c        y           :  real vector giving the response variable,
+c                       y(nrec).
 c        z           :  real matrix giving the design matrix for the 
 c                       random effects, z(nrec,q). 
 c-----------------------------------------------------------------------
@@ -98,6 +100,9 @@ c                       sb(p).
 c        smu         :  real vector giving the product of the prior 
 c                       precision and prior mean for the baseline mean,
 c                       smu(q).
+c        tau1, tau2  :  reals giving the hyperparameters of the prior 
+c                       distribution for the dispersion parameter, 
+c                       v ~ Gamma(tau1/2,tau2/2).
 c        tinv        :  real matrix giving the scale matrix for the
 c                       inverted-Wishart prior distribution for the
 c                       covariance matrix of the random effects, 
@@ -119,7 +124,7 @@ c
 c---- Output -----------------------------------------------------------
 c
 c        acrate      :  real vector giving the MH acceptance rate. 
-c        cpo         :  real giving the cpo, acrate(2).
+c        cpo         :  real giving the cpo, acrate(3).
 c        randsave    :  real matrix containing the mcmc samples for
 c                       the random effects and prediction,
 c                       randsave(nsave,q*(nsubject+1))
@@ -159,6 +164,9 @@ c                       covariance matrix for the random effects,
 c                       sigmainv(q,q).
 c        ss          :  integer vector giving the cluster label for 
 c                       each subject, ss(nsubject).
+c        v           :  real giving the value of the dispersion 
+c                       parameter.
+c
 c-----------------------------------------------------------------------
 c
 c---- Working space ----------------------------------------------------
@@ -199,6 +207,9 @@ c        seed2       :  seed for random number generation.
 c        seed3       :  seed for random number generation.
 c        since       :  index.
 c        skipcount   :  index. 
+c        slogmu      :  real working variable. 
+c        slogy       :  real working variable.
+c        symu        :  real working variable. 
 c        theta       :  real vector used to save randomnly generated
 c                       random effects, theta(q).
 c        thetac      :  real vector used to save randomnly generated
@@ -247,29 +258,31 @@ c=======================================================================
 
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
-      integer datastr(nsubject,maxni+1),y(nrec,2)
-      real*8 x(nrec,p),z(nrec,q)	
+      integer datastr(nsubject,maxni+1)
+      real*8 y(nrec),roffset(nrec),x(nrec,p),z(nrec,q)	
       
 c+++++Prior 
       integer nu0
       real*8 aa0,ab0,a0b0(2),b0(p),prec(p,p),psiinv(q,q)
       real*8 sb(p),smu(q)
+      real*8 tau1,tau2,tau(3)
       real*8 tinv(q,q)      
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(2)
+      real*8 acrate(3)
       real*8 cpo(nrec)
       real*8 randsave(nsave,q*(nsubject+1))
-      real*8 thetasave(nsave,q+nfixed+q+(q*(q+1)/2)+2)
+      real*8 thetasave(nsave,q+nfixed+1+q+(q*(q+1)/2)+2)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)
       real*8 alpha,beta(p),b(nsubject,q)
       real*8 betar(q),bclus(nsubject,q)
       real*8 mu(q),sigma(q,q),sigmainv(q,q)
+      real*8 v
 
 c+++++Working space - Loops
       integer ii,i,j,k,l
@@ -295,7 +308,7 @@ c+++++Working space - Configurations
       integer ccluster(nsubject),evali 
       integer ni,ns
       integer since
-      real*8  dgamlog,prob(nsubject+2)
+      real*8 prob(nsubject+2)
       real*8 tmp1,tmp2
       real*8 theta(q)
 
@@ -309,10 +322,13 @@ c+++++Working space - Fixed effects
       real*8 workv1(p),workv2(p),workv3(p)
 
 c+++++Working space - GLM part
-      integer yij,nij
+      real*8 yij
       real*8 acrate2
       real*8 eta,etac,gprime,gprimec,mean,meanc,offset,ytilde,ytildec
       real*8 logp
+
+c+++++Working space -Precision parameter
+      real*8 rgamma,targetp,slogy,symu,slogmu,vnew
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -323,6 +339,9 @@ c++++ parameters
       ndisplay=mcmc(3)
       aa0=a0b0(1)
       ab0=a0b0(2)
+      tau1=tau(1)
+      tau2=tau(2)
+      v=tau(3)
       
 c++++ set random number generator
       seed1=seed(1)
@@ -340,10 +359,10 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    
       isave=0
       skipcount=0
       dispcount=0
+      
       nscan=nburn+(nskip+1)*(nsave)
 
       call cpu_time(sec0)
@@ -380,9 +399,6 @@ c++++++++++++++++++++++++++++++++++
                mean=0.d0
                gprime=0.d0
                
-               yij=y(i,1)
-               nij=y(i,2)
-               
                do j=1,p
                   eta=eta+x(i,j)*beta(j)
                end do
@@ -392,17 +408,21 @@ c++++++++++++++++++++++++++++++++++
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
                
-               mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
+               eta=eta+roffset(i)
                
-               gprime=exp(2*log(1.d0+exp(eta))-eta-log(dble(nij)))
+               offset=offset+roffset(i)
                
-               ytilde=eta+(dble(yij)-mean)*gprime-offset
+               mean=exp(eta)
+               
+               gprime=exp(-eta)
+               
+               ytilde=eta+(y(i)-mean)*gprime-offset
                
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprime
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde
                end do
             end do
 
@@ -413,7 +433,7 @@ c++++++++++++++++++++++++++++++++++
             end do
 
             call invdet(work1,p,work2,detlog,iflag,workv1)
-
+            
             do i=1,p
                tmp1=0.d0
                do j=1,p
@@ -422,23 +442,21 @@ c++++++++++++++++++++++++++++++++++
                workv2(i)=tmp1
             end do
 
+            
             call rmvnorm(p,workv2,work2,workmh1,workv3,betac)
 
             call dmvn(p,betac,workv2,work2,tmp1,
      &                workv1,work1,work3,workv3,iflag)                 
 
-            logp=0.d0 
+            logp=0.d0            
             logp=logp-tmp1
-
+            
 
 c++++++++++ likelihood ratio
-            
+
             do i=1,nrec
                eta=0.d0
                etac=0.d0
-               
-               yij=y(i,1)
-               nij=y(i,2)
                
                do j=1,p
                   eta=eta+x(i,j)*beta(j)
@@ -450,9 +468,12 @@ c++++++++++ likelihood ratio
                   etac=etac+z(i,j)*b(subject(i),j) 
                end do
                
-               logp=logp+
-     &          (etac*dble(yij) - dble(nij)*log(1.d0+exp(etac)) -
-     &           eta *dble(yij) + dble(nij)*log(1.d0+exp( eta)) )
+               eta=eta+roffset(i)
+               etac=etac+roffset(i)
+
+               call dgamma(y(i),exp(eta),v,tmp1) 
+               call dgamma(y(i),exp(etac),v,tmp2) 
+               logp=logp+(tmp2-tmp1)
      
             end do
 
@@ -477,7 +498,6 @@ c++++++++++ prior ratio
             
 c++++++++++ candidate generating kernel contribution
 
-
             do i=1,p
                do j=1,p
                   xtx(i,j)=0.d0
@@ -492,15 +512,11 @@ c++++++++++ candidate generating kernel contribution
                iflag(i)=0
             end do
         
-             
             do i=1,nrec
                etac=0.d0
                offset=0.d0
                meanc=0.d0
                gprimec=0.d0
-               
-               yij=y(i,1)
-               nij=y(i,2)
                
                do j=1,p
                   etac=etac+x(i,j)*betac(j)
@@ -510,18 +526,22 @@ c++++++++++ candidate generating kernel contribution
                   etac=etac+z(i,j)*b(subject(i),j) 
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
-               
-               meanc=dble(nij)*exp(etac)/(1.d0+exp(etac))
 
-               gprimec=exp(2*log(1.d0+exp(etac))-etac-log(dble(nij)))
+               etac=etac+roffset(i)
+
+               offset=offset+roffset(i)
                
-               ytildec=etac+(dble(yij)-meanc)*gprimec-offset
+               meanc=exp(etac)
+               
+               gprimec=exp(-etac)
+               
+               ytildec=etac+(y(i)-meanc)*gprimec-offset
                
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprimec
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytildec/gprimec
+                  xty(j)=xty(j)+x(i,j)*ytildec
                end do
             end do
 
@@ -546,10 +566,7 @@ c++++++++++ candidate generating kernel contribution
  
             logp=logp+tmp1
 
-
 c++++++++++ mh step
-
-c            call dblepr("logp",-1,logp,1)  
 
             if(log(dble(runif())).lt.logp)then
                acrate(1)=acrate(1)+1.d0
@@ -557,10 +574,11 @@ c            call dblepr("logp",-1,logp,1)
                   beta(i)=betac(i) 
                end do
             end if
-
+            
 1        continue            
 
-
+        
+         
 c++++++++++++++++++++++++++++++++++         
 c+++++++ random effects 
 c++++++++++++++++++++++++++++++++++
@@ -584,8 +602,7 @@ c++++++++++ observation in cluster with more than 1 element
                do j=1,ncluster
                   tmp1=0.d0
                   do k=1,ni
-                     yij=y(datastr(i,k+1),1)
-                     nij=y(datastr(i,k+1),2)
+                     yij=y(datastr(i,k+1))
                      
                      eta=0.d0
                      do l=1,p
@@ -595,12 +612,11 @@ c++++++++++ observation in cluster with more than 1 element
 		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
                      
-                     tmp1=tmp1+eta*dble(yij)-
-     &                         dble(nij)*log(1.d0+exp(eta))+
-     &                         dgamlog(dble(nij+1))-
-     &                         dgamlog(dble(nij-yij+1))-
-     &                         dgamlog(dble(yij+1))
-     
+                     eta=eta+roffset(datastr(i,k+1))
+
+                     call dgamma(yij,exp(eta),v,tmp2) 
+                     tmp1=tmp1+tmp2
+
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
@@ -611,8 +627,7 @@ c++++++++++ observation in cluster with more than 1 element
                
                tmp1=0.d0
                do k=1,ni
-                  yij=y(datastr(i,k+1),1)
-                  nij=y(datastr(i,k+1),2)
+                  yij=y(datastr(i,k+1))
                       
                   eta=0.d0
                   do l=1,p
@@ -621,13 +636,11 @@ c++++++++++ observation in cluster with more than 1 element
  		  do l=1,q
  		     eta=eta+z(datastr(i,k+1),l)*theta(l)
                   end do
-                      
-                  tmp1=tmp1+eta*dble(yij)-
-     &                      dble(nij)*log(1.d0+exp(eta))+
-     &                      dgamlog(dble(nij+1))-
-     &                      dgamlog(dble(nij-yij+1))-
-     &                      dgamlog(dble(yij+1))
-     
+                  eta=eta+roffset(datastr(i,k+1))
+
+                  call dgamma(yij,exp(eta),v,tmp2) 
+                  tmp1=tmp1+tmp2
+
                end do
  
                prob(ncluster+1)=exp(log(alpha)+tmp1)
@@ -656,7 +669,7 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabelg(i,since,nsubject,q,ncluster,
-     &                           ccluster,ss,bclus,theta)                   
+     &                          ccluster,ss,bclus,theta)                   
 	       end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
@@ -665,8 +678,7 @@ c++++++++++ subject in cluster with only 1 observation
                do j=1,ncluster
                   tmp1=0.d0
                   do k=1,ni
-                     yij=y(datastr(i,k+1),1)
-                     nij=y(datastr(i,k+1),2)
+                     yij=y(datastr(i,k+1))
                      
                      eta=0.d0
                      do l=1,p
@@ -676,12 +688,11 @@ c++++++++++ subject in cluster with only 1 observation
 		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
                      
-                     tmp1=tmp1+eta*dble(yij)-
-     &                         dble(nij)*log(1.d0+exp(eta))+
-     &                         dgamlog(dble(nij+1))-
-     &                         dgamlog(dble(nij-yij+1))-
-     &                         dgamlog(dble(yij+1))
-     
+                     eta=eta+roffset(datastr(i,k+1))
+
+                     call dgamma(yij,exp(eta),v,tmp2) 
+                     tmp1=tmp1+tmp2
+
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
@@ -692,8 +703,7 @@ c++++++++++ subject in cluster with only 1 observation
                
                tmp1=0.d0
                do k=1,ni
-                  yij=y(datastr(i,k+1),1)
-                  nij=y(datastr(i,k+1),2)
+                  yij=y(datastr(i,k+1))
                       
                   eta=0.d0
                   do l=1,p
@@ -702,13 +712,12 @@ c++++++++++ subject in cluster with only 1 observation
  		  do l=1,q
  		     eta=eta+z(datastr(i,k+1),l)*theta(l)
                   end do
-                      
-                  tmp1=tmp1+eta*dble(yij)-
-     &                      dble(nij)*log(1.d0+exp(eta))+
-     &                      dgamlog(dble(nij+1))-
-     &                      dgamlog(dble(nij-yij+1))-
-     &                      dgamlog(dble(yij+1))
-     
+                  
+                  eta=eta+roffset(datastr(i,k+1))
+
+                  call dgamma(yij,exp(eta),v,tmp2) 
+                  tmp1=tmp1+tmp2
+
                end do
  
                prob(ncluster+1)=exp(log(alpha)+tmp1)
@@ -767,8 +776,7 @@ c++++++++++ check if the user has requested an interrupt
                      mean=0.d0
                      gprime=0.d0
 
-                     yij=y(datastr(i,j+1),1)
-                     nij=y(datastr(i,j+1),2)
+                     yij=y(datastr(i,j+1))
                      
                      do k=1,p
                         eta=eta+x(datastr(i,j+1),k)*beta(k)
@@ -778,19 +786,23 @@ c++++++++++ check if the user has requested an interrupt
                         eta=eta+z(datastr(i,j+1),k)*bclus(ii,k)
                      end do
                    
-                     mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
+                     eta=eta+roffset(datastr(i,j+1))
+                     
+                     offset=offset+roffset(datastr(i,j+1))
+
+                     mean=exp(eta)
                
-                     gprime=exp(2*log(1.d0+exp(eta))-eta-log(dble(nij)))
-               
-                     ytilde=eta+(dble(yij)-mean)*gprime-offset
+                     gprime=exp(-eta)
+
+                     ytilde=eta+(yij-mean)*gprime-offset
                      
                      do k=1,q
                         do l=1,q
                            ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                                       z(datastr(i,j+1),l)/gprime 
+     &                                       z(datastr(i,j+1),l)
                         end do
                         zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                         ytilde/gprime
+     &                         ytilde
                      end do
                   end do
                end if
@@ -828,6 +840,7 @@ c++++++++++ check if the user has requested an interrupt
             logp=0.d0
             logp=logp-tmp1
 
+
 c++++++++++ likelihood ratio
 
             do i=1,nsubject
@@ -837,8 +850,7 @@ c++++++++++ likelihood ratio
                      eta=0.d0
                      etac=0.d0
 
-                     yij=y(datastr(i,j+1),1)
-                     nij=y(datastr(i,j+1),2)                     
+                     yij=y(datastr(i,j+1))
                      
                      do k=1,p
                         eta=eta+x(datastr(i,j+1),k)*beta(k)
@@ -848,10 +860,14 @@ c++++++++++ likelihood ratio
                         eta=eta+z(datastr(i,j+1),k)*bclus(ii,k)
                         etac=etac+z(datastr(i,j+1),k)*thetac(k)
                      end do
+                     
+                     eta=eta+roffset(datastr(i,j+1))
+                     etac=etac+roffset(datastr(i,j+1))
 
-                     logp=logp+
-     &                   (etac*dble(yij)-dble(nij)*log(1.d0+exp(etac))-
-     &                    eta*dble(yij) + dble(yij)*log(1.d0+exp( eta)))
+                     call dgamma(yij,exp(eta),v,tmp1) 
+                     call dgamma(yij,exp(etac),v,tmp2) 
+                     logp=logp+(tmp2-tmp1)
+
                   end do
                end if
             end do
@@ -902,8 +918,7 @@ c++++++++++ candidate generating kernel contribution
                      meanc=0.d0
                      gprimec=0.d0
 
-                     yij=y(datastr(i,j+1),1)
-                     nij=y(datastr(i,j+1),2)
+                     yij=y(datastr(i,j+1))
                      
                      do k=1,p
                         etac=etac+x(datastr(i,j+1),k)*beta(k)
@@ -912,21 +927,24 @@ c++++++++++ candidate generating kernel contribution
                      do k=1,q
                         etac=etac+z(datastr(i,j+1),k)*thetac(k)
                      end do
-                   
-                     meanc=dble(nij)*exp(etac)/(1.d0+exp(etac))
-               
-                     gprimec=exp(2*log(1.d0+exp(etac))-etac-
-     &                       log(dble(nij)))
+
+                     etac=etac+roffset(datastr(i,j+1))
                      
-                     ytildec=etac+(dble(yij)-meanc)*gprimec-offset
+                     offset=offset+roffset(datastr(i,j+1))
+
+                     meanc=exp(etac)
+ 
+                     gprimec=exp(-etac)
+
+                     ytildec=etac+(yij-meanc)*gprimec-offset
                      
                      do k=1,q
                         do l=1,q
                            ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                          z(datastr(i,j+1),l)/gprimec 
+     &                          z(datastr(i,j+1),l)
                         end do
                         zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                         ytildec/gprimec
+     &                         ytildec
                      end do
                   end do
                end if
@@ -939,7 +957,7 @@ c++++++++++ candidate generating kernel contribution
             end do
 
             call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
-          
+
             do i=1,q
                tmp1=0.d0
                do j=1,q
@@ -992,6 +1010,54 @@ c++++++++++ mh step
 
 
 c++++++++++++++++++++++++++++++++++         
+c+++++++ Dispersion parameter - MH
+c++++++++++++++++++++++++++++++++++
+
+         slogy=0.d0
+         symu=0.d0
+         slogmu=0.d0
+
+         do i=1,nrec
+             eta=0.d0
+             mean=0.d0
+             do j=1,p
+                eta=eta+x(i,j)*beta(j)
+             end do
+               
+             do j=1,q
+                eta=eta+z(i,j)*b(subject(i),j) 
+             end do
+               
+             eta=eta+roffset(i)
+             mean=exp(eta)
+         
+             slogy=slogy+log(y(i))
+             symu=symu+y(i)/mean
+             slogmu=slogmu+eta
+         end do
+
+
+         vnew=rgamma(1.d0,1.d0/v)
+
+         tmp1=0.d0
+         tmp2=0.d0
+         
+         call dgamma2(v,1.d0,1.d0/vnew,tmp1)  
+         call dgamma2(vnew,1.d0,1.d0/v,tmp2)  
+
+         tmp1=tmp1+targetp(nrec,tau1,tau2,vnew,slogy,symu,slogmu)  
+         tmp2=tmp2+targetp(nrec,tau1,tau2,v   ,slogy,symu,slogmu)  
+         
+c++++++++++ mh step
+
+         logp=tmp1-tmp2
+
+         if(log(dble(runif())).lt.logp)then
+            acrate(3)=acrate(3)+1.d0
+            v=vnew
+         end if
+
+c++++++++++++++++++++++++++++++++++         
 c+++++++ Base line distribution
 c++++++++++++++++++++++++++++++++++
 
@@ -1017,7 +1083,10 @@ c+++++++ check if the user has requested an interrupt
             end do
          end do
      
-    
+         do i=1,q
+            workvb2(i)=0.d0
+         end do
+     
          do i=1,q
             tmp1=0.d0
             do j=1,q
@@ -1094,10 +1163,14 @@ c+++++++++++++ regression coefficient information
                   end do
                end if   
 
+c+++++++++++++ dispersion parameter
+
+               thetasave(isave,q+nfixed+1)=1.d0/v  
+
 c+++++++++++++ baseline mean
 
                do i=1,q
-                  thetasave(isave,q+nfixed+i)=mu(i)
+                  thetasave(isave,q+nfixed+1+i)=mu(i)
                end do
 
 c+++++++++++++ baseline covariance
@@ -1106,14 +1179,14 @@ c+++++++++++++ baseline covariance
                do i=1,q
                   do j=i,q
                      k=k+1
-                     thetasave(isave,q+nfixed+q+k)=sigma(i,j)
+                     thetasave(isave,q+nfixed+1+q+k)=sigma(i,j)
                   end do
                end do
 
 c+++++++++++++ cluster information
                k=(q*(q+1)/2)  
-               thetasave(isave,q+nfixed+q+k+1)=ncluster
-               thetasave(isave,q+nfixed+q+k+2)=alpha
+               thetasave(isave,q+nfixed+1+q+k+1)=ncluster
+               thetasave(isave,q+nfixed+1+q+k+2)=alpha
 
 
 c+++++++++++++ random effects
@@ -1153,23 +1226,15 @@ c+++++++++++++ predictive information
 c+++++++++++++ cpo
 
                do i=1,nrec
-                  yij=y(i,1)
-                  nij=y(i,2)
                   eta=0.d0
-
                   do j=1,p
                      eta=eta+x(i,j)*beta(j)
                   end do
 		  do j=1,q
 		     eta=eta+z(i,j)*b(subject(i),j)
                   end do
-                     
-                  tmp1=eta*dble(yij)-
-     &                  dble(nij)*log(1.d0+exp(eta))+
-     &                  dgamlog(dble(nij+1))-
-     &                  dgamlog(dble(nij-yij+1))-
-     &                  dgamlog(dble(yij+1))
-     
+                  eta=eta+roffset(i)
+                  call dgamma(y(i),exp(eta),v,tmp1) 
                   cpo(i)=cpo(i)+1.0d0/exp(tmp1)  
                end do
 
@@ -1190,11 +1255,37 @@ c+++++++++++++ print
       
       acrate(1)=acrate(1)/dble(nscan)    
       acrate(2)=acrate(2)/dble(nscan)    
+      acrate(3)=acrate(3)/dble(nscan) 
       
       do i=1,nrec
          cpo(i)=dble(nsave)/cpo(i)
       end do
+      
+      tau(3)=v
             
       return
       end
-         
+
+
+c=======================================================================
+      double precision function targetp(nrec,tau1,tau2,v,slogy,symu,
+     &                                  slogmu)        
+c=======================================================================
+c     calculates the logarithm of the full conditional distribution
+c     of the precision parameter in a gamma model.
+c     A.J.V., 2006
+      implicit none
+      integer nrec
+      real*8 tau1,tau2,v,slogy,symu,slogmu
+      real*8 dgamlog
+
+      
+      targetp= (dble(nrec)*v+0.5d0*tau1-1.d0)*log(v) +
+     &         (v-1.d0)*slogy                        - 
+     &         v*(symu+0.5d0*tau2)                   -
+     &         v*slogmu                              -
+     &         dble(nrec)*dgamlog(v)            
+     
+      return
+      end
+           

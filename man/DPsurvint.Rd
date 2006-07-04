@@ -2,7 +2,7 @@
 \alias{DPsurvint}
 \alias{DPsurvint.default}
 
-\title{Performs a Bayesian analysis for a semiparametric AFT regression model}
+\title{Bayesian analysis for a semiparametric AFT regression model}
 \description{
     This function generates a posterior density sample
     from a semiparametric AFT regression model for interval-censored 
@@ -17,7 +17,7 @@ DPsurvint(formula,prior,mcmc,state,status,
 
 \arguments{
    \item{formula}{   a two-sided linear formula object describing the
-                     fixed-effects part of the model, with the response on the
+                     model fit, with the response on the
                      left of a \code{~} operator and the terms, separated by \code{+}
                      operators, on the right. In the response vector, the unknown limits
                      should be -999.}
@@ -63,25 +63,25 @@ DPsurvint(formula,prior,mcmc,state,status,
 \details{
   This generic function fits a Mixture of Dirichlet process in a AFT regression model
   for interval censored data (Hanson and Johnson, 2004):
-  \deqn{T_i = exp(- X_i \beta) V_i, i=1,\ldots,n}
-  \deqn{V_i | G \sim G}
-  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}
+  \deqn{T_i = exp(- X_i \beta) V_i, i=1,\ldots,n}{Ti = exp(- Xi beta) Vi, i=1,\ldots,n}
+  \deqn{V_i | G \sim G}{Vi | G ~ G}
+  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
   
-  where, \eqn{G_0 = Log Normal(V| \mu, \sigma)}. To complete the model specification, independent 
+  where, \eqn{G_0 = Log Normal(V| \mu, \sigma)}{G0 = Log Normal(V| mu, sigma)}. To complete the model specification, independent 
   hyperpriors are assumed,
-  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}
-  \deqn{\mu | m_0, s_0 \sim N(m_0,s_0)}
-  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}
+  \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
+  \deqn{\mu | m_0, s_0 \sim N(m_0,s_0)}{mu | m0, s0 ~ N(m0,s0)}
+  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
   
-  The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
-  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}, 
-  or fixed at some particular value. When \eqn{\alpha} is random the method described by
-  Escobar and West (1995) is used. To let \eqn{\alpha} to be fixed at a particular
-  value, set \eqn{a_0} to NULL in the prior specification.
+  The precision or total mass parameter, \eqn{\alpha}{alpha}, of the \code{DP} prior 
+  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
+  or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
+  Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
+  value, set \eqn{a_0}{a0} to NULL in the prior specification.
 
-  In the computational implementation of the model, G is considered as latent data
-  and sampled partially with sufficient accuracy to be able to generate \eqn{V_1,\ldots,V_{n+1}}
-  which are exactly iid G, as proposed by Doss (1994). Both Ferguson's definition
+  In the computational implementation of the model, \eqn{G} is considered as latent data
+  and sampled partially with sufficient accuracy to be able to generate \eqn{V_1,\ldots,V_{n+1}}{V1,\ldots,Vn+1}
+  which are exactly iid \eqn{G}, as proposed by Doss (1994). Both Ferguson's definition
   of DP and the Sethuraman-Tiwari (1982) representation of the process are used,
   as described in Hanson and Johnson (2004) to allow the inclusion of covariates.
   
@@ -95,9 +95,9 @@ DPsurvint(formula,prior,mcmc,state,status,
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. 
   The results include \code{beta}, \code{mu}, \code{sigma}, the precision
-  parameter \code{\alpha}, and the number of clusters.
+  parameter \code{alpha}, and the number of clusters.
   
-  The function \code{DPsurvpred} can be used to extract posterior 
+  The function \code{predict.DPsurvint} can be used to extract posterior 
   information of the survival curve.
 
   The list \code{state} in the output object contains the current value of the parameters 
@@ -117,7 +117,7 @@ DPsurvint(formula,prior,mcmc,state,status,
 }
 
 \seealso{
-\code{\link{DPsurvpred}}
+\code{\link{predict.DPsurvint}}
 }
 
 \references{
@@ -164,15 +164,15 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
 
     # MCMC parameters
 
-      nburn<-50
-      nsave<-100
-      nskip<-1
-      ndisplay<-50
+      nburn<-10000
+      nsave<-10000
+      nskip<-10
+      ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
                    tune=0.125)
 
     # Prior information
-      prior <- list(alpha=10,beta0=rep(0,2),Sbeta0=diag(100000,2),m0=0,s0=1,
+      prior <- list(alpha=1,beta0=rep(0,2),Sbeta0=diag(1000,2),m0=0,s0=1,
                     tau1=0.01,tau2=0.01)
 
 
@@ -184,7 +184,6 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
-
 
     # Plot model parameters (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
