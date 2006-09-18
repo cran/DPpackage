@@ -688,7 +688,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 
            par(ask = ask)
            layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
-           for(i in 1:(n-1)){
+           for(i in 1:n){
                title1<-paste("Trace of",pnames[i],sep=" ")
                title2<-paste("Density of",pnames[i],sep=" ")       
                plot(x$save.state$thetasave[,i],type='l',main=title1,xlab="MCMC scan",ylab=" ")

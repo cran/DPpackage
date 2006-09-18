@@ -1,5 +1,7 @@
 CSDPbinary              Bayesian analysis for a semiparametric logistic
                         regression model
+deterioration           Time to Cosmetic Deterioration of Breast Cancer
+                        Patients
 DPbinary                Bayesian analysis for a semiparametric
                         Bernoulli regression model
 DPdensity               Semiparametric Bayesian density estimation
@@ -14,19 +16,33 @@ DPolmm                  Bayesian analysis for a semiparametric ordinal
 DPpsBF                  Computes Pseudo Bayes Factors from DPpackage
                         output
 DPrandom                Extracts Random Effects
+DPrasch                 Bayesian analysis for a semiparametric Rasch
+                        model
+DPraschpoisson          Bayesian analysis for a semiparametric Rasch
+                        Poisson model
 DPsurvint               Bayesian analysis for a semiparametric AFT
                         regression model
 fleabeetles             Flea-beetles
+FPTbinary               Bayesian analysis for a Finite Polya Tree
+                        Bernoulli regression model
+FPTrasch                Bayesian analysis for a Finite Polya Tree Rasch
+                        model
+FPTraschpoisson         Bayesian analysis for a Finite Polya Tree Rasch
+                        Poisson model
 fractionation           British Institute of Radiology Fractionation
                         Studies
 galaxy                  Galaxy velocities
 indon                   Indonesian Children's Health Study
+nodal                   Nodal Involvement Data
+orings                  Challenger Space Shuttle O-Ring Data
 Pbinary                 Bayesian analysis for a parametric Bernoulli
                         regression model
 predict.DPsurvint       Computes the Survival Curve in a Bayesian
                         analysis for a semiparametric AFT regression
                         model
 psychiatric             Psychiatric Clinical Trial
+PTdensity               Nonparametric Bayesian density estimation using
+                        Polya Trees
 PTlm                    Bayesian analysis for a semiparametric linear
                         median regression model
 rats                    Rats

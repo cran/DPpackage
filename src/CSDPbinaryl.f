@@ -19,7 +19,7 @@ c=======================================================================
      &                        workm1,workm2,workmh1,workv1,workv2,wvec)
 c=======================================================================                  
 c
-c     Subroutine `dcspbinaryl' to run a Markov chain in the  
+c     Subroutine `cspdbinaryl' to run a Markov chain in the  
 c     semiparametric logistic regression model using a Centrally
 c     Standarized Dirichlet process prior for the link as in Newton et 
 c     al., 1996. 
@@ -28,7 +28,7 @@ c     Copyright: Alejandro Jara Vallejos, 2006
 c
 c     Version 2.0: 
 c
-c     Last modification: 05-07-2006.
+c     Last modification: 21-08-2006.
 c     
 c     Changes and Bug fixes: 
 c
@@ -38,6 +38,8 @@ c          - Keeps the observations that belong to each interval
 c            in memory to allow a faster assignment of the errors.
 c          - Performs a binary search to find the endpoints corresponding
 c            to each interval.
+c          - Computation of G.
+c          - Metropolis ratio for theta.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -165,7 +167,6 @@ c                       candidate for regression parameters, betac(p).
 c        cdflogis    :  cdf of a logistic distribution.
 c        cdfbaselinel:  cdf of the centrally standarized logistic 
 c                       distribution.
-c                       cicluster(nrec,nrec)
 c        counter     :  index.
 c        dgamlog     :  function to compute the log gamma.
 c        dispcount   :  index. 
@@ -296,6 +297,11 @@ c
 c=======================================================================                  
       
       implicit none 
+      
+c+++++Constants
+      real*8 zero,one
+      parameter(zero=0.d0)
+      parameter(one =1.00001d0)
 
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)  
@@ -357,7 +363,7 @@ c+++++Working space - integers
 c+++++Working space - double precision
       real*8 area,ac(4),ac2(4) 
       real*8 betac(p),cdflogis 
-      real*8 cdfbaselinel
+c      real*8 cdfbaselinel
       real*8 dgamlog
       real*8 endp(maxend),endp2(maxend)
       real*8 eta(nrec),etan(nrec)
@@ -399,9 +405,6 @@ c++++ initialize variables
       ntheta=mcmcvec(4)
       model=mcmcvec(5)
       
-      call rdisc(1,nrec,evali)
-      vpred=v(evali)
-
       aa0=a0b0(1)
       ab0=a0b0(2)
       d=a0b0(3)
@@ -414,7 +417,10 @@ c++++ set random number generator
       seed2=seed(2)
 
       call setall(seed1,seed2)
-      
+
+      call rdisc(1,nrec,evali)
+      vpred=v(evali)
+
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Check consistency with the data before starting 
 c++++ the algorithm
@@ -524,6 +530,13 @@ c+++++++ define the end points
          endp(counter)=theta
          counter=counter+1
          endp(counter)=theta-d
+
+
+c+++++++ Test
+         do i=1,nlink
+            counter=counter+1
+            endp(counter)=xlink(i)
+         end do
          
 
 c+++++++ sort end points
@@ -545,7 +558,6 @@ c+++++++ sort end points
 
 c+++++++ updating G base on the partition defined by beta and beta*
 
-
          do i=1,maxint
             mass(i)=0.d0
             massurn1(i)=0.d0
@@ -565,14 +577,21 @@ c+++++++ updating G base on the partition defined by beta and beta*
             intcounturn(i)=0
          end do
 
-         do i=1,npoints+1
+         do i=1,npoints
             evali=4 
             if(endp2(i).le. (theta)  )evali=3 
             if(endp2(i).le. 0.d0     )evali=2 
             if(endp2(i).le. (theta-d))evali=1 
             urn(i)=evali
             intcounturn(evali)=intcounturn(evali)+1  
-         end do 
+         end do
+         urn(npoints+1)=4
+         intcounturn(4)=intcounturn(4)+1  
+
+c         call dblepr("endp2",-1,endp2,npoints)
+c         call intpr("int",-1,intcounturn,4)
+c         return
+
 
          do i=1,nrec
             indi=npoints+1
@@ -657,15 +676,14 @@ c+++++++ updating G base on the partition defined by beta and beta*
 c+++++++ First half
 
          do i=1,intcounturn(1) 
-            prob(i)=proburn1(i)*(1.d0-ppar)*0.5d0
+            prob(i)=exp(log(proburn1(i))+log(1.d0-ppar)+log(0.5d0))
          end do
 
          counter=0 
          do i=intcounturn(1)+1,intcounturn(1)+intcounturn(2) 
             counter=counter+1
-            prob(i)=proburn2(counter)*(ppar)*0.5d0
+            prob(i)=exp(log(proburn2(counter))+log(ppar)+log(0.5d0))
          end do
-
 
 c+++++++ Second half
 
@@ -673,7 +691,7 @@ c+++++++ Second half
          do i=intcounturn(1)+intcounturn(2)+1,intcounturn(1)+
      &        intcounturn(2)+intcounturn(3) 
             counter=counter+1
-            prob(i)=proburn3(counter)*(ppar)*0.5d0
+            prob(i)=exp(log(proburn3(counter))+log(ppar)+log(0.5d0))
          end do
 
          counter=0 
@@ -681,7 +699,8 @@ c+++++++ Second half
      &        intcounturn(1)+intcounturn(2)+intcounturn(3)+
      &        intcounturn(4)
             counter=counter+1
-            prob(i)=proburn4(counter)*(1.d0-ppar)*0.5d0
+            prob(i)=exp(log(proburn4(counter))+log(1.d0-ppar)
+     &                  +log(0.5d0))
          end do
          
          tmp1=0.d0
@@ -720,20 +739,20 @@ c+++++++ of parameters
 
             if(yobs(i).eq.1)then
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one )go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one )go to 100
                logliko=logliko+log(tmp1)
                loglikn=loglikn+log(tmp2)
             else
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one )go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one )go to 100
                logliko=logliko+log(1.d0-tmp1)
                loglikn=loglikn+log(1.d0-tmp2)
             end if   
@@ -1048,10 +1067,13 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                numc2(indi)=numc2(indi)+1.d0
             end do
          
-            ratio=0.d0
+            ratio=(numc2(2)+numc2(3)-numc(2)-numc(3))*log(ppar)
+            ratio=ratio+(numc2(1)+numc2(4)-numc(1)-numc(4))*
+     &                  log(1.d0-ppar) 
+
             do j=1,4
                ratio=ratio+dgamlog(dble(numc(j) +ac(j)))
-     $                 -dgamlog(dble(numc2(j)+ac2(j)))
+     &                 -dgamlog(dble(numc2(j)+ac2(j)))
                ratio=ratio+dgamlog(ac2(j))-dgamlog(ac(j))
             end do
 
@@ -1110,6 +1132,12 @@ c+++++++++++++ cpo, errors and predictive information
                   end do
                   
                   tmp2=sens(i)*tmp1+(1.d0-spec(i))*(1.d0-tmp1)
+
+                  if(tmp2.lt.zero.or.tmp2.gt.one)then
+                     call dblepr("prob1",-1,tmp1,1)
+                     call dblepr("prob2",-1,tmp2,1)
+                     call rexit("Error in Probability")
+                  end if  
                   
                   if(yobs(i).eq.1)then
                     cpo(i)=cpo(i)+1.d0/tmp2 
@@ -1127,14 +1155,23 @@ c+++++++++++++ cpo, errors and predictive information
                
                randsave(isave,nrec+1)=vpred
 
-               do j=1,nlink
-                  fsave(isave,j)=
-     &             ( alpha*cdfbaselinel(xlink(j),0.d0,1.d0,theta,d,
-     &                                  ppar)+
-     &               dble(fsavet(j))  )/
-     &             (alpha+dble(nrec))  
+c               do j=1,nlink
+c                  fsave(isave,j)=
+c     &             ( alpha*cdfbaselinel(xlink(j),0.d0,1.d0,theta,d,
+c     &                                  ppar)+
+c     &               dble(fsavet(j))  )/
+c     &             (alpha+dble(nrec))  
+c               end do
+
+               do i=1,nlink
+                  imin=1
+                  imax=efind(xlink(i),maxend,endp2,npoints)
+                  tmp1=0.d0
+                  do j=imin,imax
+                    tmp1=tmp1+prob(j)
+                  end do
+                  fsave(isave,i)=tmp1
                end do
-               
 
 c+++++++++++++ print
                skipcount = 0
@@ -1161,35 +1198,79 @@ c+++++++++++++ print
       return
       end
 
+
 c=======================================================================                  
-      double precision function cdfbaselinel(x,location,scale,theta,d,p)
+      subroutine csdppredl(nsave,nrec,npred,alpha,theta,v,d,ppar,lp,
+     &                     out)
+c=======================================================================                  
+      implicit none
+      integer nsave,nrec,npred
+      real*8 alpha(nsave),theta(nsave),v(nsave,nrec),d,ppar
+      real*8 lp(npred,nsave),out(npred,nsave)
+      integer i,j,k,count
+      real*8 cdelta,cparam,cdfbaselinel,tmp2
+
+      do i=1,npred
+         do j=1,nsave
+            count=0
+            do k=1,nrec
+               if(v(j,k).le.lp(i,j))count=count+1
+            end do
+
+            cdelta=dble(count)
+            cparam=alpha(j)*cdfbaselinel(lp(i,j),theta(j),d,ppar)
+            tmp2=(cparam+cdelta)/(alpha(j)+dble(nrec))
+
+            out(i,j)=tmp2
+         end do
+      end do
+      
+      return
+      end
+      
+
+c=======================================================================                  
+      double precision function cdfbaselinel(x,theta,d,p)
 c=======================================================================                  
 c     A.J.V., 2006
       implicit none
-      real*8 area,cdflogis,d,location,p,scale,x,theta    
+      real*8 area,cdflogis,d,p,x,theta 
+      real*8 tmp1
       
       if(x.le.theta-d)then
-         area=cdflogis(theta-d,location,scale,1,0)
-         cdfbaselinel=(((1.d0-p)*0.5d0)*
-     &                 (cdflogis(x,location,scale,1,0)/area))
+         area=cdflogis(theta-d,0.d0,1.d0,1,0)
+         tmp1=cdflogis(x      ,0.d0,1.d0,1,0) 
+         
+         cdfbaselinel=0.5d0*(1.d0-p)*(tmp1/area)
+         
         else if(x.le.0.d0) then 
-         area=(0.5d0-cdflogis(theta-d,location,scale,1,0))
-         cdfbaselinel=((1.d0-p)*0.5d0)+
-     &                ((p*0.5d0)*    
-     &                 (cdflogis(x,location,scale,1,0)/area))
+         area=cdflogis(0.d0   ,0.d0,1.d0,1,0)-
+     &        cdflogis(theta-d,0.d0,1.d0,1,0) 
+         tmp1=cdflogis(x      ,0.d0,1.d0,1,0)- 
+     &        cdflogis(theta-d,0.d0,1.d0,1,0) 
+     
+         cdfbaselinel=0.5d0*(1.d0-p)+0.5d0*p*(tmp1/area)
+         
         else if(x.le.theta) then 
-         area=(cdflogis(theta,location,scale,1,0)-0.5d0)
-         cdfbaselinel=0.5d0+
-     &                ((p*0.5d0)*    
-     &                 (cdflogis(x,location,scale,1,0)/area))
+         area=cdflogis(theta,0.d0,1.d0,1,0)-
+     &        cdflogis(0.d0 ,0.d0,1.d0,1,0) 
+         tmp1=cdflogis(x    ,0.d0,1.d0,1,0)- 
+     &        cdflogis(0.d0 ,0.d0,1.d0,1,0)          
+
+         cdfbaselinel=0.5d0+0.5d0*p*(tmp1/area)
+        
         else 
-         area=(1.d0-cdflogis(theta,location,scale,1,0))
-         area=(cdflogis(theta,location,scale,1,0)-0.5d0)
-         cdfbaselinel=((1.d0+p)*0.5d0)+
-     &                (((1.d0-p)*0.5d0)*    
-     &                 (cdflogis(x,location,scale,1,0)/area))
+         area=(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
+         tmp1=cdflogis(x    ,0.d0,1.d0,1,0)-
+     &        cdflogis(theta,0.d0,1.d0,1,0)          
+
+
+         cdfbaselinel=0.5d0*(1.d0+p)+0.5d0*(1.d0-p)*(tmp1/area)
       end if 
       
       return
       end
+
+      return
+      end   
 

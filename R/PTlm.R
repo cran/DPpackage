@@ -2,7 +2,7 @@
 ### Fit a semiparametric linear model.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 07-06-2006.
+### Last modification: 08-10-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -31,11 +31,12 @@
 ###
 
 "PTlm"<-
-function(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
+function(formula,ngrid=200,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("PTlm")
 
 "PTlm.default"<-
 function(formula,
+         ngrid=200,
          prior,
          mcmc,
          state,
@@ -88,13 +89,40 @@ function(formula,
          # mcmc specification
          #########################################################################################
 
+  	 if(is.null(mcmc$tune1))
+  	 {
+  	    tune1<-1.1
+  	 }
+  	 else
+  	 {
+  	    tune1<-mcmc$tune1
+  	 }
+
+  	 if(is.null(mcmc$tune2))
+  	 {
+  	    tune2<-1.1
+  	 }
+  	 else
+  	 {
+  	    tune2<-mcmc$tune2
+  	 }
+
+  	 if(is.null(mcmc$tune3))
+  	 {
+  	    tune3<-1.1
+  	 }
+  	 else
+  	 {
+  	    tune3<-mcmc$tune3
+  	 }
+  	 
          mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
          nsave<-mcmc$nsave
 
 	 fit0<- lm(y~x[,2:p])
 	 propv<- vcov(fit0)
 	 
-	 propv<-diag(mcmc$tune,p)%*%propv%*%diag(mcmc$tune,p)
+	 propv<-diag(tune1,p)%*%propv%*%diag(tune1,p)
 
          beta<-coefficients(fit0)
          
@@ -104,6 +132,11 @@ function(formula,
          #########################################################################################
          # output
          #########################################################################################
+         left<-min(resid(fit0))-0.5*sqrt(var(resid(fit0)))
+         right<-max(resid(fit0))+0.5*sqrt(var(resid(fit0)))
+
+	 grid<-seq(left,right,length=ngrid)
+	 f<-rep(0,ngrid)
 
 	 thetasave <- matrix(0, nrow=nsave, ncol=p+2)
 	 randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
@@ -153,6 +186,7 @@ function(formula,
          if(is.null(prior$M))
          {
  	        foo <- .Fortran("ptlm",
+  	 	ngrid      =as.integer(ngrid),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		x         =as.double(x),	 	
@@ -164,11 +198,14 @@ function(formula,
 		mcmc      =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
+		tune2     =as.double(tune2),
+		tune3     =as.double(tune3),
                 seed      =as.integer(seed),
 		acrate    =as.double(acrate),
 		randsave  =as.double(randsave),
 		thetasave =as.double(thetasave),
                 cpo       =as.double(cpo),
+                f          =as.double(f),
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
 		mu        =as.double(mu),
@@ -182,6 +219,7 @@ function(formula,
 		workmh1   =as.double(workmh1),
 		workv1    =as.double(workv1),
 		workv2    =as.double(workv2),
+		grid       =as.double(grid),
 		PACKAGE="DPpackage")	         
          }
          else
@@ -189,6 +227,7 @@ function(formula,
              	maxm<-prior$M
  	        foo <- .Fortran("ptlmp",
 	 	maxm      =as.integer(maxm),
+  	 	ngrid      =as.integer(ngrid),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		x         =as.double(x),	 	
@@ -200,11 +239,14 @@ function(formula,
 		mcmc      =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
-                seed      =as.integer(seed),
+		tune2     =as.double(tune2),
+		tune3     =as.double(tune3),
+		seed      =as.integer(seed),
 		acrate    =as.double(acrate),
 		randsave  =as.double(randsave),
 		thetasave =as.double(thetasave),
                 cpo       =as.double(cpo),
+ 		f          =as.double(f),                
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
 		mu        =as.double(mu),
@@ -218,6 +260,7 @@ function(formula,
 		workmh1   =as.double(workmh1),
 		workv1    =as.double(workv1),
 		workv2    =as.double(workv2),
+ 		grid       =as.double(grid),
 		PACKAGE="DPpackage")	
          }
  
@@ -263,7 +306,7 @@ function(formula,
 
 	 z<-list(modelname=model.name,coefficients=coeff,acrate=acrate,call=cl,
 	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,cpo=foo$cpo,
-	         nrec=nrec,p=p)
+	         nrec=nrec,p=p,dens=foo$f,grid=grid)
 	
 	 cat("\n\n")
 	 class(z)<-c("PTlm")
@@ -275,7 +318,7 @@ function(formula,
 ### Tools for PTlm: print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 07-06-2006.
+### Last modification: 08-10-2006.
 	
 
 "print.PTlm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
@@ -409,7 +452,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
            }
            
            title1<-c("Predictive Error Density")
-           fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
+           plot(x$grid,x$dens,ylab="density",main=title1,lty=1,type='l',lwd=2,xlab="values")
            
         }
         else
@@ -440,7 +483,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
             else
             {
                title1<-c("Predictive Error Density")
-               fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
+               plot(x$grid,x$dens,ylab="density",main=title1,lty=1,type='l',lwd=2,xlab="values")
             }
         }
    }

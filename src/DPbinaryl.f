@@ -247,6 +247,11 @@ c
 c=======================================================================                  
      
       implicit none 
+
+c+++++Constants
+      real*8 zero,one
+      parameter(zero=0.d0)
+      parameter(one =1.00001d0)
       
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)
@@ -327,12 +332,12 @@ c++++ initialize variables
       aa0=a0b0(1)
       ab0=a0b0(2)
       
-      call rdisc(1,nrec,evali)
-      vpred=v(evali)
-
 c++++ set random number generator
 
       call setall(seed1,seed2)
+
+      call rdisc(1,nrec,evali)
+      vpred=v(evali)
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Check consistency with the data before starting 
@@ -510,20 +515,20 @@ c+++++++ of parameters
             
             if(yobs(i).eq.1)then
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one )go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one)go to 100
                logliko=logliko+log(tmp1)
                loglikn=loglikn+log(tmp2)
              else
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one)go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one)go to 100
                logliko=logliko+log(1.d0-tmp1)
                loglikn=loglikn+log(1.d0-tmp2)
             end if   
@@ -836,12 +841,18 @@ c+++++++++++++ cpo, errors and predictive information
                   end do
                   
                   tmp2=sens(i)*tmp1+(1.d0-spec(i))*(1.d0-tmp1)
-                  
+
+                  if(tmp2.lt.zero.or.tmp2.gt.one)then
+                     call dblepr("prob1",-1,tmp1,1)
+                     call dblepr("prob2",-1,tmp2,1)
+                     call rexit("Error in Probability")
+                  end if  
+
                   if(yobs(i).eq.1)then
-                    cpo(i)=cpo(i)+1.0d0/tmp2 
+                    cpo(i)=cpo(i)+1.d0/tmp2 
                   else
-                    tmp2=1.0d0-tmp2 
-                    cpo(i)=cpo(i)+1.0d0/tmp2 
+                    tmp2=1.d0-tmp2 
+                    cpo(i)=cpo(i)+1.d0/tmp2 
                   end if                          
                
                   j=1
@@ -886,3 +897,31 @@ c+++++++++++++ print
       end
 
 
+
+c=======================================================================                  
+      subroutine dppredl(nsave,nrec,npred,alpha,v,lp,out)
+c=======================================================================                  
+      implicit none
+      integer nsave,nrec,npred
+      real*8 alpha(nsave),v(nsave,nrec)
+      real*8 lp(npred,nsave),out(npred,nsave)
+      integer i,j,k,count
+      real*8 cdelta,cparam,cdflogis,tmp2
+
+      do i=1,npred
+         do j=1,nsave
+            count=0
+            do k=1,nrec
+               if(v(j,k).le.lp(i,j))count=count+1
+            end do
+
+            cdelta=dble(count)
+            cparam=alpha(j)*cdflogis(lp(i,j),0.d0,1.d0,1,0)
+            tmp2=(cparam+cdelta)/(alpha(j)+dble(nrec))
+
+            out(i,j)=tmp2
+         end do
+      end do
+      
+      return
+      end

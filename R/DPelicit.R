@@ -3,7 +3,7 @@
 ### Dirichlet process prior.
 ### 
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 12-06-2006.
+### Last modification: 31-08-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -53,12 +53,10 @@ DPelicit.default<-function(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 		}
 		else
 		{
-			mean<-(a0/b0)*(digamma((a0+n*b0)/n)-digamma(a0/b0))		
-                        i<-seq(1,n,1)
-			var<-(a0/b0)*(sum(i/(a0/b0+i-1)**2)+trigamma(a0/b0+n)-trigamma(a0/b0))
-			     +(((a0/b0)*(trigamma((a0+n*b0)/n)-trigamma(a0/b0))+digamma((a0+n*b0)/n)
-			        -digamma(a0/b0))**2)*(a0/b0**2)
-			
+                        mean<-(a0/b0)*(digamma((a0+n*b0)/b0)-digamma(a0/b0))		
+                        var<-mean+(a0**2/b0**2)*(trigamma((a0+n*b0)/b0)-trigamma(a0/b0))+
+                        (((a0/b0)*(trigamma((a0+n*b0)/b0)-trigamma(a0/b0))+digamma((a0+n*b0)/b0)-digamma(a0/b0))**2)*(a0/b0**2)
+		
 			inp<-matrix(c(a0,b0),ncol=2)
 			out<-matrix(c(mean,sqrt(var)),ncol=2)
 			colnames(inp)<-c("a0","b0")
@@ -111,16 +109,17 @@ fn1<-function(y,n,mean,var)
 # JGL
 {
 	x<-exp(y)
-	i<-seq(1,n,1)
 	fvec<-rep(0,2)
-        fvec[1]<-mean-((x[1]/x[2])*(digamma((x[1]+n*x[2])/n)-digamma(x[1]/x[2])))
-        fvec[2]<-var-( 
-                 (x[1]/x[2])*(sum(i/(x[1]/x[2]+i-1)**2)+trigamma(x[1]/x[2]+n)-trigamma(x[1]/x[2]))
-                 +(((x[1]/x[2])*(trigamma((x[1]+n*x[2])/n)-
-		 trigamma(x[1]/x[2]))+digamma((x[1]+n*x[2])/n)-digamma(x[1]/x[2]))**2)*(x[1]/x[2]**2))
+	
+	a0<-x[1]
+	b0<-x[2]
+
+        fvec[1]<-mean-(a0/b0)*(digamma((a0+n*b0)/b0)-digamma(a0/b0))		
+        fvec[2]<-var-((a0/b0)*(digamma((a0+n*b0)/b0)-digamma(a0/b0))+(a0**2/b0**2)*(trigamma((a0+n*b0)/b0)-trigamma(a0/b0))+
+        (((a0/b0)*(trigamma((a0+n*b0)/b0)-trigamma(a0/b0))+digamma((a0+n*b0)/b0)-digamma(a0/b0))**2)*(a0/b0**2))
+
 	return(fvec)         
 }
-
 
 
 fn2<-function(y,n,mean,var)
@@ -130,8 +129,7 @@ fn2<-function(y,n,mean,var)
 	x<-exp(y)
 	fvec<-rep(0,2)
 	fvec[1]<-mean-(x[1]/x[2])*log(1+n*x[2]/x[1])
-	fvec[2]<-var-((x[1]/x[2])*log(1+n*x[2]/x[1])-x[1]/x[2]+
-	         ((log(1+n*x[2]/x[1])-n*x[2]/(x[1]+n*x[2]))**2)*(x[1]/x[2]**2))
+	fvec[2]<-var-((x[1]/x[2])*log(1+n*x[2]/x[1])-x[1]/x[2]+((log(1+n*x[2]/x[1])-n*x[2]/(x[1]+n*x[2]))**2)*(x[1]/x[2]**2))
 	return(fvec)         
 }
 

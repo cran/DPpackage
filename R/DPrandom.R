@@ -2,7 +2,7 @@
 ### Extracts random effects from a DPpackage object.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 25-04-2006.
+### Last modification: 10-08-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -466,10 +466,294 @@ function(object,centered=FALSE,predictive=FALSE)
        return(z)
    }
 
+
+   if(is(object, "DPraschpoisson"))
+   {
+
+       random<-matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+   if(is(object, "DPMraschpoisson"))
+   {
+
+       random<-matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+               
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+
+   if(is(object, "FPTraschpoisson"))
+   {
+
+       random<-matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+   if(is(object, "FPTrasch"))
+   {
+
+       random<-matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+   if(is(object, "DPrasch"))
+   {
+
+       random<-matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+ 
 }
-
-
-
 
 
 
@@ -500,7 +784,8 @@ function(object,centered=FALSE,predictive=FALSE)
 "plot.DPrandom"<-function(x, ask=TRUE, hpd=TRUE, nfigr=2, nfigc=2, subject=NULL, col="#bdfcc9", ...) 
 {
 
-fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
+fancydensplot<-function(x, hpd=TRUE, npts=200, 
+                        xlim=NULL,xlab="", ylab="", main="",col="#bdfcc9", ...)
 # Author: AJV, 2006
 #
 {
@@ -545,8 +830,14 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
         densy2 <- densy[densx==densx2]
         ylsup <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlsup-densx1)
 
-        plot(0.,0.,xlim = c(min(densx), max(densx)), ylim = c(min(densy), max(densy)),
-             axes = F,type = "n" , xlab=xlab, ylab=ylab, main=main, cex=1.2)
+        if(is.null(xlim))
+        {
+           xlim<-c(min(densx), max(densx)) 
+        }
+
+
+        plot(0.,0.,xlim = xlim, ylim = c(min(densy), max(densy)),
+                axes = F,type = "n" , xlab=xlab, ylab=ylab, main=main, cex=1.2)
 
         
         xpol<-c(xlinf,xlinf,densx[densx>=xlinf & densx <=xlsup],xlsup,xlsup)
@@ -554,9 +845,9 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
              
         polygon(xpol, ypol, border = FALSE,col=col)
         
-        lines(c(min(densx), max(densx)),c(0,0),lwd=1.2)
+        lines(xlim,c(0,0),lwd=1.2)
         
-        segments(min(densx),0, min(densx),max(densy),lwd=1.2)
+        segments(xlim[1],0, xlim[1],max(densy),lwd=1.2)
         
         lines(densx,densy,lwd=1.2)
              
@@ -565,8 +856,8 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
         segments(xlsup, 0, xlsup, ylsup,lwd=1.2)
 
 	axis(1., at = round(c(xlinf, meanvar,xlsup), 2.), labels = T,pos = 0.)
-        axis(1., at = round(seq(min(densx),max(densx),length=15), 2.), labels = F,pos = 0.)
-        axis(2., at = round(seq(0,max(densy),length=5), 2.), labels = T,pos =min(densx))
+        axis(1., at = round(seq(xlim[1],xlim[2],length=15), 2.), labels = F,pos = 0.)
+        axis(2., at = round(seq(0,max(densy),length=5), 2.), labels = T,pos =xlim[1])
 }
 
    if(is(x, "DPrandom")){
@@ -593,8 +884,11 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 
               names(vec)<-pnames[i]
               
+              vectmp<-x$randomm[,i]
+              xlim<-c(min(vectmp)-0.5*sqrt(var(vectmp)),max(vectmp)+0.5*sqrt(var(vectmp)))
+
               plot(vec,type='l',main=title1,xlab="MCMC scan",ylab=" ")
-              fancydensplot(vec,hpd=hpd,main=title2,xlab="values", ylab="density", col=col)
+              fancydensplot(vec,xlim=xlim,hpd=hpd,main=title2,xlab="values", ylab="density", col=col)
               for(j in 1:x$nsubject)
               {
                   points(x$randomm[j,i],0,col="red",pch=20)              

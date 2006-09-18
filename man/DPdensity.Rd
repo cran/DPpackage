@@ -11,7 +11,7 @@
   
 \usage{
 
-DPdensity(y,prior,mcmc,state,status,method="neal",
+DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
           data=sys.frame(sys.parent()),na.action=na.fail)      
       
 }
@@ -19,6 +19,10 @@ DPdensity(y,prior,mcmc,state,status,method="neal",
 \arguments{
     \item{y}{        a vector or matrix giving the data from which the density estimate 
                      is to be computed.}
+
+    \item{ngrid}{    number of grid points where the density estimate is 
+                     evaluated. This is only used if dimension of \code{y}
+                     is lower or equal than 2. The default value is 1000.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
@@ -101,8 +105,8 @@ DPdensity(y,prior,mcmc,state,status,method="neal",
 
 \value{
   An object of class \code{DPdensity} representing the DP mixture of normals
-  model fit. Generic functions such as \code{print} and \code{plot} have methods to 
-  show the results of the fit. The results include \code{alpha}, and the 
+  model fit. Generic functions such as \code{print}, \code{summary}, and \code{plot} have methods to 
+  show the results of the fit. The results include the baseline parameters, \code{alpha}, and the 
   number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -171,10 +175,10 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # MCMC parameters
 
-      nburn<-10
-      nsave<-100
+      nburn<-1000
+      nsave<-10000
       nskip<-10
-      ndisplay<-50
+      ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Example of Prior information 1
@@ -186,22 +190,24 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
     # Example of Prior information 2
     # Fixing alpha and m1
 
-      prior2<-list(alpha=1,m1=rep(0,1),psiinv2=diag(0.5,1),nu1=4,nu2=4,tau1=1,
-                   tau2=100)
+      prior2<-list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),nu1=4,nu2=4,
+                   tau1=1,tau2=100)
 
 
     # Example of Prior information 3
     # Fixing only alpha
 
-      prior3<-list(alpha=1,m2=rep(0,1),s2=diag(100000,1),psiinv2=diag(0.5,1),
+      prior3<-list(alpha=1,m2=rep(0,1),s2=diag(100000,1),
+                   psiinv2=solve(diag(0.5,1)),
                    nu1=4,nu2=4,tau1=1,tau2=100)
 
 
     # Example of Prior information 4
     # Everything is random
 
-      prior4<-list(a0=2,b0=1,m2=rep(0,1),s2=diag(100000,1),psiinv2=diag(0.5,1),
-                   u1=4,nu2=4,tau1=1,tau2=100)
+      prior4<-list(a0=2,b0=1,m2=rep(0,1),s2=diag(100000,1),
+                   psiinv2=solve(diag(0.5,1)),
+                   nu1=4,nu2=4,tau1=1,tau2=100)
 
     # Fit the models
 
@@ -222,6 +228,12 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       plot(fit1.3,ask=FALSE)
       plot(fit1.4,ask=FALSE)
 
+    # Extracting the density estimate
+      cbind(fit1.1$x1,fit1.1$dens)
+      cbind(fit1.2$x1,fit1.2$dens)
+      cbind(fit1.3$x1,fit1.3$dens)
+      cbind(fit1.4$x1,fit1.4$dens)
+      
     # Plot the parameters (only prior 2 for illustration)
     # (to see the plots gradually set ask=TRUE)
       plot(fit1.2,ask=FALSE,output="param")
@@ -246,6 +258,52 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
     # (only prior 2 for illustration)
     # (to see the plots gradually set ask=TRUE)
       plot(DPrandom(fit1.2),ask=FALSE,hpd=FALSE)
+
+
+
+
+    ####################################
+    # Bivariate example
+    ####################################
+
+    # Data
+      data(airquality)
+      attach(airquality)
+
+      ozone<-Ozone**(1/3)
+      radiation<-Solar.R
+
+    # Prior information
+
+      s2<-matrix(c(10000,0,0,1),ncol=2)
+      m2<-c(180,3)
+      psiinv2<-solve(matrix(c(10000,0,0,1),ncol=2))
+     
+      prior<-list(a0=1,b0=1/5,nu1=4,nu2=4,s2=s2,
+                  m2=m2,psiinv2=psiinv2,tau1=0.01,tau2=0.01)
+
+    # Initial state
+      state <- NULL
+
+    # MCMC parameters
+
+      nburn<-5000
+      nsave<-10000
+      nskip<-10
+      ndisplay<-1000
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+
+    # Fit the model
+      fit1<-DPdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
+                      state=state,status=TRUE,na.action=na.omit)
+
+    # Plot the estimated density
+      plot(fit1)
+
+    # Extracting the density estimate
+      fit1$x1
+      fit1$x2
+      fit1$dens
 }
 }
 

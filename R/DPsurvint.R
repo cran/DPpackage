@@ -2,7 +2,7 @@
 ### Fit a semiparametric aft model for interval censored data.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 02-07-2006.
+### Last modification: 08-10-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -62,8 +62,9 @@ function(formula,
   	 y<- model.response(mf,"numeric")
   	 nrec<-length(y[,1])
   	 x<-model.matrix(formula)
+  	 namesxm<-colnames(x)
   	 p<-dim(x)[2]
-  	 x<-x[,2:p]
+  	 x<-as.matrix(x[,2:p])
   	 p<-(p-1)
 
          type<-rep(2,nrec)
@@ -282,7 +283,13 @@ function(formula,
  	 thetasave<-matrix(foo$thetasave,nrow=mcmc$nsave, ncol=(p+4))
  	 randsave<-matrix(foo$randsave,nrow=mcmc$nsave, ncol=(nrec+1))
  	 
-	 colnames(thetasave)<-c(dimnames(x)[[2]],"mu","sigma2","ncluster","alpha")
+ 	 pnames<-NULL
+ 	 for(i in 1:p)
+ 	 {
+ 	    pnames<-c(pnames,namesxm[i+1])
+ 	 }
+ 	 
+	 colnames(thetasave)<-c(pnames,"mu","sigma2","ncluster","alpha")
 
          qnames<-NULL
          for(i in 1:nrec){
@@ -299,7 +306,7 @@ function(formula,
 	 for(i in 1:(p+4)){
 	 	coeff[i]<-mean(thetasave[,i])
 	 }
-	 names(coeff)<-c(dimnames(x)[[2]],"mu","sigma2","ncluster","alpha")
+	 names(coeff)<-c(pnames,"mu","sigma2","ncluster","alpha")
 	
 	 state <- list(alpha=foo$alpha,beta=foo$beta,v=foo$v,mu=foo$mu,sigma=foo$sigma)	
 		      
@@ -320,7 +327,7 @@ function(formula,
 ### for interval censored data.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 05-05-2006.
+### Last modification: 08-10-2006.
 
 
 "predict.DPsurvint"<-
@@ -373,9 +380,13 @@ function(object,grid,xnew=NULL,hpd=TRUE, ...)
 	     for(i in 1:npred)
 	     {
                  covnw<-round(xnew[i,1],3)
-                 for(j in 2:pnew){
-                     covnw<-paste(covnw,round(xnew[i,j],3),sep=";") 
-                 }
+                 
+                 if(pnew>1)
+                 {
+                   for(j in 2:pnew){
+                       covnw<-paste(covnw,round(xnew[i,j],3),sep=";") 
+                   }
+                 }  
                  covn[i]<-covnw  
              }    
 	 }    
@@ -439,12 +450,12 @@ function(object,grid,xnew=NULL,hpd=TRUE, ...)
    	 dimnames(plsup)<-list(covn,grid)
    	 
    	 out<-NULL
-   	 out$pmean<-pm
-   	 out$pmedian<-pmed
-   	 out$psd<-psd
-   	 out$pstd<-pstd
-   	 out$plinf<-plinf
-   	 out$plsup<-plsup
+   	 out$pmean<-as.matrix(pm)
+   	 out$pmedian<-as.matrix(pmed)
+   	 out$psd<-as.matrix(psd)
+   	 out$pstd<-as.matrix(pstd)
+   	 out$plinf<-as.matrix(plinf)
+   	 out$plsup<-as.matrix(plsup)
    	 out$xnew<-xnew
    	 out$vpred<-vpred
    	 out$grid<-grid
@@ -513,7 +524,7 @@ plot.predict.DPsurvint<-function(x,ask=TRUE,all=TRUE,band=FALSE,xlim=NULL,nfigr=
 ### Tools for DPsurvint: print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 02-07-2006.
+### Last modification: 08-10-2006.
 
 "print.DPsurvint"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {

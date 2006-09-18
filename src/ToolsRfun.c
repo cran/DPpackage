@@ -59,6 +59,13 @@ int F77_SUB(invcdfbinom)(double *p, int *size, double *prob, int *lower_tail, in
 //Density
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+double F77_SUB(dbin)(double *x, double *n, double *p, int *give_log)
+{
+	return dbinom(*x, *n, *p, *give_log);
+}
+
+
 double F77_SUB(dnrm)(double *x, double *mu, double *sigma, int *give_log)
 {
 	return dnorm(*x, *mu, *sigma, *give_log);
@@ -68,6 +75,24 @@ double F77_SUB(dnrm)(double *x, double *mu, double *sigma, int *give_log)
 double F77_SUB(dlnrm)(double *x, double *logmean, double *logsd, int *give_log)
 {
 	return dlnorm(*x, *logmean, *logsd, *give_log);
+}
+
+
+double F77_SUB(dlogit)(double *x, double *location, double *scale, int *give_log)
+{
+	return dlogis(*x, *location, *scale, *give_log);
+}
+
+
+double F77_SUB(dbet)(double *x, double *a, double *b, int *give_log)
+{
+	return dbeta(*x, *a, *b, *give_log);
+}
+
+
+double F77_SUB(dgamm)(double *x, double *shape, double *scale, int *give_log)
+{
+	return dgamma(*x, *shape, *scale, *give_log);
 }
 
 

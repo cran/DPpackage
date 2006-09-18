@@ -11,7 +11,7 @@
     
 \usage{
 
-CSDPbinary(formula,prior,mcmc,state,status,misc=NULL,
+CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
          data=sys.frame(sys.parent()),na.action=na.fail)
 }
 
@@ -20,6 +20,10 @@ CSDPbinary(formula,prior,mcmc,state,status,misc=NULL,
                      model fit, with the response on the
                      left of a \code{~} operator and the terms, separated by \code{+}
                      operators, on the right.} 
+
+   \item{baseline}{  a description of the baseline error distribution to
+                     be used in the model. The baseline distributions considered by 
+                     \code{CSDPbinary} so far is \code{logistic}.} 
                      
    \item{prior}{     a list giving the prior information. The list includes the following
                      parameters: \code{a0} and \code{b0} giving the hyperparameters for
@@ -34,9 +38,9 @@ CSDPbinary(formula,prior,mcmc,state,status,misc=NULL,
                      the following integers: \code{nburn} giving the number of burn-in 
                      scans, \code{nskip} giving the thinning interval, \code{nsave} giving
                      the total number of scans to be saved, \code{ntheta} giving the thinning 
-                     interval for the \code{theta} parameter (should be >=1), \code{ndisplay} giving
-                     the number of saved scans to be displayed on the screen (the function reports 
-                     on the screen when every \code{ndisplay} iterations have been carried
+                     interval for the \code{theta} parameter (if missing, the value 1 is considered), 
+                     \code{ndisplay} giving the number of saved scans to be displayed on the screen 
+                     (the function reports on the screen when every \code{ndisplay} iterations have been carried
                      out), and \code{tune} giving the Metropolis tuning parameter.}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
@@ -74,9 +78,9 @@ CSDPbinary(formula,prior,mcmc,state,status,misc=NULL,
   \deqn{A_1 \left(\theta \right) = (-\infty,\theta-d ], A_2 \left(\theta \right) = (\theta-d,0 ]}{A1 \left(theta \right) = (-\infty,theta-d ], A2 \left(theta \right) = (theta-d,0 ]}
   \deqn{A_3 \left(\theta \right) = (0,\theta ], A_4 \left(\theta \right) = (\theta,\infty),}{A3 \left(theta \right) = (0,theta ], A4 \left(theta \right) = (theta,\infty),}
 
-  and \eqn{h} is a uniform distribution on \eqn{(0,d)}. Note that in the Newton et al. (1996) construction,
+  and \eqn{h} is a uniform distribution on \eqn{(0,d)}. Note that in the construction of Newton et al. (1996),
   \eqn{G=\frac{1-p}{2}(G_1+G_4) + \frac{p}{2}(G_2+G_3)}{G=((1-2)/2)*(G1+G4)+(p/2)*(G2+G3)}, where \eqn{G_j}{Gj} are
-  conditionally independet Dirichlet processes with base measure \eqn{m_j}{mj}.
+  conditionally independent Dirichlet processes with base measure \eqn{m_j}{mj}.
 
   To complete the model specification, the following
   prior distributions are assumed,

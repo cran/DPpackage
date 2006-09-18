@@ -310,7 +310,7 @@ c     A.J.V., 2005
          go to 120
       end if
       if(binf)then
-         rtslogistic2=invcdfslogistic(uni+(1-uni)*cdfslogistic(a))
+         rtslogistic2=invcdfslogistic(uni+(1.d0-uni)*cdfslogistic(a))
          go to 120
       end if
 
@@ -866,4 +866,19 @@ c     A.J.V., 2006
 
 120   continue
       return
-      end      
+      end
+
+
+c=======================================================================      
+      integer function rpois(mu)
+c=======================================================================      
+c     This function gerenates a Poisson(mu) random variable. 
+c     A.J.V., 2006
+      integer ignpoi
+      real*8  mu
+      real mean
+
+      mean=mu
+      rpois=ignpoi(mean)
+      return
+      end

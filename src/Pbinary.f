@@ -144,6 +144,11 @@ c=======================================================================
 
       implicit none
 
+c+++++Constants
+      real*8 zero,one
+      parameter(zero=0.d0)
+      parameter(one =1.00001d0)
+
 c+++++Observed variables
       integer link,nrec,p,yobs(nrec)
       real*8 sens(nrec),spec(nrec)
@@ -277,21 +282,21 @@ c+++++++ of parameters
             
             if(yobs(i).eq.1)then
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one )go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one )go to 100
                logliko=logliko+log(tmp1)
                loglikn=loglikn+log(tmp2)
             end if   
             if(yobs(i).eq.0)then
                tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.0.0)go to 100
-               if(tmp1.gt.1.0)go to 100
+               if(tmp1.lt.zero)go to 100
+               if(tmp1.gt.one )go to 100
                tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.0.0)go to 100
-               if(tmp2.gt.1.0)go to 100
+               if(tmp2.lt.zero)go to 100
+               if(tmp2.gt.one )go to 100
                logliko=logliko+log(1.d0-tmp1)
                loglikn=loglikn+log(1.d0-tmp2)
             end if   
@@ -351,6 +356,11 @@ c+++++++++++++ cpo, errors and predictive information
                   end if
          
                   tmp1=sens(j)*tmp1+(1.d0-spec(j))*(1.d0-tmp1)
+
+                  if(tmp1.lt.zero.or.tmp1.gt.one)then
+                     call dblepr("prob1",-1,tmp1,1)
+                     call rexit("Error in Probability")
+                  end if  
             
                   if(yobs(j).eq.1)then
                     cpo(j)=cpo(j)+1.0d0/tmp1 

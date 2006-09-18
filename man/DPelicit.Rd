@@ -69,8 +69,8 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 \references{
 
 Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) A Dirichlet Process mixture model for 
-  the analysis of correlated binary responses. Computational Statistics and Data Analysis,
-  (Conditionally accepted).
+  the analysis of correlated binary responses. To appear in Computational Statistics and 
+  Data Analysis.
 
 Kottas, A., Muller, P., Quintana, F. (2005) Nonparametric Bayesian modeling for multivariate
   ordinal data, Journal of Computational and Graphical Statistics 14: 610-625.

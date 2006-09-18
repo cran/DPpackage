@@ -2,7 +2,7 @@
 ### Fit a semiparametric bernoulli regression model.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 05-07-2006.
+### Last modification: 21-08-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -312,7 +312,6 @@ function(formula,
 	 mass<-rep(0,maxint)
 	 ncluster<-nrec
 	 prob<-rep(0,maxint)
-	 prob2<-rep(0,maxint)
 	 uvec<-rep(0,maxm)
 	 vvec<-rep(0,maxm)
 	 vnew<-rep(0,(nrec+1))
@@ -537,10 +536,8 @@ function(formula,
 
   	 colnames(thetasave)<-c(dimnames(x)[[2]],"ncluster","alpha")
   	 
-  	 coeff<-rep(0,(p+2))
-	 for(i in 1:(p+2)){
-	     coeff[i]<-mean(thetasave[,i])
-	 }  
+         coeff<-apply(thetasave, 2, mean)  	 
+  	 
 	 names(coeff)<-c(dimnames(x)[[2]],"ncluster","alpha")
 	
          qnames<-NULL
@@ -573,12 +570,47 @@ function(formula,
 ### regression model.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 01-07-2006.
+### Last modification: 21-08-2006.
 
 
 "predict.DPbinary"<-
 function(object,xnew=NULL,hpd=TRUE, ...)
 {
+
+   stde<-function(x)
+   {
+   	n<-length(x)
+   	return(sd(x)/sqrt(n))
+   }
+
+   hpdf<-function(x)
+   {
+        alpha<-0.05
+        vec<-x
+        n<-length(x)         
+        alow<-rep(0,2)
+        aupp<-rep(0,2)
+        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                    alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+        return(c(a$alow[1],a$aupp[1]))
+   }
+   
+   pdf<-function(x)
+   {
+        alpha<-0.05
+        vec<-x
+        n<-length(x)         
+        alow<-rep(0,2)
+        aupp<-rep(0,2)
+        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                    alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+        return(c(a$alow[2],a$aupp[2]))
+   }
+
+   if(is.null(xnew))
+   {
+      xnew<-object$x
+   }
 
    if(is.null(xnew))
    {
@@ -594,6 +626,7 @@ function(object,xnew=NULL,hpd=TRUE, ...)
  
          baseline<-object$baseline
    	 alpha<-object$save.state$thetasave[,(object$p+2)]
+   	 nsave<-length(alpha)
    	 
    	 v<-matrix(object$save.state$randsave,nsave,nrec+1)
    	 vpred<-v[,(nrec+1)]
@@ -616,53 +649,67 @@ function(object,xnew=NULL,hpd=TRUE, ...)
              covn[i]<-covnw  
          }    
 
- 	 pm<-rep(0,npred)
-	 pmed<-rep(0,npred)
-	 psd<-rep(0,npred)
-	 pstd<-rep(0,npred)
-	 plinf<-rep(0,npred)
-	 plsup<-rep(0,npred)
-	     
 	 lp<-xnew%*%t(object$save.state$thetasave[,1:object$p])
-	        
-	 for(i in 1:npred)
+         out<-matrix(0,nrow=npred,ncol=nsave)
+
+         if(baseline=="logistic")
          {
-	     prob<-rep(0,nsave)
-	     for(k in 1:nsave)
-	     {
-		lsup<-lp[i,k]
-		awork<-alpha[k]
-		vwork<-v[k,]
-		Cdelta<- sum(vwork<=lsup)
-		if(baseline=="logistic")Cparam<- awork*plogis(lsup)
-		if(baseline=="normal")Cparam<- awork*pnorm(lsup)
-		if(baseline=="cauchy")Cparam<- awork*pcauchy(lsup)
-		prob[k]<-(Cparam+Cdelta)/(awork+nrec)	                
-	      }
-	      pm[i]<-mean(prob)
-	      pmed[i]<-median(prob)
-	      psd[i]<-sqrt(var(prob))
-	      pstd[i]<-sqrt(var(prob))/sqrt(nsave)
-		 
-              if(hpd==TRUE)
-              {
-                    alow<-rep(0,2)
-                    aupp<-rep(0,2)
-                    sig<-0.05
-                    vec<-prob
-                    n<-length(vec)
-                    a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(sig),x=as.double(vec),
-                                 alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-                    plinf[i]<-a$alow[1]            
-                    plsup[i]<-a$aupp[1]            
-              }
-              else
-              {
-		    plinf[i]<-quantile(surv[j,],0.025)		
-		    plsup[i]<-quantile(surv[j,],0.975)			                
-              }
-   	 }
-   	 
+   	    foo <- .Fortran("dppredl",
+                nsave     =as.integer(nsave),
+                nrec      =as.integer(nrec),
+                npred     =as.integer(npred),
+                alpha     =as.double(alpha),
+                v         =as.double(v),
+                lp        =as.double(lp),
+		out       =as.double(out),
+		PACKAGE="DPpackage")	
+         }
+
+         if(baseline=="normal")
+         {
+   	    foo <- .Fortran("dppredp",
+                nsave     =as.integer(nsave),
+                nrec      =as.integer(nrec),
+                npred     =as.integer(npred),
+                alpha     =as.double(alpha),
+                v         =as.double(v),
+                lp        =as.double(lp),
+		out       =as.double(out),
+		PACKAGE="DPpackage")	
+         }
+         
+         if(baseline=="cauchy")
+         {
+   	    foo <- .Fortran("dppredc",
+                nsave     =as.integer(nsave),
+                nrec      =as.integer(nrec),
+                npred     =as.integer(npred),
+                alpha     =as.double(alpha),
+                v         =as.double(v),
+                lp        =as.double(lp),
+		out       =as.double(out),
+		PACKAGE="DPpackage")	
+         }
+
+         out<-t(matrix(foo$out,nrow=npred,ncol=nsave))
+
+         pm <-apply(out, 2, mean)    
+         pmed <-apply(out, 2, median)    
+         psd<-apply(out, 2, sd)
+         pstd<-apply(out, 2, stde)
+
+         if(hpd){             
+            limm<-apply(out, 2, hpdf)
+            plinf<-limm[1,]
+            plsup<-limm[2,]
+         }
+         else
+         {
+            plinf<-apply(out, 2, pdf)
+            coef.l<-limm[1,]
+            plsup<-limm[2,]
+         }
+
    	 names(pm)<-covn
    	 names(pmed)<-covn
    	 names(psd)<-covn
@@ -686,11 +733,12 @@ function(object,xnew=NULL,hpd=TRUE, ...)
    out
 }   
 
+
 ###
 ### Tools for DPbinary: print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 01-07-2006.
+### Last modification: 21-08-2006.
 	
 	        
 "print.DPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
@@ -717,118 +765,142 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 
 "summary.DPbinary"<-function(object, hpd=TRUE, ...) 
 {
-    dimen<-object$p
-    coef.p<-object$coefficients[1:dimen]
-    coef.sd<-rep(0,dimen)
-    coef.se<-rep(0,dimen)
-    coef.l<-rep(0,dimen)
-    coef.u<-rep(0,dimen)
-    coef.m<-rep(0,dimen)
-    names(coef.sd)<-names(object$coefficients[1:dimen])
-    names(coef.l)<-names(object$coefficients[1:dimen])
-    names(coef.u)<-names(object$coefficients[1:dimen])
-    
-    alpha<-0.05
-    
-    for(i in 1:dimen){
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        coef.sd[i]<-sqrt(var(object$save.state$thetasave[,i]))
-        coef.m[i]<-median(object$save.state$thetasave[,i])
-        vec<-object$save.state$thetasave[,i]
-        n<-length(vec)
-        
-        if(hpd==TRUE)
-        {
-        
-                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                                  alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-                coef.l[i]<-a$alow[1]            
-                coef.u[i]<-a$aupp[1]            
-         }
-         else
-         {
-                coef.l[i]<-quantile(vec,0.025) 
-                coef.u[i]<-quantile(vec,0.975) 
-         }
+    stde<-function(x)
+    {
+    	n<-length(x)
+    	return(sd(x)/sqrt(n))
     }
 
-    coef.se<-coef.sd/sqrt(n)
+    hpdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[1],a$aupp[1]))
+    }
+    
+    pdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[2],a$aupp[2]))
+    }
+
+    thetasave<-object$save.state$thetasave
+
+### Fixed part of the model
+
+    dimen1<-object$p
+
+    if(dimen1==1)
+    {
+       mat<-matrix(thetasave[,1:dimen1],ncol=1) 
+    }
+    else
+    {
+       mat<-thetasave[,1:dimen1]
+    }
+
+    coef.p<-object$coefficients[1:dimen1]
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
+
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+
+    names(coef.m)<-names(object$coefficients[1:dimen1])
+    names(coef.sd)<-names(object$coefficients[1:dimen1])
+    names(coef.se)<-names(object$coefficients[1:dimen1])
+    names(coef.l)<-names(object$coefficients[1:dimen1])
+    names(coef.u)<-names(object$coefficients[1:dimen1])
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
-    
-    if(hpd==TRUE)
+
+    if(hpd)
     {
        dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
                 "95%HPD-Low","95%HPD-Upp"))
-    }            
+    }
     else
     {
        dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
                 "95%CI-Low","95%CI-Upp"))
     }
     
-    
     ans <- c(object[c("call", "modelname")])
-    
+
     ans$coefficients<-coef.table
 
+
+### CPO
     ans$cpo<-object$cpo
     
 
+### Baseline Information
+
     if(is.null(object$prior$a0))
     {
-	dimen<-1	
+	dimen2<-1	
     }
     else
     {
-	dimen<-2	    
+	dimen2<-2	
     }
 
-    coef.p<-object$coefficients[(object$p+1):(object$p+dimen)]
-    coef.sd<-rep(0,dimen)
-    coef.se<-rep(0,dimen)
-    coef.l<-rep(0,dimen)
-    coef.u<-rep(0,dimen)
-    coef.m<-rep(0,dimen)
-    names(coef.sd)<-names(object$coefficients[(object$p+1):(object$p+dimen)])
-    names(coef.l)<-names(object$coefficients[(object$p+1):(object$p+dimen)])
-    names(coef.u)<-names(object$coefficients[(object$p+1):(object$p+dimen)])
-    for(i in 1:dimen){
-         alow<-rep(0,2)
-         aupp<-rep(0,2)
-         coef.sd[i]<-sqrt(var(object$save.state$thetasave[,(object$p+i)]))
-         coef.m[i]<-median(object$save.state$thetasave[,(object$p+i)])
-         vec<-object$save.state$thetasave[,(object$p+i)]
-         n<-length(vec)
-        
-         if(hpd==TRUE)
-         {
-             a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                              alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-             coef.l[i]<-a$alow[1]            
-             coef.u[i]<-a$aupp[1]            
-         }
-         else
-         {
-                coef.l[i]<-quantile(vec,0.025) 
-                coef.u[i]<-quantile(vec,0.975) 
-         }
+    if(dimen2==1)
+    {
+       mat<-matrix(thetasave[,(dimen1+1):(dimen1+dimen2)],ncol=1) 
     }
+    else
+    {
+       mat<-thetasave[,(dimen1+1):(dimen1+dimen2)] 
+    }   
+    coef.p<-object$coefficients[(dimen1+1):(dimen1+dimen2)]
+    coef.m <-apply(mat, 2, median)    
+    coef.sd<-apply(mat, 2, sd)
+    coef.se<-apply(mat, 2, stde)
 
-    coef.se<-coef.sd/sqrt(n)
+    if(hpd){             
+         limm<-apply(mat, 2, hpdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
+    else
+    {
+         limm<-apply(mat, 2, pdf)
+         coef.l<-limm[1,]
+         coef.u<-limm[2,]
+    }
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
-
-    if(hpd==TRUE)
+    if(hpd)
     {
-       dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-                "95%HPD-Low","95%HPD-Upp"))
-    }            
+         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+             "95%HPD-Low","95%HPD-Upp"))
+    }
     else
     {
-       dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-                "95%CI-Low","95%CI-Upp"))
+         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+             "95%CI-Low","95%CI-Upp"))
     }
 
     ans$prec<-coef.table
@@ -951,6 +1023,38 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 }
 
 
+    stde<-function(x)
+    {
+    	n<-length(x)
+    	return(sd(x)/sqrt(n))
+    }
+
+    hpdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[1],a$aupp[1]))
+    }
+    
+    pdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[2],a$aupp[2]))
+    }
+
+
+
     if(is(x, "DPbinary")){
         if(is.null(param))
 	{
@@ -963,7 +1067,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
            for(i in 1:(n-1)){
                title1<-paste("Trace of",pnames[i],sep=" ")
                title2<-paste("Density of",pnames[i],sep=" ")       
-               plot(x$save.state$thetasave[,i],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               plot(ts(x$save.state$thetasave[,i]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
                if(pnames[i]=="ncluster")
 	       {
 	          hist(x$save.state$thetasave[,i],main=title2,xlab="values", ylab="probability",probability=TRUE)
@@ -982,42 +1086,32 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
            {
                title1<-paste("Trace of",pnames[n],sep=" ")
                title2<-paste("Density of",pnames[n],sep=" ")       
-               plot(x$save.state$thetasave[,n],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               plot(ts(x$save.state$thetasave[,n]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
                fancydensplot(x$save.state$thetasave[,n],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
            
            title1<-c("Predictive Error Density")
            title2<-c("Link Function")
            fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
-           
-           pml<-rep(0,x$nlink)
-           pll<-rep(0,x$nlink)
-           plu<-rep(0,x$nlink)
-           alpha<-0.05
-           
-           for(i in 1:x$nlink)
+
+           pml <-apply(x$save.state$fsave, 2, mean)    
+           if(hpd){             
+                limm<-apply(x$save.state$fsave, 2, hpdf)
+                pll<-limm[1,]
+                plu<-limm[2,]
+           }
+           else
            {
-               pml[i]<-mean(x$save.state$fsave[,i])
-               alow<-rep(0,2)
-	       aupp<-rep(0,2)
-	       vec<-x$save.state$fsave[,i]
-	       n<-length(vec)
-	       a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-		                 alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-	       if(hpd)
-	       {
-	           pll[i]<-a$alow[1]  
-	           plu[i]<-a$aupp[1]
-	       }
-	       else
-	       {
-	           pll[i]<-a$alow[2]  
-	           plu[i]<-a$aupp[2]
-	       }
-            }
-            plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
-            lines(x$xlink,pll,lty=2,lwd=2)
-            lines(x$xlink,plu,lty=2,lwd=2)
+                limm<-apply(x$save.state$fsave, 2, pdf)
+                pll<-limm[1,]
+                plu<-limm[2,]
+           } 
+       
+           plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
+           lines(x$xlink,pll,lty=2,lwd=2)
+           lines(x$xlink,plu,lty=2,lwd=2) 
+
+
         }
         else
         {
@@ -1041,43 +1135,32 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 	    {
                title1<-paste("Trace of",pnames[poss],sep=" ")
                title2<-paste("Density of",pnames[poss],sep=" ")       
-               plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               plot(ts(x$save.state$thetasave[,poss]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
                fancydensplot(x$save.state$thetasave[,poss],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
             }
             else
             {
+
                title1<-c("Predictive Error Density")
                title2<-c("Link Function")
                fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
            
-               pml<-rep(0,x$nlink)
-               pll<-rep(0,x$nlink)
-               plu<-rep(0,x$nlink)
-               alpha<-0.05
-           
-               for(i in 1:x$nlink)
+               pml <-apply(x$save.state$fsave, 2, mean)    
+               if(hpd){             
+                    limm<-apply(x$save.state$fsave, 2, hpdf)
+                    pll<-limm[1,]
+                    plu<-limm[2,]
+               }
+               else
                {
-                   pml[i]<-mean(x$save.state$fsave[,i])
-                   alow<-rep(0,2)
-	           aupp<-rep(0,2)
-	           vec<-x$save.state$fsave[,i]
-	           n<-length(vec)
-	           a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-		                 alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-	           if(hpd)
-	           {
-	               pll[i]<-a$alow[1]  
-	               plu[i]<-a$aupp[1]
-	           }
-	           else
-	           {
-	              pll[i]<-a$alow[2]  
-	              plu[i]<-a$aupp[2]
-	           }
-                }
-                plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
-                lines(x$xlink,pll,lty=2,lwd=2)
-                lines(x$xlink,plu,lty=2,lwd=2)
+                    limm<-apply(x$save.state$fsave, 2, pdf)
+                    pll<-limm[1,]
+                    plu<-limm[2,]
+               } 
+               plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
+               lines(x$xlink,pll,lty=2,lwd=2)
+               lines(x$xlink,plu,lty=2,lwd=2)
+
             }
         }
    }

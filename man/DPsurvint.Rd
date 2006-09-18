@@ -164,7 +164,7 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
 
     # MCMC parameters
 
-      nburn<-10000
+      nburn<-20000
       nsave<-10000
       nskip<-10
       ndisplay<-100
@@ -192,6 +192,53 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
     # Plot an specific model parameter (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="x1")	
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="mu")	
+
+    # Predictive information with covariates
+      npred<-10
+      xnew<-cbind(rep(1,npred),seq(-1.5,1.5,length=npred))
+      xnew<-rbind(xnew,cbind(rep(0,npred),seq(-1.5,1.5,length=npred)))
+      grid<-seq(0.00001,14,0.5)
+      pred1<-predict(fit1,xnew=xnew,grid=grid)
+
+    # Plot Baseline information
+      plot(pred1,all=FALSE,band=TRUE)
+
+
+    #############################################################
+    # Time to Cosmetic Deterioration of Breast Cancer Patients
+    #############################################################
+
+      data(deterioration)
+      attach(deterioration)
+      y<-cbind(left,right)
+
+    # Initial state
+      state <- NULL
+
+    # MCMC parameters
+
+      nburn<-20000
+      nsave<-10000
+      nskip<-20
+      ndisplay<-1000
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
+                   tune=0.25)
+
+    # Prior information
+      prior <- list(alpha=10,beta0=rep(0,1),Sbeta0=diag(100,1),m0=0,s0=1,
+                    tau1=0.01,tau2=0.01)
+
+    # Fit the model
+
+      fit2 <- DPsurvint(y~trt,prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit2
+
+    # Predictive information with covariates
+      xnew<-matrix(c(0,1),nrow=2,ncol=1)
+      grid<-seq(0.01,70,1)
+      pred2<-predict(fit2,xnew=xnew,grid=grid)
+      plot(pred2,all=FALSE,band=TRUE)
+
 }      
 }
 

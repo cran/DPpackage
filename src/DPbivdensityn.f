@@ -1,22 +1,25 @@
-
-
 c=======================================================================                      
-      subroutine spdenn(nrec,nvar,y,a0b0,k0,nuvec,m1rand,s2inv,s2invm2,
-     &                 psiinv2,tau,mcmc,nsave,cpo,randsave,
-     &                 thetasave,alpha,m1,muclus,ncluster,psi1,
-     &                 psiinv1,s1,sigmaclus,ss,ccluster,iflag,
-     &                 muwork,prob,seed,sigmawork,sigworkinv,theta,
+      subroutine bivspdenn(ngrid,nrec,nvar,y,a0b0,k0,nuvec,m1rand,s2inv,
+     &                 s2invm2,psiinv2,tau,mcmc,nsave,cpo,f,fun1,fun2,
+     &                 randsave,thetasave,alpha,m1,muclus,ncluster,psi1,
+     &                 psiinv1,s1,sigmaclus,ss,ccluster,grid1,grid2,
+     &                 iflag,muwork,muwork2,
+     &                 prob,seed,sigmawork,sigmawork2,sigworkinv,theta,
      &                 workm1,workm2,workm3,workmh1,workmh2,workv1,
      &                 workv2,workv3,ywork)
 c=======================================================================                      
 c
 c     Version 1.0: 
+c
 c     Last modification: 05-10-2006.
 c
-c     Subroutine `spdenn' to run a Markov chain in the DP mixture of  
-c     normals model. In this routine, inference is based on the 
+c     Subroutine `bivspdenn' to run a Markov chain in the DP mixture of  
+c     bivariate normals model. In this routine, inference is based on the 
 c     Polya urn representation of the Dirichlet process. The algorithm
-c     8 of Neal (2000) is used with m=1.
+c     8 of Neal (2000) is used with m=1. The difference with respect to
+c     `spdenn` is that this includes a grid of points where the density
+c     estimate is evaluated. This fucntion can be used only for dimension
+c     <=2.
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
 c
@@ -49,10 +52,13 @@ c     Email: Alejandro.JaraVallejos@med.kuleuven.be
 c
 c---- Data -------------------------------------------------------------
 c 
+c        ngrid       :  integer giving the size of the grid where
+c                       the density estimate is evaluated.
 c        nrec        :  integer giving the number of observations.
 c        nvar        :  integer giving the number of variables.
 c        y           :  real matrix giving the response variables,
 c                       y(nrec,nvar).
+c
 c-----------------------------------------------------------------------
 c
 c---- Prior information ------------------------------------------------
@@ -104,6 +110,12 @@ c-----------------------------------------------------------------------
 c
 c---- Output -----------------------------------------------------------
 c
+c        f           :  real matrix giving the density estimate at the
+c                       grid, f(ngrid,ngrid).
+c        fun1        :  real giving the marginal density estimate at the
+c                       grid, fun1(ngrid).
+c        fun2        :  real giving the marginal density estimate at the
+c                       grid, fun2(ngrid).
 c        cpo         :  real giving the cpo. 
 c        randsave    :  real matrix containing the mcmc samples for
 c                       the parameters of the density, 
@@ -137,6 +149,7 @@ c        sigmaclus   :  real matrix giving the current value of the
 c                       variances, sigmaclus(nrec+2,nvar*(nvar+1)/2) .
 c        ss          :  integer vector giving the cluster label for 
 c                       each record, ss(nrec).
+c
 c-----------------------------------------------------------------------
 c
 c---- Working space ----------------------------------------------------
@@ -147,7 +160,14 @@ c        count       :  index.
 c        detlog      :  real used to save the log-determinant in an
 c                       matrix inversion process.
 c        dispcount   :  index. 
+c        dnrm        :  density of a normal distribution.
 c        evali       :  integer indicator used in updating the state.
+c        grid1       :  real vector giving the grid where the density
+c                       estimate is evaluated for first coordinate,
+c                       grid1(ngrid).
+c        grid2       :  real vector giving the grid where the density
+c                       estimate is evaluated for second coordinate,
+c                       grid2(ngrid).
 c        i           :  index. 
 c        ii          :  index. 
 c        ihmssf      :  integer function to determine the position of a
@@ -159,6 +179,8 @@ c        iscan       :  index.
 c        j           :  index. 
 c        k           :  index. 
 c        l           :  index. 
+c        l1          :  index. 
+c        l2          :  index. 
 c        ns          :  integer indicator used in updating the state. 
 c        nscan       :  integer indicating the total number of MCMC
 c                       scans.
@@ -166,6 +188,8 @@ c        nuniqs      :  integer giving the dimension of the half-stored
 c                       covariance matrix.
 c        muwork      :  real vector used to save the mean,
 c                       one observation, muwork(nvar).
+c        muwork2     :  real vector used to save the mean,
+c                       one observation, muwork2(nvar).
 c        nuwork      :  index.
 c        prob        :  real vector used to update the cluster 
 c                       structure, prob(nrec+2).
@@ -178,6 +202,8 @@ c        seed2       :  seed for random number generation.
 c        seed3       :  seed for random number generation.
 c        sigmawork   :  real matrix used to save the variance of
 c                       one observation, sigmawork(nvar,nvar).
+c        sigmawork2  :  real matrix used to save the variance of
+c                       one observation, sigmawork2(nvar,nvar).
 c        sigworkinv  :  real matrix used to save the inverse of the
 c                       variance of one observation, 
 c                       sigworkinv(nvar,nvar).
@@ -185,7 +211,8 @@ c        since       :  index.
 c        skipcount   :  index. 
 c        theta       :  real vector used to save randomnly generated
 c                       mean vector, theta(nvar).
-c        tmp1        :  real used to store the log-dmvn. 
+c        tmp1        :  real working variable. 
+c        tmp2        :  real working variable.
 c        workm1      :  real matrix used to update the cluster 
 c                       structure, workm1(nvar,nvar).
 c        workm2      :  real matrix used to update the cluster 
@@ -210,7 +237,7 @@ c=======================================================================
       implicit none 
 
 c+++++Data
-      integer nrec,nvar
+      integer ngrid,nrec,nvar
       real*8 y(nrec,nvar)
 
 c+++++Prior 
@@ -225,6 +252,7 @@ c+++++MCMC parameters
 
 c+++++Output
       real*8 cpo(nrec)
+      real*8 f(ngrid,ngrid),fun1(ngrid),fun2(ngrid)
       real*8 randsave(nsave,(nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
       real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
 
@@ -237,18 +265,22 @@ c+++++Current values of the parameters
 c+++++Working space
       integer ccluster(nrec),count,dispcount,evali
       integer i,ii,iflag(nvar),ihmssf,isave,iscan
-      integer j,k,l
+      integer j,k,l,l1,l2
       integer ns,nscan,nuniqs,nuwork,sprint
       integer seed(3),seed1,seed2,seed3,since,skipcount
-      real*8 detlog
-      real*8 muwork(nvar),prob(nrec+2),rgamma
+      real*8 detlog,dnrm
+      real*8 muwork(nvar),muwork2(nvar),prob(nrec+2),rgamma
       real*8 s1(nvar,nvar)
-      real*8 sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
-      real*8 theta(nvar),tmp1
+      real*8 sigmawork(nvar,nvar),sigmawork2(nvar,nvar)
+      real*8 sigworkinv(nvar,nvar)
+      real*8 theta(nvar),tmp1,tmp2
       real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
       real*8 workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
       real*8 workv1(nvar),workv2(nvar),workv3(nvar)
       real*8 ywork(nvar)
+
+c+++++Working space - Density
+      real*8 grid1(ngrid),grid2(ngrid)
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -282,7 +314,6 @@ c++++ cluster structure
       do i=1,nrec
          ccluster(ss(i))=ccluster(ss(i))+1
       end do
-      
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
@@ -308,8 +339,6 @@ c++++++++++++++++++++++++++++++++++
 c++++++++++++++++++++++++++++++
 c+++++++ a) configurations 
 c++++++++++++++++++++++++++++++
-
-c         call intpr("Step 1a",-1,0,1)
 
          do i=1,nrec
 
@@ -497,8 +526,6 @@ c++++++++++++++++++++++++++++++
 c+++++++ b) Resampling step
 c++++++++++++++++++++++++++++++
 
-c         call intpr("Step 1b",-1,0,1)
-
          do ii=1,ncluster
 
 c++++++++++ check if the user has requested an interrupt
@@ -598,8 +625,6 @@ c+++++++ check if the user has requested an interrupt
 
 c+++++++ scale matrix of the inverted-Wishart component
 
-c         call intpr("Step 2a",-1,0,1)
-         
          if(nu2.gt.0)then
          
          do i=1,nvar
@@ -647,8 +672,6 @@ c         call intpr("Step 2a",-1,0,1)
          end if
 
 c+++++++ mean of the normal component
-
-c         call intpr("Step 2b",-1,0,1)
 
          if(m1rand.eq.1)then
          
@@ -745,8 +768,6 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ Precision parameter
 c++++++++++++++++++++++++++++++++++
 
-c         call intpr("Step 3",-1,0,1)
-         
          if(aa0.gt.0.d0)then
             call samalph(alpha,aa0,ab0,ncluster,nrec)
          end if 
@@ -756,8 +777,6 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ save samples
 c++++++++++++++++++++++++++++++++++         
 
-c         call intpr("Step 4",-1,0,1)
-         
          if(iscan.gt.nburn)then
             skipcount=skipcount+1
             if(skipcount.gt.nskip)then
@@ -824,8 +843,86 @@ c+++++++++++++ predictive information
                   prob(i)=dble(ccluster(i))/(alpha+dble(nrec))
                end do
                prob(ncluster+1)=alpha/(alpha+dble(nrec))
-         
+
                call simdisc(prob,nrec+2,ncluster+1,evali)
+
+               do k=1,nvar
+                  do l=1,nvar
+                     workm3(k,l)=psiinv1(k,l)
+                  end do
+               end do
+
+               call riwishart(nvar,nu1,workm3,workm1,workm2,workv1,
+     &                        workmh1,workmh2,iflag)
+               do k=1,nvar
+                  do l=1,nvar
+                     s1(k,l)=workm3(k,l)/dble(k0)
+                     sigmawork(k,l)=workm3(k,l)
+                  end do
+               end do
+
+               call rmvnorm(nvar,m1,s1,workmh1,workv1,muwork) 
+
+               do i=1,ngrid
+                  tmp1=0.d0
+                  do j=1,ncluster
+                     tmp2=dnrm(grid1(i),muclus(j,1),
+     &                    sqrt(sigmaclus(j,1)),0)
+                     tmp1=tmp1+tmp2*prob(j)
+                  end do
+
+                  tmp2=dnrm(grid1(i),muwork(1),
+     &                 sqrt(sigmawork(1,1)),0)
+                  tmp1=tmp1+tmp2*prob(ncluster+1)
+                  
+                  fun1(i)=fun1(i)+tmp1                    
+               end do
+
+               if(nvar.eq.2)then
+                 do i=1,ngrid
+                    tmp1=0.d0
+                    do j=1,ncluster
+                       tmp2=dnrm(grid2(i),muclus(j,2),
+     &                      sqrt(sigmaclus(j,3)),0)
+                       tmp1=tmp1+tmp2*prob(j)
+                    end do
+
+                    tmp2=dnrm(grid2(i),muwork(2),
+     &                   sqrt(sigmawork(2,2)),0)
+                    tmp1=tmp1+tmp2*prob(ncluster+1)
+                  
+                    fun2(i)=fun2(i)+tmp1                    
+                 end do
+                     
+                 do i=1,ngrid
+                    ywork(1)=grid1(i)
+                    do j=1,ngrid
+                       ywork(2)=grid2(j)
+                       tmp1=0.d0
+                       do k=1,ncluster
+                          do l1=1,nvar
+                             muwork2(l1)=muclus(k,l1)
+                             do l2=1,nvar
+                                sigmawork2(l1,l2)=
+     &                          sigmaclus(k,ihmssf(l1,l2,nvar))
+                             end do
+                          end do                
+                   
+                          call dmvn(nvar,ywork,muwork2,sigmawork2,
+     &                      tmp2,workv1,workm1,workm2,workv2,iflag)                 
+
+                          tmp1=tmp1+exp(tmp2)*prob(k)
+                       end do
+                      
+                       call dmvn(nvar,ywork,muwork,sigmawork,
+     &                      tmp2,workv1,workm1,workm2,workv2,iflag)                 
+                       
+                       tmp1=tmp1+exp(tmp2)*prob(ncluster+1)
+                       
+                       f(i,j)=f(i,j)+tmp1                    
+                    end do
+                 end do
+               end if
 
                if(evali.le.ncluster)then
                   do i=1,nvar  
@@ -835,32 +932,6 @@ c+++++++++++++ predictive information
                      end do
                   end do  
                end if
-               
-               if(evali.eq.ncluster+1)then 
-                  do k=1,nvar
-                     do l=1,nvar
-                        workm3(k,l)=psiinv1(k,l)
-                     end do
-                  end do
-
-                  call riwishart(nvar,nu1,workm3,workm1,workm2,workv1,
-     &                           workmh1,workmh2,iflag)
-
-
-                 do k=1,nvar
-                    do l=1,nvar
-                       s1(k,l)=workm3(k,l)/dble(k0)
-                       sigmawork(k,l)=workm3(k,l)
-                    end do
-                 end do
-
-                 call rmvnorm(nvar,m1,s1,workmh1,workv1,theta) 
-
-                 do k=1,nvar
-                     muwork(k)=theta(k)
-                 end do      
-               end if
-               
                
                do i=1,nvar
                   count=count+1 
@@ -875,7 +946,6 @@ c+++++++++++++ predictive information
                end do
                
                call rmvnorm(nvar,muwork,sigmawork,workmh1,workv1,theta) 
-               
                
                do i=1,nvar
                   count=count+1 
@@ -917,6 +987,14 @@ c+++++++++++++ print
 
       do i=1,nrec
          cpo(i)=dble(nsave)/cpo(i)
+      end do
+
+      do i=1,ngrid
+         fun1(i)=fun1(i)/dble(nsave)       
+         fun2(i)=fun2(i)/dble(nsave)       
+         do j=1,ngrid      
+            f(i,j)=f(i,j)/dble(nsave)
+         end do   
       end do
 
 

@@ -139,7 +139,7 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
       grid<-seq(0.00001,14,0.5)
       pred<-predict(fit1,xnew=xnew,grid=grid)
 
-    # Plot Baseline information with and without Credibility band
+    # Plot Baseline information
       plot(pred,band=TRUE)
 }
 }

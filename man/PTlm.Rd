@@ -11,7 +11,7 @@
     
 \usage{
 
-PTlm(formula,prior,mcmc,state,status,
+PTlm(formula,ngrid=200,prior,mcmc,state,status,
      data=sys.frame(sys.parent()),na.action=na.fail)
 }
 
@@ -20,6 +20,9 @@ PTlm(formula,prior,mcmc,state,status,
                      model fit, with the response on the
                      left of a \code{~} operator and the terms, separated by \code{+}
                      operators, on the right.}
+                     
+    \item{ngrid}{    number of grid points where the error density estimate is 
+                     evaluated. The default value is 200.}
 
    \item{prior}{     a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
@@ -40,7 +43,10 @@ PTlm(formula,prior,mcmc,state,status,
                      the total number of scans to be saved, \code{ndisplay} giving
                      the number of saved scans to be displayed on the screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune} giving the Metropolis tuning parameter.}   
+                     out), and  \code{tune1}, \code{tune2} and \code{tune3} giving the  positive 
+                     Metropolis tuning parameter for the regression coefficients,
+                     the scale, and precision parameters, respectively
+                     (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -145,18 +151,16 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       state <- NULL
 
     # MCMC parameters
-
       nburn<-5000
       nsave<-10000
       nskip<-20
       ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
-                   ndisplay=ndisplay,tune=0.5)
+                   ndisplay=ndisplay,tune1=0.10,tune2=0.25)
 
     # Prior information
       prior <- list(alpha=0.1,beta0=rep(0,3),Sbeta0=diag(1000,3),
                     tau1=0.01,tau2=0.01,M=6)
-
 
     # Fit the model
 
@@ -181,15 +185,15 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
       nburn<-5000
       nsave<-10000
-      nskip<-10
-      ndisplay<-1000
+      nskip<-20
+      ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
-                   ndisplay=ndisplay,tune=0.5)
+                   ndisplay=ndisplay,tune1=1.1,tune2=1.1)
+
 
     # Prior information
       prior <- list(alpha=0.1,beta0=rep(0,3),Sbeta0=diag(1000,3),
-                    tau1=0.01,tau2=0.01,M=6)
-
+                    tau1=0.01,tau2=0.01,M=8)
 
     # Fit the model
 

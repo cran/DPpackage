@@ -11,9 +11,9 @@ c=======================================================================
 c=======================================================================                      
 c
 c     Version 1.0: 
-c     Last modification: 13-04-2006.
+c     Last modification: 05-10-2006.
 c
-c     Subroutine `spden' to run a Markov chain in the DP mixture of  
+c     Subroutine `spdeng' to run a Markov chain in the DP mixture of  
 c     normals model. In this routine, inference is based on the 
 c     Polya urn representation of the Dirichlet process. The no-gaps
 c     algorithm is used.
@@ -111,7 +111,7 @@ c                       randsave(nsave,(nrec+2)*nvar+
 c                       (nrec+1)*nvar*(nvar+1)/2+nvar).
 c        thetasave   :  real matrix containing the mcmc samples for
 c                       the parameters, 
-c                       thetasave(nsave,nvar+nvar*(nvar+1)/2+2).
+c                       thetasave(nsave,nvar+nvar*(nvar+1)/2+3).
 c
 c-----------------------------------------------------------------------
 c
@@ -226,7 +226,7 @@ c+++++MCMC parameters
 c+++++Output
       real*8 cpo(nrec)
       real*8 randsave(nsave,(nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+2)
+      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
@@ -772,6 +772,11 @@ c+++++++++++++ normal baseline mean
                   count=count+1
                   thetasave(isave,count)=m1(i)
                end do   
+
+c+++++++++++++ k0 parameter
+
+               count=count+1
+               thetasave(isave,count)=k0
 
 c+++++++++++++ IW baseline scale
 

@@ -1,41 +1,34 @@
     
 c=======================================================================                      
-      subroutine dpbinaryp2(model,nrec,p,sens,spec,x,yobs,
-     &                      nlink,xlink,
-     &                      a0b0,betapm,betapv,
-     &                      mcmcvec,nsave,propv,
-     &                      acrate,fsave,randsave,thetasave,cpo,
-     &                      alpha,beta,ncluster,y,v,
-     &                      betac,
-     &                      endp,endp2,eta,etan,fsavet,
-     &                      intcount,intcount2,intind,intind2,iflag,
+      subroutine dpordinalp(nrec,p,x,y,interind,ncateg,
+     &                      mcmc,nsave,propv,
+     &                      a0b0,betapm,betapv,m0,s0,tau,
+     &                      acrate,thetasave,randsave,cpo,
+     &                      ncluster,alpha,beta,mu,sigma2,v,
+     &                      maxint,maxend,maxm,
+     &                      iflag,
+     &                      imaxs,imaxsc,imins,iminsc,
+     &                      intcount,intcount2,    
+     &                      intind,intind2,
      &                      intposso,intpossn,
-     &                      lpsav,lpsavc,          
-     &                      maxint,maxend,maxm,mass,
+     &                      seed,
+     &                      betac,eta,etan,endp,endp2,
+     &                      linfs,linfsc,lsups,lsupsc,
+     &                      mass,
      &                      prob,
-     &                      seed1,seed2,
-     &                      uvec,vvec,vnew,vnew2,
+     &                      uvec,vvec,vnew,vnew2,wvec,
      &                      workm1,workm2,
-     &                      workmh1,workv1,workv2,wvec)
+     &                      workmh1,workv1,workv2)      
 c=======================================================================                      
 c
-c     Subroutine `dpbinaryp2' to run a Markov chain in the  
-c     semiparametric probit regression model for binary data. 
+c     Subroutine `dpordinalp' to run a Markov chain in the  
+c     semiparametric regression model for ordinal data. 
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
 c
-c     Version 2.0: 
+c     Version 1.0: 
 c
-c     Last modification: 01-07-2006.
-c     
-c     Changes and Bug fixes: 
-c
-c     Version 1.0 to Version 2.0:
-c          - Uses qsort3 subroutine to sort errors and endpoints.
-c          - Keeps the observations that belong to each interval
-c            in memory to allow a faster assignment of the errors.
-c          - Performs a binary search to find the endpoints corresponding
-c            to each interval.
+c     Last modification: 02-07-2006.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -66,25 +59,17 @@ c     Email: Alejandro.JaraVallejos@med.kuleuven.be
 c
 c---- Data -------------------------------------------------------------
 c
-c        model       :  integer indicating if the model correct for
-c                       missclasification (1) or not (0).
+c        interind    :  integer vector giving the type of interval for
+c                       each observation, 1=left, 2=inter, and 3=right,
+c                       interind(nrec)
+c        ncateg      :  integer giving the number of levels in the
+c                       ordinal response. 
 c        nrec        :  integer giving the number of observations.
 c        p           :  integer giving the number of fixed coefficients.
-c        sens        :  real vector of sensitivity, sens(nrec).
-c        spec        :  real vector of specificity, spec(nrec).
 c        x           :  real matrix giving the design matrix for the 
 c                       fixed effects, x(nrec,p). 
-c        yobs        :  integer vector giving the oberved binary 
-c                       response, yobs(nrec).
-c
-c-----------------------------------------------------------------------
-c
-c---- Link information -------------------------------------------------
-c       
-c        nlink       :  integer giving the number of grid points to 
-c                       evaluate the link.
-c        xlink       :  real vector giving the grid points, xlink(nlink)
-c
+c        y           :  integer vector giving the ordinal response,
+c                       y(nrec).
 c-----------------------------------------------------------------------
 c
 c---- Prior information ------------------------------------------------
@@ -97,6 +82,16 @@ c        betapm      :  real vector giving the prior mean of regression
 c                       coefficients, betapm(p).
 c        betapv      :  real matrix giving the prior covariance of 
 c                       regression coefficients, betapv(p,p).
+c        cutoff      :  real vector giving the current value of the
+c                       cutoff points, cutoff(ncateg-1)
+c        m0          :  real giving the prior mean of the mean of the
+c                       lognormal baseline distribution.
+c        s0          :  real giving the prior variance of the mean of 
+c                       the lognormal baseline distribution.
+c        tau1, tau2  :  reals giving the hyperparameters of the prior 
+c                       distribution for the inverse of the 
+c                       variance of the lognormal baseline distribution,
+c                       1/sigma ~ Gamma(tau1/2,tau2/2).
 c
 c-----------------------------------------------------------------------
 c
@@ -115,13 +110,11 @@ c
 c---- Output ----------------------------------------------------------- 
 c
 c        acrate      :  real giving the MH acceptance rate. 
-c        fsave       :  real matrix containing the mcmc samples for
-c                       the link.
 c        randsave    :  real matrix containing the mcmc samples for
 c                       the errors and prediction,
 c                       randsave(nsave,nrec+1).
 c        thetasave   :  real vector containing the mcmc sample for the
-c                       regression parameters, betsave(nsave,p+2). 
+c                       regression parameters, betsave(nsave,p+4). 
 c        cpo         :  real giving the cpo, cpo(nrec).
 c
 c-----------------------------------------------------------------------
@@ -132,10 +125,12 @@ c        alpha       :  real giving the current value of the precision
 c                       parameter of the Dirichlet process.
 c        beta        :  real vector giving the current value of the 
 c                       regression coefficients, beta(p).
+c        mu          :  real giving the mean of the baseline 
+c                       distribution.
 c        ncluster    :  integer giving the number of clusters in the
 c                       random effects.
-c        y           :  integer vector giving the current value of the
-c                       true binary responses, y(nrec).
+c        sigma2      :  real giving the current value of the variance
+c                       of the baseline distribution.
 c        v           :  real vector giving the current value of the 
 c                       errors, v(nrec).
 c
@@ -162,15 +157,24 @@ c                       eta(nrec).
 c        etan        :  real vector giving the linear predictor, 
 c                       etan(nrec).
 c        evali       :  integer indicator used in updating the state.
-c        fsavet      :  integer vector used to store the number of
-c                       observations to calculate the predictive
-c                       distribution of the link, fsavet(nlink).
 c        i           :  index.
 c        iflag       :  integer vector used to evaluate the prior
 c                       distribution for the regression coefficients, 
 c                       iflag(p).
-c        imax        :  index.
-c        imin        :  index.
+c        imaxs       :  integer vector used to store the highest
+c                       partition where each error can be sampled from,
+c                       imaxs(nrec). 
+c        imaxsc      :  integer vector used to store the highest
+c                       partition defined for the candidate coefficients
+c                       where each error can be sampled from,
+c                       imaxs(nrec). 
+c        imins       :  integer vector used to store the lowest
+c                       partition where each error can be sampled from,
+c                       imins(nrec). 
+c        iminsc      :  integer vector used to store the lowest
+c                       partition defined for the candidate coefficients
+c                       where each error can be sampled from,
+c                       imins(nrec). 
 c        indi        :  index.
 c        intcount    :  integer vector used to count the number of 
 c                       observations for each interval, 
@@ -179,9 +183,9 @@ c        intcount2   :  integer vector used to count the number of
 c                       observations for each interval, 
 c                       intcount2(maxint).
 c        intind      :  integer vector giving the interval where 
-c                       each observation belong, intind(nrec+1).
+c                       each obbservation belong, intind(nrec+1).
 c        intind2     :  integer vector giving the interval where 
-c                       each observation belong, intind2(nrec+1).
+c                       each obbservation belong, intind2(nrec+1).
 c        intposso    :  integer matrix giving the observations that
 c                       belong to each cluster, intposso(maxint,nrec+1).
 c        intpossn    :  integer matrix giving the observations that
@@ -193,22 +197,30 @@ c        k           :  index.
 c        keepbeta    :  real working variable.
 c        liminf      :  real working variable.
 c        limsup      :  real working variable.
+c        linfs       :  real vector used to store the lim inf of the
+c                       interval where the error must be sampled,
+c                       linfs(nrec).
+c        linfsc      :  real vector used to store the lim inf of the
+c                       interval defined for the candidate value of the 
+c                       coefficients where the error must be sampled, 
+c                       linfsc(nrec).
 c        logliko     :  real working variable.
 c        loglikn     :  real working variable.
 c        logprioro   :  real working variable.
 c        logpriorn   :  real working variable.
-c        lpsav       :  integer vector used to store the position of 
-c                       the endpoint for the linear predictor,
-c                       lpsav(nrec). 
-c        lpsavc      :  integer vector used to store the position of 
-c                       the endpoint for the linear predictor,
-c                       lpsavc(nrec). 
-c        maxint      :  integer giving the maximum number of intervals.
+c        lsups       :  real vector used to store the lim sup of the
+c                       interval where the error must be sampled,
+c                       lsups(nrec).
+c        lsupsc      :  real vector used to store the lim sup of the
+c                       interval defined for the candidate value of the 
+c                       coefficients where the error must be sampled, 
+c                       lsupsc(nrec).
 c        maxend      :  integer giving the maximum number of intervals.
 c        maxm        :  integer giving the maximum number of points in
 c                       the finite approximation of the DP.
 c        mass        :  real vector giving the mass of the DP,
 c                       mass(maxint).
+c        maxint      :  integer giving the maximum number of intervals.
 c        maxu        :  real working variable.
 c        mrand       :  index.
 c        npoints     :  index.
@@ -220,18 +232,22 @@ c        prob        :  real vector used to update the cluster
 c                       structure, prob(maxint).
 c        ratio       :  real working variable.
 c        rbeta       :  real beta random number generator.
+c        rgamma      :  real gamma random number generator.
+c        rnorm       :  real normal random number generator.
 c        runif       :  real uniform random number generator.
 c        rtnorm      :  real truncated normal random number generator.
 c        seed1       :  seed for random number generation.
 c        seed2       :  seed for random number generation.
+c        seed3       :  seed for random number generation.
 c        skipcount   :  index. 
+c        swork       :  real working variable.
 c        tmp1        :  real used to accumulate quantities. 
 c        tmp2        :  real used to accumulate quantities.
 c        uvec        :  real working vector, uvec(maxm).
+c        vbar        :  real working variable.
 c        vvec        :  real working vector, vvec(maxm).
 c        vnew        :  real working vector, vnew(nrec+1).
 c        vnew2       :  real working vector, vnew2(nrec).
-c        vpred       :  real working variable. 
 c        workm1      :  real matrix used to update the fixed effects,
 c                       workm1(p,p).
 c        workm2      :  real matrix used to update the fixed effects,
@@ -245,99 +261,91 @@ c                       workv2(p).
 c        wvec        :  real working vector, wvec(maxm).
 c
 c=======================================================================                  
-     
+
       implicit none 
 
-c+++++Constants
-      real*8 zero,one
-      parameter(zero=0.d0)
-      parameter(one =1.00001d0)
-      
-c+++++Observed variables
-      integer model,nrec,p,yobs(nrec)
-      real*8 sens(nrec),spec(nrec)
+c+++++Data
+      integer ncateg,nrec,p,interind(nrec),y(nrec)  
       real*8 x(nrec,p)
 
-c+++++Link information
-      integer nlink 
-      real*8 xlink(nlink)
-      
-c+++++Prior information
-      real*8 a0b0(2),aa0,ab0,betapm(p),betapv(p,p)
-
 c+++++MCMC parameters
-      integer mcmcvec(3),nburn,nskip,nsave,ndisplay
+      integer mcmc(3),nburn,nskip,nsave,ndisplay
       real*8 propv(p,p)
 
-c+++++Stored output
-      real*8 acrate,fsave(nsave,nlink)
-      real*8 randsave(nsave,nrec+1),thetasave(nsave,p+2)
+c+++++Prior information
+      real*8 a0b0(2),aa0,ab0,betapm(p),betapv(p,p),m0,s0
+      real*8 tau(2),tau1,tau2
+
+c+++++Output
+      real*8 acrate,randsave(nsave,nrec+1),thetasave(nsave,p+4)
       real*8 cpo(nrec)
       
 c+++++Current values of the parameters
-      integer ncluster,y(nrec)
-      real*8 alpha,beta(p),v(nrec)
-      
+      integer ncluster
+      real*8 alpha,beta(p)
+      real*8 cutoff(ncateg-1)
+      real*8 mu,sigma2,v(nrec)
+
 c+++++Working space
-      integer sprint
-      integer maxint
-      integer counter
-      integer dispcount
+      integer maxint 
+      integer counter,dispcount
       integer efind
       integer evali
-      integer fsavet(nlink)
-      integer i,iflag(p),imax,imin,indi
-      integer intcount(maxint),intcount2(maxint)
-      integer intind(nrec+1),intind2(nrec+1)
+      integer i,iflag(p)
+      integer imax,imaxs(nrec),imaxsc(nrec)
+      integer imin,imins(nrec),iminsc(nrec)
+      integer indi,intcount(maxint)
+      integer intcount2(maxint),intind(nrec+1),intind2(nrec+1)
       integer intposso(maxint,nrec+1),intpossn(maxint,nrec+1)
-      integer isave,iscan
-      integer j
-      integer k
-      integer lpsav(nrec),lpsavc(nrec)            
+      integer isave,iscan,j,k
       integer maxend,maxm
       integer mrand,npoints,ns,nso,nscan,ok
-      integer pprn
-      integer seed1,seed2
+      integer seed(3),seed1,seed2,seed3
       integer skipcount
-
-      real*8 area
-      real*8 betac(p),cdfnorm
-      real*8 endp(maxend),endp2(maxend)
-      real*8 eta(nrec),etan(nrec)
-      real*8 keepbeta
-      real*8 liminf,limsup,logliko,loglikn,logprioro,logpriorn
-      real*8 mass(maxint),maxu
-      real*8 prob(maxint)
-      real*8 ratio,rbeta,rtnorm
-      real*8 tmp1,tmp2
-      real*8 uvec(maxm)
-      real*8 vpred
-      real*8 vvec(maxm),vnew(nrec+1),vnew2(nrec)
-      real*8 workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p),wvec(maxm)
-
-      real runif
       
+      real*8 area,betac(p),cdfnorm
+      real*8 eta(nrec),etan(nrec)
+      real*8 endp(maxend),endp2(maxend)
+      real*8 keepbeta
+      real*8 liminf,limsup,linfs(nrec),linfsc(nrec)
+      real*8 logliko,loglikn,logprioro,logpriorn
+      real*8 lsups(nrec),lsupsc(nrec)
+      real*8 mass(maxint),maxu,prob(maxint)
+      real*8 ratio,rbeta,rgamma,rnorm,rtnorm,sigma,swork,tmp1,tmp2
+      real*8 uvec(maxm),workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
+      real*8 workv1(p),workv2(p),wvec(maxm),vbar,vvec(maxm),vnew(nrec+1)
+      real*8 vnew2(nrec),vpred
+      integer sprint
       logical ainf,binf
+      real runif
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
-      
+
 c++++ initialize variables
 
-      nburn=mcmcvec(1)
-      nskip=mcmcvec(2)
-      ndisplay=mcmcvec(3)
+      nburn=mcmc(1)
+      nskip=mcmc(2)
+      ndisplay=mcmc(3)
       
+      tau1=tau(1)
+      tau2=tau(2)
       aa0=a0b0(1)
       ab0=a0b0(2)
       
-c++++ set random number generator
-
-      call setall(seed1,seed2)
-
+      sigma=sqrt(sigma2)
+      
       call rdisc(1,nrec,evali)
       vpred=v(evali)
+
+
+c++++ set random number generator
+
+      seed1=seed(1)
+      seed2=seed(2)
+      seed3=seed(3)
+
+      call setall(seed1,seed2)
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Check consistency with the data before starting 
@@ -348,26 +356,60 @@ c++++ check if the user has requested an interrupt
       call rchkusr()
  
       do i=1,nrec
-         vnew(i)=v(i) 
-         if(y(i).eq.1)then
-           if(v(i).gt.eta(i))then
+         vnew(i)=v(i)
+         if(interind(i).eq.1)then
+           linfs(i)=0.0
+           lsups(i)=cutoff(1)-eta(i)
+
+           if(v(i).gt.lsups(i))then
               call intpr("i",-1,i,1)
-              call intpr("y",-1,y(i),1)
+              call intpr("type",-1,interind(i),1)
+              call dblepr("u",-1,lsups(i),1)
               call dblepr("eta",-1,eta(i),1)
               call dblepr("v",-1,v(i),1)
               call rexit("Errors not consistent with data in S0")
            end if   
          end if
-         if(y(i).eq.0)then
-           if(v(i).le.eta(i))then
+         
+         if(interind(i).eq.3)then
+           linfs(i)=cutoff(ncateg-1)-eta(i)
+           lsups(i)=0.0
+           if(v(i).le.linfs(i))then
               call intpr("i",-1,i,1)
-              call intpr("y",-1,y(i),1)
-              call intpr("int",-1,intind(i),1)
+              call intpr("type",-1,interind(i),1)
+              call dblepr("l",-1,linfs(i),1)
               call dblepr("eta",-1,eta(i),1)
               call dblepr("v",-1,v(i),1)
               call rexit("Errors not consistent with data in S0")
            end if   
          end if
+            
+         if(interind(i).eq.2)then
+           do j=2,ncateg-1
+              if(y(i).eq.j)then
+                 linfs(i)=cutoff(j-1)-eta(i)
+                 lsups(i)=cutoff(j)-eta(i)
+              end if
+           end do
+           if(v(i).le.linfs(i))then
+              call intpr("i",-1,i,1)
+              call intpr("type",-1,interind(i),1)
+              call dblepr("l",-1,linfs(i),1)
+              call dblepr("u",-1,lsups(i),1)
+              call dblepr("eta",-1,eta(i),1)
+              call dblepr("v",-1,v(i),1)
+              call rexit("Errors not consistent with data in S0")
+           end if   
+           if(v(i).gt.lsups(i))then
+              call intpr("i",-1,i,1)
+              call intpr("type",-1,interind(i),1)
+              call dblepr("l",-1,linfs(i),1)
+              call dblepr("u",-1,lsups(i),1)
+              call dblepr("eta",-1,eta(i),1)
+              call dblepr("v",-1,v(i),1)
+              call rexit("Errors not consistent with data in S0")
+           end if   
+         end if   
       end do
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -388,24 +430,23 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
          end if
       end do
 
+
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c++++ Starting the MCMC algorithm
+c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       isave=0
       skipcount=0
       dispcount=0
       nscan=nburn+(nskip+1)*(nsave)
-      
+
       call cpu_time(sec0)
       sec00=0.d0
-
 
 c++++ evaluate log-prior for current value of parameters
 
       call dmvn(p,beta,betapm,betapv,logprioro,workv1,workm1,
      &          workm2,workv2,iflag)  
-
 
       do iscan=1,nscan
 
@@ -425,25 +466,63 @@ c+++++++ evaluate log-prior for candidate value of parameters
          call dmvn(p,betac,betapm,betapv,logpriorn,workv1,workm1,
      &             workm2,workv2,iflag)  
 
-c+++++++ define the end points
-         
+c+++++++ define the end points base on data
+
          counter=0
          do i=1,nrec
             tmp1=0.d0
             do j=1,p
                tmp1=tmp1+x(i,j)*betac(j)                   
             end do
+            
             etan(i)=tmp1
-            counter=counter+1
-            endp(counter)=eta(i)
-            counter=counter+1
-            endp(counter)=etan(i)
+            
+            if(interind(i).eq.1)then
+               linfs(i)=0.0
+               lsups(i)=cutoff(1)-eta(i)
+               linfsc(i)=0.0
+               lsupsc(i)=cutoff(1)-etan(i)
+               counter=counter+1
+               endp(counter)=cutoff(1)-eta(i)
+               counter=counter+1
+               endp(counter)=cutoff(1)-etan(i)
+            end if
+            
+            if(interind(i).eq.3)then
+               linfs(i)=cutoff(ncateg-1)-eta(i)
+               lsups(i)=0.0
+               linfsc(i)=cutoff(ncateg-1)-etan(i)
+               lsupsc(i)=0.0
+               counter=counter+1
+               endp(counter)=cutoff(ncateg-1)-eta(i)
+               counter=counter+1
+               endp(counter)=cutoff(ncateg-1)-etan(i)
+            end if
+            
+            if(interind(i).eq.2)then
+               do j=2,ncateg-1
+                  if(y(i).eq.j)then
+                    linfs(i)=cutoff(j-1)-eta(i)
+                    lsups(i)=cutoff(j)-eta(i)
+                    linfsc(i)=cutoff(j-1)-etan(i)
+                    lsupsc(i)=cutoff(j)-etan(i)
+                  end if
+               end do
+               counter=counter+1
+               endp(counter)=linfs(i)
+               counter=counter+1
+               endp(counter)=linfsc(i)
+               counter=counter+1
+               endp(counter)=lsups(i)
+               counter=counter+1
+               endp(counter)=lsupsc(i)
+            end if   
          end do
          
 c+++++++ sort end points
 
          call sortvec(maxend,endp,1,counter)
-
+         
          npoints=1
          endp2(1)=endp(1)
          do i=2,counter
@@ -468,22 +547,23 @@ c+++++++ updating G base on the partition defined by beta and betac
             mass(indi)=mass(indi)+1.d0
             intind2(i)=indi
             intcount2(indi)=intcount2(indi)+1
-
+            
             intposso(indi,intcount2(indi))=i
          end do
 
          do i=1,npoints+1
             area=0.d0
             if(i.eq.1)then
-               area=alpha*cdfnorm(endp2(1),0.d0,1.d0,1,0)
+               area=alpha*cdfnorm(endp2(1),mu,sigma,1,0)
              else if(i.gt.npoints)then
-               area=alpha*cdfnorm(endp2(npoints),0.d0,1.d0,0,0)
+               area=alpha*(1.d0-cdfnorm(endp2(npoints),mu,sigma,1,0))
              else
-               area=alpha*(cdfnorm(endp2(i  ),0.d0,1.d0,1,0)-  
-     &                     cdfnorm(endp2(i-1),0.d0,1.d0,1,0))
+               area=alpha*(cdfnorm(endp2(i  ),mu,sigma,1,0)-  
+     &                     cdfnorm(endp2(i-1),mu,sigma,1,0))
             end if
             mass(i)=mass(i)+area
          end do
+
 
          call dirichlet(mass,maxint,npoints+1,prob)
          
@@ -491,47 +571,79 @@ c+++++++ updating G base on the partition defined by beta and betac
 c+++++++ evaluate log-likelihood for current and candidate value 
 c+++++++ of parameters
 
-        
          logliko=0.d0
          loglikn=0.d0
-         
          do i=1,nrec
-            imin=1
-            imax=efind(eta(i),maxend,endp2,npoints)
             tmp1=0.d0
-            do j=imin,imax
-               tmp1=tmp1+prob(j)
-            end do
-            lpsav(i)=imax
-         
-            imin=1
-            imax=efind(etan(i),maxend,endp2,npoints)
             tmp2=0.d0
-            do j=imin,imax
-               tmp2=tmp2+prob(j)
-            end do
-            lpsavc(i)=imax
-          
-            if(yobs(i).eq.1)then
-               tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.zero)go to 100
-               if(tmp1.gt.one )go to 100
-               tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.zero)go to 100
-               if(tmp2.gt.one)go to 100
-               logliko=logliko+log(tmp1)
-               loglikn=loglikn+log(tmp2)
-             else
-               tmp1=tmp1*sens(i)+(1.d0-spec(i))*(1.d0-tmp1) 
-               if(tmp1.lt.zero)go to 100
-               if(tmp1.gt.one )go to 100
-               tmp2=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2) 
-               if(tmp2.lt.zero)go to 100
-               if(tmp2.gt.one )go to 100
-               logliko=logliko+log(1.d0-tmp1)
-               loglikn=loglikn+log(1.d0-tmp2)
+
+            if(interind(i).eq.1)then
+               imin=1
+               imax=efind(lsups(i),maxend,endp2,npoints)
+               tmp1=0.d0
+               do j=imin,imax
+                  tmp1=tmp1+prob(j)
+               end do
+               imins(i)=imin
+               imaxs(i)=imax
+
+               imin=1
+               imax=efind(lsupsc(i),maxend,endp2,npoints)
+               tmp2=0.d0
+               do j=imin,imax
+                  tmp2=tmp2+prob(j)
+               end do
+               iminsc(i)=imin
+               imaxsc(i)=imax
+            end if   
+            
+            if(interind(i).eq.3)then
+               imin=efind(linfs(i),maxend,endp2,npoints)
+               imin=imin+1
+               imax=npoints+1 
+               tmp1=0.d0
+               do j=imin,imax
+                  tmp1=tmp1+prob(j)
+               end do
+               imins(i)=imin
+               imaxs(i)=imax
+
+               imin=efind(linfsc(i),maxend,endp2,npoints)
+               imin=imin+1
+               imax=npoints+1 
+               tmp2=0.d0
+               do j=imin,imax
+                  tmp2=tmp2+prob(j)
+               end do
+               iminsc(i)=imin
+               imaxsc(i)=imax
             end if   
 
+            if(interind(i).eq.2)then
+               imin=efind(linfs(i),maxend,endp2,npoints)
+               imin=imin+1
+               imax=efind(lsups(i),maxend,endp2,npoints)
+               tmp1=0.d0
+               do j=imin,imax
+                  tmp1=tmp1+prob(j)
+               end do
+               imins(i)=imin
+               imaxs(i)=imax
+               
+               imin=efind(linfsc(i),maxend,endp2,npoints)
+               imin=imin+1
+               imax=efind(lsupsc(i),maxend,endp2,npoints)
+               tmp2=0.d0
+               do j=imin,imax
+                  tmp2=tmp2+prob(j)
+               end do
+               iminsc(i)=imin
+               imaxsc(i)=imax
+            end if            
+
+            logliko=logliko+log(tmp1)
+            loglikn=loglikn+log(tmp2)
+            
          end do
 
 c+++++++ aceptation step
@@ -546,7 +658,10 @@ c+++++++ aceptation step
             logprioro=logpriorn
             do i=1,nrec
                eta(i)=etan(i)
-               lpsav(i)=lpsavc(i)                              
+               linfs(i)=linfsc(i)
+               lsups(i)=lsupsc(i)
+               imins(i)=iminsc(i)
+               imaxs(i)=imaxsc(i)
             end do
             acrate=acrate+1.d0
            else 
@@ -555,48 +670,11 @@ c+++++++ aceptation step
 
          if(ok.eq.1)go to 100 
 
-
-           if(model.eq.1)then
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c+++++++++ updating the true binary variables               +++
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             do i=1,nrec
-
-                imin=1
-                imax=lpsav(i)
-                tmp1=0.d0
-                do j=imin,imax
-                   tmp1=tmp1+prob(j)
-                end do
-            
-                if(yobs(i).eq.1)then
-                   tmp2=sens(i)*tmp1/
-     &                   (sens(i)*tmp1+(1.d0-spec(i))*(1.d0-tmp1))
-                 else 
-                   tmp2=(1.d0-sens(i))*tmp1/
-     &                   ((1.d0-sens(i))*tmp1+spec(i)*(1.d0-tmp1))
-                end if
-
-                call rbinom(1,tmp2,evali)
-                
-                if(evali.ne.0.and.evali.ne.1)then
-                  call dblepr("prob",-1,tmp2,1) 
-                  call intpr("evali",-1,evali,1) 
-                  call rexit("Error in the generation of y")
-                end if
-                y(i)=evali
-             end do
-             
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c+++++++++ end updating the true binary variables           +++
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-           end if
-
-
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ updating errors using the Sethuraman-Tiwari (1982) +++
 c+++++++ representation                                     +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
@@ -606,20 +684,13 @@ c+++++++ check if the user has requested an interrupt
          end do
 
          do i=1,nrec
-
-            imin=1
-            imax=lpsav(i)
+            imin=imins(i) 
+            imax=imaxs(i)
             tmp1=0.d0
             do j=imin,imax
                tmp1=tmp1+prob(j)
-            end do            
+            end do
 
-            if(y(i).eq.0)then
-              imin=imax+1
-              imax=npoints+1
-              tmp1=1.d0-tmp1
-            end if
-            
             if(tmp1.eq.0.d0)then
                call intpr("Imin",-1,imin,1)
                call intpr("Imax",-1,imax,1)
@@ -652,9 +723,12 @@ c+++++++ check if the user has requested an interrupt
             intind(i)=evali
 
             intpossn(evali,intcount(evali))=i
-
+            
+            imins(i)=imin
+            imaxs(i)=imax
+            
          end do
-         
+
 
 c+++++++ predictions         
 
@@ -666,26 +740,25 @@ c+++++++ predictions
 c+++++++ end predictions         
 
          do i=1,npoints+1
-
             ns=intcount(i)
             nso=intcount2(i)
             area=0.d0
-
+            
             if(i.eq.1)then
-               area=alpha*cdfnorm(endp2(1),0.d0,1.d0,1,0)
+               area=alpha*cdfnorm(endp2(1),mu,sigma,1,0)
                ainf=.true.
                binf=.false.
                liminf=0.d0
                limsup=endp2(1)
              else if(i.gt.npoints)then
-               area=alpha*cdfnorm(endp2(npoints),0.d0,1.d0,0,0)
+               area=alpha*cdfnorm(endp2(npoints),mu,sigma,0,0)
                ainf=.false.
                binf=.true.
                liminf=endp2(npoints)
                limsup=0.d0
              else
-               area=alpha*(cdfnorm(endp2(i  ),0.d0,1.d0,1,0)-  
-     &                     cdfnorm(endp2(i-1),0.d0,1.d0,1,0))
+               area=alpha*(cdfnorm(endp2(i  ),mu,sigma,1,0)-  
+     &                     cdfnorm(endp2(i-1),mu,sigma,1,0))
                ainf=.false.
                binf=.false.
                liminf=endp2(i-1)
@@ -723,7 +796,7 @@ c+++++++ end predictions
                      if(evali.lt.1.or.evali.gt.nso)return
                      vvec(j)=v(intposso(i,evali))
                    else
-                     tmp1=rtnorm(0.d0,1.d0,liminf,limsup,ainf,binf)
+                     tmp1=rtnorm(mu,sigma,liminf,limsup,ainf,binf)
                      vvec(j)=tmp1
                   end if
                end do
@@ -746,6 +819,7 @@ c+++++++ end predictions
          end do
          vpred=vnew(nrec+1)
 
+
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Check consistency with the data    
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -753,29 +827,62 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
  
-         do i=1,nrec
-            vnew(i)=v(i) 
-            if(y(i).eq.1)then
-              if(v(i).gt.eta(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("y",-1,y(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-            end if
-            if(y(i).eq.0)then
-              if(v(i).le.eta(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("y",-1,y(i),1)
-                 call intpr("int",-1,intind(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S2")
-              end if   
-            end if
+          do i=1,nrec
+             if(interind(i).eq.1)then
+               linfs(i)=0.0
+               lsups(i)=cutoff(1)-eta(i)
+ 
+              if(v(i).gt.lsups(i))then
+                  call intpr("i",-1,i,1)
+                  call intpr("type",-1,interind(i),1)
+                  call dblepr("u",-1,lsups(i),1)
+                  call dblepr("eta",-1,eta(i),1)
+                  call dblepr("v",-1,v(i),1)
+                  call rexit("Errors not consistent with data in S1")
+               end if   
+             end if
+          
+             if(interind(i).eq.3)then
+               linfs(i)=cutoff(ncateg-1)-eta(i)
+               lsups(i)=0.0
+               if(v(i).le.linfs(i))then
+                  call intpr("i",-1,i,1)
+                  call intpr("type",-1,interind(i),1)
+                  call dblepr("l",-1,linfs(i),1)
+                  call dblepr("eta",-1,eta(i),1)
+                  call dblepr("v",-1,v(i),1)
+                  call rexit("Errors not consistent with data in S1")
+               end if   
+             end if
+             
+             if(interind(i).eq.2)then
+               do j=2,ncateg-1
+                  if(y(i).eq.j)then
+                     linfs(i)=cutoff(j-1)-eta(i)
+                     lsups(i)=cutoff(j)-eta(i)
+                  end if
+               end do
+               if(v(i).le.linfs(i))then
+                  call intpr("i",-1,i,1)
+                  call intpr("type",-1,interind(i),1)
+                  call dblepr("l",-1,linfs(i),1)
+                  call dblepr("u",-1,lsups(i),1)
+                  call dblepr("eta",-1,eta(i),1)
+                  call dblepr("v",-1,v(i),1)
+                  call rexit("Errors not consistent with data in S1")
+               end if   
+               if(v(i).gt.lsups(i))then
+                  call intpr("i",-1,i,1)
+                  call intpr("type",-1,interind(i),1)
+                  call dblepr("l",-1,linfs(i),1)
+                  call dblepr("u",-1,lsups(i),1)
+                  call dblepr("eta",-1,eta(i),1)
+                  call dblepr("v",-1,v(i),1)
+                  call rexit("Errors not consistent with data in S1")
+               end if   
+             end if   
          end do
-
+ 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Sort errors and compute the number of clusters 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -784,7 +891,7 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
          ncluster=1
          vnew2(1)=vnew(1)
-         
+     
          do i=2,nrec
             call rchkusr()
             if(vnew(i).ne.vnew2(ncluster))then
@@ -793,9 +900,43 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             end if
          end do
 
-
 100      continue
 
+
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++++ updating parameters of the baseline                +++
+c+++++++ distribution                                       +++
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+c+++++++ clusters and updating step
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+         
+         swork=0.d0
+         
+         do i=1,ncluster
+            swork=swork+log(vnew2(i))
+         end do
+
+         tmp1=(1.d0/s0)+(dble(ncluster)/sigma)
+         
+         vbar=(m0/s0)+(swork/sigma)
+         
+         vbar=vbar/tmp1
+         tmp1=1.d0/tmp1
+
+         mu=rnorm(vbar,tmp1)
+
+         swork=0.d0
+         do i=1,ncluster
+            swork=swork+(log(vnew2(i))-mu)**2            
+         end do
+         
+         sigma2=1.d0/
+     &           rgamma(0.5d0*(dble(ncluster)+tau1),0.5d0*(swork+tau2))
+         
+         sigma=sqrt(sigma2)
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ Precision parameter
@@ -804,7 +945,6 @@ c++++++++++++++++++++++++++++++++++
             call samalph(alpha,aa0,ab0,ncluster,nrec)
          end if 
 
-
 c+++++++ save samples
          
          if(iscan.gt.nburn)then
@@ -812,66 +952,36 @@ c+++++++ save samples
             if(skipcount.gt.nskip)then
                isave=isave+1
                dispcount=dispcount+1
-              
+               
 c+++++++++++++ regression coefficient information
                do j=1,p
                   thetasave(isave,j)=beta(j)
                end do
 
+c+++++++++++++ base line information
+               thetasave(isave,p+1)=mu
+               thetasave(isave,p+2)=sigma2
+
 c+++++++++++++ cluster information
-               thetasave(isave,p+1)=ncluster  
-               thetasave(isave,p+2)=alpha
+               thetasave(isave,p+3)=ncluster  
+               thetasave(isave,p+4)=alpha
 
-c+++++++++++++ link information,
 c+++++++++++++ cpo, errors and predictive information
-
-               do i=1,nlink
-                  fsavet(i)=0
-               end do
-                
                do i=1,nrec
 
                   randsave(isave,i)=v(i)
-                  
-                  imin=1
-                  imax=lpsav(i)
+
+                  imin=imins(i)
+                  imax=imaxs(i)
                   tmp1=0.d0
                   do j=imin,imax
                      tmp1=tmp1+prob(j)
                   end do
-                  
-                  tmp2=sens(i)*tmp1+(1.d0-spec(i))*(1.d0-tmp1)
 
-                  if(tmp2.lt.zero.or.tmp2.gt.one)then
-                     call dblepr("prob1",-1,tmp1,1)
-                     call dblepr("prob2",-1,tmp2,1)
-                     call rexit("Error in Probability")
-                  end if  
-                  
-                  if(yobs(i).eq.1)then
-                    cpo(i)=cpo(i)+1.0d0/tmp2 
-                  end if   
-                  if(yobs(i).eq.0)then
-                    tmp2=1.0d0-tmp2 
-                    cpo(i)=cpo(i)+1.0d0/tmp2 
-                  end if                          
-               
-                  j=1
-                  do while(v(i).le.xlink(j).and.j.le.nlink)
-                     fsavet(j)=fsavet(j)+1
-                     j = j + 1
-                  end do
-                  
+                  cpo(i)=cpo(i)+1.0d0/tmp1 
                end do
                
                randsave(isave,nrec+1)=vpred
-
-               do j=1,nlink
-                  fsave(isave,j)=
-     &             ( alpha*cdfnorm(xlink(j),0.d0,1.d0,1,0) +
-     &               dble(fsavet(j))  )/
-     &             (alpha+dble(nrec))  
-               end do
 
 c+++++++++++++ print
                skipcount = 0
@@ -880,49 +990,25 @@ c+++++++++++++ print
                   sec00=sec00+(sec1-sec0)
                   sec=sec00
                   sec0=sec1
-                  pprn=sprint(isave,nsave,sec)
+                  tmp1=sprint(isave,nsave,sec)
                   dispcount=0
                end if   
+
             end if         
          end if
       end do
-      
-     
+
+
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++++ post chain analysis                                +++
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
       acrate=acrate/dble(nscan)      
       
       do i=1,nrec
          cpo(i)=dble(nsave)/cpo(i)
       end do
-      
+
       return
       end
 
-
-
-c=======================================================================                  
-      subroutine dppredp(nsave,nrec,npred,alpha,v,lp,out)
-c=======================================================================                  
-      implicit none
-      integer nsave,nrec,npred
-      real*8 alpha(nsave),v(nsave,nrec)
-      real*8 lp(npred,nsave),out(npred,nsave)
-      integer i,j,k,count
-      real*8 cdelta,cparam,cdfnorm,tmp2
-
-      do i=1,npred
-         do j=1,nsave
-            count=0
-            do k=1,nrec
-               if(v(j,k).le.lp(i,j))count=count+1
-            end do
-
-            cdelta=dble(count)
-            cparam=alpha(j)*cdfnorm(lp(i,j),0.d0,1.d0,1,0)
-            tmp2=(cparam+cdelta)/(alpha(j)+dble(nrec))
-
-            out(i,j)=tmp2
-         end do
-      end do
-      
-      return
-      end

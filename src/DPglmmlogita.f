@@ -779,6 +779,7 @@ c++++++++++ check if the user has requested an interrupt
                      end do
                    
                      mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
+
                
                      gprime=exp(2*log(1.d0+exp(eta))-eta-log(dble(nij)))
                

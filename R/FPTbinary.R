@@ -1,8 +1,9 @@
-### CSDPbinary.R
-### Fit a semiparametric bernoulli regression model.
+### FPTbinary.R
+### Fit a bernoulli regression model using
+### a simple Finite Polya tree prior for the link function.
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 21-08-2006.
+### Copyright: Alejandro Jara and Tim Hanson, 2006
+### Last modification: 16-08-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ###
-### The author's contact information:
+### The authors's contact information:
 ###
 ###      Alejandro Jara Vallejos
 ###      Biostatistical Centre
@@ -29,13 +30,24 @@
 ###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
 ###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
 ###
+###      Tim Hanson
+###      Division of Biostatistics
+###      University of Minnesota
+###      School of Public Health
+###      A460 Mayo Building, 
+###      MMC 303
+###      420 Delaware St SE
+###      Minneapolis, MN 55455
+###      Voice: 612-626-7075  URL  : http://www.biostat.umn.edu/~hanson/
+###      Fax  : 612-626-0660  Email: hanson@biostat.umn.edu
+###
 
-"CSDPbinary"<-
+"FPTbinary"<-
 function(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 data=sys.frame(sys.parent()),na.action=na.fail) 
-UseMethod("CSDPbinary")
+UseMethod("FPTbinary")
 
-"CSDPbinary.default"<-
+"FPTbinary.default"<-
 function(formula,
          baseline="logistic",
          prior,
@@ -81,14 +93,10 @@ function(formula,
 	 {
  		sens<-misc$sens
 	 	spec<-misc$spec
-		if(length(sens)==1)
-		{
-		   sens<-rep(misc$sens,nrec)
-  	  	   spec<-rep(misc$spec,nrec)
-		}
+		if(length(sens)==1)sens<-rep(sens,nrec)
+		if(length(spec)==1)spec<-rep(spec,nrec)
 		model<-1
 	 }
-	 
 
          #########################################################################################
          # mcmc specification
@@ -120,31 +128,97 @@ function(formula,
          }
          
 
-         if(is.null(mcmc$ntheta))
+         MLEprobit<-function(x,y,sens,spec)
          {
-            ntheta<-1
-         }
-         else
-         {
-            ntheta<-mcmc$ntheta
+   	     fn<-function(theta)
+	     {
+		eta<-x%*%theta
+                p<-pnorm(eta)
+		like <- sens*p+(1-spec)*(1-p)
+		
+                if (all(like > 0)) 
+                     eval<- -sum(log(like[y==1]))-sum(log(1-like[y==0]))
+                else eval<-Inf
+		return(eval)
+	     }
+	     
+	     start<-coefficients(glm(y~x-1,family=binomial(logit)))
+	
+	     foo<-optim(start,fn=fn,method="BFGS",hessian=TRUE)
+
+	     out<-NULL
+	     out$beta<-foo$par
+	     out$stderr<-sqrt(diag(-solve(-foo$hessian)))
+	     out$covb<-(-solve(-foo$hessian))
+	     return(out)
          }
 
-         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,ntheta,model)
+
+         MLEcauchy<-function(x,y,sens,spec)
+         {
+   	     fn<-function(theta)
+	     {
+		eta<-x%*%theta
+                p<-pcauchy(eta)
+		like <- sens*p+(1-spec)*(1-p)
+		
+                if (all(like > 0)) 
+                     eval<- -sum(log(like[y==1]))-sum(log(1-like[y==0]))
+                else eval<-Inf
+		return(eval)
+	     }
+	     
+	     start<-coefficients(glm(y~x-1,family=binomial(logit)))
+	
+	     foo<-optim(start,fn=fn,method="BFGS",hessian=TRUE)
+
+	     out<-NULL
+	     out$beta<-foo$par
+	     out$stderr<-sqrt(diag(-solve(-foo$hessian)))
+	     out$covb<-(-solve(-foo$hessian))
+	     return(out)
+         }
+         
+         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
          nsave<-mcmc$nsave
           
          xmatrix<-x
 
-         fit0<- MLElogit(xmatrix,yobs,sens,spec)
-         propv<- fit0$covb
- 
-         if(is.null(mcmc$tune))
+         if(baseline=="logistic")
          {
-            tune=1
+            fit0<- MLElogit(xmatrix,yobs,sens,spec)
+         }
+         if(baseline=="normal")
+         {
+  	    fit0<- MLEprobit(xmatrix,yobs,sens,spec)
+	 }
+         if(baseline=="cauchy")
+         {
+	    fit0<- MLEcauchy(xmatrix,yobs,sens,spec)
+	 }
+	 
+         propv<- fit0$covb
+         
+         if(is.null(mcmc$tune1))
+         {
+            tune1=1.1
          }
          else
          {
-            tune<-mcmc$tune
+            tune1<-mcmc$tune1
          }
+        
+         if(is.null(mcmc$tune2))
+         {
+            tune2=1.1
+         }
+         else
+         {
+            tune2<-mcmc$tune2
+         }
+
+
+         resop<-1
 
          #########################################################################################
          # prior information
@@ -152,20 +226,21 @@ function(formula,
 
 	 if(is.null(prior$a0))
 	 {
-		a0b0<-c(-1,-1,prior$d,prior$p)
+		a0b0<-c(-1,-1)
 		alpha<-prior$alpha
 	 }
 	 else
 	 {
-	 	a0b0<-c(prior$a0,prior$b0,prior$d,prior$p)
+	 	a0b0<-c(prior$a0,prior$b0)
 	 	alpha<-rgamma(1,prior$a0,prior$b0)
 	 }
 	 
   	 betapm<-prior$beta0
 	 betapv<-prior$Sbeta0
-	 
-	 propv<-diag(tune,p)%*%solve(solve(betapv)+solve(propv))%*%diag(tune,p)
 	
+	 propv<-diag(tune1,p)%*%solve(solve(betapv)+solve(propv))%*%diag(tune1,p)
+	 
+	 nlevel<-prior$M
 
          #########################################################################################
          # parameters depending on status
@@ -178,17 +253,15 @@ function(formula,
 		v <- rep(0,nrec)
 		v[yobs==1]<-eta[yobs==1]-0.5
 		v[yobs==0]<-eta[yobs==0]+0.5
-		y<-yobs
-		theta<-log(3)
+		y<-yobs		
 	 }	
       	 else
 	 {
 		beta<-state$beta
 		eta <- x %*% beta
 		v<-state$v
-		y<-state$y
+		y<-state$y		
 		alpha<-state$alpha
-		theta<-state$theta
 	 }
 	 
 
@@ -196,70 +269,58 @@ function(formula,
          # output
          #########################################################################################
          
-         xlink=sort(c(seq(-6,6,length=34),0),decreasing=TRUE)
+         ninter<-2**nlevel
+         
+         xlink=seq(-6,6,length=34)
          nlink<-length(xlink)
-         cpo<-rep(0,nrec)
-         fsave     <- matrix(0, nrow=nsave, ncol=nlink)         
-	 thetasave <- matrix(0, nrow=nsave, ncol=p+3)
-	 randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
+         fsave     <- matrix(0, nrow=mcmc$nsave, ncol=nlink)         
+	 thetasave <- matrix(0, nrow=mcmc$nsave, ncol=p+1)
+	 randsave  <- matrix(0, nrow=mcmc$nsave, ncol=nrec+1)
+	 ppsave    <- matrix(0, nrow=mcmc$nsave, ncol=ninter)
+
 
          #########################################################################################
          # working space
          #########################################################################################
 
-         #ntotal<-nrec
-         ntotal<-nrec+nlink
-	 maxint<-2*(ntotal+3)+1
-	 maxend<-2*(ntotal+3)
-	 maxm<-log(0.0001)/log((ntotal+1)/(ntotal+2))
+	 ninter<-2**nlevel
 
          acrate<-rep(0,2)
+         assign<-matrix(0,nrow=nrec,ncol=nlevel)
+         accums<-matrix(0,nrow=nlevel,ncol=ninter)
 	 betac<-rep(0,p)
-	 endp<-rep(0,maxend)
-	 endp2<-rep(0,maxend)
+
+         counter<-matrix(0,nrow=nlevel,ncol=ninter)
+	 cpo<-rep(0,nrec)
+
+         endp<-rep(0,ninter-1)
 	 etan<-rep(0,nrec)
-	 fsavet<-rep(0,nlink)
-	 intcount<-rep(0,maxint)
-	 intcount2<-rep(0,maxint)
-	 intind<-rep(0,(nrec+1))
-	 intind2<-rep(0,(nrec+1))
+	 
 	 iflag<-rep(0,p)
-	 intposso<-matrix(0,nrow=maxint,ncol=(nrec+1))
-         intpossn<-matrix(0,nrow=maxint,ncol=(nrec+1))
-         lpsav<-rep(0,nrec)
-         lpsavc<-rep(0,nrec)
-	 mass<-rep(0,maxint)
-	 massurn1<-rep(0,maxint)
-	 massurn2<-rep(0,maxint)
-	 massurn3<-rep(0,maxint)
-	 massurn4<-rep(0,maxint)
-	 ncluster<-nrec
-	 prob<-rep(0,maxint)
-	 proburn1<-rep(0,maxint)
-	 proburn2<-rep(0,maxint)
-	 proburn3<-rep(0,maxint)
-	 proburn4<-rep(0,maxint)
-	 urn<-rep(0,maxint)
-	 uvec<-rep(0,maxm)
-	 vvec<-rep(0,maxm)
-	 vnew<-rep(0,(nrec+1))
-	 vnew2<-rep(0,nrec)
+	 intpn<-rep(0,nrec)
+	 intpo<-rep(0,nrec)
+	 
+	 prob<-rep(0,ninter)
+
+         rvecs<-matrix(0,nrow=nlevel,ncol=ninter)
+	 seed<-c(sample(1:29000,1),sample(1:29000,1))
+	 
 	 workm1<-matrix(0,nrow=p,ncol=p)
 	 workm2<-matrix(0,nrow=p,ncol=p)
 	 workmh1<-rep(0,(p*(p+1)/2))
 	 workv1<-rep(0,p)
 	 workv2<-rep(0,p)
-	 wvec<-rep(0,maxm)
-	 seed<-c(sample(1:29000,1),sample(1:29000,1))
+	 
+
 
          #########################################################################################
          # calling the fortran code
          #########################################################################################
- 
+
          if(baseline=="logistic")
          {
-
-   	    foo <- .Fortran("csdpbinaryl2",
+            foo <- .Fortran("fptbinaryl",
+	 	model     =as.integer(model),   	    
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		sens      =as.double(sens),
@@ -271,60 +332,40 @@ function(formula,
 		a0b0      =as.double(a0b0),
 		betapm    =as.double(betapm),		
 		betapv    =as.double(betapv),		
+		ninter    =as.integer(ninter),
+		nlevel    =as.integer(nlevel),
 		mcmcvec   =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
+		tune2     =as.double(tune2),
 		propv     =as.double(propv),
 		acrate    =as.double(acrate),
 		fsave     =as.double(fsave),
+		ppsave    =as.double(ppsave),
 		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),
-                cpo       =as.double(cpo),
+		thetasave =as.double(thetasave),		
+		cpo       =as.double(cpo),		
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
-		ncluster  =as.integer(ncluster),
-		theta     =as.double(theta),
-		y         =as.integer(y),
 		v         =as.double(v),
-		betac     =as.double(betac),
+		y         =as.integer(y),
+		accums    =as.double(accums),
+		assign    =as.integer(assign),
+		betac      =as.double(betac),
+		counter   =as.integer(counter),
 		endp      =as.double(endp),
-		endp2     =as.double(endp2),
 		eta       =as.double(eta),
 		etan      =as.double(etan),
-		fsavet    =as.integer(fsavet),
-		intcount  =as.integer(intcount),
-		intcount2 =as.integer(intcount2),
-		intind    =as.integer(intind),
-		intind2   =as.integer(intind2),
-		iflag     =as.integer(iflag),
-		intposso  =as.integer(intposso),
-		intpossn  =as.integer(intpossn),
-		lpsav     =as.integer(lpsav),
-		lpsavc    =as.integer(lpsavc),
-		maxint    =as.integer(maxint),
-		maxend    =as.integer(maxend),
-		maxm      =as.integer(maxm),
-		mass      =as.double(mass),
-		massurn1  =as.double(massurn1),
-		massurn2  =as.double(massurn2),
-		massurn3  =as.double(massurn3),
-		massurn4  =as.double(massurn4),
+		iflag     =as.integer(iflag),		
+		intpn     =as.integer(intpn),		
+		intpo     =as.integer(intpo),		
 		prob      =as.double(prob),
-		proburn1  =as.double(proburn1),
-		proburn2  =as.double(proburn2),
-		proburn3  =as.double(proburn3),
-		proburn4  =as.double(proburn4),
+		rvecs     =as.double(rvecs),
 		seed      =as.integer(seed),
-                urn       =as.integer(urn),
-		uvec      =as.double(uvec),
-		vvec      =as.double(vvec),
-		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
 		workm1    =as.double(workm1),
 		workm2    =as.double(workm2),
 		workmh1   =as.double(workmh1),
 		workv1    =as.double(workv1),
-		workv2    =as.double(workv2),
-		wvec      =as.double(wvec),
+		workv2    =as.double(workv2),		
 		PACKAGE="DPpackage")	
          }
 
@@ -332,18 +373,19 @@ function(formula,
          # save state
          #########################################################################################
 	
-	 fsave<-matrix(foo$fsave,nrow=nsave, ncol=nlink)
- 	 thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=(p+3))
- 	 randsave<-matrix(foo$randsave,nrow=nsave, ncol=(nrec+1))
+	 fsave<-matrix(foo$fsave,nrow=mcmc$nsave, ncol=nlink)
+ 	 thetasave<-matrix(foo$thetasave,nrow=mcmc$nsave, ncol=(p+1))
+ 	 randsave<-matrix(foo$randsave,nrow=mcmc$nsave, ncol=(nrec+1))
+ 	 ppsave<-matrix(foo$ppsave,nrow=mcmc$nsave, ncol=ninter)
 
-         model.name<-"Bayesian semiparametric binary regression model"		
+         model.name<-"Bayesian binary regression model using a FPT prior"		
 
-  	 colnames(thetasave)<-c(dimnames(x)[[2]],"theta","ncluster","alpha")
+  	 colnames(thetasave)<-c(dimnames(x)[[2]],"alpha")
 
          coeff<-apply(thetasave, 2, mean)
 
-	 names(coeff)<-c(dimnames(x)[[2]],"theta","ncluster","alpha")
-	
+	 names(coeff)<-c(dimnames(x)[[2]],"alpha")
+
          qnames<-NULL
          for(i in 1:nrec){
              idname<-paste("(Subject",i,sep="=")
@@ -353,83 +395,95 @@ function(formula,
          qnames<-c(qnames,"Prediction")
          colnames(randsave)<-qnames
 
-	 state <- list(beta=foo$beta,v=foo$v,y=foo$y,alpha=foo$alpha,theta=foo$theta)
-				  
-	 save.state <- list(thetasave=thetasave,fsave=fsave,randsave=randsave)
 
-	 z<-list(modelname=model.name,coefficients=coeff,acrate=foo$acrate,call=cl,
-	         prior=prior,mcmc=mcmcvec,state=state,save.state=save.state,nrec=foo$nrec,
-	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,x=x,
-	         ppar=prior$p,d=prior$d,baseline=baseline)
-	         
+	 if(is.null(prior$a0))
+	 {
+		acrate<-foo$acrate[1]
+	 }
+	 else
+	 {
+	 	acrate<-foo$acrate
+	 }
+
+
+	 state <- list(beta=foo$beta,v=foo$v,alpha=foo$alpha,y=foo$y)
+	 save.state <- list(thetasave=thetasave,fsave=fsave,randsave=randsave,
+	                    ppsave=ppsave)
+
+	 z<-list(modelname=model.name,coefficients=coeff,acrate=acrate,call=cl,
+	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
+	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,baseline=baseline,x=x,
+	         ninter=ninter,nlevel=nlevel)
+
 	 cat("\n\n")
 
-	 class(z)<-c("CSDPbinary")
+	 class(z)<-c("FPTbinary")
 	 return(z) 
 }
 
 
+
 ###                    
-### Estimate the probability curve for a fitted semiparametric binary 
-### regression model (Falta optimizar. Probablemente codigo fortran).
+### Estimate the probability curve for a fitted binary 
+### regression model using a Finite Polya tree prior.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 21-08-2006.
+### Last modification: 16-08-2006.
 
-predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
+
+"predict.FPTbinary"<-
+function(object,xnew=NULL,hpd=TRUE, ...)
 {
-   stde<-function(x)
-   {
-   	n<-length(x)
-   	return(sd(x)/sqrt(n))
-   }
+    stde<-function(x)
+    {
+    	n<-length(x)
+    	return(sd(x)/sqrt(n))
+    }
 
-   hpdf<-function(x)
-   {
-        alpha<-0.05
-        vec<-x
-        n<-length(x)         
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                    alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-        return(c(a$alow[1],a$aupp[1]))
-   }
-   
-   pdf<-function(x)
-   {
-        alpha<-0.05
-        vec<-x
-        n<-length(x)         
-        alow<-rep(0,2)
-        aupp<-rep(0,2)
-        a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                    alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-        return(c(a$alow[2],a$aupp[2]))
-   }
+    hpdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[1],a$aupp[1]))
+    }
+    
+    pdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[2],a$aupp[2]))
+    }
 
    if(is.null(xnew))
    {
       xnew<-object$x
    }
 
-   if(is(object, "CSDPbinary"))
+   if(is(object, "FPTbinary"))
    {
+ 
    	 npred<-dim(xnew)[1]
    	 pnew<-dim(xnew)[2]
    	 nrec<-object$nrec
-
+ 
          baseline<-object$baseline
-   	 alpha<-object$save.state$thetasave[,(object$p+3)]
+   	 alpha<-object$save.state$thetasave[,(object$p+1)]
    	 nsave<-length(alpha)
-   	 theta<-object$save.state$thetasave[,(object$p+1)]
-   	 ppar<-object$ppar
-   	 d<-object$d
-   	 
-   	 v<-matrix(object$save.state$randsave,nsave,nrec+1)
-   	 vpred<-v[,(nrec+1)]
-   	 v<-v[,1:nrec]
+   	 ninter<-object$ninter
+   	 nlevel<-object$nlevel
 
+ 	 ppsave<-matrix(object$save.state$ppsave,nrow=nsave, ncol=ninter)
+   	 
    	 if (object$p != pnew) 
    	 {
 	   stop("Dimension of xnew is not the same that the design matrix
@@ -447,25 +501,22 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
              covn[i]<-covnw  
          }    
 
-         lp<-xnew%*%t(object$save.state$thetasave[,1:object$p]) 
-         out<-matrix(0,nrow=npred,ncol=nsave)
+	 lp<-xnew%*%t(object$save.state$thetasave[,1:object$p])
+	 out<-matrix(0,nrow=npred,ncol=nsave)
 
          if(baseline=="logistic")
          {
-   	    foo <- .Fortran("csdppredl",
-                nsave     =as.integer(nsave),
-                nrec      =as.integer(nrec),
-                npred     =as.integer(npred),
-                alpha     =as.double(alpha),
-                theta     =as.double(theta),
-                v         =as.double(v),
-                d         =as.double(d),
-                ppar      =as.double(ppar),
-                lp        =as.double(lp),
+   	    foo <- .Fortran("fptpredl",
+		ninter    =as.integer(ninter),
+		nlevel    =as.integer(nlevel),
+		npred     =as.integer(npred),
+		nsave     =as.integer(nsave),
+		lp        =as.double(lp),
+		ppsave    =as.double(ppsave),
 		out       =as.double(out),
 		PACKAGE="DPpackage")	
          }
-
+           
          out<-t(matrix(foo$out,nrow=npred,ncol=nsave))
 
          pm <-apply(out, 2, mean)    
@@ -485,6 +536,7 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
             plsup<-limm[2,]
          }
 
+   	 
    	 names(pm)<-covn
    	 names(pmed)<-covn
    	 names(psd)<-covn
@@ -499,23 +551,25 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
    	 out$pstd<-pstd
    	 out$plinf<-plinf
    	 out$plsup<-plsup
-   	 out$vpred<-vpred
    	 out$npred<-npred
 
    	 out$covn<-covn
    }
-   return(out)   
-}
+  
+   out
+}   
+
+
 
 
 ###
-### Tools for CSDPbinary: print, summary, plot
+### Tools for FPTbinary: print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 21-08-2006.
-
-
-"print.CSDPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+### Last modification: 16-08-2006.
+	
+	        
+"print.FPTbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -537,10 +591,8 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
 }
 
 
-
-"summary.CSDPbinary"<-function(object, hpd=TRUE, ...) 
+"summary.FPTbinary"<-function(object, hpd=TRUE, ...) 
 {
-
     stde<-function(x)
     {
     	n<-length(x)
@@ -630,63 +682,66 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
 
 ### CPO
     ans$cpo<-object$cpo
-    
+
 
 ### Baseline Information
 
 
     if(is.null(object$prior$a0))
     {
-	dimen2<-2	
+	dimen2<-0	
     }
     else
     {
-	dimen2<-3	
+	dimen2<-1	    
     }
 
-    mat<-thetasave[,(dimen1+1):(dimen1+dimen2)]
-    coef.p<-object$coefficients[(dimen1+1):(dimen1+dimen2)]
-    coef.m <-apply(mat, 2, median)    
-    coef.sd<-apply(mat, 2, sd)
-    coef.se<-apply(mat, 2, stde)
-
-    if(hpd){             
-         limm<-apply(mat, 2, hpdf)
-         coef.l<-limm[1,]
-         coef.u<-limm[2,]
-    }
-    else
+    if(dimen2==1)
     {
-         limm<-apply(mat, 2, pdf)
-         coef.l<-limm[1,]
-         coef.u<-limm[2,]
-    }
+       mat<-matrix(thetasave[,(dimen1+1):(dimen1+dimen2)],ncol=1) 
+       coef.p<-object$coefficients[(dimen1+1):(dimen1+dimen2)]
+       coef.m <-apply(mat, 2, median)    
+       coef.sd<-apply(mat, 2, sd)
+       coef.se<-apply(mat, 2, stde)
 
-    coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
-    if(hpd)
-    {
-         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-             "95%HPD-Low","95%HPD-Upp"))
-    }
-    else
-    {
-         dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-             "95%CI-Low","95%CI-Upp"))
-    }
+       if(hpd){             
+            limm<-apply(mat, 2, hpdf)
+            coef.l<-limm[1,]
+            coef.u<-limm[2,]
+       }
+       else
+       {
+            limm<-apply(mat, 2, pdf)
+            coef.l<-limm[1,]
+            coef.u<-limm[2,]
+       }
 
-    ans$prec<-coef.table
+       coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
+       if(hpd)
+       {
+            dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+       }
+       else
+       {
+            dimnames(coef.table) <- list(names(coef.p), c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%CI-Low","95%CI-Upp"))
+       }
+
+       ans$prec<-coef.table
+
+    }
 
     ans$acrate<-object$acrate
     
     ans$nrec<-object$nrec
 
-    class(ans) <- "summaryDPbinary"
+    class(ans) <- "summaryFPTbinary"
     return(ans)
 }
 
 
-
-"print.summaryCSDPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.summaryFPTbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -719,12 +774,10 @@ predict.CSDPbinary<-function(object,xnew=NULL,hpd=TRUE, ...)
 }
 
 
-
-
-"plot.CSDPbinary"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...) 
+"plot.FPTbinary"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
 {
 
-fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
+fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
 # Author: AJV, 2006
 #
 {
@@ -823,46 +876,39 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
          return(c(a$alow[2],a$aupp[2]))
     }
 
-
-
-    if(is(x, "CSDPbinary")){
+   if(is(x, "FPTbinary"))
+   {
         if(is.null(param))
-	{
+        {
            coef.p<-x$coefficients
            n<-length(coef.p)
            pnames<-names(coef.p)
-
+           
            par(ask = ask)
-           layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
-           for(i in 1:(n-1)){
+           layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
+           for(i in 1:(n-1))
+           {
                title1<-paste("Trace of",pnames[i],sep=" ")
                title2<-paste("Density of",pnames[i],sep=" ")       
-               plot(ts(x$save.state$thetasave[,i]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
-               if(pnames[i]=="ncluster")
-	       {
-	          hist(x$save.state$thetasave[,i],main=title2,xlab="values", ylab="probability",probability=TRUE)
-	       }
-	       else
-	       {
-                  fancydensplot(x$save.state$thetasave[,i],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
-               }   
+               plot(ts(x$save.state$thetasave[,i]),main=title1,xlab="MCMC scan",ylab=" ")
+               fancydensplot1(x$save.state$thetasave[,i],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
            
            if(is.null(x$prior$a0))
            {
-              cat("")
+               cat("")
            }
            else
            {
                title1<-paste("Trace of",pnames[n],sep=" ")
                title2<-paste("Density of",pnames[n],sep=" ")       
-               plot(ts(x$save.state$thetasave[,n]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
-               fancydensplot(x$save.state$thetasave[,n],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
+               plot(ts(x$save.state$thetasave[,n]),main=title1,xlab="MCMC scan",ylab=" ")
+               fancydensplot1(x$save.state$thetasave[,n],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
            
            title1<-c("Predictive Error Density")
            title2<-c("Link Function")
-           fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
+           fancydensplot1(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
 
            pml <-apply(x$save.state$fsave, 2, mean)    
            if(hpd){             
@@ -877,11 +923,11 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
                 plu<-limm[2,]
            } 
        
-           plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
-           lines(x$xlink,pll,lty=2,lwd=2)
-           lines(x$xlink,plu,lty=2,lwd=2) 
-
+            plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
+            lines(x$xlink,pll,lty=2,lwd=2)
+            lines(x$xlink,plu,lty=2,lwd=2)            
         }
+   
         else
         {
             coef.p<-x$coefficients
@@ -904,14 +950,15 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 	    {
                title1<-paste("Trace of",pnames[poss],sep=" ")
                title2<-paste("Density of",pnames[poss],sep=" ")       
-               plot(ts(x$save.state$thetasave[,poss]),type='l',main=title1,xlab="MCMC scan",ylab=" ")
-               fancydensplot(x$save.state$thetasave[,poss],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
-            }
+               plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
+               fancydensplot1(x$save.state$thetasave[,poss],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
+            }        
+        
             else
             {
                title1<-c("Predictive Error Density")
                title2<-c("Link Function")
-               fancydensplot(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
+               fancydensplot1(x$save.state$randsave[,(x$nrec+1)],hpd=hpd,main=title1,xlab="values", ylab="density",col=col)
            
                pml <-apply(x$save.state$fsave, 2, mean)    
                if(hpd){             
@@ -925,12 +972,14 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
                     pll<-limm[1,]
                     plu<-limm[2,]
                } 
+       
                plot(x$xlink,pml,xlab="x",ylab="probability",main=title2,lty=1,type='l',lwd=2,ylim=c(0,1))
                lines(x$xlink,pll,lty=2,lwd=2)
                lines(x$xlink,plu,lty=2,lwd=2)            
-
             }
         }
    }
+
 }
+
 
