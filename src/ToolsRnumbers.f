@@ -146,6 +146,77 @@ c     A.J.V., 2006
       return
       end         
 
+c======================================================================      
+      real*8 function rtbeta(alpha,beta,a,b,ainf,binf)
+c=======================================================================            
+c     generate truncated(a,b) Beta(alpha,beta)
+c     a,b  = end points of interval (ainf = binf = .false.)   
+c     ainf = true, if left endpoint is 0; otherwise = false
+c     binf = true, if right endpoint is 1; otherwise = false      
+c     A.J.V., 2006
+      implicit none
+      real*8 alpha,beta,a,b
+      real*8 rbeta,invcdfbeta,cdfbeta
+      real*8 uni,tmp
+      logical ainf,binf
+      real runif
+
+      uni=dble(runif())
+      rtbeta=0.d0
+      if(ainf.and.binf) go to 110
+      if(ainf.or.binf) go to 100
+      
+      if(a.gt.b)then
+        call rexit("error in limits rtbeta")
+        rtbeta=a
+        return
+      end if  
+
+      tmp=cdfbeta(a,alpha,beta)+ 
+     &    uni*(cdfbeta(b,alpha,beta)-cdfbeta(a,alpha,beta))
+     
+      rtbeta=invcdfbeta(tmp,alpha,beta)
+      go to 120
+
+100   if(ainf)then
+         tmp=uni*cdfbeta(b,alpha,beta)
+         rtbeta=invcdfbeta(tmp,alpha,beta)
+         go to 120
+      end if
+      if(binf)then
+         tmp=uni+(1.d0-uni)*cdfbeta(a,alpha,beta) 
+         rtbeta=invcdfbeta(tmp,alpha,beta)
+         go to 120
+      end if
+
+110   rtbeta=rbeta(alpha,beta)
+
+120   continue
+
+      return
+      end      
+      
+c======================================================================      
+      real*8 function rtbeta2(alpha,beta,a,b)
+c=======================================================================            
+c     generate truncated(a,b) Beta(alpha,beta) using a AR
+c     a,b  = end points of interval
+c     A.J.V., 2006
+      implicit none
+      integer exit
+      real*8 alpha,beta,a,b
+      real*8 rbeta
+
+      exit=0
+      do while(exit.eq.0)
+         rtbeta2=rbeta(alpha,beta)
+         if(rtbeta2.gt.a.and.rtbeta2.le.b)exit=1
+      end do
+
+      return
+      end      
+
+
 c=======================================================================                        
       subroutine dirichlet(alpha,kreal,k,x)
 c=======================================================================                  

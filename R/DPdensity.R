@@ -951,8 +951,6 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
         axis(2., at = round(seq(0,max(densy),length=5), 2.), labels = T,pos =min(densx))
 }
 
-
-
 "bivk"<-function(x, y, h, n = 25, lims = c(range(x), range(y))) 
 {
     nx <- length(x)

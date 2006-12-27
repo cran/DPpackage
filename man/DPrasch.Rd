@@ -43,10 +43,8 @@ DPrasch(y,prior,mcmc,state,status,delete=FALSE,data=sys.frame(sys.parent()))
                      the total number of scans to be saved, \code{ndisplay} giving
                      the number of saved scans to be displayed on screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out), \code{tune1}, \code{tune2}, \code{tune3}, \code{tune4},
-                     and \code{tune5} giving the  positive Metropolis tuning 
-                     parameter for the difficulties, abilities, baseline mean, baseline
-                     variance, and precision parameter, respectively
+                     out), \code{tune1}, and \code{tune2},giving the positive 
+                     Metropolis tuning parameter for the difficulties and abilities, respectively
                      (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
@@ -153,8 +151,8 @@ MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
 Neal, R. M. (2000) Markov Chain sampling methods for Dirichlet process mixture models.
   Journal of Computational and Graphical Statistics, 9:249-265.
   
-San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian Analysis
-  of Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
+  of Bayesian Semiparametric IRT-type Models. In preparation.
   
 }
 
@@ -167,7 +165,8 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
       nitem<-5
       
       y<-matrix(0,nrow=nsubject,ncol=nitem)
-      dimnames(y)<-list(paste("id",seq(1:nsubject)),paste("item",seq(1,nitem)))
+      dimnames(y)<-list(paste("id",seq(1:nsubject)),
+                        paste("item",seq(1,nitem)))
 
       
       ind<-rbinom(nsubject,1,0.5)
@@ -189,7 +188,8 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
       beta0<-rep(0,nitem-1)
       Sbeta0<-diag(100,nitem-1)
 
-      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,beta0=beta0,Sbeta0=Sbeta0)
+      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,
+                  beta0=beta0,Sbeta0=Sbeta0)
 
     # Initial state
       state <- NULL
@@ -200,24 +200,27 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
       nsave<-25000
       nskip<-20
       ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-DPrasch(y=y,prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit1<-DPrasch(y=y,prior=prior,mcmc=mcmc,
+                    state=state,status=TRUE)
 
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
     # Extract random effects
-    
       DPrandom(fit1)
       plot(DPrandom(fit1))
+      DPcaterpillar(DPrandom(fit1))
 
 }
 }

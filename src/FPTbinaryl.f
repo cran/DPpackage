@@ -246,7 +246,7 @@ c=======================================================================
 c+++++Constants
       real*8 zero,one
       parameter(zero=0.d0)
-      parameter(one =1.00001d0)
+      parameter(one =1.d0)
 
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)
@@ -842,7 +842,7 @@ c++++++++++ evaluate the log-likelihood
                   loglikn=loglikn+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
                end do
             end do   
-            
+
 c++++++++++ acceptance step
             ratio=dexp(loglikn+logpriorn-logliko-logprioro+
      &                 logcgkn-logcgko)
@@ -951,13 +951,6 @@ c+++++++++++++ cpo, errors and predictive information
                      tmp2=tmp1+tmp2                    
                   end if  
                   tmp3=tmp2*sens(i)+(1.d0-spec(i))*(1.d0-tmp2)
-
-                  if(tmp3.lt.zero.or.tmp3.gt.one)then
-                     call dblepr("prob1",-1,tmp2,1)
-                     call dblepr("prob2",-1,tmp3,1)
-                     call rexit("Error in Probability")
-                  end if  
-
 
                   if(yobs(i).eq.1)then
                      cpo(i)=cpo(i)+1.0d0/tmp3 

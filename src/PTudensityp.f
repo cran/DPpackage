@@ -20,9 +20,15 @@ c     Tim Hanson.
 c
 c     Copyright: Alejandro Jara and Tim Hanson, 2006
 c
-c     Version 1.0: 
+c     Version 2.0: 
 c
-c     Last modification: 08-10-2006.
+c     Last modification: 18-12-2006.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Fixed bug in computation of MH ratio for precision parameter.
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -379,14 +385,14 @@ c+++++++ generating (X0,X1),(X00,X01,X10,X11),....
             je2=(i+1)**2
             do j=1,nint
                k1=2*(j-1)+1
-                k2=2*(j-1)+2            
-                tmp1=cpar*dble(je2)+dble(counter(i+1,k1))
-                tmp2=cpar*dble(je2)+dble(counter(i+1,k2))
-                tmp3=rbeta(tmp1,tmp2)
-                rvecs(i+1,k1)=tmp3
-                rvecs(i+1,k2)=1.d0-tmp3
-                accums(i+1,k1)=log(tmp3)+accums(i,j)
-                accums(i+1,k2)=log(1.d0-tmp3)+accums(i,j)               
+               k2=2*(j-1)+2            
+               tmp1=cpar*dble(je2)+dble(counter(i+1,k1))
+               tmp2=cpar*dble(je2)+dble(counter(i+1,k2))
+               tmp3=rbeta(tmp1,tmp2)
+               rvecs(i+1,k1)=tmp3
+               rvecs(i+1,k2)=1.d0-tmp3
+               accums(i+1,k1)=log(tmp3)+accums(i,j)
+               accums(i+1,k2)=log(1.d0-tmp3)+accums(i,j)               
              end do
           end do   
  
@@ -471,22 +477,6 @@ c+++++++ acceptance step
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating sigma using a MH step               +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-c         sigma2c=1.d0/
-c     &      rgamma(0.5d0*dble(nrec),0.5d0*dble(nrec)*(sigma**2))
-c     
-c         sigmac=sqrt(sigma2c)
-c
-c         logliko=0.d0
-c         loglikn=0.d0
-c         
-c         loglikn=-0.5d0*dble(nrec)*(
-c     &                                (s+(ybar-mu)**2)*
-c     &                                ((1.d0/sigma2c)+(1.d0/sigma2))+
-c     &                                (sigma2c/sigma2)-(sigma2/sigma2c)-
-c     &                                log(1.d0/sigma2)+log(1.d0/sigma2c)
-c     &                             )
-c         
 
          logliko=0.d0
          loglikn=0.d0
@@ -581,22 +571,30 @@ c+++++++++++ evaluate log-likelihood
             logliko=0.d0
             loglikn=0.d0
 
-            do i=2,nlevel-1
+            tmp1=cpar
+            tmp2=cpar
+            logliko=logliko+dbet(rvecs(1,1),tmp1,tmp2,1)
+
+            tmp1=cparc
+            tmp2=cparc
+            loglikn=loglikn+dbet(rvecs(1,1),tmp1,tmp2,1)
+            
+            do i=1,nlevel-1
                nint=2**i
-               je2=(i+1-2)**2
+               je2=(i+1)**2
                do j=1,nint
                   k1=2*(j-1)+1
                   k2=2*(j-1)+2            
                   tmp1=cpar*dble(je2)
                   tmp2=cpar*dble(je2)
                   logliko=logliko+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
-
+                  
                   tmp1=cparc*dble(je2)
                   tmp2=cparc*dble(je2)
                   loglikn=loglikn+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
-               end do
-            end do   
-            
+                end do
+             end do   
+
 c++++++++++ acceptance step
             ratio=dexp(loglikn+logpriorn-logliko-logprioro+
      &                 logcgkn-logcgko)

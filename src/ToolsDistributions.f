@@ -65,6 +65,34 @@ c     A.J.V., 2005
       return
       end
 
+
+
+c=======================================================================            	  
+      double precision function cdfbeta(x,alpha,beta)
+c=======================================================================            
+c     This function evaluate the cdf of a Beta(alpha,beta) distribution.
+c     A.J.V., 2005
+      implicit none 
+      real*8 x,alpha,beta
+      real*8 cdfbetas
+      cdfbeta=cdfbetas(x,alpha,beta,1,0)
+      return
+      end
+
+     
+c=======================================================================            	  
+      double precision function invcdfbeta(p,alpha,beta)
+c=======================================================================            
+c     This function evaluate the cdf of a Beta(alpha,beta) distribution.
+c     A.J.V., 2005
+      implicit none 
+      real*8 p,alpha,beta
+      real*8 invcdfbetas
+      invcdfbeta=invcdfbetas(p,alpha,beta,1,0)
+      return
+      end
+
+
 c=======================================================================            
       real function ppnda(p)
 c=======================================================================            

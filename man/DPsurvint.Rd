@@ -86,14 +86,18 @@ DPsurvint(formula,prior,mcmc,state,status,
   as described in Hanson and Johnson (2004) to allow the inclusion of covariates.
   
   A Metropolis-Hastings step is used to sample the fully conditional distribution
-  of the regression coefficients and errors (see, Hanson and Johnson, 2004).
+  of the regression coefficients and errors (see, Hanson and Johnson, 2004). An extra 
+  step which moves the clusters in such a way that the posterior distribution
+  is still a stationary distribution, is performed in order to improve the rate of
+  mixing.
+
 }
 
 
 \value{
   An object of class \code{DPsurvint} representing the semiparametric AFT regression
   model fit. Generic functions such as \code{print}, \code{plot},
-  and \code{summary} have methods to show the results of the fit. 
+  \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{beta}, \code{mu}, \code{sigma}, the precision
   parameter \code{alpha}, and the number of clusters.
   
@@ -168,30 +172,36 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
       nsave<-10000
       nskip<-10
       ndisplay<-100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                   tune=0.125)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay,tune=0.125)
 
     # Prior information
-      prior <- list(alpha=1,beta0=rep(0,2),Sbeta0=diag(1000,2),m0=0,s0=1,
-                    tau1=0.01,tau2=0.01)
+      prior <- list(alpha=1,beta0=rep(0,2),Sbeta0=diag(1000,2),
+                    m0=0,s0=1,tau1=0.01,tau2=0.01)
 
 
     # Fit the model
 
-      fit1 <- DPsurvint(y~x1+x2,prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit1 <- DPsurvint(y~x1+x2,prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE) 
       fit1
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
-    # Plot an specific model parameter (to see the plots gradually set ask=TRUE)
+    # Plot an specific model parameter 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="x1")	
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="mu")	
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit1)      
 
     # Predictive information with covariates
       npred<-10
@@ -221,17 +231,29 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
       nsave<-10000
       nskip<-20
       ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                   tune=0.25)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay,tune=0.25)
 
     # Prior information
-      prior <- list(alpha=10,beta0=rep(0,1),Sbeta0=diag(100,1),m0=0,s0=1,
-                    tau1=0.01,tau2=0.01)
+      prior <- list(alpha=10,beta0=rep(0,1),Sbeta0=diag(100,1),
+                    m0=0,s0=1,tau1=0.01,tau2=0.01)
 
-    # Fit the model
+    # Fitting the model
 
-      fit2 <- DPsurvint(y~trt,prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit2 <- DPsurvint(y~trt,prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE) 
       fit2
+      
+    # Summary with HPD and Credibility intervals
+      summary(fit2)
+      summary(fit2,hpd=FALSE)
+
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
+      plot(fit2)
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit2)      
 
     # Predictive information with covariates
       xnew<-matrix(c(0,1),nrow=2,ncol=1)

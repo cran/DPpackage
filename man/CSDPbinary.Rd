@@ -41,7 +41,8 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
                      interval for the \code{theta} parameter (if missing, the value 1 is considered), 
                      \code{ndisplay} giving the number of saved scans to be displayed on the screen 
                      (the function reports on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune} giving the Metropolis tuning parameter.}   
+                     out), and \code{tune} giving the Metropolis tuning parameter
+                     (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -89,8 +90,8 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 
   The precision parameter, \eqn{\alpha}{alpha}, of the \code{CSDP} prior 
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
-  or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
-  Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
+  or fixed at some particular value. When \eqn{\alpha}{alpha} is random a strategy similar to the method 
+  described by Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
   value, set \eqn{a_0}{a0} to NULL in the prior specification.
 
   A Metropolis-Hastings step is used to sample the fully conditional distribution
@@ -100,16 +101,18 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
   able to generate \eqn{V_1,\ldots,V_{n+1}}{V1,\ldots,Vn+1} which are exactly iid G, as proposed by Doss (1994). 
   Both Ferguson's definition of DP and the Sethuraman-Tiwari (1982) representation 
   of the process are used, as described in Jara, Garcia-Zattera and Lesaffre (2006).
- 
+  An extra step which moves the clusters in such a way that the posterior distribution
+  is still a stationary distribution, is performed in order to improve the rate of
+  mixing.
 }
 
 
 \value{
   An object of class \code{CSDPbinary} representing the semiparametric logistic regression
-  model fit. Generic functions such as \code{print}, \code{plot}, and \code{summary} have 
-  methods to show the results of the fit. The results include \code{beta}, the precision
-  parameter (\code{alpha}), the number of clusters (\code{ncluster}), and the \code{link} 
-  function.
+  model fit. Generic functions such as \code{print}, \code{plot}, \code{predict}, \code{summary},
+  and \code{anova} have methods to show the results of the fit. The results include \code{beta}, 
+  the precision parameter (\code{alpha}), the number of clusters (\code{ncluster}), and 
+  the \code{link} function.
   
   The MCMC samples of the parameters and the errors in the model are stored in the object 
   \code{thetasave} and \code{randsave}, respectively. Both objects are included in the 
@@ -181,8 +184,6 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
       state <- NULL
 
     # MCMC parameters
-
-
       nburn<-5000
       nsave<-10000
       nskip<-10
@@ -196,14 +197,28 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
       prior <- list(alpha=1, d=2*log(3), p=0.5, beta0=rep(0,2), 
                     Sbeta0=diag(1000,2))
 
-    # Fit the model
+    # Fitting the model
 
       fit1 <- CSDPbinary(y~x,prior=prior,mcmc=mcmc,state=state,
                          status=TRUE) 
       fit1
 
-    # Predictive Distribution
+    # Summary with HPD and Credibility intervals
+      summary(fit1)
+      summary(fit1,hpd=FALSE)
 
+    # Plot model parameters (to see the plots gradually set ask=TRUE)
+      plot(fit1)
+
+    # Plot an specific model parameter (to see the plots gradually 
+    # set ask=TRUE)
+      plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="x")	
+      plot(fit1,ask=FALSE,param="link",nfigc=1,nfigr=1)
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit1)
+
+    # Predictive Distribution
       npred<-40  
       xnew<-cbind(rep(1,npred),seq(0,4,length=npred))
 

@@ -7,17 +7,23 @@ c=======================================================================
      &                acrate,randsave,thetasave,cpo,f,
      &                alpha,beta,mu,sigma2,v,
      &                betac,iflag,vc,workm1,workm2,
-     &                workmh1,workv1,workv2,grid)
+     &                workmh1,workv1,workv2,grid,whicho,whichn)
 c=======================================================================                      
-c
-c     Version 1.0: 
-c     Last modification: 08-10-2006.
 c
 c     Subroutine `ptlm' to run a Markov chain in the  
 c     semiparametric linear regression model using a Mixture of. 
-c     Polya trees. 
+c     Polya trees prior for the error's ditribution. 
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
+c
+c     Version 2.0: 
+c
+c     Last modification: 12-12-2006.
+c     
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Uses vectors to keep the observations in each partition.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -169,6 +175,7 @@ c        lsup        :  real working variable.
 c        nint        :  integer indicator.
 c        nscan       :  index.
 c        ok          :  integer indicator.
+c        parti       :  index.
 c        prob        :  real working variable.
 c        quan        :  real working variable.
 c        ratio       :  real working variable.
@@ -187,6 +194,10 @@ c        tmp3        :  real used to accumulate quantities.
 c        vc          :  real vector giving the candidate value of the 
 c                       errors, vc(nrec).
 c        vpred       :  real working variable.
+c        whicho      :  integer vector giving the observation in each
+c                       partitio, whicho(nrec).
+c        whichn      :  integer vector giving the observation in each
+c                       partitio, whichn(nrec).
 c        workm1      :  real matrix used to update the fixed effects,
 c                       workm1(p,p).
 c        workm2      :  real matrix used to update the fixed effects,
@@ -239,8 +250,10 @@ c+++++Working space
       integer nint
       integer nscan
       integer ok
+      integer parti
       integer sprint
       integer skipcount
+      integer whicho(nrec),whichn(nrec)
       real*8 alphac
       real*8 betac(p)
       real*8 denom
@@ -336,16 +349,24 @@ c+++++++ following observations
               countero=0
               
               if(v(i).le.quan) then
+                 parti=1
                  do l=1,i-1
-                    if(v(l).le.quan)countero=countero+1
+                    if(v(l).le.quan)then
+                       countero=countero+1
+                       whicho(countero)=l
+                    end if   
                  end do
                else
+                 parti=2
                  do l=1,i-1
-                    if(v(l).gt.quan)countero=countero+1
+                    if(v(l).gt.quan)then
+                       countero=countero+1
+                       whicho(countero)=l
+                    end if   
                  end do
               end if  
 
-              if(countero.eq.0)go to 100
+              if(countero.eq.0)go to 1
               
               ok=1
               j=2
@@ -353,27 +374,35 @@ c+++++++ following observations
                  nint=2**j
                  je2=j**2
                  prob=1.d0/dble(nint)
-                 k=1
-                 
-                 quan=invcdfnorm(prob,mu,sd,1,0)
-                 
-                 do while(v(i).gt.quan.and.k.le.(nint-1))
-                    k=k+1
-                    if(k.lt.nint)then
-                      quan=invcdfnorm(dble(k)*prob,mu,sd,1,0)
-                    end if  
-                 end do
-                 
+
+                 k1=2*(parti-1)+1
+                 k2=2*(parti-1)+2
+                 quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0)
+               
+                 if(v(i).le.quan)then
+                   parti=k1
+                   k=k1
+                  else
+                   parti=k2
+                   k=k2
+                 end if  
+
                  countern=0
                  
                  if(k.eq.1)then
-                    do l=1,i-1
-                       if(v(l).le.quan)countern=countern+1
+                    do l=1,countero
+                       if(v(whicho(l)).le.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
                     end do
                   else if(k.eq.nint)then
                     quan=invcdfnorm(dble(k-1)*prob,mu,sd,1,0) 
-                    do l=1,i-1
-                       if(v(l).gt.quan)countern=countern+1
+                    do l=1,countero
+                       if(v(whicho(l)).gt.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
                     end do
                   else
                     tmp1=invcdfnorm(dble(k-1)*prob,mu,sd,1,0)
@@ -383,9 +412,11 @@ c+++++++ following observations
                       call rexit("Error in the limits")
                     end if  
                   
-                    do l=1,i-1
-                       if(v(l).gt.tmp1.and.v(l).le.tmp2)then
+                    do l=1,countero
+                       if(v(whicho(l)).gt.tmp1.and.
+     &                    v(whicho(l)).le.tmp2)then
                           countern=countern+1
+                          whichn(countern)=whicho(l)
                        end if   
                     end do
                  end if
@@ -398,11 +429,14 @@ c+++++++ following observations
                     ok=0
                   else  
                     countero=countern
+                    do l=1,countern
+                       whicho(l)=whichn(l)
+                    end do
                     j=j+1
                  end if   
               end do
 
-100           continue
+1             continue
               
               loglikeo=loglikeo+dnrm(v(i),mu,sd,1)
          end if
@@ -465,16 +499,24 @@ c++++++++++ following observations
                  countero=0
                  
                  if(vc(i).le.quan) then
+                     parti=1
                      do l=1,i-1
-                        if(vc(l).le.quan)countero=countero+1
+                        if(vc(l).le.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
                      end do
-                  else
+                  else 
+                     parti=2
                      do l=1,i-1
-                        if(vc(l).gt.quan)countero=countero+1
+                        if(vc(l).gt.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
                      end do
                  end if  
 
-                 if(countero.eq.0)go to 101
+                 if(countero.eq.0)go to 2
 
                  ok=1
                  j=2
@@ -483,27 +525,35 @@ c++++++++++ following observations
                     nint=2**j
                     je2=j**2
                     prob=1.d0/dble(nint)
-                    k=1
-                    
-                    quan=invcdfnorm(prob,mu,sd,1,0)
-                    
-                    do while(vc(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                          quan=invcdfnorm(dble(k)*prob,mu,sd,1,0)
-                       end if  
-                    end do
+
+                    k1=2*(parti-1)+1
+                    k2=2*(parti-1)+2
+                    quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0)
+               
+                    if(vc(i).le.quan)then
+                      parti=k1
+                      k=k1
+                     else
+                      parti=k2
+                      k=k2
+                    end if  
                     
                     countern=0
                     
                     if(k.eq.1)then
-                       do l=1,i-1
-                          if(vc(l).le.quan)countern=countern+1
+                       do l=1,countero
+                          if(vc(whicho(l)).le.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else if(k.eq.nint)then
                        quan=invcdfnorm(dble(k-1)*prob,mu,sd,1,0) 
-                       do l=1,i-1
-                          if(vc(l).gt.quan)countern=countern+1
+                       do l=1,countero
+                          if(vc(whicho(l)).gt.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else
                        tmp1=invcdfnorm(dble(k-1)*prob,mu,sd,1,0)
@@ -513,9 +563,11 @@ c++++++++++ following observations
                          call rexit("Error in the limits")
                        end if  
                        
-                       do l=1,i-1
-                          if(vc(l).gt.tmp1.and.vc(l).le.tmp2)then
+                       do l=1,countero
+                          if(vc(whicho(l)).gt.tmp1.and.
+     &                       vc(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                        end do
                     end if
@@ -528,11 +580,14 @@ c++++++++++ following observations
                        ok=0
                      else  
                        countero=countern
+                       do l=1,countern
+                          whicho(l)=whichn(l)
+                       end do
                        j=j+1
                     end if   
                  end do
 
-101              continue
+2                continue
                  
                  loglikec=loglikec+dnrm(vc(i),mu,sd,1)
 
@@ -605,16 +660,24 @@ c++++++++++ following observations
                  countero=0
                  
                  if(v(i).le.quan) then
+                     parti=1
                      do l=1,i-1
-                        if(v(l).le.quan)countero=countero+1
+                        if(v(l).le.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
                      end do
                   else
+                     parti=2
                      do l=1,i-1
-                        if(v(l).gt.quan)countero=countero+1
+                        if(v(l).gt.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
                      end do
                  end if  
 
-                 if(countero.eq.0)go to 102
+                 if(countero.eq.0)go to 3
 
                  ok=1
                  j=2
@@ -623,27 +686,35 @@ c++++++++++ following observations
                     nint=2**j
                     je2=j**2
                     prob=1.d0/dble(nint)
-                    k=1
                     
-                    quan=invcdfnorm(prob,mu,sdc,1,0)
-                    
-                    do while(v(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                          quan=invcdfnorm(dble(k)*prob,mu,sdc,1,0)
-                       end if  
-                    end do
-                    
+                    k1=2*(parti-1)+1
+                    k2=2*(parti-1)+2
+                    quan=invcdfnorm(dble(k1)*prob,mu,sdc,1,0)
+               
+                    if(vc(i).le.quan)then
+                      parti=k1
+                      k=k1
+                     else
+                      parti=k2
+                      k=k2
+                    end if  
+
                     countern=0
                     
                     if(k.eq.1)then
-                       do l=1,i-1
-                          if(v(l).le.quan)countern=countern+1
+                       do l=1,countero
+                          if(v(whicho(l)).le.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else if(k.eq.nint)then
                        quan=invcdfnorm(dble(k-1)*prob,mu,sdc,1,0) 
-                       do l=1,i-1
-                          if(v(l).gt.quan)countern=countern+1
+                       do l=1,countero
+                          if(v(whicho(l)).gt.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else
                        tmp1=invcdfnorm(dble(k-1)*prob,mu,sdc,1,0)
@@ -653,9 +724,11 @@ c++++++++++ following observations
                          call rexit("Error in the limits")
                        end if  
                        
-                       do l=1,i-1
-                          if(v(l).gt.tmp1.and.v(l).le.tmp2)then
+                       do l=1,countero
+                          if(v(whicho(l)).gt.tmp1.and.
+     &                       v(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                        end do
                     end if
@@ -668,11 +741,14 @@ c++++++++++ following observations
                        ok=0
                      else  
                        countero=countern
+                       do l=1,countern
+                          whicho(l)=whichn(l)
+                       end do
                        j=j+1
                     end if   
                  end do
 
-102              continue
+3                continue
                  
                  loglikec=loglikec+dnrm(v(i),mu,sdc,1)
 
@@ -738,16 +814,24 @@ c++++++++++++++ following observations
                      countero=0
                  
                      if(v(i).le.quan) then
+                         parti=1
                          do l=1,i-1
-                            if(v(l).le.quan)countero=countero+1
+                            if(v(l).le.quan)then
+                               countero=countero+1
+                               whicho(countero)=l
+                            end if   
                          end do
-                      else
+                      else 
+                         parti=2
                          do l=1,i-1
-                            if(v(l).gt.quan)countero=countero+1
+                            if(v(l).gt.quan)then
+                               countero=countero+1
+                               whicho(countero)=l
+                            end if   
                          end do
                      end if  
 
-                     if(countero.eq.0)go to 103
+                     if(countero.eq.0)go to 4
 
                      ok=1
                      j=2
@@ -756,27 +840,35 @@ c++++++++++++++ following observations
                         nint=2**j
                         je2=j**2
                         prob=1.d0/dble(nint)
-                        k=1
-                    
-                        quan=invcdfnorm(prob,mu,sd,1,0)
-                    
-                        do while(v(i).gt.quan.and.k.le.(nint-1))
-                           k=k+1
-                           if(k.lt.nint)then
-                              quan=invcdfnorm(dble(k)*prob,mu,sd,1,0)
-                           end if  
-                        end do
-                    
+                        
+                        k1=2*(parti-1)+1
+                        k2=2*(parti-1)+2
+                        quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0)
+               
+                        if(v(i).le.quan)then
+                          parti=k1
+                          k=k1
+                         else
+                          parti=k2
+                          k=k2
+                        end if  
+    
                         countern=0
                     
                         if(k.eq.1)then
-                           do l=1,i-1
-                              if(v(l).le.quan)countern=countern+1
+                           do l=1,countero
+                              if(v(whicho(l)).le.quan)then
+                                 countern=countern+1
+                                 whichn(countern)=whicho(l)
+                              end if   
                            end do
                          else if(k.eq.nint)then
                            quan=invcdfnorm(dble(k-1)*prob,mu,sd,1,0) 
-                           do l=1,i-1
-                              if(v(l).gt.quan)countern=countern+1
+                           do l=1,countero
+                              if(v(whicho(l)).gt.quan)then
+                                 countern=countern+1
+                                 whichn(countern)=whicho(l)
+                              end if   
                            end do
                          else
                            tmp1=invcdfnorm(dble(k-1)*prob,mu,sd,1,0)
@@ -786,9 +878,11 @@ c++++++++++++++ following observations
                              call rexit("Error in the limits")
                            end if  
                        
-                           do l=1,i-1
-                              if(v(l).gt.tmp1.and.v(l).le.tmp2)then
+                           do l=1,countero
+                              if(v(whicho(l)).gt.tmp1.and.
+     &                           v(whicho(l)).le.tmp2)then
                                  countern=countern+1
+                                 whichn(countern)=whicho(l)
                               end if   
                            end do
                         end if
@@ -801,11 +895,14 @@ c++++++++++++++ following observations
                            ok=0
                          else  
                            countero=countern
+                           do l=1,countern
+                              whicho(l)=whichn(l)
+                           end do
                            j=j+1
                         end if   
                      end do
 
-103                  continue
+4                    continue
                  
                      loglikec=loglikec+dnrm(v(i),mu,sdc,1)
 
@@ -859,12 +956,18 @@ c+++++++++++++ errors and predictive information
                if(dble(runif()).le.0.5d0)then
                   k=1
                   do l=1,nrec
-                     if(v(l).le.quan)countero=countero+1
+                     if(v(l).le.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
                   end do
                 else
                   k=2
                   do l=1,nrec
-                     if(v(l).gt.quan)countero=countero+1
+                     if(v(l).gt.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if
                   end do
                end if
                
@@ -883,13 +986,19 @@ c+++++++++++++ errors and predictive information
                     
                   if(k1.eq.1)then
                      quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0) 
-                     do l=1,nrec
-                        if(v(l).le.quan)countern=countern+1
+                     do l=1,countero
+                        if(v(whicho(l)).le.quan)then
+                           countern=countern+1
+                           whichn(countern)=whicho(l)
+                        end if   
                      end do
                    else if(k1.eq.nint)then
                      quan=invcdfnorm(dble(k1-1)*prob,mu,sd,1,0) 
-                     do l=1,nrec
-                        if(v(l).gt.quan)countern=countern+1
+                     do l=1,countero
+                        if(v(whicho(l)).gt.quan)then
+                           countern=countern+1
+                           whichn(countern)=whicho(l)
+                        end if   
                      end do
                    else
                      tmp1=invcdfnorm(dble(k1-1)*prob,mu,sd,1,0)
@@ -899,9 +1008,11 @@ c+++++++++++++ errors and predictive information
                         call rexit("Error in the limits")
                      end if  
                        
-                     do l=1,nrec
-                          if(v(l).gt.tmp1.and.v(l).le.tmp2)then
+                     do l=1,countero
+                          if(v(whicho(l)).gt.tmp1.and.
+     &                       v(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                      end do
                   end if
@@ -922,6 +1033,9 @@ c+++++++++++++ errors and predictive information
                      ok=0
                     else 
                      countero=countern
+                     do l=1,countern
+                        whicho(l)=whichn(l)
+                     end do
                      j=j+1
                    end if   
                end do
@@ -978,16 +1092,24 @@ c+++++++++++++ cpo
                   countero=0
                  
                   if(v(i).le.quan) then
+                      parti=1
                       do l=1,nrec
-                         if(v(l).le.quan.and.l.ne.i)countero=countero+1
+                         if(v(l).le.quan.and.l.ne.i)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                     else
+                      parti=2
                       do l=1,nrec
-                         if(v(l).gt.quan.and.l.ne.i)countero=countero+1
+                         if(v(l).gt.quan.and.l.ne.i)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                   end if  
 
-                  if(countero.eq.0)go to 104
+                  if(countero.eq.0)go to 5
 
                   ok=1
                   j=2
@@ -995,32 +1117,37 @@ c+++++++++++++ cpo
                      nint=2**j
                      je2=j**2
                      prob=1.d0/dble(nint)
-                     k=1
-
                      denom=prob
                      
-                     quan=invcdfnorm(prob,mu,sd,1,0)
-                    
-                     do while(v(i).gt.quan.and.k.le.(nint-1))
-                        k=k+1
-                        if(k.lt.nint)then
-                          quan=invcdfnorm(dble(k)/dble(nint),mu,sd,1,0)
-                        end if  
-                     end do
-                    
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0)
+               
+                     if(v(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if  
+                        
                      countern=0
                     
                      if(k.eq.1)then
-                        do l=1,nrec
-                           if(v(l).le.quan.and.l.ne.i)then
+                        do l=1,countero
+                           if(v(whicho(l)).le.quan.and.
+     &                        whicho(l).ne.i)then
                               countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                       else if(k.eq.nint)then
                         quan=invcdfnorm(dble(k-1)/dble(nint),mu,sd,1,0) 
-                        do l=1,nrec
-                           if(v(l).gt.quan.and.l.ne.i)then
+                        do l=1,countero
+                           if(v(whicho(l)).gt.quan.and.
+     &                        whicho(l).ne.i)then
                               countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                       else
@@ -1031,10 +1158,12 @@ c+++++++++++++ cpo
                           call rexit("Error in the limits")
                         end if  
                      
-                        do l=1,nrec
-                           if(l.ne.i)then
-                           if(v(l).gt.tmp1.and.v(l).le.tmp2)then
+                        do l=1,countero
+                           if(whicho(l).ne.i)then
+                           if(v(whicho(l)).gt.tmp1.and.
+     &                        v(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                            end if
                            end if
                         end do
@@ -1050,17 +1179,19 @@ c+++++++++++++ cpo
                          ok=0
                        else  
                          countero=countern
+                         do l=1,countern
+                            whicho(l)=whichn(l)
+                         end do
                          j=j+1
                      end if   
                   end do
 
-104               continue
+5                 continue
                  
                   
                   loglikec=loglikec+dnrm(v(i),mu,sd,1)
 
-                  cpo(i)=cpo(i)+exp(loglikec)  
-            
+                  cpo(i)=cpo(i)+1.d0/exp(loglikec)  
                end do
 
 
@@ -1076,16 +1207,24 @@ c+++++++++++++ density estimate
                   countero=0
                  
                   if(grid(i).le.quan) then
+                      parti=1
                       do l=1,nrec
-                         if(v(l).le.quan)countero=countero+1
+                         if(v(l).le.quan)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                     else
+                      parti=2
                       do l=1,nrec
-                         if(v(l).gt.quan)countero=countero+1
+                         if(v(l).gt.quan)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                   end if  
 
-                  if(countero.eq.0)go to 105
+                  if(countero.eq.0)go to 6
 
                   ok=1
                   j=2
@@ -1093,29 +1232,36 @@ c+++++++++++++ density estimate
                      nint=2**j
                      je2=j**2
                      prob=1.d0/dble(nint)
-                     k=1
-
                      denom=prob
                      
-                     quan=invcdfnorm(prob,mu,sd,1,0)
-                    
-                     do while(grid(i).gt.quan.and.k.le.(nint-1))
-                        k=k+1
-                        if(k.lt.nint)then
-                          quan=invcdfnorm(dble(k)/dble(nint),mu,sd,1,0)
-                        end if  
-                     end do
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,mu,sd,1,0)
+               
+                     if(grid(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if  
                     
                      countern=0
                     
                      if(k.eq.1)then
-                        do l=1,nrec
-                           if(v(l).le.quan)countern=countern+1
+                        do l=1,countero
+                           if(v(whicho(l)).le.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
                         end do
                       else if(k.eq.nint)then
                         quan=invcdfnorm(dble(k-1)/dble(nint),mu,sd,1,0) 
-                        do l=1,nrec
-                           if(v(l).gt.quan)countern=countern+1
+                        do l=1,countero
+                           if(v(whicho(l)).gt.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
                         end do
                       else
                         tmp1=invcdfnorm(dble(k-1)/dble(nint),mu,sd,1,0)
@@ -1125,9 +1271,11 @@ c+++++++++++++ density estimate
                           call rexit("Error in the limits")
                         end if  
                      
-                        do l=1,nrec
-                           if(v(l).gt.tmp1.and.v(l).le.tmp2)then
-                             countern=countern+1
+                        do l=1,countero
+                           if(v(whicho(l)).gt.tmp1.and.
+     &                        v(whicho(l)).le.tmp2)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                      end if
@@ -1142,11 +1290,14 @@ c+++++++++++++ density estimate
                          ok=0
                        else  
                          countero=countern
+                         do l=1,countern
+                            whicho(l)=whichn(l)
+                         end do
                          j=j+1
                      end if   
                   end do
 
-105               continue
+6                 continue
                  
                   
                   loglikec=loglikec+dnrm(grid(i),mu,sd,1)
@@ -1172,12 +1323,12 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ post chain analysis                                +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-      acrate(1)=acrate(1)/dble(nscan)        
-      acrate(2)=acrate(2)/dble(nscan)        
-      acrate(3)=acrate(3)/dble(nscan)        
-      
+      do i=1,3 
+         acrate(i)=acrate(i)/dble(nscan)        
+      end do   
+
       do i=1,nrec
-         cpo(i)=cpo(i)/dble(nsave)
+         cpo(i)=dble(nsave)/cpo(i)
       end do
 
       do i=1,ngrid

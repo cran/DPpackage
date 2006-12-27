@@ -3,7 +3,7 @@
 ### a simple Finite Polya tree prior for the link function.
 ###
 ### Copyright: Alejandro Jara and Tim Hanson, 2006
-### Last modification: 16-08-2006.
+### Last modification: 15-12-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -55,8 +55,8 @@ function(formula,
          state,
          status,
          misc=NULL,
-         data,
-         na.action) 
+         data=sys.frame(sys.parent()),
+         na.action=na.fail) 
 {
          #########################################################################################
          # call parameters
@@ -78,6 +78,49 @@ function(formula,
 	 nrec<-length(yobs)
 	 x<-as.matrix(model.matrix(formula))
 	 p<-dim(x)[2]
+
+         #########################################################################################
+         # Elements for Pseudo Countour Probabilities' computation
+         #########################################################################################
+
+         tt<-terms(formula,data=data)
+         mat<-attr(tt,"factors")
+         namfact<-colnames(mat)
+         nvar<-dim(mat)[1]
+         nfact<-dim(mat)[2]
+         possiP<-matrix(0,ncol=2,nrow=nfact)
+         dataF<-model.frame(formula,data,xlev=NULL)
+         namD<-names(dataF)
+         isF<-sapply(dataF, function(x) is.factor(x) || is.logical(x))
+         nlevel<-rep(0,nvar)
+         for(i in 1:nvar)
+         {
+             if(isF[i])
+             {
+                nlevel[i]<-length(table(dataF[[i]]))
+             }
+             else
+             {
+                nlevel[i]<-1
+             }
+         }
+         startp<-1+attr(tt, "intercept")
+         for(i in 1:nfact)
+         {
+             tmp1<-1
+             for(j in 1:nvar)
+             {
+                 if(mat[j,i]==1 && isF[j])
+                 {
+                    tmp1<-tmp1*(nlevel[j]-1)
+                 }
+             }
+             endp<-startp+tmp1-1
+             possiP[i,1]<-startp    
+             possiP[i,2]<-endp
+             startp<-endp+1
+         }
+         dimnames(possiP)<-list(namfact,c("Start","End"))
 	 
          #########################################################################################
          # misclassification
@@ -413,7 +456,7 @@ function(formula,
 	 z<-list(modelname=model.name,coefficients=coeff,acrate=acrate,call=cl,
 	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
 	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,baseline=baseline,x=x,
-	         ninter=ninter,nlevel=nlevel)
+	         ninter=ninter,nlevel=nlevel,possiP=possiP)
 
 	 cat("\n\n")
 
@@ -560,14 +603,237 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 }   
 
 
-
-
 ###
-### Tools for FPTbinary: print, summary, plot
+### Tools for FPTbinary: anova, print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 16-08-2006.
-	
+### Last modification: 15-12-2006.
+
+
+"anova.FPTbinary"<-function(object, ...)
+{
+
+######################################################################################
+cregion<-function(x,probs=c(0.90,0.975))
+######################################################################################
+#  Function to compute a simultaneous credible region for a vector 
+#  parameter from the MCMC sample
+# 
+#  Reference: Besag, J., Green, P., Higdon, D. and Mengersen, K. (1995)
+#             Bayesian computation and stochastic systems (with Discussion)
+#             Statistical Science, vol. 10, 3 - 66, page 30
+#  and        Held, L. (2004) Simultaneous inference in risk assessment; a Bayesian 
+#             perspective In: COMPSTAT 2004, Proceedings in Computational 
+#             Statistics (J. Antoch, Ed.) 213 - 222, page 214
+#
+#  Arguments 
+#  sample : a data frame or matrix with sampled values (one column = one parameter).
+#  probs  : probabilities for which the credible regions are computed.
+######################################################################################
+{
+    #Basic information
+     nmonte<-dim(x)[1]
+     p<-dim(x)[2]
+     
+    #Ranks for each component
+     ranks <- apply(x, 2, rank, ties.method="first")
+     
+    #Compute the set S={max(nmonte+1-min r_i(t) , max r_i(t)): t=1,..,nmonte}
+     left <- nmonte + 1 - apply(ranks, 1, min)
+     right <- apply(ranks, 1, max)
+     S <- apply(cbind(left, right), 1, max)
+     S <- S[order(S)]
+    
+    #Compute the credible region
+     k <- floor(nmonte*probs)     
+     tstar <- S[k]
+     out<-list()
+     for(i in 1:length(tstar))
+     {
+        upelim <- x[ranks == tstar[i]]
+        lowlim <- x[ranks == nmonte + 1 - tstar[i]]    
+        out[[i]] <- rbind(lowlim, upelim)
+        rownames(out[[i]]) <- c("Lower", "Upper")
+        colnames(out[[i]]) <- colnames(x)
+     }
+     names(out) <- paste(probs)
+     return(out)
+}
+
+######################################################################################
+cint<-function(x,probs=c(0.90,0.975))
+######################################################################################
+#  Function to compute a credible interval from the MCMC sample
+#
+#  Arguments 
+#  sample : a data frame or matrix with sampled values (one column = one parameter).
+#  probs  : probabilities for which the credible regions are to be computed.
+######################################################################################
+{
+    #Compute the credible interval
+     delta<-(1-probs)/2
+     lprobs<-cbind(delta,probs+delta) 
+     out<-matrix(quantile(x,probs=lprobs),ncol=2)
+     colnames(out) <- c("Lower","Upper")
+     rownames(out) <- paste(probs)
+     return(out)
+}
+
+######################################################################################
+hnulleval<-function(mat,hnull)
+######################################################################################
+#  Evaluate H0
+#  AJV, 2006
+######################################################################################
+{
+     npar<-dim(mat)[2]   
+     lower<-rep(0,npar)
+     upper<-rep(0,npar)
+     for(i in 1:npar)
+     {
+        lower[i]<-mat[1,i]< hnull[i]
+        upper[i]<-mat[2,i]> hnull[i]
+     }
+     total<-lower+upper
+     out<-(sum(total==2) == npar)
+     return(out)
+}
+
+######################################################################################
+hnulleval2<-function(vec,hnull)
+######################################################################################
+#  Evaluate H0
+#  AJV, 2006
+######################################################################################
+{
+     lower<-vec[1]< hnull
+     upper<-vec[2]> hnull
+
+     total<-lower+upper
+     out<-(total==2)
+     return(out)
+}
+
+
+######################################################################################
+pcp<-function(x,hnull=NULL,precision=0.001,prob=0.95,digits=digits)
+######################################################################################
+#  Function to compute Pseudo Countour Probabilities (Region)
+#  AJV, 2006
+######################################################################################
+{
+    if(is.null(hnull))hnull<-rep(0,dim(x)[2])
+    if (dim(x)[2]!=length(hnull)) stop("Dimension of x and hnull must be equal!!")
+
+    probs <- seq(precision, 1-precision, by=precision)
+    neval <- length(probs)
+    probsf <- c(prob,probs)
+    cr <-  cregion(x,probs=probsf)
+
+    is.hnull <- hnulleval(cr[[2]],hnull)
+    if(is.hnull)
+    {
+       pval <- 1-precision
+    }   
+    else
+    {
+       is.hnull <- hnulleval(cr[[length(cr)]],hnull)
+       if (!is.hnull) 
+       {
+         pval <- precision
+       }  
+       else
+       {
+         is.hnull<-rep(0,neval+1)
+         for(i in 1:(neval+1))
+         {
+            is.hnull[i] <- hnulleval(cr[[i]],hnull)
+         }   
+         is.hnull <- is.hnull[-1]
+         first <- neval - sum(is.hnull) + 1
+         pval <- 1 - probs[first]
+       }
+    }
+    output <- list(cr=cr[[1]], prob=prob, pval=pval,hnull=hnull)
+    return(output)
+}
+
+
+######################################################################################
+pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
+######################################################################################
+#  Function to compute Pseudo Countour Probabilities (Interval)
+#  AJV, 2006
+######################################################################################
+{
+    if(is.null(hnull))hnull<-0
+    probs <- seq(precision, 1-precision, by=precision)
+    neval <- length(probs)
+    probsf <- c(prob,probs)
+    cr <-  cint(x,probs=probsf)
+
+    is.hnull <- hnulleval2(cr[2,],hnull)
+    if(is.hnull)
+    {
+       pval <- 1-precision
+    }   
+    else
+    {
+       is.hnull <- hnulleval2(cr[(neval+1),],hnull)
+       if (!is.hnull) 
+       {
+         pval <- precision
+       }  
+       else
+       {
+         is.hnull<-rep(0,neval+1)
+         for(i in 1:(neval+1))
+         {
+            is.hnull[i] <- hnulleval2(cr[i,],hnull)
+         }   
+         is.hnull <- is.hnull[-1]
+         first <- neval - sum(is.hnull) + 1
+         pval <- 1-probs[first]
+       }
+    }
+    output <- list(cr=cr[1,], prob=prob, pval=pval,hnull=hnull)
+    return(output)
+}
+
+######################################################################################
+######################################################################################
+######################################################################################
+
+    possiP<-object$possiP
+    nfact<-dim(possiP)[1]
+    P<-rep(0,nfact)
+    df<-rep(0,nfact)
+    
+    for(i in 1:nfact)
+    {
+        df[i]<-1
+        if((possiP[i,2]-possiP[i,1])>0)
+        { 
+           x<-matrix(object$save.state$thetasave[,possiP[i,1]:possiP[i,2]])
+           foo<-pcp(x=x) 
+           P[i]<-foo$pval
+           df[i]<-(possiP[i,2]-possiP[i,1])+1
+        }
+        else
+        {
+           x<-object$save.state$thetasave[,possiP[i,1]:possiP[i,2]]
+           foo<-pcp2(x=x) 
+           P[i]<-foo$pval
+        }
+    }
+
+    table <- data.frame(df,P) 
+    dimnames(table) <- list(rownames(possiP), c("Df","PsCP"))
+    structure(table, heading = c("Table of Pseudo Contour Probabilities\n", 
+        paste("Response:", deparse(formula(object)[[2]]))), class = c("anovaPsCP",
+        "data.frame"))
+}
+
 	        
 "print.FPTbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {

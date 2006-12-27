@@ -34,8 +34,20 @@ predict.DPsurvint(object,grid,xnew=NULL,hpd=TRUE, ...)
   This function computes the survival curve based on the fit of a Mixture of Dirichlet 
   process in a AFT regression model for interval censored data (Hanson and Johnson, 2004).
   
-  A sample of the predictive survival curve for \eqn{X} is calculated as follows:
-  \deqn{S(t|X,data) = (1/(\alpha+n))\{ \alpha G_0( (t \exp(X \beta) , \infty) ) + \sum_{i=1}^n \delta_{V_i} ( (t \exp(X \beta) , \infty) )\}}{S(t|X,data) = (1/(alpha+n))\{ alpha G0( (t \exp(X beta) , +infty) ) + \sum_{i=1}^n \delta_{Vi} ( (t \exp(X beta) , +infty) )\}}
+  Given a MCMC sample of size \eqn{J}{J} of the parameters, a sample of the 
+  predictive survival curve for \eqn{X}{X} is drawn as follows: for the MCMC
+  scan \eqn{j}{j} of the posterior distribution, with \eqn{j=1,\ldots,J}{j=1,...,J},
+  we sample from:
+
+  \deqn{ S^{(j)}(t|X,data) \sim Beta(a^{(j)}(t),b^{(j)}(t))}{S^{(j)}(t|X,data) ~ Beta(a^{(j)}(t),b^{(j)}(t))}
+  
+  where,
+
+  \deqn{a^{(j)}(t)=\alpha^{(j)} G_0^{(j)}( (t \exp(X \beta^{(j)}) , \infty) ) + \sum_{i=1}^n \delta_{V^{(j)}_i} ( (t \exp(X \beta^{(j)}) , \infty) )}{a^{(j)}(t)=\alpha^{(j)} G_0^{(j)}( (t \exp(X \beta^{(j)}) , \infty) ) + \sum_{i=1}^n \delta_{V^{(j)}_i} ( (t \exp(X \beta^{(j)}) , \infty) )}
+  
+  and
+  
+  \deqn{b^{(j)}(t)=\alpha^{(j)}+N - a^{(j)}(t)}{b^{(j)}(t)=\alpha^{(j)}+N - a^{(j)}(t)}
 }
 
 \value{
@@ -97,17 +109,18 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
       nsave<-10000
       nskip<-10
       ndisplay<-50
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                   tune=0.125)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay,tune=0.125)
 
     # Prior information
-      prior <- list(alpha=10,beta0=rep(0,2),Sbeta0=diag(100000,2),m0=0,s0=1,
-                    tau1=0.01,tau2=0.01)
+      prior <- list(alpha=10,beta0=rep(0,2),Sbeta0=diag(100000,2),
+                    m0=0,s0=1,tau1=0.01,tau2=0.01)
 
 
     # Fit the model
 
-      fit1 <- DPsurvint(y~x1+x2,prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit1 <- DPsurvint(y~x1+x2,prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE) 
       fit1
 
     # Summary with HPD and Credibility intervals

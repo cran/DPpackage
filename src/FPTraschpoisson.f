@@ -13,12 +13,17 @@ c=======================================================================
      &                       xtx,xty,grid)
 c=======================================================================                      
 c
-c     Version 1.0: 
-c     Last modification: 30-09-2006.
-c
 c     Subroutine `fptraschpoi' to run a Markov chain in the  
 c     semiparametric Rasch Poisson Count model using a Polya tree prior
 c     for the random effect distribution. 
+c
+c     Version 2.0: 
+c     Last modification: 22-11-2006.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Correction in computation of MH ratio for random effects.
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
 c     This program is free software; you can redistribute it and/or modify
@@ -715,7 +720,7 @@ c++++++++++ prior ratio
             tmp2=prob(intlp)*dble(ninter)*dnrm(b(i),mu,sigma,0) 
             tmp2=log(tmp2)
 
-            logp=logp-tmp1+tmp2 
+            logp=logp+tmp1-tmp2 
 
 c++++++++++ candidate generating kernel contribution
 
@@ -1041,7 +1046,7 @@ c+++++++++++ evaluate log-likelihood
                   loglikc=loglikc+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
                end do
             end do   
-            
+
 c++++++++++ acceptance step
             ratio=dexp(loglikc+logpriorc-logliko-logprioro+
      &                 logcgkc-logcgko)

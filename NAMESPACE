@@ -5,6 +5,7 @@ export(
         CSDPbinary.default,
         DPbinary,
         DPbinary.default,
+        DPcaterpillar,
         DPdensity,
         DPdensity.default,        
         DPelicit,
@@ -22,6 +23,8 @@ export(
         DPrasch.default,
         DPraschpoisson,
         DPraschpoisson.default,
+        DProc,
+        DProc.default,
         DPsurvint,
         DPsurvint.default,
         FPTbinary,
@@ -43,17 +46,21 @@ importFrom(graphics, plot)
 
 ## register S3 methods
 
+S3method(print, anovaPsCP)
+
 S3method(print, CSDPbinary)
 S3method(plot, CSDPbinary)
 S3method(summary, CSDPbinary)
 S3method(print, summaryCSDPbinary)
 S3method(predict, CSDPbinary)
+S3method(anova, CSDPbinary)
 
 S3method(print, DPbinary)
 S3method(plot, DPbinary)
 S3method(summary, DPbinary)
 S3method(print, summaryDPbinary)
 S3method(predict, DPbinary)
+S3method(anova, DPbinary)
 
 S3method(print, DPdensity)
 S3method(plot, DPdensity)
@@ -92,18 +99,23 @@ S3method(plot, DPraschpoisson)
 S3method(summary, DPraschpoisson)
 S3method(print, summaryDPraschpoisson)
 
+S3method(print, DProc)
+S3method(plot, DProc)
+
 S3method(print, DPsurvint)
 S3method(plot, DPsurvint)
 S3method(summary, DPsurvint)
 S3method(print, summaryDPsurvint)
 S3method(predict, DPsurvint)
 S3method(plot, predict.DPsurvint)
+S3method(anova, DPsurvint)
 
 S3method(print, FPTbinary)
 S3method(plot, FPTbinary)
 S3method(summary, FPTbinary)
 S3method(print, summaryFPTbinary)
 S3method(predict, FPTbinary)
+S3method(anova, FPTbinary)
 
 S3method(print, FPTrasch)
 S3method(plot, FPTrasch)
@@ -120,6 +132,7 @@ S3method(plot, Pbinary)
 S3method(summary, Pbinary)
 S3method(print, summaryPbinary)
 S3method(predict, Pbinary)
+S3method(anova, Pbinary)
 
 S3method(print, PTdensity)
 S3method(plot, PTdensity)
@@ -130,3 +143,5 @@ S3method(print, PTlm)
 S3method(plot, PTlm)
 S3method(summary, PTlm)
 S3method(print, summaryPTlm)
+S3method(anova, PTlm)
+

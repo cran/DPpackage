@@ -45,7 +45,7 @@ PTlm(formula,ngrid=200,prior,mcmc,state,status,
                      on the screen when every \code{ndisplay} iterations have been carried
                      out), and  \code{tune1}, \code{tune2} and \code{tune3} giving the  positive 
                      Metropolis tuning parameter for the regression coefficients,
-                     the scale, and precision parameters, respectively
+                     the scale, and precision parameter, respectively
                      (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
@@ -97,9 +97,9 @@ PTlm(formula,ngrid=200,prior,mcmc,state,status,
 \value{
   An object of class \code{PTlm} representing the semiparametric median regression
   model fit. Generic functions such as \code{print}, \code{plot},
-  and \code{summary} have methods to show the results of the fit. 
-  The results include \code{beta}, \code{sigma2}, the precision
-  parameter \code{\alpha}, and the number of clusters.
+  \code{summary}, and \code{anova} have methods to show the results of the fit. 
+  The results include \code{beta}, \code{sigma2}, and the precision
+  parameter \code{\alpha}.
   
   The list \code{state} in the output object contains the current value of the parameters 
   necessary to restart the analysis. If you want to specify different starting values 
@@ -159,16 +159,24 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
                    ndisplay=ndisplay,tune1=0.10,tune2=0.25)
 
     # Prior information
-      prior <- list(alpha=0.1,beta0=rep(0,3),Sbeta0=diag(1000,3),
+      prior <- list(alpha=1,beta0=rep(0,3),Sbeta0=diag(1000,3),
                     tau1=0.01,tau2=0.01,M=6)
 
     # Fit the model
 
       fit1 <- PTlm(formula=y~x1+x2,prior=prior,mcmc=mcmc,state=state,
                    status=TRUE) 
-      
+
+    # Summary with HPD and Credibility intervals
       summary(fit1)
+      summary(fit1,hpd=FALSE)
+
+    # Plot model parameters (to see the plots gradually set ask=TRUE)
       plot(fit1)
+      plot(fit1,nfigr=2,nfigc=2)
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit1)
       
 
     ############################################
@@ -188,11 +196,10 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       nskip<-20
       ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
-                   ndisplay=ndisplay,tune1=1.1,tune2=1.1)
-
+                   ndisplay=ndisplay,tune1=0.5,tune2=1.1)
 
     # Prior information
-      prior <- list(alpha=0.1,beta0=rep(0,3),Sbeta0=diag(1000,3),
+      prior <- list(alpha=1,beta0=rep(0,3),Sbeta0=diag(1000,3),
                     tau1=0.01,tau2=0.01,M=8)
 
     # Fit the model
@@ -200,9 +207,17 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       fit2 <- PTlm(formula=bmi~lbm+gender,prior=prior,mcmc=mcmc,
                    state=state,status=TRUE) 
 
-      fit2
+    # Summary with HPD and Credibility intervals
       summary(fit2)
+      summary(fit2,hpd=FALSE)
+
+    # Plot model parameters (to see the plots gradually set ask=TRUE)
       plot(fit2)
+      plot(fit2,nfigr=2,nfigc=2)
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit2)
+
 }      
 }
 

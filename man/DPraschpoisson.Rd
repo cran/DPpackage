@@ -146,8 +146,8 @@ MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
 Neal, R. M. (2000) Markov Chain sampling methods for Dirichlet process mixture models.
   Journal of Computational and Graphical Statistics, 9:249-265.
 
-San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian Analysis
-  of Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
+  of Bayesian Semiparametric IRT-type Models. In preparation.
 
 West, M. (1985) Generalized linear models: outlier accomodation, scale parameter and
   prior distributions. In Bayesian Statistics 2 (eds Bernardo et al.), 531-558, Amsterdam:
@@ -184,7 +184,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       beta0<-rep(0,nitem-1)
       Sbeta0<-diag(1000,nitem-1)
 
-      prior<-list(alpha=1,sigma=1,mu=0,beta0=beta0,Sbeta0=Sbeta0)
+      prior<-list(alpha=1,sigma=1,mu=0,beta0=beta0,
+                  Sbeta0=Sbeta0)
 
     # Initial state
       state <- NULL
@@ -195,16 +196,19 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       nsave<-25000
       nskip<-20
       ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-DPraschpoisson(y=y,prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit1<-DPraschpoisson(y=y,prior=prior,mcmc=mcmc, 
+                           state=state,status=TRUE)
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
@@ -212,7 +216,7 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
     
       DPrandom(fit1)
       plot(DPrandom(fit1))
-
+      DPcaterpillar(DPrandom(fit1))
 }
 }
 

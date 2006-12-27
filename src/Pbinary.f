@@ -147,7 +147,7 @@ c=======================================================================
 c+++++Constants
       real*8 zero,one
       parameter(zero=0.d0)
-      parameter(one =1.00001d0)
+      parameter(one =1.d0)
 
 c+++++Observed variables
       integer link,nrec,p,yobs(nrec)
@@ -357,11 +357,6 @@ c+++++++++++++ cpo, errors and predictive information
          
                   tmp1=sens(j)*tmp1+(1.d0-spec(j))*(1.d0-tmp1)
 
-                  if(tmp1.lt.zero.or.tmp1.gt.one)then
-                     call dblepr("prob1",-1,tmp1,1)
-                     call rexit("Error in Probability")
-                  end if  
-            
                   if(yobs(j).eq.1)then
                     cpo(j)=cpo(j)+1.0d0/tmp1 
                   end if   

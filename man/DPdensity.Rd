@@ -8,7 +8,6 @@
     Dirichlet process mixture of normals model.
 }
   
-  
 \usage{
 
 DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",

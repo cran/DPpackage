@@ -100,9 +100,9 @@ FPTbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 
 \value{
   An object of class \code{FPTbinary} representing the semiparametric logistic regression
-  model fit. Generic functions such as \code{print}, \code{plot}, \code{predict}, and \code{summary} have 
-  methods to show the results of the fit. The results include \code{beta}, the precision
-  parameter (\code{alpha}), and the \code{link} function.
+  model fit. Generic functions such as \code{print}, \code{plot}, \code{predict}, \code{summary},
+  and \code{anova} have methods to show the results of the fit. 
+  The results include \code{beta}, the precision parameter (\code{alpha}), and the \code{link} function.
   
   The MCMC samples of the parameters and the errors in the model are stored in the object 
   \code{thetasave} and \code{randsave}, respectively. Both objects are included in the 
@@ -127,7 +127,7 @@ FPTbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 \references{
 
 Hanson, T. (2006) Inference for Mixtures of Finite Polya tree models. 
-  To appear in Journal of the American Statistical Association. 
+  Journal of the American Statistical Association, 101: 1548-1565. 
 
 Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) Semiparametric Bayesian
   Analysis of Misclassified Binary Data. In preparation.
@@ -179,8 +179,12 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
     # Plot an specific model parameter (to see the plots gradually 
     # set ask=TRUE)
-      plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="x")	
+      plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="xray")	
       plot(fit1,ask=FALSE,param="link",nfigc=1,nfigr=1)
+
+    # Table of Pseudo Contour Probabilities
+      anova(fit1)
+
 
     # Fitting parametric models
 

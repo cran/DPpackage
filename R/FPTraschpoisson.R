@@ -188,10 +188,11 @@ FPTraschpoisson.default<-function(y,prior,mcmc,state,status,data)
                 betawork<-c(0,beta)
                 for(i in 1:nsubject)
                 {
-                   b[i]<-log(sum(ywork[i,])/sum(exp(-betawork)))
+                   b[i]<-log((sum(ywork[i,])+0.1)/sum(exp(-betawork)))
                 }
                 
                 mu<-0
+                
    	 }
 	 
       	 if(status==FALSE)

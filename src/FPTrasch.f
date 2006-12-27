@@ -784,7 +784,7 @@ c+++++++++++ evaluate log-likelihood
                   loglikc=loglikc+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
                end do
             end do   
-            
+
 c++++++++++ acceptance step
             ratio=dexp(loglikc+logpriorc-logliko-logprioro+
      &                 logcgkc-logcgko)

@@ -17,11 +17,12 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
 }
 
 \arguments{
-    \item{y}{        a vector giving the data from which the density estimate 
+    \item{y}{        a vector or matrix giving the data from which the density estimate 
                      is to be computed.}
 
     \item{ngrid}{    number of grid points where the density estimate is 
-                     evaluated. The default value is 1000.}
+                     evaluated. This is only used if dimension of \code{y}
+                     is lower or equal than 2. The default value is 1000.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
@@ -60,12 +61,12 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
 
 \details{
   This generic function fits a Mixture of Polya Trees prior for the density estimation 
-  (see, e.g., Lavine, 1992 and 1994; Hanson, 2006):
-
+  (see, e.g., Lavine, 1992 and 1994; Hanson, 2006). In the univariate case, the model 
+  is given by:
   \deqn{Y_1, \ldots , Y_n | G \sim G}{Y1,...,Yn | G ~ G}
   \deqn{G | \alpha,\mu,\sigma^2 \sim PT(\Pi^{\mu,\sigma^2},\textit{A})}{G | alpha,mu,sigma2 ~ PT(Pi^{mu,sigma2},\textit{A})}
   \deqn{f(\mu,\sigma^{-2}) \propto \sigma^{-2}}{f(mu,sigma^-2) \propto 1/sigma2}
-  
+
   where, the the PT is centered around a \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution, by
   taking each \eqn{m} level of the partition \eqn{\Pi^{\mu, \sigma^2}}{Pi^{mu, sigma2}} to coincide 
   with the \eqn{k/2^m, k=0,\ldots,2^m} quantile of the \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution.
@@ -73,6 +74,22 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
   where \eqn{E^{*}=\bigcup_{m=0}^{m} E^m}{E^{*}=\bigcup_{m=0}^{M} E^m} 
   and \eqn{E^m} is the \eqn{m}-fold product of \eqn{E=\{0,1\}},
   was specified as \eqn{\alpha_{e_1 \ldots e_m}=\alpha m^2}{alpha{e1 \ldots em}=\alpha m^2}. 
+
+  Analogous to the univariate model, in the multivariate case the PT prior is 
+  characterized by partitions of \eqn{R^d}{R^d}, and a collection of conditional
+  probabilities that link sets in adjacent tree levels, i.e., they link each
+  parent set in a given level to its \eqn{2^d}{2^d} offpring stes in the subsequent
+  level. The multivariate model is given by: 
+  \deqn{Y_1, \ldots , Y_n | G \sim G}{Y1,...,Yn | G ~ G}
+  \deqn{G | \alpha,\mu,\Sigma \sim PT(\Pi^{\mu,\Sigma},\textit{A})}{G | alpha,mu,Sigma ~ PT(Pi^{mu,Sigma},\textit{A})}
+  \deqn{p(\mu,\Sigma) \propto |\Sigma|^{-(d+1)/2}}{p(mu,Sigma) \propto |Sigma|^{-(d+1)/2}}
+  
+  where, the the PT is centered around a \eqn{N_d(\mu,\Sigma)}{N_d(mu,Sigma)} distribution.
+  In this case, the class of partitions that we consider, starts with base sets that are Cartesian 
+  products of intervals obtained as quantiles from the standard normal distribution. A multivariate 
+  location-scale transformation, \eqn{Y=\mu+\Sigma^{1/2} z}{Y=mu+Sigma^{1/2} z}, is applied to each 
+  base set yielding the final sets. 
+
   To complete the model specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   
@@ -89,7 +106,8 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
   An object of class \code{PTdensity} representing the Polya tree
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. 
-  The results include \code{mu}, \code{sigma2}, and the precision
+  The results include \code{mu}, \code{sigma2} or \code{Sigma} in the univariate
+  or multivariate case, respectively, and the precision
   parameter \code{alpha}.
   
   The list \code{state} in the output object contains the current value of the parameters 
@@ -99,7 +117,9 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
   
   \item{mu}{ giving the value of the baseline mean.} 
   
-  \item{sigma}{ giving the baseline standard deviation.}
+  \item{sigma}{ giving the baseline standard deviation or the baseline 
+                covariance matrix in the univariate or multivariate case, 
+                respectively.}
   
   \item{alpha}{ giving the value of the precision parameter.}
 
@@ -111,7 +131,7 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
 
 \references{
 Hanson, T. (2006) Inference for Mixtures of Finite Polya Trees.
-  To appear in Journal of the American Statistical Association. 
+  Journal of the American Statistical Association, 101: 1548-1565.
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.
@@ -147,7 +167,7 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       prior<-list(alpha=1,M=8)
 
 
-    # Fit the model
+    # Fitting the model
 
       fit1<-PTdensity(y=speeds,ngrid=1000,prior=prior,mcmc=mcmc,
                        state=state,status=TRUE)
@@ -165,6 +185,46 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
     # Extracting the density estimate
       cbind(fit1$x1,fit1$dens)
 
+
+
+    ####################################
+    # Bivariate example
+    ####################################
+
+    # Data
+      data(airquality)
+      attach(airquality)
+
+      ozone<-Ozone**(1/3)
+      radiation<-Solar.R
+
+    # Prior information
+
+      prior<-list(a0=5,b0=1,M=4)
+
+    # Initial state
+      state <- NULL
+
+    # MCMC parameters
+
+      nburn<-5000
+      nsave<-10000
+      nskip<-10
+      ndisplay<-1000
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
+                   tune1=0.5,tune2=1.5,tune3=10.5)
+
+    # Fitting the model
+      fit1<-PTdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
+                      state=state,status=TRUE,na.action=na.omit)
+
+    # Plot the estimated density
+      plot(fit1)
+
+    # Extracting the density estimate
+      fit1$x1
+      fit1$x2
+      fit1$dens
 }
 }
 

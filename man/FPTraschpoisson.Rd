@@ -21,7 +21,7 @@ FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
-                     prior distribution of the precision parameter of the Dirichlet process
+                     prior distribution of the precision parameter of the Finite Polya tree
                      prior, \code{alpha} giving the value of the precision parameter (it 
                      must be specified if \code{a0} is missing), code{mub} and \code{Sb} 
                      giving the hyperparameters of the normal prior distribution 
@@ -96,8 +96,8 @@ FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
   An object of class \code{FPTraschpoisson} representing the Rasch Poisson
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. The results include 
-  \code{beta}, \code{mu}, \code{sigma}, the precision parameter 
-  \code{alpha}, and the number of clusters.
+  \code{beta}, \code{mu}, \code{sigma}, and the precision parameter 
+  \code{alpha}.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -134,8 +134,8 @@ Lavine, M. (1992) Some aspects of Polya tree distributions for statistical
 Lavine, M. (1994) More aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 22: 1161-1176.
 
-San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian Analysis
-  of Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
+  of Bayesian Semiparametric IRT-type Models. In preparation.
   
 }
 
@@ -168,8 +168,8 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
       beta0<-rep(0,nitem-1)
       Sbeta0<-diag(1000,nitem-1)
 
-      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,beta0=beta0,
-                  Sbeta0=Sbeta0,M=5)
+      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,
+                  beta0=beta0,Sbeta0=Sbeta0,M=5)
 
     # Initial state
       state <- NULL
@@ -180,16 +180,19 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
       nsave<-5000
       nskip<-50
       ndisplay<-100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-FPTraschpoisson(y=y,prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit1<-FPTraschpoisson(y=y,prior=prior,mcmc=mcmc,
+                            state=state,status=TRUE)
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
@@ -197,7 +200,7 @@ San Martin, E., Rolin, J.-M., Jara, A., and Mouchart, M. (2006) On the Bayesian 
     
       DPrandom(fit1)
       plot(DPrandom(fit1))
-
+      DPcaterpillar(DPrandom(fit1))
 }
 }
 

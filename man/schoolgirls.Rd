@@ -13,7 +13,7 @@
 \format{
   A data frame with 100 observations on the following 4 variables.
   \describe{
-    \item{\code{height}}{a numeric vector giving the heght in cm}
+    \item{\code{height}}{a numeric vector giving the height in cm}
     \item{\code{child}}{an ordered factor giving a unique identifier for the subject in the study}    
     \item{\code{age}}{a numeric vector giving the age of the child in years}
     \item{\code{group}}{a factor with levels 1 (short), 2 (medium), and 3 (tall) giving the 

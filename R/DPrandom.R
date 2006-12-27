@@ -2,7 +2,7 @@
 ### Extracts random effects from a DPpackage object.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 10-08-2006.
+### Last modification: 15-12-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@ function(object,centered=FALSE,predictive=FALSE)
       
       randommat<-matrix(object$save.state$randsave,
                  nrow=object$mcmc$nsave,ncol=object$nrandom*(object$nsubject+1))
-      
+
       dimnames(randommat)<-dimnames(object$save.state$randsave)
       
       thetamat<-matrix(object$save.state$thetasave,nrow=object$mcmc$nsave, 
@@ -71,10 +71,11 @@ function(object,centered=FALSE,predictive=FALSE)
           }
       }
       
+      type<-1
       dimnames(random)<-list(object$namesre1,object$namesre2)
       z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
               predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
-              modelname=object$modelname,call=object$call)
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
       
       if(predictive==TRUE)
       {
@@ -183,10 +184,11 @@ function(object,centered=FALSE,predictive=FALSE)
           }
       }
       
+      type<-1
       dimnames(random)<-list(object$namesre1,object$namesre2)
       z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
               predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
-              modelname=object$modelname,call=object$call)
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
       
       if(predictive==TRUE)
       {
@@ -295,11 +297,12 @@ function(object,centered=FALSE,predictive=FALSE)
               }
           }
       }
-      
+
+      type<-1      
       dimnames(random)<-list(object$namesre1,object$namesre2)
       z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
               predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
-              modelname=object$modelname,call=object$call)
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
       
       if(predictive==TRUE)
       {
@@ -374,14 +377,12 @@ function(object,centered=FALSE,predictive=FALSE)
      
    }
 
-
-
    if(is(object, "DPdensity"))
    {
 
        if (centered) 
        { 
-	   stop("This option is not implemented  for DPdensity.\n")
+	   stop("This option is not implemented for DPdensity.\n")
        }
 
 
@@ -457,10 +458,11 @@ function(object,centered=FALSE,predictive=FALSE)
        }
 
        dimnames(random)<-list(seq(1,object$nrec),namesre)
-       
+
+       type<-2       
        z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
                nsubject=object$nrec,nrandom=dimen,centered=centered,randommat=randommat,
-               prediction=predtable)
+               prediction=predtable,type=type,nsave=object$mcmc$nsave)
                
        class(z)<-c("DPrandom") 
        return(z)
@@ -470,6 +472,12 @@ function(object,centered=FALSE,predictive=FALSE)
    if(is(object, "DPraschpoisson"))
    {
 
+       if (centered) 
+       { 
+	   stop("This option is not implemented for DPraschpoisson.\n")
+       }
+
+
        random<-matrix(0,nrow=object$nsubject,ncol=1)
        
        randommat<-matrix(object$save.state$randsave,
@@ -482,9 +490,11 @@ function(object,centered=FALSE,predictive=FALSE)
        }
       
        colnames(random)<-"theta"
-      
+
+       type<-2      
        z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
-               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
 
        if(predictive==TRUE)
        {
@@ -522,69 +532,16 @@ function(object,centered=FALSE,predictive=FALSE)
        class(z)<-c("DPrandom") 
        return(z)
    }
-
-
-   if(is(object, "DPMraschpoisson"))
-   {
-
-       random<-matrix(0,nrow=object$nsubject,ncol=1)
-       
-       randommat<-matrix(object$save.state$randsave,
-                  nrow=object$mcmc$nsave,ncol=object$nsubject+1)
-      
-       dimnames(randommat)<-dimnames(object$save.state$randsave)
-
-       for(i in 1:object$nsubject){
-           random[i]<-mean(object$save.state$randsave[,i])              
-       }
-      
-       colnames(random)<-"theta"
-      
-       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
-               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
-
-       if(predictive==TRUE)
-       {
-          predp<-mean(object$save.state$randsave[,object$nsubject+1])      	     	
-
-          predm<-median(object$save.state$randsave[,object$nsubject+1])      	     	
-
-          predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
-
-          vec<-object$save.state$randsave[,object$nsubject+1]
-          
-          n<-length(vec)
-          
-          alpha<-0.05
-          
-          alow<-rep(0,2)
-          
-          aupp<-rep(0,2)
-          
-       
-          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-          predl<-a$alow[1]            
-          predu<-a$aupp[1]
-          
-          predse<-predsd/sqrt(n)
-     	 
-      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
-          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
-                "95%HPD-Low","95%HPD-Upp"))
-      	 
-      	  z$prediction<-predtable
-       }
-               
-       class(z)<-c("DPrandom") 
-       return(z)
-   }
-
 
 
    if(is(object, "FPTraschpoisson"))
    {
 
+       if (centered) 
+       { 
+	   stop("This option is not implemented for FPTraschpoisson.\n")
+       }
+
        random<-matrix(0,nrow=object$nsubject,ncol=1)
        
        randommat<-matrix(object$save.state$randsave,
@@ -597,9 +554,11 @@ function(object,centered=FALSE,predictive=FALSE)
        }
       
        colnames(random)<-"theta"
-      
+
+       type<-2      
        z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
-               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
 
        if(predictive==TRUE)
        {
@@ -642,6 +601,11 @@ function(object,centered=FALSE,predictive=FALSE)
    if(is(object, "FPTrasch"))
    {
 
+       if (centered) 
+       { 
+	   stop("This option is not implemented for FPTrasch.\n")
+       }
+
        random<-matrix(0,nrow=object$nsubject,ncol=1)
        
        randommat<-matrix(object$save.state$randsave,
@@ -654,9 +618,11 @@ function(object,centered=FALSE,predictive=FALSE)
        }
       
        colnames(random)<-"theta"
-      
+
+       type<-2      
        z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
-               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
 
        if(predictive==TRUE)
        {
@@ -699,6 +665,11 @@ function(object,centered=FALSE,predictive=FALSE)
    if(is(object, "DPrasch"))
    {
 
+       if (centered) 
+       { 
+	   stop("This option is not implemented for DPrasch.\n")
+       }
+
        random<-matrix(0,nrow=object$nsubject,ncol=1)
        
        randommat<-matrix(object$save.state$randsave,
@@ -711,9 +682,11 @@ function(object,centered=FALSE,predictive=FALSE)
        }
       
        colnames(random)<-"theta"
-      
+
+       type<-2      
        z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
-               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat)
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
 
        if(predictive==TRUE)
        {
@@ -753,8 +726,11 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
  
-}
-
+}###
+### Tools for DPrandom: print, plot
+###
+### Copyright: Alejandro Jara Vallejos, 2006
+### Last modification: 15-12-2006.
 
 
 "print.DPrandom"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
@@ -862,6 +838,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200,
 
    if(is(x, "DPrandom")){
 
+       oldpar <- par(no.readonly = TRUE)
        par(ask = ask)
        layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
 
@@ -885,7 +862,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200,
               names(vec)<-pnames[i]
               
               vectmp<-x$randomm[,i]
-              xlim<-c(min(vectmp)-0.5*sqrt(var(vectmp)),max(vectmp)+0.5*sqrt(var(vectmp)))
+              xlim<-c(min(vectmp)-6.5*sqrt(var(vectmp)),max(vectmp)+6.5*sqrt(var(vectmp)))
 
               plot(vec,type='l',main=title1,xlab="MCMC scan",ylab=" ")
               fancydensplot(vec,xlim=xlim,hpd=hpd,main=title2,xlab="values", ylab="density", col=col)
@@ -919,6 +896,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200,
               }
           }
        }
+       par(oldpar)  
    }
 }
 

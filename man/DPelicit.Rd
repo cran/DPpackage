@@ -2,8 +2,7 @@
 \alias{DPelicit}
 \alias{DPelicit.default}
 
-\title{Performs a prior elicitation for the precision parameter of
-       a DP prior}
+\title{Performs a prior elicitation for the precision parameter of a DP prior}
        
 \description{
     This function performs a prior elicitation for the precision parameter
@@ -36,14 +35,14 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 
     \item{b0}{       hyperparameter for the \code{Gamma} prior distribution of 
                      the precision parameter of the Dirichlet process
-                     prior, \code{alpha ~ Gamma(a0,b0)}. 
+                     prior, \eqn{alpha ~ Gamma(a0,b0)}. 
                      }
 
     \item{mean}{     prior expected number of clusters when 
-                     \code{alpha ~ Gamma(a0,b0)}.}
+                     \eqn{alpha ~ Gamma(a0,b0)}.}
 
     \item{std}{      prior standard deviation for the number of clusters 
-                     when \code{alpha ~ Gamma(a0,b0)}.}
+                     when \eqn{alpha ~ Gamma(a0,b0)}.}
 }
 
 \details{

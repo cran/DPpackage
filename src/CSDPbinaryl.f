@@ -1,22 +1,24 @@
     
 c=======================================================================                      
-      subroutine csdpbinaryl2(nrec,p,sens,spec,x,yobs,
-     &                        nlink,xlink,
-     &                        a0b0,betapm,betapv,
-     &                        mcmcvec,nsave,propv,      
-     &                        acrate,fsave,randsave,thetasave,cpo, 
-     &                        alpha,beta,ncluster,theta,y,v,
-     &                        betac,
-     &                        endp,endp2,eta,etan,fsavet,
-     &                        intcount,intcount2,intind,intind2,iflag, 
-     &                        intposso,intpossn, 
-     &                        lpsav,lpsavc,
-     &                        maxint,maxend,maxm,mass,
-     &                        massurn1,massurn2,massurn3,massurn4,
-     &                        prob,
-     &                        proburn1,proburn2,proburn3,proburn4,
-     &                        seed,urn,uvec,vvec,vnew,vnew2,
-     &                        workm1,workm2,workmh1,workv1,workv2,wvec)
+      subroutine csdpbinaryl(nrec,p,sens,spec,x,yobs,
+     &                       nlink,xlink,
+     &                       a0b0,betapm,betapv,
+     &                       mcmcvec,nsave,propv,extra,      
+     &                       acrate,fsave,randsave,thetasave,cpo, 
+     &                       alpha,beta,ncluster,theta,y,v,
+     &                       betac,
+     &                       endp,endp2,eta,etan,
+     &                       clusts,     
+     &                       index,
+     &                       intcount,intcount2,intind,intind2,iflag, 
+     &                       intposso,intpossn, 
+     &                       limr,lpsav,lpsavc,
+     &                       maxint,maxend,maxm,mass,
+     &                       massurn1,massurn2,massurn3,massurn4,
+     &                       prob,
+     &                       proburn1,s,
+     &                       seed,urn,uvec,vvec,vnew,
+     &                       workm1,workm2,workmh1,workv1,workv2,wvec)
 c=======================================================================                  
 c
 c     Subroutine `cspdbinaryl' to run a Markov chain in the  
@@ -26,9 +28,9 @@ c     al., 1996.
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
 c
-c     Version 2.0: 
+c     Version 4.0: 
 c
-c     Last modification: 21-08-2006.
+c     Last modification: 22-12-2006.
 c     
 c     Changes and Bug fixes: 
 c
@@ -40,6 +42,16 @@ c          - Performs a binary search to find the endpoints corresponding
 c            to each interval.
 c          - Computation of G.
 c          - Metropolis ratio for theta.
+c
+c     Version 2.0 to Version 3.0:
+c          - Add the link points to generate the partitions. Therefore 
+c            the link is partially sampled up to the specified partition.
+c
+c     Version 3.0 to Version 4.0:
+c          - Computation of baseline.
+c          - Added strategy for sampling the precision parameter alpha.
+c          - Sampling from the partially sampled CSDP 
+c          - Added an extra step which moves the clusters (optional). 
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -181,15 +193,13 @@ c                       eta(nrec).
 c        etan        :  real vector giving the linear predictor, 
 c                       etan(nrec).
 c        evali       :  integer indicator used in updating the state.
-c        fsavet      :  integer vector used to store the number of
-c                       observations to calculate the predictive
-c                       distribution of the link, fsavet(nlink).
 c        i           :  index.
 c        iflag       :  integer vector used to evaluate the prior
 c                       distribution for the regression coefficients, 
 c                       iflag(p).
 c        imax        :  index.
 c        imin        :  index.
+c        index       :  integer working vector, index(maxm)
 c        indi        :  index.
 c        intcount    :  integer vector used to count the number of 
 c                       observations for each interval, 
@@ -205,9 +215,9 @@ c                       each obbservation belong, intind(nrec+1).
 c        intind2     :  integer vector giving the interval where 
 c                       each obbservation belong, intind2(nrec+1).
 c        intposso    :  integer matrix giving the observations that
-c                       belong to each cluster, intposso(maxint,nrec+1).
+c                       belong to each interval, intposso(maxint,nrec+1).
 c        intpossn    :  integer matrix giving the observations that
-c                       belong to each cluster, intpossn(maxint,nrec+1).
+c                       belong to each interval, intpossn(maxint,nrec+1).
 c        isave       :  index. 
 c        iscan       :  index. 
 c        j           :  index. 
@@ -241,6 +251,9 @@ c        massurn4    :  real vector giving the mass for the urn 4 of
 c                       the CSDP, massurn4(maxint).
 c        maxu        :  real working variable.
 c        mrand       :  index.
+c        nclusteru   :  integer giving the number of clusters in urns.
+c        nclusteruc  :  integer giving the number of clusters in urns.
+c        nclusw      :  index. 
 c        npoints     :  index.
 c        ns          :  index.
 c        nscan       :  index.
@@ -255,12 +268,6 @@ c        prob        :  real vector used to update the cluster
 c                       structure, prob(maxint).
 c        proburn1    :  real vector giving F_1 in the CSDP, 
 c                       proburn1(maxint).
-c        proburn2    :  real vector giving F_1 in the CSDP, 
-c                       proburn2(maxint).
-c        proburn3    :  real vector giving F_1 in the CSDP, 
-c                       proburn3(maxint).
-c        proburn4    :  real vector giving F_1 in the CSDP, 
-c                       proburn4(maxint).
 c        ratio       :  real working variable.
 c        rbeta       :  real beta random number generator.
 c        rtslogistic2:  real truncated logistic random number generator.
@@ -280,7 +287,6 @@ c                       urn(maxint).
 c        uvec        :  real working vector, uvec(maxm).
 c        vpred       :  real working variable. 
 c        vnew        :  real working vector, vnew(nrec+1).
-c        vnew2       :  real working vector, vnew2(nrec).
 c        vvec        :  real working vector, vvec(maxm).
 c        workm1      :  real matrix used to update the fixed effects,
 c                       workm1(p,p).
@@ -301,7 +307,7 @@ c=======================================================================
 c+++++Constants
       real*8 zero,one
       parameter(zero=0.d0)
-      parameter(one =1.00001d0)
+      parameter(one =1.d0)
 
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)  
@@ -317,7 +323,7 @@ c+++++Prior information
       real*8 betapm(p),betapv(p,p),d,ppar
 
 c+++++MCMC parameters
-      integer mcmcvec(5),nburn,nskip,nsave,ntheta,ndisplay
+      integer extra,mcmcvec(5),nburn,nskip,nsave,ntheta,ndisplay
       real*8 propv(p,p)
 
 c+++++Stored output
@@ -334,11 +340,12 @@ c+++++CPU time
 
 c+++++Working space - integers
       integer maxm,maxend,maxint
+      integer clusts(nrec,nrec+1)
       integer counter,dispcount 
       integer efind
       integer evali
-      integer fsavet(nlink)
       integer i 
+      integer index(maxm)
       integer iflag(p)
       integer imax,imin
       integer indi 
@@ -351,9 +358,12 @@ c+++++Working space - integers
       integer k
       integer lpsav(nrec),lpsavc(nrec)
       integer mrand
+      integer nclusteru(4)
+      integer nclusteruc(4)
       integer npoints
       integer ns,nscan,nso
       integer ok
+      integer s(nrec)
       integer seed(2),seed1,seed2
       integer skipcount
       integer sprint
@@ -363,28 +373,28 @@ c+++++Working space - integers
 c+++++Working space - double precision
       real*8 area,ac(4),ac2(4) 
       real*8 betac(p),cdflogis 
-c      real*8 cdfbaselinel
       real*8 dgamlog
       real*8 endp(maxend),endp2(maxend)
       real*8 eta(nrec),etan(nrec)
       real*8 keepbeta
       real*8 liminf,limsup
+      real*8 limr(nrec,2)
       real*8 logliko,loglikn,logprioro,logpriorn
       real*8 mass(maxint)
       real*8 massurn1(maxint),massurn2(maxint)
       real*8 massurn3(maxint),massurn4(maxint)
       real*8 maxu
+      real*8 nclusw
       real*8 numc(4),numc2(4)
       real*8 prob(maxint)
-      real*8 proburn1(maxint),proburn2(maxint)
-      real*8 proburn3(maxint),proburn4(maxint)
+      real*8 proburn1(maxint)
       real*8 ratio
       real*8 rbeta,rtslogistic2
       real*8 thetac
       real*8 tmp1,tmp2
       real*8 uvec(maxm)
       real*8 vpred
-      real*8 vnew(nrec+1),vnew2(nrec)
+      real*8 vnew(nrec+1)
       real*8 vvec(maxm)
       real*8 workm1(p,p),workm2(p,p)
       real*8 workmh1(p*(p+1)/2)
@@ -410,7 +420,6 @@ c++++ initialize variables
       d=a0b0(3)
       ppar=a0b0(4)
 
-
 c++++ set random number generator
 
       seed1=seed(1)
@@ -420,7 +429,7 @@ c++++ set random number generator
 
       call rdisc(1,nrec,evali)
       vpred=v(evali)
-
+      
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Check consistency with the data before starting 
 c++++ the algorithm
@@ -430,6 +439,45 @@ c++++ check if the user has requested an interrupt
       call rchkusr()
  
       do i=1,nrec
+         
+         if(model.eq.0)then
+            sens(i)=1.d0
+            spec(i)=1.d0
+         end if
+      
+         limr(i,1)=-999.d0         
+         limr(i,2)= 999.d0
+      end do
+ 
+      nclusw=1 
+      do i=1,nrec
+         if(i.eq.1)then
+           s(i)=1
+          else
+           j=0 
+           ok=0
+           do while(ok.eq.0.and.j.lt.(i-1))          
+              j=j+1
+              if(v(i).eq.v(j))then
+                ok=1
+                s(i)=s(j)
+              end if
+           end do
+           if(ok.eq.0)then
+             nclusw=nclusw+1
+             s(i)=nclusw
+           end if  
+         end if
+         
+         if(y(i).eq.1)then
+            if(eta(i).lt.limr(s(i),2))limr(s(i),2)=eta(i)          
+          else
+            if(eta(i).gt.limr(s(i),1))limr(s(i),1)=eta(i)
+         end if 
+
+         clusts(s(i),1)=clusts(s(i),1)+1
+         clusts(s(i),clusts(s(i),1)+1)=i      
+      
          vnew(i)=v(i) 
          if(y(i).eq.1)then
            if(v(i).gt.eta(i))then
@@ -452,25 +500,8 @@ c++++ check if the user has requested an interrupt
          end if
       end do
 
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c++++ Sort errors and compute the number of clusters 
-c++++ before starting the algorithm
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      ncluster=nclusw
 
-      call sortvec(nrec+1,vnew,1,nrec)
-
-      ncluster=1
-      vnew2(1)=vnew(1)
-     
-      do i=2,nrec
-         call rchkusr()
-         if(vnew(i).ne.vnew2(ncluster))then
-            ncluster=ncluster+1
-            vnew2(ncluster)=vnew(i)
-         end if
-      end do
-
- 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -503,7 +534,7 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ sample candidates
 
          call rmvnorm(p,beta,propv,workmh1,workv1,betac)
-         
+
 c+++++++ evaluate log-prior for candidate value of parameters
 
          call dmvn(p,betac,betapm,betapv,logpriorn,workv1,workm1,
@@ -531,13 +562,11 @@ c+++++++ define the end points
          counter=counter+1
          endp(counter)=theta-d
 
-
-c+++++++ Test
          do i=1,nlink
             counter=counter+1
             endp(counter)=xlink(i)
          end do
-         
+
 
 c+++++++ sort end points
 
@@ -566,9 +595,7 @@ c+++++++ updating G base on the partition defined by beta and beta*
             massurn4(i)=0.d0
             prob(i)=0.d0
             proburn1(i)=0.d0
-            proburn2(i)=0.d0
-            proburn3(i)=0.d0
-            proburn4(i)=0.d0
+            intcount(i)=0
             intcount2(i)=0
             urn(i)=0
          end do
@@ -585,19 +612,27 @@ c+++++++ updating G base on the partition defined by beta and beta*
             urn(i)=evali
             intcounturn(evali)=intcounturn(evali)+1  
          end do
+
          urn(npoints+1)=4
          intcounturn(4)=intcounturn(4)+1  
 
-c         call dblepr("endp2",-1,endp2,npoints)
-c         call intpr("int",-1,intcounturn,4)
-c         return
-
-
          do i=1,nrec
+         
+            imax=efind(eta(i),maxend,endp2,npoints)
+            lpsav(i)=imax
+         
             indi=npoints+1
-            do j=npoints,1,-1
-               if(v(i).le.endp2(j))indi=indi-1
+            ok=0
+            j=npoints
+            do while(j.ge.1.and.ok.eq.0)
+               if(v(i).le.endp2(j))then
+                  indi=indi-1
+                  j=j-1
+                else
+                  ok=1
+               end if  
             end do
+            
             mass(indi)=mass(indi)+1.d0
             intind2(i)=indi
             intcount2(indi)=intcount2(indi)+1
@@ -605,24 +640,24 @@ c         return
             intposso(indi,intcount2(indi))=i
          end do
 
-         ac(1)=alpha/cdflogis(theta-d,0.d0,1.d0,1,0)
-         ac(2)=alpha/(0.5d0-cdflogis(theta-d,0.d0,1.d0,1,0))
-         ac(3)=alpha/(cdflogis(theta,0.d0,1.d0,1,0)-0.5d0)
-         ac(4)=alpha/(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
+         ac(1)=alpha*cdflogis(theta-d,0.d0,1.d0,1,0)
+         ac(2)=alpha*(0.5d0-cdflogis(theta-d,0.d0,1.d0,1,0))
+         ac(3)=alpha*(cdflogis(theta,0.d0,1.d0,1,0)-0.5d0)
+         ac(4)=alpha*(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
          
          do i=1,npoints+1
             area=0.d0
             if(i.eq.1)then
-                area=ac(urn(i))*cdflogis(endp2(1),0.d0,1.d0,1,0)
+                area=alpha*cdflogis(endp2(1),0.d0,1.d0,1,0)
               else if(i.gt.npoints)then
-                area=ac(urn(i))*cdflogis(endp2(npoints),0.d0,1.d0,0,0)
+                area=alpha*cdflogis(endp2(npoints),0.d0,1.d0,0,0)
               else
-                area=ac(urn(i))*(cdflogis(endp2(i  ),0.d0,1.d0,1,0)-  
-     &                           cdflogis(endp2(i-1),0.d0,1.d0,1,0))
+                area=alpha*(cdflogis(endp2(i  ),0.d0,1.d0,1,0)-  
+     &                      cdflogis(endp2(i-1),0.d0,1.d0,1,0))
             end if  
             mass(i)=mass(i)+area
          end do
-
+         
          do i=1,intcounturn(1) 
             massurn1(i)=mass(i)
          end do
@@ -648,69 +683,74 @@ c         return
             massurn4(counter)=mass(i)
          end do
 
+
+         tmp1=0.d0
+c+++++++ sampling G1
+
          if(intcounturn(1).gt.1)then
             call dirichlet(massurn1,maxint,intcounturn(1),proburn1)
            else
             proburn1(1)=1.d0
          end if   
 
-         if(intcounturn(2).gt.1)then
-            call dirichlet(massurn2,maxint,intcounturn(2),proburn2)
-           else
-            proburn2(1)=1.d0
-         end if   
-
-         if(intcounturn(3).gt.1)then
-            call dirichlet(massurn3,maxint,intcounturn(3),proburn3)
-           else
-            proburn3(1)=1.d0
-         end if   
-
-         if(intcounturn(4).gt.1)then
-            call dirichlet(massurn4,maxint,intcounturn(4),proburn4)
-           else
-            proburn4(1)=1.d0
-         end if   
-
-
-c+++++++ First half
-
          do i=1,intcounturn(1) 
             prob(i)=exp(log(proburn1(i))+log(1.d0-ppar)+log(0.5d0))
+            tmp1=tmp1+prob(i)
          end do
+
+c+++++++ sampling G2
+
+         if(intcounturn(2).gt.1)then
+            call dirichlet(massurn2,maxint,intcounturn(2),proburn1)
+           else
+            proburn1(1)=1.d0
+         end if   
 
          counter=0 
          do i=intcounturn(1)+1,intcounturn(1)+intcounturn(2) 
             counter=counter+1
-            prob(i)=exp(log(proburn2(counter))+log(ppar)+log(0.5d0))
+            prob(i)=exp(log(proburn1(counter))+log(ppar)+log(0.5d0))
+            tmp1=tmp1+prob(i)
          end do
 
-c+++++++ Second half
+c+++++++ sampling G3
+
+         if(intcounturn(3).gt.1)then
+            call dirichlet(massurn3,maxint,intcounturn(3),proburn1)
+           else
+            proburn1(1)=1.d0
+         end if   
 
          counter=0 
          do i=intcounturn(1)+intcounturn(2)+1,intcounturn(1)+
      &        intcounturn(2)+intcounturn(3) 
             counter=counter+1
-            prob(i)=exp(log(proburn3(counter))+log(ppar)+log(0.5d0))
+            prob(i)=exp(log(proburn1(counter))+log(ppar)+log(0.5d0))
+            tmp1=tmp1+prob(i)
          end do
+
+c+++++++ sampling G4
+
+         if(intcounturn(4).gt.1)then
+            call dirichlet(massurn4,maxint,intcounturn(4),proburn1)
+           else
+            proburn1(1)=1.d0
+         end if   
 
          counter=0 
          do i=intcounturn(1)+intcounturn(2)+intcounturn(3)+1,
      &        intcounturn(1)+intcounturn(2)+intcounturn(3)+
      &        intcounturn(4)
             counter=counter+1
-            prob(i)=exp(log(proburn4(counter))+log(1.d0-ppar)
-     &                  +log(0.5d0))
-         end do
-         
-         tmp1=0.d0
-         do i=1,npoints+1
+            prob(i)=exp(log(proburn1(counter))+
+     &                  log(1.d0-ppar)+log(0.5d0))
             tmp1=tmp1+prob(i)
          end do
-         
-         do i=1,npoints+1
-            prob(i)=prob(i)/tmp1
-         end do
+
+c+++++++ standarize G         
+c         do i=1,npoints+1
+c            prob(i)=prob(i)/tmp1
+c         end do
 
 
 c+++++++ evaluate log-likelihood for current and candidate value 
@@ -719,15 +759,15 @@ c+++++++ of parameters
         
          logliko=0.d0
          loglikn=0.d0
+
          do i=1,nrec
 
             imin=1
-            imax=efind(eta(i),maxend,endp2,npoints)
+            imax=lpsav(i)
             tmp1=0.d0
             do j=imin,imax
                tmp1=tmp1+prob(j)
             end do
-            lpsav(i)=imax
          
             imin=1
             imax=efind(etan(i),maxend,endp2,npoints)
@@ -759,7 +799,7 @@ c+++++++ of parameters
 
          end do
 
-c+++++++ aceptation step
+c+++++++ acceptance step
 
          ok=0
          ratio=dexp(loglikn+logpriorn-logliko-logprioro)
@@ -779,7 +819,6 @@ c+++++++ aceptation step
          end if
 
          if(ok.eq.1)go to 100 
-
 
            if(model.eq.1)then
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -815,7 +854,7 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++++ end updating the true binary variables           +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
            end if
-           
+
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ updating errors using the Sethuraman-Tiwari (1982) +++
@@ -825,11 +864,15 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
 
-         do i=1,maxint
-            intcount(i)=0
-         end do
+c         do i=1,maxint
+c            intcount(i)=0
+c         end do
          
          do i=1,nrec
+
+            limr(i,1)=-999.d0         
+            limr(i,2)= 999.d0
+            clusts(i,1)=0
 
             imin=1
             imax=lpsav(i)
@@ -879,7 +922,7 @@ c+++++++ check if the user has requested an interrupt
 
          end do
 
-c+++++++ predictions         
+c+++++++ start predictions         
 
          call simdiscint(prob,maxint,1,npoints+1,evali)                        
          intcount(evali)=intcount(evali)+1
@@ -893,20 +936,20 @@ c+++++++ end predictions
             nso=intcount2(i)
             area=0.d0
             if(i.eq.1)then
-               area=ac(urn(i))*cdflogis(endp2(1),0.d0,1.d0,1,0)
+               area=alpha*cdflogis(endp2(1),0.d0,1.d0,1,0)
                ainf=.true.
                binf=.false.
                liminf=0.d0
                limsup=endp2(1)
              else if(i.gt.npoints)then
-               area=ac(urn(i))*cdflogis(endp2(npoints),0.d0,1.d0,0,0)
+               area=alpha*cdflogis(endp2(npoints),0.d0,1.d0,0,0)
                ainf=.false.
                binf=.true.
                liminf=endp2(npoints)
                limsup=0.d0
              else
-               area=ac(urn(i))*(cdflogis(endp2(i  ),0.d0,1.d0,1,0)-  
-     &                          cdflogis(endp2(i-1),0.d0,1.d0,1,0))
+               area=alpha*(cdflogis(endp2(i  ),0.d0,1.d0,1,0)-  
+     &                     cdflogis(endp2(i-1),0.d0,1.d0,1,0))
                ainf=.false.
                binf=.false.
                liminf=endp2(i-1)
@@ -929,8 +972,7 @@ c+++++++ end predictions
                do while(maxu.ge.tmp2.and.mrand.lt.maxm)
                   mrand=mrand+1
                   if(mrand.gt.maxm)then
-                    call intpr('Increase maxn in R function',-1,0,1)   
-                    return
+                    call rexit("Increase maxn in R function")
                   end if  
                   keepbeta=rbeta(1.d0,mass(i))
                   wvec(mrand)=keepbeta*tmp1
@@ -939,6 +981,7 @@ c+++++++ end predictions
                end do
 
                do j=1,mrand
+                  index(j)=j 
                   if(dble(runif()).le.(1.d0-(area/mass(i))))then
                      call rdisc(1,nso,evali)
                      if(evali.lt.1.or.evali.gt.nso)return
@@ -948,6 +991,10 @@ c+++++++ end predictions
                      vvec(j)=tmp1
                   end if
                end do
+               
+               if(mrand.gt.1)then  
+                  call sortvecind(maxm,index,vvec,wvec,1,mrand)
+               end if   
 
                do j=1,ns
                   tmp1=0.d0
@@ -962,62 +1009,137 @@ c+++++++ end predictions
             end if 
          end do
 
+         nclusw=1
+         
          do i=1,nrec
             v(i)=vnew(i)
-         end do
-         vpred=vnew(nrec+1)
 
+            if(i.eq.1)then
+              s(i)=1
+             else
+              j=0 
+              ok=0
+              do while(ok.eq.0.and.j.lt.(i-1))          
+                 j=j+1
+                 if(v(i).eq.v(j))then
+                   ok=1
+                   s(i)=s(j)
+                 end if
+              end do
+              if(ok.eq.0)then
+                nclusw=nclusw+1
+                s(i)=nclusw
+              end if  
+            end if     
+            
+            if(y(i).eq.1)then
+               if(eta(i).lt.limr(s(i),2))limr(s(i),2)=eta(i)          
+             else
+               if(eta(i).gt.limr(s(i),1))limr(s(i),1)=eta(i)
+            end if 
+
+            clusts(s(i),1)=clusts(s(i),1)+1
+            clusts(s(i),clusts(s(i),1)+1)=i                    
+         end do
+         
+         ncluster=nclusw         
+         vpred=vnew(nrec+1)
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Check consistency with the data    
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++++ check if the user has requested an interrupt
-         call rchkusr()
- 
-         do i=1,nrec
-            vnew(i)=v(i) 
-            if(y(i).eq.1)then
-              if(v(i).gt.eta(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("y",-1,y(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-            end if
-            if(y(i).eq.0)then
-              if(v(i).le.eta(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("y",-1,y(i),1)
-                 call intpr("int",-1,intind(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S2")
-              end if   
-            end if
-         end do
-
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c+++++++ Sort errors and compute the number of clusters 
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-         call sortvec(nrec+1,vnew,1,nrec)
-
-         ncluster=1
-         vnew2(1)=vnew(1)
-         
-         do i=2,nrec
-            call rchkusr()
-            if(vnew(i).ne.vnew2(ncluster))then
-               ncluster=ncluster+1
-               vnew2(ncluster)=vnew(i)
-            end if
-         end do
-
+c         call rchkusr()
+c         do i=1,nrec
+c            vnew(i)=v(i) 
+c            if(y(i).eq.1)then
+c              if(v(i).gt.eta(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("y",-1,y(i),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S1")
+c              end if   
+c            end if
+c            if(y(i).eq.0)then
+c              if(v(i).le.eta(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("y",-1,y(i),1)
+c                 call intpr("int",-1,intind(i),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S2")
+c              end if   
+c            end if
+c         end do
 
 100      continue
 
+c+++++++++++++++++++++++++++++++++++++++++++++         
+c+++++++ Extra Step which moves the clusters
+c+++++++++++++++++++++++++++++++++++++++++++++
+
+        if(extra.eq.1)then
+           do i=1,ncluster
+              ainf=.false.
+              binf=.false.
+              liminf=limr(i,1)
+              limsup=limr(i,2)         
+              tmp1=rtslogistic2(ainf,binf,liminf,limsup)
+              do j=1,clusts(i,1)
+                 v(clusts(i,j+1))=tmp1
+              end do
+           end do
+        end if
+
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++++ Some computations necessary to update theta
+c+++++++ are performed here to increase the efficiency.
+c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+         thetac=dble(runif())*d
+         
+         do i=1,4
+            numc(i)=0.d0
+            numc2(i)=0.d0
+            nclusteru(i)=0
+            nclusteruc(i)=0
+         end do
+
+         
+         do i=1,ncluster
+            if(v(clusts(i,2)).le.(theta-d))then
+               nclusteru(1)=nclusteru(1)+1
+               numc(1)=numc(1)+clusts(i,1)
+             else if (v(clusts(i,2)).le.0.d0)then 
+               nclusteru(2)=nclusteru(2)+1
+               numc(2)=numc(2)+clusts(i,1)
+             else if (v(clusts(i,2)).le.theta)then   
+               nclusteru(3)=nclusteru(3)+1
+               numc(3)=numc(3)+clusts(i,1)               
+             else 
+               nclusteru(4)=nclusteru(4)+1
+               numc(4)=numc(4)+clusts(i,1)               
+            end if   
+
+            if(v(clusts(i,2)).le.(thetac-d))then
+               nclusteruc(1)=nclusteruc(1)+1
+               numc2(1)=numc2(1)+clusts(i,1)
+             else if (v(clusts(i,2)).le.0.d0)then 
+               nclusteruc(2)=nclusteruc(2)+1
+               numc2(2)=numc2(2)+clusts(i,1)
+             else if (v(clusts(i,2)).le.thetac)then   
+               nclusteruc(3)=nclusteruc(3)+1
+               numc2(3)=numc2(3)+clusts(i,1)               
+             else 
+               nclusteruc(4)=nclusteruc(4)+1
+               numc2(4)=numc2(4)+clusts(i,1)               
+            end if   
+         end do
+
+c         call intpr("nclus",-1,nclusteru,4)
+c         call dblepr("num",-1,numc,4)
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ updating theta using an independent sampler        +++
@@ -1026,70 +1148,43 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
          thetaskip = thetaskip + 1
          if(thetaskip.ge.ntheta)then
 
-            do i=1,4
-               numc(i)=0.d0
-               numc2(i)=0.d0
-            end do
-            
-            thetac=dble(runif())*d
-            
-            ac(1)=1.d0/cdflogis(theta-d,0.d0,1.d0,1,0)
-            ac(2)=1.d0/(0.5d0-cdflogis(theta-d,0.d0,1.d0,1,0))
-            ac(3)=1.d0/(cdflogis(theta,0.d0,1.d0,1,0)-0.5d0)
-            ac(4)=1.d0/(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
+            ac(1)=alpha*cdflogis(theta-d,0.d0,1.d0,1,0)
+            ac(2)=alpha*(0.5d0-cdflogis(theta-d,0.d0,1.d0,1,0))
+            ac(3)=alpha*(cdflogis(theta,0.d0,1.d0,1,0)-0.5d0)
+            ac(4)=alpha*(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
 
-            ac2(1)=1.d0/cdflogis(thetac-d,0.d0,1.d0,1,0)
-            ac2(2)=1.d0/(0.5d0-cdflogis(thetac-d,0.d0,1.d0,1,0))
-            ac2(3)=1.d0/(cdflogis(thetac,0.d0,1.d0,1,0)-0.5d0)
-            ac2(4)=1.d0/(1.d0-cdflogis(thetac,0.d0,1.d0,1,0))
+            ac2(1)=alpha*cdflogis(thetac-d,0.d0,1.d0,1,0)
+            ac2(2)=alpha*(0.5d0-cdflogis(thetac-d,0.d0,1.d0,1,0))
+            ac2(3)=alpha*(cdflogis(thetac,0.d0,1.d0,1,0)-0.5d0)
+            ac2(4)=alpha*(1.d0-cdflogis(thetac,0.d0,1.d0,1,0))
 
-            do i=1,nrec
-               if(v(i).le.theta-d)then
-                  indi=1
-                 else if(v(i).le.0.d0) then 
-                  indi=2
-                 else if(v(i).le.theta) then 
-                  indi=3
-                 else 
-                  indi=4
-               end if 
-               numc(indi)=numc(indi)+1.d0
-
-               if(v(i).le.thetac-d)then
-                  indi=1
-                 else if(v(i).le.0.d0) then 
-                  indi=2
-                 else if(v(i).le.thetac) then 
-                  indi=3
-                 else 
-                  indi=4
-               end if 
-               numc2(indi)=numc2(indi)+1.d0
-            end do
-         
             ratio=(numc2(2)+numc2(3)-numc(2)-numc(3))*log(ppar)
             ratio=ratio+(numc2(1)+numc2(4)-numc(1)-numc(4))*
      &                  log(1.d0-ppar) 
 
             do j=1,4
                ratio=ratio+dgamlog(dble(numc(j) +ac(j)))
-     &                 -dgamlog(dble(numc2(j)+ac2(j)))
+     &                    -dgamlog(dble(numc2(j)+ac2(j)))
                ratio=ratio+dgamlog(ac2(j))-dgamlog(ac(j))
             end do
 
             if(log(runif()).lt.ratio)then
                theta=thetac
                acrate(2)=acrate(2)+1.d0
+               do i=1,4
+                  ac(i)=ac2(i)
+                  numc(i)=numc2(i)
+               end do
+               
             end if
             thetaskip=0
          end if
              
-
 c++++++++++++++++++++++++++++++++++         
 c+++++++ Precision parameter
 c++++++++++++++++++++++++++++++++++
          if(aa0.gt.0.d0)then
-            call samalph(alpha,aa0,ab0,ncluster,nrec)
+             call samalphcsdp(alpha,aa0,ab0,ncluster,numc,ac,theta)
          end if 
 
 c+++++++ save samples
@@ -1116,10 +1211,6 @@ c+++++++++++++ cluster information
 c+++++++++++++ link information,
 c+++++++++++++ cpo, errors and predictive information
 
-               do i=1,nlink
-                  fsavet(i)=0
-               end do
-                
                do i=1,nrec
 
                   randsave(isave,i)=v(i)
@@ -1133,35 +1224,15 @@ c+++++++++++++ cpo, errors and predictive information
                   
                   tmp2=sens(i)*tmp1+(1.d0-spec(i))*(1.d0-tmp1)
 
-                  if(tmp2.lt.zero.or.tmp2.gt.one)then
-                     call dblepr("prob1",-1,tmp1,1)
-                     call dblepr("prob2",-1,tmp2,1)
-                     call rexit("Error in Probability")
-                  end if  
-                  
                   if(yobs(i).eq.1)then
                     cpo(i)=cpo(i)+1.d0/tmp2 
                   else
                     cpo(i)=cpo(i)+1.d0/(1.d0-tmp2)
                   end if                          
                
-                  j=1
-                  do while(v(i).le.xlink(j).and.j.le.nlink)
-                     fsavet(j)=fsavet(j)+1
-                     j = j + 1
-                  end do
-                  
                end do
                
                randsave(isave,nrec+1)=vpred
-
-c               do j=1,nlink
-c                  fsave(isave,j)=
-c     &             ( alpha*cdfbaselinel(xlink(j),0.d0,1.d0,theta,d,
-c     &                                  ppar)+
-c     &               dble(fsavet(j))  )/
-c     &             (alpha+dble(nrec))  
-c               end do
 
                do i=1,nlink
                   imin=1
@@ -1172,6 +1243,10 @@ c               end do
                   end do
                   fsave(isave,i)=tmp1
                end do
+               
+c               if(isave.eq.3602)then
+c                 call dblepr("prob",-1,prob,npoints+1)
+c               end if  
 
 c+++++++++++++ print
                skipcount = 0
@@ -1203,25 +1278,92 @@ c=======================================================================
       subroutine csdppredl(nsave,nrec,npred,alpha,theta,v,d,ppar,lp,
      &                     out)
 c=======================================================================                  
+c     Draws samples from F(t), where F follows a CSDP prior.
+c     This function uses the fact that F(t) follows a modified beta 
+c     distribution under the CSDP prior.
+c     A.J.V., 2006
+c=======================================================================                  
       implicit none
       integer nsave,nrec,npred
       real*8 alpha(nsave),theta(nsave),v(nsave,nrec),d,ppar
       real*8 lp(npred,nsave),out(npred,nsave)
-      integer i,j,k,count
-      real*8 cdelta,cparam,cdfbaselinel,tmp2
+      integer i,j,k,count,urn,ntotal
+      real*8 area,mass
+      real*8 tmp1,tmp2,tmp3,tmp4,x
+      real*8 cdflogis,rbeta
 
       do i=1,npred
          do j=1,nsave
+
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+    
+            x=lp(i,j)
+            if(x.le.theta(j)-d)then
+               mass=alpha(j)*cdflogis(theta(j)-d,0.d0,1.d0,1,0)
+               area=alpha(j)*cdflogis(x,0.d0,1.d0,1,0)
+               urn=1
+             else if(x.le.0.d0)then
+               mass=alpha(j)*(0.5d0-cdflogis(theta(j)-d,0.d0,1.d0,1,0))
+               area=alpha(j)*(cdflogis(x,0.d0,1.d0,1,0)-
+     &                        cdflogis(theta(j)-d,0.d0,1.d0,1,0))
+               urn=2
+             else if(x.le.theta(j))then   
+               mass=alpha(j)*(cdflogis(theta(j),0.d0,1.d0,1,0)-0.5d0)
+               area=alpha(j)*(cdflogis(x,0.d0,1.d0,1,0)-0.5d0)
+               urn=3
+             else  
+               mass=alpha(j)*(1.d0-cdflogis(theta(j),0.d0,1.d0,1,0))
+               area=alpha(j)*(cdflogis(x,0.d0,1.d0,1,0)-
+     &                        cdflogis(theta(j),0.d0,1.d0,1,0))
+               urn=4
+            end if   
+            
             count=0
+            ntotal=0
             do k=1,nrec
-               if(v(j,k).le.lp(i,j))count=count+1
+               if(urn.eq.1)then
+                 if(v(j,k).le.(theta(j)-d))ntotal=ntotal+1         
+                 if(v(j,k).le.lp(i,j))count=count+1
+                else if(urn.eq.2)then
+                 if(v(j,k).gt.(theta(j)-d).and.v(j,k).le.0.d0)then
+                    ntotal=ntotal+1      
+                 end if   
+                 if(v(j,k).gt.(theta(j)-d).and.v(j,k).le.lp(i,j))then
+                    count=count+1
+                 end if   
+                else if(urn.eq.3)then
+                 if(v(j,k).gt.0.d0.and.v(j,k).le.theta(j))then
+                    ntotal=ntotal+1      
+                 end if   
+                 if(v(j,k).gt.0.d0.and.v(j,k).le.lp(i,j))then
+                    count=count+1
+                 end if   
+                else 
+                 if(v(j,k).gt.theta(j))then
+                    ntotal=ntotal+1      
+                 end if   
+                 if(v(j,k).gt.theta(j).and.v(j,k).le.lp(i,j))then
+                    count=count+1
+                 end if   
+               end if                
             end do
 
-            cdelta=dble(count)
-            cparam=alpha(j)*cdfbaselinel(lp(i,j),theta(j),d,ppar)
-            tmp2=(cparam+cdelta)/(alpha(j)+dble(nrec))
-
-            out(i,j)=tmp2
+            tmp1=(area+dble(count))
+            tmp2=(mass-area+dble(ntotal-count))
+            tmp3=rbeta(tmp1,tmp2)
+            
+            if(urn.eq.1)then
+              tmp4=0.5d0*(1.d0-ppar)*tmp3
+             else if(urn.eq.2)then 
+              tmp4=0.5d0*(1.d0-ppar)+0.5d0*ppar*tmp3
+             else if(urn.eq.3)then 
+              tmp4=0.5d0+0.5d0*ppar*tmp3
+             else 
+              tmp4=0.5d0*(1.d0+ppar)+0.5d0*(1.d0-ppar)*tmp3
+            end if 
+            out(i,j)=tmp4
+            
          end do
       end do
       
@@ -1230,47 +1372,101 @@ c=======================================================================
       
 
 c=======================================================================                  
-      double precision function cdfbaselinel(x,theta,d,p)
+      subroutine samalphcsdp(alpha,aa0,ab0,ncluster,numc,ac,theta)
 c=======================================================================                  
+c     Draws a sample for the precision parameter of a CSDP prior
+c     when a Gamma(aa0,ab0) prior is used for it.
+c     The strategy is similar to the one of Escobar and West (1995)
+c     for DP priors.
 c     A.J.V., 2006
+c=======================================================================                  
       implicit none
-      real*8 area,cdflogis,d,p,x,theta 
-      real*8 tmp1
+      integer i,evali
+      integer ncluster
+      real*8 ac(4),numc(4),theta
+      real*8 alpha,aa0,ab0
+      real*8 ac2(4)
+      real*8 dgamlog,rbeta,rgamma,eta(4),ww(5)
+      real*8 tmp1,tmp2,tmp3
+      real*8 total
+
+      do i=1,5
+         ww(i)=0.d0
+      end do
       
-      if(x.le.theta-d)then
-         area=cdflogis(theta-d,0.d0,1.d0,1,0)
-         tmp1=cdflogis(x      ,0.d0,1.d0,1,0) 
-         
-         cdfbaselinel=0.5d0*(1.d0-p)*(tmp1/area)
-         
-        else if(x.le.0.d0) then 
-         area=cdflogis(0.d0   ,0.d0,1.d0,1,0)-
-     &        cdflogis(theta-d,0.d0,1.d0,1,0) 
-         tmp1=cdflogis(x      ,0.d0,1.d0,1,0)- 
-     &        cdflogis(theta-d,0.d0,1.d0,1,0) 
-     
-         cdfbaselinel=0.5d0*(1.d0-p)+0.5d0*p*(tmp1/area)
-         
-        else if(x.le.theta) then 
-         area=cdflogis(theta,0.d0,1.d0,1,0)-
-     &        cdflogis(0.d0 ,0.d0,1.d0,1,0) 
-         tmp1=cdflogis(x    ,0.d0,1.d0,1,0)- 
-     &        cdflogis(0.d0 ,0.d0,1.d0,1,0)          
+      tmp1=1.d0
+      tmp2=1.d0
+      tmp3=0.d0
+      do i=1,4
+         ac2(i)=ac(i)/alpha
+         eta(i)=rbeta(ac(i)+1.d0,numc(i))
+         tmp1=tmp1*ac2(i)
+         tmp2=tmp2*numc(i)
+         tmp3=tmp3+ac2(i)*log(eta(i))
+      end do  
+      
+      ww(1)=tmp1
 
-         cdfbaselinel=0.5d0+0.5d0*p*(tmp1/area)
-        
-        else 
-         area=(1.d0-cdflogis(theta,0.d0,1.d0,1,0))
-         tmp1=cdflogis(x    ,0.d0,1.d0,1,0)-
-     &        cdflogis(theta,0.d0,1.d0,1,0)          
+      ww(2)=       numc(1)*ac2(2)*ac2(3)*ac2(4)
+      ww(2)=ww(2)+ numc(2)*ac2(1)*ac2(3)*ac2(4)
+      ww(2)=ww(2)+ numc(3)*ac2(1)*ac2(2)*ac2(4)
+      ww(2)=ww(2)+ numc(4)*ac2(1)*ac2(2)*ac2(3)
+      
+      ww(3)=       numc(1)*numc(2)*ac2(3)*ac2(4)
+      ww(3)=ww(3)+ numc(1)*numc(3)*ac2(2)*ac2(4)
+      ww(3)=ww(3)+ numc(1)*numc(4)*ac2(2)*ac2(3)
+      ww(3)=ww(3)+ numc(2)*numc(3)*ac2(1)*ac2(4)
+      ww(3)=ww(3)+ numc(2)*numc(4)*ac2(1)*ac2(3)
+      ww(3)=ww(3)+ numc(3)*numc(4)*ac2(1)*ac2(2)
 
+      ww(4)=       numc(1)*numc(2)*numc(3)*ac2(4)
+      ww(4)=ww(4)+ numc(1)*numc(2)*numc(4)*ac2(3)
+      ww(4)=ww(4)+ numc(1)*numc(3)*numc(4)*ac2(2)
+      ww(4)=ww(4)+ numc(2)*numc(3)*numc(4)*ac2(1)
 
-         cdfbaselinel=0.5d0*(1.d0+p)+0.5d0*(1.d0-p)*(tmp1/area)
+      ww(5)=tmp2
+
+      total=0.d0
+      
+      
+      ww(1)=ww(1)*exp(dgamlog(aa0+dble(ncluster))-
+     &               (aa0+dble(ncluster))*log(theta))
+  
+      ww(2)=ww(2)*exp(dgamlog(aa0+dble(ncluster-1))-
+     &               (aa0+dble(ncluster-1))*log(theta))
+
+      ww(3)=ww(3)*exp(dgamlog(aa0+dble(ncluster-2))-
+     &               (aa0+dble(ncluster-2))*log(theta))
+
+      ww(4)=ww(4)*exp(dgamlog(aa0+dble(ncluster-3))-
+     &               (aa0+dble(ncluster-3))*log(theta))
+
+      ww(5)=ww(5)*exp(dgamlog(aa0+dble(ncluster-4))-
+     &               (aa0+dble(ncluster-4))*log(theta))
+
+  
+      call simdiscint(ww,5,1,5,evali)               
+  
+      tmp3=ab0-tmp3
+  
+      if(evali.eq.1)then
+         tmp1=aa0+dble(ncluster)
+         alpha=rgamma(tmp1,tmp3)
+       else if(evali.eq.2)then
+         tmp1=aa0+dble(ncluster-1)
+         alpha=rgamma(tmp1,tmp3)
+       else if(evali.eq.3)then
+         tmp1=aa0+dble(ncluster-2)
+         alpha=rgamma(tmp1,tmp3)
+       else if(evali.eq.4)then       
+         tmp1=aa0+dble(ncluster-3)
+         alpha=rgamma(tmp1,tmp3)
+       else
+         tmp1=aa0+dble(ncluster-4)
+         alpha=rgamma(tmp1,tmp3)
       end if 
-      
+  
+  
       return
       end
-
-      return
-      end   
 

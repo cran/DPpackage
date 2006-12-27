@@ -2,7 +2,7 @@
 ### Fit a semiparametric bernoulli regression model.
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 21-08-2006.
+### Last modification: 22-12-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ function(formula,
          state,
          status,
          misc=NULL,
-         data,
-         na.action) 
+         data=sys.frame(sys.parent()),
+         na.action=na.fail) 
 {
          #########################################################################################
          # call parameters
@@ -78,6 +78,50 @@ function(formula,
 	    x<-x[,2:p]
 	    p<-(p-1)
 	 }   
+
+         #########################################################################################
+         # Elements for Pseudo Countour Probabilities' computation
+         #########################################################################################
+
+         tt<-terms(formula,data=data)
+         mat<-attr(tt,"factors")
+         namfact<-colnames(mat)
+         nvar<-dim(mat)[1]
+         nfact<-dim(mat)[2]
+         possiP<-matrix(0,ncol=2,nrow=nfact)
+         dataF<-model.frame(formula,data,xlev=NULL)
+         namD<-names(dataF)
+         isF<-sapply(dataF, function(x) is.factor(x) || is.logical(x))
+         nlevel<-rep(0,nvar)
+         for(i in 1:nvar)
+         {
+             if(isF[i])
+             {
+                nlevel[i]<-length(table(dataF[[i]]))
+             }
+             else
+             {
+                nlevel[i]<-1
+             }
+         }
+         startp<-1+inter
+         for(i in 1:nfact)
+         {
+             tmp1<-1
+             for(j in 1:nvar)
+             {
+                 if(mat[j,i]==1 && isF[j])
+                 {
+                    tmp1<-tmp1*(nlevel[j]-1)
+                 }
+             }
+             endp<-startp+tmp1-1
+             possiP[i,1]<-startp    
+             possiP[i,2]<-endp
+             startp<-endp+1
+         }
+         dimnames(possiP)<-list(namfact,c("Start","End"))
+
 
          #########################################################################################
          # misclassification
@@ -215,7 +259,7 @@ function(formula,
          
          if(is.null(mcmc$tune))
          {
-            tune=1
+            tune=1.1
          }
          else
          {
@@ -289,17 +333,21 @@ function(formula,
          # working space
          #########################################################################################
 
+         extra<-1
+
 	 ntotal<-nrec
-	 maxint<-2*ntotal+1
-	 maxend<-2*ntotal
-	 maxm<-log(0.0001)/log((ntotal+1)/(ntotal+2))
+	 maxint<-2*ntotal+1+nlink
+	 maxend<-2*ntotal+nlink
+	 maxm<-as.integer(log(0.0001)/log((ntotal+1)/(ntotal+2)))
 
          acrate<-0	 
 	 betac<-rep(0,p)
+	 clusts<-matrix(0,nrow=nrec,ncol=(nrec+1))
 	 endp<-rep(0,maxend)
 	 endp2<-rep(0,maxend)
 	 etan<-rep(0,nrec)
 	 fsavet<-rep(0,nlink)
+	 index<-rep(0,maxm)	 
 	 intcount<-rep(0,maxint)
 	 intcount2<-rep(0,maxint)
 	 intind<-rep(0,(nrec+1))
@@ -307,15 +355,16 @@ function(formula,
 	 iflag<-rep(0,p)
 	 intposso<-matrix(0,nrow=maxint,ncol=(nrec+1))
          intpossn<-matrix(0,nrow=maxint,ncol=(nrec+1))
+         limr<-matrix(0,nrow=nrec,ncol=2)
          lpsav<-rep(0,nrec)
          lpsavc<-rep(0,nrec)
 	 mass<-rep(0,maxint)
 	 ncluster<-nrec
 	 prob<-rep(0,maxint)
+	 s<-rep(0,nrec)
 	 uvec<-rep(0,maxm)
 	 vvec<-rep(0,maxm)
 	 vnew<-rep(0,(nrec+1))
-	 vnew2<-rep(0,nrec)
 	 workm1<-matrix(0,nrow=p,ncol=p)
 	 workm2<-matrix(0,nrow=p,ncol=p)
 	 workmh1<-rep(0,(p*(p+1)/2))
@@ -333,7 +382,7 @@ function(formula,
 
          if(baseline=="logistic")
          {
-   	    foo <- .Fortran("dpbinaryl2",
+   	    foo <- .Fortran("dpbinaryl",
 	 	model     =as.integer(model),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
@@ -349,6 +398,7 @@ function(formula,
 		mcmcvec   =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
+		extra     =as.integer(extra),
 		acrate    =as.double(acrate),
 		fsave     =as.double(fsave),
 		randsave  =as.double(randsave),
@@ -365,6 +415,8 @@ function(formula,
 		eta       =as.double(eta),
 		etan      =as.double(etan),
 		fsavet    =as.integer(fsavet),
+		clusts    =as.integer(clusts),
+		index     =as.integer(index),		
 		intcount  =as.integer(intcount),
 		intcount2 =as.integer(intcount2),
 		intind    =as.integer(intind),
@@ -372,6 +424,7 @@ function(formula,
 		iflag     =as.integer(iflag),
 		intposso  =as.integer(intposso),
 		intpossn  =as.integer(intpossn),
+		limr      =as.double(limr),
 		lpsav     =as.integer(lpsav),
 		lpsavc    =as.integer(lpsavc),
 		maxint    =as.integer(maxint),
@@ -379,12 +432,12 @@ function(formula,
 		maxm      =as.integer(maxm),
 		mass      =as.double(mass),
 		prob      =as.double(prob),
+		s         =as.integer(s),
 		seed1     =as.integer(seed1),
 		seed2     =as.integer(seed2),
 		uvec      =as.double(uvec),
 		vvec      =as.double(vvec),
 		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
 		workm1    =as.double(workm1),
 		workm2    =as.double(workm2),
 		workmh1   =as.double(workmh1),
@@ -397,7 +450,7 @@ function(formula,
 
          if(baseline=="normal")
          {
-   	    foo <- .Fortran("dpbinaryp2",
+   	    foo <- .Fortran("dpbinaryp",
 	 	model     =as.integer(model),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
@@ -413,6 +466,7 @@ function(formula,
 		mcmcvec   =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
+		extra     =as.integer(extra),
 		acrate    =as.double(acrate),
 		fsave     =as.double(fsave),
 		randsave  =as.double(randsave),
@@ -429,6 +483,8 @@ function(formula,
 		eta       =as.double(eta),
 		etan      =as.double(etan),
 		fsavet    =as.integer(fsavet),
+		clusts    =as.integer(clusts),
+		index     =as.integer(index),		
 		intcount  =as.integer(intcount),
 		intcount2 =as.integer(intcount2),
 		intind    =as.integer(intind),
@@ -436,6 +492,7 @@ function(formula,
 		iflag     =as.integer(iflag),
 		intposso  =as.integer(intposso),
 		intpossn  =as.integer(intpossn),
+		limr      =as.double(limr),
 		lpsav     =as.integer(lpsav),
 		lpsavc    =as.integer(lpsavc),
 		maxint    =as.integer(maxint),
@@ -443,12 +500,12 @@ function(formula,
 		maxm      =as.integer(maxm),
 		mass      =as.double(mass),
 		prob      =as.double(prob),
+		s         =as.integer(s),
 		seed1     =as.integer(seed1),
 		seed2     =as.integer(seed2),
 		uvec      =as.double(uvec),
 		vvec      =as.double(vvec),
 		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
 		workm1    =as.double(workm1),
 		workm2    =as.double(workm2),
 		workmh1   =as.double(workmh1),
@@ -456,12 +513,11 @@ function(formula,
 		workv2    =as.double(workv2),
 		wvec      =as.double(wvec),
 		PACKAGE="DPpackage")	
-         }
-
+ 	 }
 
          if(baseline=="cauchy")
          {
-   	    foo <- .Fortran("dpbinaryc2",
+   	    foo <- .Fortran("dpbinaryc",
 	 	model     =as.integer(model),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
@@ -477,6 +533,7 @@ function(formula,
 		mcmcvec   =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
+		extra     =as.integer(extra),
 		acrate    =as.double(acrate),
 		fsave     =as.double(fsave),
 		randsave  =as.double(randsave),
@@ -493,6 +550,8 @@ function(formula,
 		eta       =as.double(eta),
 		etan      =as.double(etan),
 		fsavet    =as.integer(fsavet),
+		clusts    =as.integer(clusts),
+		index     =as.integer(index),		
 		intcount  =as.integer(intcount),
 		intcount2 =as.integer(intcount2),
 		intind    =as.integer(intind),
@@ -500,6 +559,7 @@ function(formula,
 		iflag     =as.integer(iflag),
 		intposso  =as.integer(intposso),
 		intpossn  =as.integer(intpossn),
+		limr      =as.double(limr),
 		lpsav     =as.integer(lpsav),
 		lpsavc    =as.integer(lpsavc),
 		maxint    =as.integer(maxint),
@@ -507,12 +567,12 @@ function(formula,
 		maxm      =as.integer(maxm),
 		mass      =as.double(mass),
 		prob      =as.double(prob),
+		s         =as.integer(s),
 		seed1     =as.integer(seed1),
 		seed2     =as.integer(seed2),
 		uvec      =as.double(uvec),
 		vvec      =as.double(vvec),
 		vnew      =as.double(vnew),
-		vnew2     =as.double(vnew2),
 		workm1    =as.double(workm1),
 		workm2    =as.double(workm2),
 		workmh1   =as.double(workmh1),
@@ -555,7 +615,8 @@ function(formula,
 
 	 z<-list(modelname=model.name,coefficients=coeff,acrate=foo$acrate,call=cl,
 	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
-	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,baseline=baseline,x=x)
+	         cpo=foo$cpo,p=p,nlink=nlink,xlink=xlink,baseline=baseline,x=x,
+	         possiP=possiP)
 	         
 	 cat("\n\n")
 
@@ -617,6 +678,9 @@ function(object,xnew=NULL,hpd=TRUE, ...)
       xnew<-object$x
    }
 
+   seed1<-sample(1:29000,1)
+   seed2<-sample(1:29000,1)
+
    if(is(object, "DPbinary"))
    {
  
@@ -662,6 +726,8 @@ function(object,xnew=NULL,hpd=TRUE, ...)
                 v         =as.double(v),
                 lp        =as.double(lp),
 		out       =as.double(out),
+		seed1     =as.integer(seed1),
+		seed2     =as.integer(seed2),
 		PACKAGE="DPpackage")	
          }
 
@@ -675,6 +741,8 @@ function(object,xnew=NULL,hpd=TRUE, ...)
                 v         =as.double(v),
                 lp        =as.double(lp),
 		out       =as.double(out),
+		seed1     =as.integer(seed1),
+		seed2     =as.integer(seed2),
 		PACKAGE="DPpackage")	
          }
          
@@ -688,6 +756,8 @@ function(object,xnew=NULL,hpd=TRUE, ...)
                 v         =as.double(v),
                 lp        =as.double(lp),
 		out       =as.double(out),
+		seed1     =as.integer(seed1),
+		seed2     =as.integer(seed2),
 		PACKAGE="DPpackage")	
          }
 
@@ -735,11 +805,235 @@ function(object,xnew=NULL,hpd=TRUE, ...)
 
 
 ###
-### Tools for DPbinary: print, summary, plot
+### Tools for DPbinary: anova, print, summary, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 21-08-2006.
-	
+### Last modification: 15-12-2006.
+
+"anova.DPbinary"<-function(object, ...)
+{
+
+######################################################################################
+cregion<-function(x,probs=c(0.90,0.975))
+######################################################################################
+#  Function to compute a simultaneous credible region for a vector 
+#  parameter from the MCMC sample
+# 
+#  Reference: Besag, J., Green, P., Higdon, D. and Mengersen, K. (1995)
+#             Bayesian computation and stochastic systems (with Discussion)
+#             Statistical Science, vol. 10, 3 - 66, page 30
+#  and        Held, L. (2004) Simultaneous inference in risk assessment; a Bayesian 
+#             perspective In: COMPSTAT 2004, Proceedings in Computational 
+#             Statistics (J. Antoch, Ed.) 213 - 222, page 214
+#
+#  Arguments 
+#  sample : a data frame or matrix with sampled values (one column = one parameter).
+#  probs  : probabilities for which the credible regions are computed.
+######################################################################################
+{
+    #Basic information
+     nmonte<-dim(x)[1]
+     p<-dim(x)[2]
+     
+    #Ranks for each component
+     ranks <- apply(x, 2, rank, ties.method="first")
+     
+    #Compute the set S={max(nmonte+1-min r_i(t) , max r_i(t)): t=1,..,nmonte}
+     left <- nmonte + 1 - apply(ranks, 1, min)
+     right <- apply(ranks, 1, max)
+     S <- apply(cbind(left, right), 1, max)
+     S <- S[order(S)]
+    
+    #Compute the credible region
+     k <- floor(nmonte*probs)     
+     tstar <- S[k]
+     out<-list()
+     for(i in 1:length(tstar))
+     {
+        upelim <- x[ranks == tstar[i]]
+        lowlim <- x[ranks == nmonte + 1 - tstar[i]]    
+        out[[i]] <- rbind(lowlim, upelim)
+        rownames(out[[i]]) <- c("Lower", "Upper")
+        colnames(out[[i]]) <- colnames(x)
+     }
+     names(out) <- paste(probs)
+     return(out)
+}
+
+######################################################################################
+cint<-function(x,probs=c(0.90,0.975))
+######################################################################################
+#  Function to compute a credible interval from the MCMC sample
+#
+#  Arguments 
+#  sample : a data frame or matrix with sampled values (one column = one parameter).
+#  probs  : probabilities for which the credible regions are to be computed.
+######################################################################################
+{
+    #Compute the credible interval
+     delta<-(1-probs)/2
+     lprobs<-cbind(delta,probs+delta) 
+     out<-matrix(quantile(x,probs=lprobs),ncol=2)
+     colnames(out) <- c("Lower","Upper")
+     rownames(out) <- paste(probs)
+     return(out)
+}
+
+######################################################################################
+hnulleval<-function(mat,hnull)
+######################################################################################
+#  Evaluate H0
+#  AJV, 2006
+######################################################################################
+{
+     npar<-dim(mat)[2]   
+     lower<-rep(0,npar)
+     upper<-rep(0,npar)
+     for(i in 1:npar)
+     {
+        lower[i]<-mat[1,i]< hnull[i]
+        upper[i]<-mat[2,i]> hnull[i]
+     }
+     total<-lower+upper
+     out<-(sum(total==2) == npar)
+     return(out)
+}
+
+######################################################################################
+hnulleval2<-function(vec,hnull)
+######################################################################################
+#  Evaluate H0
+#  AJV, 2006
+######################################################################################
+{
+     lower<-vec[1]< hnull
+     upper<-vec[2]> hnull
+
+     total<-lower+upper
+     out<-(total==2)
+     return(out)
+}
+
+
+######################################################################################
+pcp<-function(x,hnull=NULL,precision=0.001,prob=0.95,digits=digits)
+######################################################################################
+#  Function to compute Pseudo Countour Probabilities (Region)
+#  AJV, 2006
+######################################################################################
+{
+    if(is.null(hnull))hnull<-rep(0,dim(x)[2])
+    if (dim(x)[2]!=length(hnull)) stop("Dimension of x and hnull must be equal!!")
+
+    probs <- seq(precision, 1-precision, by=precision)
+    neval <- length(probs)
+    probsf <- c(prob,probs)
+    cr <-  cregion(x,probs=probsf)
+
+    is.hnull <- hnulleval(cr[[2]],hnull)
+    if(is.hnull)
+    {
+       pval <- 1-precision
+    }   
+    else
+    {
+       is.hnull <- hnulleval(cr[[length(cr)]],hnull)
+       if (!is.hnull) 
+       {
+         pval <- precision
+       }  
+       else
+       {
+         is.hnull<-rep(0,neval+1)
+         for(i in 1:(neval+1))
+         {
+            is.hnull[i] <- hnulleval(cr[[i]],hnull)
+         }   
+         is.hnull <- is.hnull[-1]
+         first <- neval - sum(is.hnull) + 1
+         pval <- 1 - probs[first]
+       }
+    }
+    output <- list(cr=cr[[1]], prob=prob, pval=pval,hnull=hnull)
+    return(output)
+}
+
+
+######################################################################################
+pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
+######################################################################################
+#  Function to compute Pseudo Countour Probabilities (Interval)
+#  AJV, 2006
+######################################################################################
+{
+    if(is.null(hnull))hnull<-0
+    probs <- seq(precision, 1-precision, by=precision)
+    neval <- length(probs)
+    probsf <- c(prob,probs)
+    cr <-  cint(x,probs=probsf)
+
+    is.hnull <- hnulleval2(cr[2,],hnull)
+    if(is.hnull)
+    {
+       pval <- 1-precision
+    }   
+    else
+    {
+       is.hnull <- hnulleval2(cr[(neval+1),],hnull)
+       if (!is.hnull) 
+       {
+         pval <- precision
+       }  
+       else
+       {
+         is.hnull<-rep(0,neval+1)
+         for(i in 1:(neval+1))
+         {
+            is.hnull[i] <- hnulleval2(cr[i,],hnull)
+         }   
+         is.hnull <- is.hnull[-1]
+         first <- neval - sum(is.hnull) + 1
+         pval <- 1-probs[first]
+       }
+    }
+    output <- list(cr=cr[1,], prob=prob, pval=pval,hnull=hnull)
+    return(output)
+}
+
+######################################################################################
+######################################################################################
+######################################################################################
+
+    possiP<-object$possiP
+    nfact<-dim(possiP)[1]
+    P<-rep(0,nfact)
+    df<-rep(0,nfact)
+    
+    for(i in 1:nfact)
+    {
+        df[i]<-1
+        if((possiP[i,2]-possiP[i,1])>0)
+        { 
+           x<-matrix(object$save.state$thetasave[,possiP[i,1]:possiP[i,2]])
+           foo<-pcp(x=x) 
+           P[i]<-foo$pval
+           df[i]<-(possiP[i,2]-possiP[i,1])+1
+        }
+        else
+        {
+           x<-object$save.state$thetasave[,possiP[i,1]:possiP[i,2]]
+           foo<-pcp2(x=x) 
+           P[i]<-foo$pval
+        }
+    }
+
+    table <- data.frame(df,P) 
+    dimnames(table) <- list(rownames(possiP), c("Df","PsCP"))
+    structure(table, heading = c("Table of Pseudo Contour Probabilities\n", 
+        paste("Response:", deparse(formula(object)[[2]]))), class = c("anovaPsCP",
+        "data.frame"))
+}
+
 	        
 "print.DPbinary"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {

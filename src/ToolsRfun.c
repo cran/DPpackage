@@ -26,6 +26,13 @@ double F77_SUB(cdflnorm)(double *x, double *logmean, double *logsd, int *lower_t
 }
 
 
+double F77_SUB(cdfbetas)(double *x, double *a, double *b, int *lower_tail, int *give_log)
+{
+	return pbeta(*x, *a, *b, *lower_tail, *give_log);
+}
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Quantile
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +59,18 @@ double F77_SUB(invcdfnorm)(double *p, double *mu, double *sigma, int *lower_tail
 int F77_SUB(invcdfbinom)(double *p, int *size, double *prob, int *lower_tail, int *log_p)
 {
 	return qbinom(*p, *size, *prob, *lower_tail, *log_p);
+}
+
+
+int F77_SUB(invcdfbetas)(double *p, double *a, double *b, int *lower_tail, int *log_p)
+{
+	return qbeta(*p, *a, *b, *lower_tail, *log_p);
+}
+
+
+double F77_SUB(invcdfchisq)(double *p, double *df, int *lower_tail, int *log_p)
+{
+	return qchisq(*p, *df, *lower_tail, *log_p);
 }
 
 

@@ -1,34 +1,35 @@
     
 c=======================================================================                      
-      subroutine dpsurvint2(nrec,p,x,y,interind,
-     &                      mcmc,nsave,propv,
-     &                      a0b0,betapm,betapv,m0,s0,tau,
-     &                      acrate,thetasave,randsave,cpo,
-     &                      ncluster,alpha,beta,mu,sigma2,v,
-     &                      maxint,maxend,maxm,
-     &                      iflag,
-     &                      imaxs,imaxsc,imins,iminsc,
-     &                      intcount,intcount2,    
-     &                      intind,intind2,
-     &                      intposso,intpossn,
-     &                      seed,
-     &                      betac,eta,etan,endp,endp2,
-     &                      linfs,linfsc,lsups,lsupsc,
-     &                      mass,
-     &                      prob,
-     &                      uvec,vvec,vnew,vnew2,wvec,
-     &                      workm1,workm2,
-     &                      workmh1,workv1,workv2)      
+      subroutine dpsurvint(nrec,p,x,y,interind,
+     &                     mcmc,nsave,propv,extra,
+     &                     a0b0,betapm,betapv,m0,s0,tau,
+     &                     acrate,thetasave,randsave,cpo,
+     &                     ncluster,alpha,beta,mu,sigma2,v,
+     &                     maxint,maxend,maxm,
+     &                     clusts,iflag,
+     &                     imaxs,imaxsc,imins,iminsc,
+     &                     index,          
+     &                     intcount,intcount2,    
+     &                     intind,intind2,
+     &                     intposso,intpossn,
+     &                     s,seed,
+     &                     betac,eta,etan,endp,endp2,
+     &                     limr,linfs,linfsc,lsups,lsupsc,
+     &                     mass,
+     &                     prob,
+     &                     uvec,vvec,vnew,wvec,
+     &                     workm1,workm2,
+     &                     workmh1,workv1,workv2)      
 c=======================================================================                      
 c
-c     Subroutine `dpsurvint2' to run a Markov chain in the  
+c     Subroutine `dpsurvint' to run a Markov chain in the  
 c     semiparametric atf model for interval censored data. 
 c
 c     Copyright: Alejandro Jara Vallejos, 2006
 c
-c     Version 2.0: 
+c     Version 3.0: 
 c
-c     Last modification: 02-07-2006.
+c     Last modification: 22-12-2006.
 c
 c     Changes and Bug fixes: 
 c
@@ -38,6 +39,10 @@ c          - Keeps the observations that belong to each interval
 c            in memory to allow a faster assignment of the errors.
 c          - Performs a binary search to find the endpoints corresponding
 c            to each interval.
+c
+c     Version 2.0 to Version 3.0:
+c          - Sampling from the partially sampled DP 
+c          - Adds an extra step which moves the clusters (optional). 
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -102,6 +107,8 @@ c-----------------------------------------------------------------------
 c
 c---- MCMC parameters --------------------------------------------------
 c
+c        extra       :  integer indicating if an extra step, which moves
+c                       the clusters, is added to the mcmc (extra=1).
 c        nburn       :  integer giving the number of burn-in scans.
 c        ndisplay    :  integer giving the number of saved scans to be
 c                       displayed on screen.
@@ -149,6 +156,7 @@ c        binf        :  logical working variable.
 c        betac       :  real vector giving the current value of the 
 c                       candidate for regression parameters, betac(p).
 c        cdflnorm    :  cdf of a lognormal distribution.
+c        clusts      :  integer working matrix, clusts(nrec,nrec+1)
 c        counter     :  index.
 c        dispcount   :  index. 
 c        efind       :  integer function to find the intervals where the
@@ -180,7 +188,7 @@ c        iminsc      :  integer vector used to store the lowest
 c                       partition defined for the candidate coefficients
 c                       where each error can be sampled from,
 c                       imins(nrec). 
-
+c        index       :  integer working vector, index(maxm)
 c        indi        :  index.
 c        intcount    :  integer vector used to count the number of 
 c                       observations for each interval, 
@@ -203,6 +211,7 @@ c        k           :  index.
 c        keepbeta    :  real working variable.
 c        liminf      :  real working variable.
 c        limsup      :  real working variable.
+c        limr        :  working real matrix, limr(nrec,2) 
 c        linfs       :  real vector used to store the lim inf of the
 c                       interval where the error must be sampled,
 c                       linfs(nrec).
@@ -229,6 +238,7 @@ c                       mass(maxint).
 c        maxint      :  integer giving the maximum number of intervals.
 c        maxu        :  real working variable.
 c        mrand       :  index.
+c        nclusw      :  index.
 c        npoints     :  index.
 c        ns          :  index.
 c        nso         :  index.
@@ -242,9 +252,10 @@ c        rgamma      :  real gamma random number generator.
 c        rnorm       :  real normal random number generator.
 c        runif       :  real uniform random number generator.
 c        rtlnorm     :  real truncated lnormal random number generator.
+c        s           :  integer vector giving the cluster structure,
+c                       s(nrec)
 c        seed1       :  seed for random number generation.
 c        seed2       :  seed for random number generation.
-c        seed3       :  seed for random number generation.
 c        skipcount   :  index. 
 c        swork       :  real working variable.
 c        tmp1        :  real used to accumulate quantities. 
@@ -253,7 +264,6 @@ c        uvec        :  real working vector, uvec(maxm).
 c        vbar        :  real working variable.
 c        vvec        :  real working vector, vvec(maxm).
 c        vnew        :  real working vector, vnew(nrec+1).
-c        vnew2       :  real working vector, vnew2(nrec).
 c        workm1      :  real matrix used to update the fixed effects,
 c                       workm1(p,p).
 c        workm2      :  real matrix used to update the fixed effects,
@@ -275,7 +285,7 @@ c+++++Data
       real*8 x(nrec,p),y(nrec,2)
 
 c+++++MCMC parameters
-      integer mcmc(3),nburn,nskip,nsave,ndisplay
+      integer extra,mcmc(3),nburn,nskip,nsave,ndisplay
       real*8 propv(p,p)
 
 c+++++Prior information
@@ -292,33 +302,35 @@ c+++++Current values of the parameters
 
 c+++++Working space
       integer maxint 
-      integer counter,dispcount
+      integer maxend,maxm
+      integer clusts(nrec,nrec+1),counter,dispcount
       integer efind
       integer evali
       integer i,iflag(p)
       integer imax,imaxs(nrec),imaxsc(nrec)
       integer imin,imins(nrec),iminsc(nrec)
-      integer indi,intcount(maxint)
+      integer index(maxm),indi,intcount(maxint)
       integer intcount2(maxint),intind(nrec+1),intind2(nrec+1)
       integer intposso(maxint,nrec+1),intpossn(maxint,nrec+1)
       integer isave,iscan,j,k
-      integer maxend,maxm
       integer mrand,npoints,ns,nso,nscan,ok
-      integer seed(3),seed1,seed2,seed3
+      integer s(nrec),seed(3),seed1,seed2
       integer skipcount
       
       real*8 area,betac(p),cdflnorm
       real*8 eta(nrec),etan(nrec)
       real*8 endp(maxend),endp2(maxend)
       real*8 keepbeta
+      real*8 limr(nrec,2)      
       real*8 liminf,limsup,linfs(nrec),linfsc(nrec)
       real*8 logliko,loglikn,logprioro,logpriorn
       real*8 lsups(nrec),lsupsc(nrec)
-      real*8 mass(maxint),maxu,prob(maxint)
-      real*8 ratio,rbeta,rgamma,rnorm,rtlnorm,sigma,swork,tmp1,tmp2
+      real*8 mass(maxint),maxu,prob(maxint),nclusw
+      real*8 ratio,rbeta,rgamma,rnorm,rtlnorm
+      real*8 sigma,swork,tmp1,tmp2
       real*8 uvec(maxm),workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
       real*8 workv1(p),workv2(p),wvec(maxm),vbar,vvec(maxm),vnew(nrec+1)
-      real*8 vnew2(nrec),vpred
+      real*8 vpred
       integer sprint
       logical ainf,binf
       real runif
@@ -347,7 +359,6 @@ c++++ set random number generator
 
       seed1=seed(1)
       seed2=seed(2)
-      seed3=seed(3)
 
       call setall(seed1,seed2)
 
@@ -360,11 +371,63 @@ c++++ check if the user has requested an interrupt
       call rchkusr()
  
       do i=1,nrec
+         limr(i,1)=0.d0         
+         limr(i,2)=99999999999999.d0
+      end do
+
+      nclusw=1 
+      do i=1,nrec
+         if(i.eq.1)then
+           s(i)=1
+          else
+           j=0 
+           ok=0
+           do while(ok.eq.0.and.j.lt.(i-1))          
+              j=j+1
+              if(v(i).eq.v(j))then
+                ok=1
+                s(i)=s(j)
+              end if
+           end do
+           if(ok.eq.0)then
+             nclusw=nclusw+1
+             s(i)=nclusw
+           end if  
+         end if
+         
+         if(interind(i).eq.1)then
+            linfs(i)=0.0
+            lsups(i)=y(i,2)*exp(eta(i))
+            if(lsups(i).lt.limr(s(i),2))then
+              limr(s(i),2)=lsups(i)
+            end if  
+         end if
+
+         if(interind(i).eq.3)then
+            linfs(i)=y(i,1)*exp(eta(i))
+            lsups(i)=0.0
+            if(linfs(i).gt.limr(s(i),1))then
+              limr(s(i),1)=linfs(i)
+            end if  
+         end if
+
+         if(interind(i).eq.2)then
+            linfs(i)=y(i,1)*exp(eta(i))
+            lsups(i)=y(i,2)*exp(eta(i))
+         
+            if(linfs(i).gt.limr(s(i),1))then
+              limr(s(i),1)=linfs(i)
+            end if  
+            if(lsups(i).lt.limr(s(i),2))then
+              limr(s(i),2)=lsups(i)
+            end if  
+         end if
+
+         clusts(s(i),1)=clusts(s(i),1)+1
+         clusts(s(i),clusts(s(i),1)+1)=i      
+    
          vnew(i)=v(i)
          if(interind(i).eq.1)then
-           linfs(i)=0.0
-           lsups(i)=y(i,2)*exp(eta(i))
-
            if(v(i).gt.lsups(i))then
               call intpr("i",-1,i,1)
               call intpr("type",-1,interind(i),1)
@@ -376,8 +439,6 @@ c++++ check if the user has requested an interrupt
          end if
          
          if(interind(i).eq.3)then
-           linfs(i)=y(i,1)*exp(eta(i))
-           lsups(i)=0.0
            if(v(i).le.linfs(i))then
               call intpr("i",-1,i,1)
               call intpr("type",-1,interind(i),1)
@@ -389,9 +450,6 @@ c++++ check if the user has requested an interrupt
          end if
             
          if(interind(i).eq.2)then
-           linfs(i)=y(i,1)*exp(eta(i))
-           lsups(i)=y(i,2)*exp(eta(i))
-
            if(v(i).le.linfs(i))then
               call intpr("i",-1,i,1)
               call intpr("type",-1,interind(i),1)
@@ -412,25 +470,9 @@ c++++ check if the user has requested an interrupt
            end if   
          end if   
       end do
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c++++ Sort errors and compute the number of clusters 
-c++++ before starting the algorithm
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-      call sortvec(nrec+1,vnew,1,nrec)
-
-      ncluster=1
-      vnew2(1)=vnew(1)
-     
-      do i=2,nrec
-         call rchkusr()
-         if(vnew(i).ne.vnew2(ncluster))then
-            ncluster=ncluster+1
-            vnew2(ncluster)=vnew(i)
-         end if
-      end do
-
-
+      ncluster=nclusw      
+      
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -642,8 +684,7 @@ c+++++++ of parameters
             
          end do
 
-c+++++++ aceptation step
-
+c+++++++ acceptance step
          ok=0
          ratio=dexp(loglikn+logpriorn-logliko-logprioro)
 
@@ -680,6 +721,11 @@ c+++++++ check if the user has requested an interrupt
          end do
 
          do i=1,nrec
+
+            limr(i,1)=0.d0         
+            limr(i,2)=99999999999999.d0
+            clusts(i,1)=0         
+         
             imin=imins(i) 
             imax=imaxs(i)
             tmp1=0.d0
@@ -787,6 +833,7 @@ c+++++++ end predictions
                end do
 
                do j=1,mrand
+                  index(j)=j
                   if(dble(runif()).le.(1.d0-(area/mass(i))))then
                      call rdisc(1,nso,evali)
                      if(evali.lt.1.or.evali.gt.nso)return
@@ -796,6 +843,10 @@ c+++++++ end predictions
                      vvec(j)=tmp1
                   end if
                end do
+
+               if(mrand.gt.1)then  
+                  call sortvecind(maxm,index,vvec,wvec,1,mrand)
+               end if   
 
                do j=1,ns
                   tmp1=0.d0
@@ -810,9 +861,55 @@ c+++++++ end predictions
             end if 
          end do
 
+         nclusw=1
          do i=1,nrec
             v(i)=vnew(i)
+
+            if(i.eq.1)then
+              s(i)=1
+             else
+              j=0 
+              ok=0
+              do while(ok.eq.0.and.j.lt.(i-1))          
+                 j=j+1
+                 if(v(i).eq.v(j))then
+                   ok=1
+                   s(i)=s(j)
+                 end if
+              end do
+              if(ok.eq.0)then
+                nclusw=nclusw+1
+                s(i)=nclusw
+              end if  
+            end if
+         
+            if(interind(i).eq.1)then
+               if(lsups(i).lt.limr(s(i),2))then
+                 limr(s(i),2)=lsups(i)
+               end if  
+            end if
+
+            if(interind(i).eq.3)then
+               if(linfs(i).gt.limr(s(i),1))then
+                 limr(s(i),1)=linfs(i)
+               end if  
+            end if
+
+            if(interind(i).eq.2)then
+               if(linfs(i).gt.limr(s(i),1))then
+                 limr(s(i),1)=linfs(i)
+               end if  
+               if(lsups(i).lt.limr(s(i),2))then
+                 limr(s(i),2)=lsups(i)
+               end if  
+            end if
+
+            clusts(s(i),1)=clusts(s(i),1)+1
+            clusts(s(i),clusts(s(i),1)+1)=i                 
+            
          end do
+
+         ncluster=nclusw
          vpred=vnew(nrec+1)
 
 
@@ -821,82 +918,83 @@ c+++++++ Check consistency with the data
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++++ check if the user has requested an interrupt
-         call rchkusr()
+c         call rchkusr()
  
-         do i=1,nrec
-            if(interind(i).eq.1)then
-              if(v(i).gt.lsups(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("type",-1,interind(i),1)    
-                 call intpr("interval",-1,intind(i),1)                 
-                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-            end if
-         
-            if(interind(i).eq.3)then
-              if(v(i).le.linfs(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("type",-1,interind(i),1)                 
-                 call intpr("interval",-1,intind(i),1)                 
-                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
-                 call intpr("int",-1,intind(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-            end if
-            
-            if(interind(i).eq.2)then
-              if(v(i).le.linfs(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("type",-1,interind(i),1)     
-                 call intpr("interval",-1,intind(i),1) 
-                 call intpr("imin",-1,imins(i),1) 
-                 call intpr("imax",-1,imaxs(i),1) 
-                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
-                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
-                 call intpr("int",-1,intind(i),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-              if(v(i).gt.lsups(i))then
-                 call intpr("i",-1,i,1)
-                 call intpr("type",-1,interind(i),1)                 
-                 call intpr("interval",-1,intind(i),1)                 
-                 call intpr("imin",-1,imins(i),1) 
-                 call intpr("imax",-1,imaxs(i),1) 
-                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
-                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
-                 call dblepr("eta",-1,eta(i),1)
-                 call dblepr("v",-1,v(i),1)
-                 call rexit("Errors not consistent with data in S1")
-              end if   
-            end if   
-         end do
+c         do i=1,nrec
+c            if(interind(i).eq.1)then
+c              if(v(i).gt.lsups(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("type",-1,interind(i),1)    
+c                 call intpr("interval",-1,intind(i),1)                 
+c                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S1")
+c              end if   
+c            end if
+c         
+c            if(interind(i).eq.3)then
+c              if(v(i).le.linfs(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("type",-1,interind(i),1)                 
+c                 call intpr("interval",-1,intind(i),1)                 
+c                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
+c                 call intpr("int",-1,intind(i),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S1")
+c              end if   
+c            end if
+c            
+c            if(interind(i).eq.2)then
+c              if(v(i).le.linfs(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("type",-1,interind(i),1)     
+c                 call intpr("interval",-1,intind(i),1) 
+c                 call intpr("imin",-1,imins(i),1) 
+c                 call intpr("imax",-1,imaxs(i),1) 
+c                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
+c                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
+c                 call intpr("int",-1,intind(i),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S1")
+c              end if   
+c              if(v(i).gt.lsups(i))then
+c                 call intpr("i",-1,i,1)
+c                 call intpr("type",-1,interind(i),1)                 
+c                 call intpr("interval",-1,intind(i),1)                 
+c                 call intpr("imin",-1,imins(i),1) 
+c                 call intpr("imax",-1,imaxs(i),1) 
+c                 call dblepr("l",-1,y(i,1)*exp(eta(i)),1)
+c                 call dblepr("u",-1,y(i,2)*exp(eta(i)),1)
+c                 call dblepr("eta",-1,eta(i),1)
+c                 call dblepr("v",-1,v(i),1)
+c                 call rexit("Errors not consistent with data in S1")
+c              end if   
+c            end if   
+c         end do
       
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-c+++++++ Sort errors and compute the number of clusters 
-c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-         call sortvec(nrec+1,vnew,1,nrec)
-
-         ncluster=1
-         vnew2(1)=vnew(1)
-     
-         do i=2,nrec
-            call rchkusr()
-            if(vnew(i).ne.vnew2(ncluster))then
-               ncluster=ncluster+1
-               vnew2(ncluster)=vnew(i)
-            end if
-         end do
 
 100      continue
 
+
+c+++++++++++++++++++++++++++++++++++++++++++++         
+c+++++++ Extra Step which moves the clusters
+c+++++++++++++++++++++++++++++++++++++++++++++
+
+        if(extra.eq.1)then
+           do i=1,ncluster
+              ainf=.false.
+              binf=.false.
+              liminf=limr(i,1)
+              limsup=limr(i,2)         
+              tmp1=rtlnorm(mu,sigma,liminf,limsup,ainf,binf)
+              do j=1,clusts(i,1)
+                 v(clusts(i,j+1))=tmp1
+              end do
+           end do
+        end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ updating parameters of the baseline                +++
@@ -912,7 +1010,7 @@ c+++++++ check if the user has requested an interrupt
          swork=0.d0
          
          do i=1,ncluster
-            swork=swork+log(vnew2(i))
+            swork=swork+log(v(clusts(i,2)))
          end do
 
          tmp1=(1.d0/s0)+(dble(ncluster)/sigma)
@@ -926,7 +1024,7 @@ c+++++++ check if the user has requested an interrupt
 
          swork=0.d0
          do i=1,ncluster
-            swork=swork+(log(vnew2(i))-mu)**2            
+            swork=swork+(log(v(clusts(i,2)))-mu)**2            
          end do
          
          sigma2=1.d0/

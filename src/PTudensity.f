@@ -5,7 +5,7 @@ c=======================================================================
      &                      mcmcvec,nsave,tune1,tune2,tune3,
      &                      acrate,f,thetasave,cpo,
      &                      cpar,mu,sigma,
-     &                      grid,seed)
+     &                      grid,seed,whicho,whichn)
 c=======================================================================                      
 c
 c     Subroutine `ptdensityu' to run a Markov chain for univariate 
@@ -14,9 +14,15 @@ c     Polya Tree is centered in a N(mu,sigma2) distribution.
 c
 c     Copyright: Alejandro Jara, 2006
 c
-c     Version 1.0: 
+c     Version 2.0: 
 c
-c     Last modification: 08-10-2006.
+c     Last modification: 12-12-2006.
+c     
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Uses vectors to keep the observations in each partition.
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -95,7 +101,7 @@ c---- Current value of the parameters ----------------------------------
 c
 c        cpar        :  real giving the current value of the precision
 c                       parameter of the Polya Tree.
-c        mu          :  real vector giving the current value of the 
+c        mu          :  real giving the current value of the 
 c                       baseline mean.
 c        sigma       :  real giving the he current value of the
 c                       baseline standard deviation.
@@ -119,6 +125,8 @@ c        iscan       :  index.
 c        j           :  index. 
 c        je2         :  index.
 c        k           :  index.   
+c        k1          :  index.
+c        k2          :  index.
 c        logcgkn     :  real working variable.
 c        logcgko     :  real working variable.
 c        loglikn     :  real working variable.
@@ -128,6 +136,7 @@ c        logprioro   :  real working variable.
 c        muc         :  real giving the value of the candidate
 c                       for the baseline mean. 
 c        nscan       :  index.
+c        parti       :  index.
 c        pprn        :  index.
 c        quan        :  real working variable.
 c        ratio       :  real working variable.
@@ -152,9 +161,14 @@ c        skipcount   :  index.
 c        sprint      :  integer function to print on screen.
 c        tmp1        :  real used to accumulate quantities. 
 c        tmp2        :  real used to accumulate quantities.
+c        whicho      :  integer vector giving the observation in each
+c                       partition, whicho(nrec).
+c        whichn      :  integer vector giving the observation in each
+c                       partition, whichn(nrec).
 c        ybar        :  real giving the sample mean.
 c
 c=======================================================================
+      implicit none 
 
 c+++++Data
       integer ngrid,nrec
@@ -186,8 +200,10 @@ c+++++Working space - Distributions
       real*8 invcdfnorm
 
 c+++++Working space - General
-      integer i,j,je2,k
-      integer nint,pprn,sprint
+      integer countero,countern
+      integer i,j,je2,k,k1,k2,l
+      integer nint,ok,parti,pprn,sprint
+      integer whicho(nrec),whichn(nrec)
       real*8 prob
       real*8 quan
       real*8 s,tmp1,tmp2,ybar
@@ -275,12 +291,20 @@ c+++++++ following observations
             countero=0
             
             if(y(i).le.quan) then
+               parti=1 
                do l=1,i-1
-                  if(y(l).le.quan)countero=countero+1
+                  if(y(l).le.quan)then
+                     countero=countero+1
+                     whicho(countero)=l
+                  end if   
                end do
              else
+               parti=2
                do l=1,i-1
-                  if(y(l).gt.quan)countero=countero+1
+                  if(y(l).gt.quan)then
+                     countero=countero+1
+                     whicho(countero)=l
+                  end if   
                end do
             end if  
 
@@ -296,26 +320,35 @@ c+++++++ following observations
                nint=2**j
                je2=j**2
                prob=1.d0/dble(nint)
-               k=1
-               quan=invcdfnorm(prob,mu,sigma,1,0)
-            
-               do while(y(i).gt.quan.and.k.le.(nint-1))
-                  k=k+1
-                  if(k.lt.nint)then
-                    quan=invcdfnorm(dble(k)*prob,mu,sigma,1,0)
-                  end if  
-               end do
+               
+               k1=2*(parti-1)+1
+               k2=2*(parti-1)+2
+               quan=invcdfnorm(dble(k1)*prob,mu,sigma,1,0)
+               
+               if(y(i).le.quan)then
+                 parti=k1
+                 k=k1
+                else
+                 parti=k2
+                 k=k2
+               end if  
 
                countern=0
                
                if(k.eq.1)then
-                  do l=1,i-1
-                     if(y(l).le.quan)countern=countern+1
+                  do l=1,countero
+                     if(y(whicho(l)).le.quan)then
+                        countern=countern+1
+                        whichn(countern)=whicho(l)
+                     end if   
                   end do
                 else if(k.eq.nint)then
                   quan=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0) 
-                  do l=1,i-1
-                     if(y(l).gt.quan)countern=countern+1
+                  do l=1,countero
+                     if(y(whicho(l)).gt.quan)then
+                        countern=countern+1
+                        whichn(countern)=whicho(l)
+                     end if   
                   end do
                 else
                   tmp1=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0)
@@ -325,9 +358,11 @@ c+++++++ following observations
                     call rexit("Error in the limits")
                   end if  
                 
-                  do l=1,i-1
-                     if(y(l).gt.tmp1.and.y(l).le.tmp2)then
+                  do l=1,countero
+                     if(y(whicho(l)).gt.tmp1.and.
+     &                  y(whicho(l)).le.tmp2)then
                         countern=countern+1
+                        whichn(countern)=whicho(l)
                      end if   
                   end do
                end if
@@ -340,6 +375,9 @@ c+++++++ following observations
                   ok=0
                 else  
                   countero=countern
+                  do l=1,countern
+                     whicho(l)=whichn(l)
+                  end do
                   j=j+1
                end if   
             end do
@@ -389,12 +427,20 @@ c++++++++++ following observations
                  countero=0
                  
                  if(y(i).le.quan) then
+                    parti=1 
                     do l=1,i-1
-                       if(y(l).le.quan)countero=countero+1
+                       if(y(l).le.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
                   else
+                    parti=2 
                     do l=1,i-1
-                       if(y(l).gt.quan)countero=countero+1
+                       if(y(l).gt.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
                  end if  
 
@@ -410,26 +456,35 @@ c++++++++++ following observations
                     nint=2**j
                     je2=j**2
                     prob=1.d0/dble(nint)
-                    k=1
-                    quan=invcdfnorm(prob,muc,sigma,1,0)
-                 
-                    do while(y(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                         quan=invcdfnorm(dble(k)*prob,muc,sigma,1,0)
-                       end if  
-                    end do
 
+                    k1=2*(parti-1)+1
+                    k2=2*(parti-1)+2
+                    quan=invcdfnorm(dble(k1)*prob,muc,sigma,1,0)
+               
+                    if(y(i).le.quan)then
+                      parti=k1
+                      k=k1
+                     else
+                      parti=k2
+                      k=k2
+                    end if                      
+                    
                     countern=0
                     
                     if(k.eq.1)then
-                       do l=1,i-1
-                          if(y(l).le.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).le.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else if(k.eq.nint)then
                        quan=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0) 
-                       do l=1,i-1
-                          if(y(l).gt.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).gt.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else
                        tmp1=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0)
@@ -439,9 +494,11 @@ c++++++++++ following observations
                          call rexit("Error in the limits")
                        end if  
                      
-                       do l=1,i-1
-                          if(y(l).gt.tmp1.and.y(l).le.tmp2)then
+                       do l=1,countero
+                          if(y(whicho(l)).gt.tmp1.and.
+     &                       y(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                        end do
                     end if
@@ -454,6 +511,9 @@ c++++++++++ following observations
                        ok=0
                      else  
                        countero=countern
+                       do l=1,countern
+                          whicho(l)=whichn(l)
+                       end do
                        j=j+1
                     end if   
                  end do
@@ -508,12 +568,20 @@ c++++++++++ following observations
                  countero=0
                  
                  if(y(i).le.quan) then
+                    parti=1
                     do l=1,i-1
-                       if(y(l).le.quan)countero=countero+1
+                       if(y(l).le.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
-                  else
+                  else 
+                    parti=2
                     do l=1,i-1
-                       if(y(l).gt.quan)countero=countero+1
+                       if(y(l).gt.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
                  end if  
 
@@ -529,26 +597,35 @@ c++++++++++ following observations
                     nint=2**j
                     je2=j**2
                     prob=1.d0/dble(nint)
-                    k=1
-                    quan=invcdfnorm(prob,mu,sigmac,1,0)
-                 
-                    do while(y(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                         quan=invcdfnorm(dble(k)*prob,mu,sigmac,1,0)
-                       end if  
-                    end do
 
+                    k1=2*(parti-1)+1
+                    k2=2*(parti-1)+2
+                    quan=invcdfnorm(dble(k1)*prob,mu,sigmac,1,0)
+               
+                    if(y(i).le.quan)then
+                      parti=k1
+                      k=k1
+                     else
+                      parti=k2
+                      k=k2
+                    end if  
+                    
                     countern=0
                     
                     if(k.eq.1)then
-                       do l=1,i-1
-                          if(y(l).le.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).le.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else if(k.eq.nint)then
                        quan=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0) 
-                       do l=1,i-1
-                          if(y(l).gt.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).gt.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else
                        tmp1=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0)
@@ -558,9 +635,11 @@ c++++++++++ following observations
                          call rexit("Error in the limits")
                        end if  
                      
-                       do l=1,i-1
-                          if(y(l).gt.tmp1.and.y(l).le.tmp2)then
+                       do l=1,countero
+                          if(y(whicho(l)).gt.tmp1.and.
+     &                       y(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                        end do
                     end if
@@ -573,6 +652,9 @@ c++++++++++ following observations
                        ok=0
                      else  
                        countero=countern
+                       do l=1,countern
+                          whicho(l)=whichn(l)
+                       end do
                        j=j+1
                     end if   
                  end do
@@ -638,12 +720,20 @@ c++++++++++ following observations
                  countero=0
                  
                  if(y(i).le.quan) then
+                    parti=1 
                     do l=1,i-1
-                       if(y(l).le.quan)countero=countero+1
+                       if(y(l).le.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
                   else
+                    parti=2
                     do l=1,i-1
-                       if(y(l).gt.quan)countero=countero+1
+                       if(y(l).gt.quan)then
+                          countero=countero+1
+                          whicho(countero)=l
+                       end if   
                     end do
                  end if  
 
@@ -659,26 +749,35 @@ c++++++++++ following observations
                     nint=2**j
                     je2=j**2
                     prob=1.d0/dble(nint)
-                    k=1
-                    quan=invcdfnorm(prob,mu,sigma,1,0)
-                 
-                    do while(y(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                         quan=invcdfnorm(dble(k)*prob,mu,sigma,1,0)
-                       end if  
-                    end do
 
+                    k1=2*(parti-1)+1
+                    k2=2*(parti-1)+2
+                    quan=invcdfnorm(dble(k1)*prob,mu,sigma,1,0)
+               
+                    if(y(i).le.quan)then
+                      parti=k1
+                      k=k1
+                     else
+                      parti=k2
+                      k=k2
+                    end if  
+      
                     countern=0
                     
                     if(k.eq.1)then
-                       do l=1,i-1
-                          if(y(l).le.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).le.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else if(k.eq.nint)then
                        quan=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0) 
-                       do l=1,i-1
-                          if(y(l).gt.quan)countern=countern+1
+                       do l=1,countero
+                          if(y(whicho(l)).gt.quan)then
+                             countern=countern+1
+                             whichn(countern)=whicho(l)
+                          end if   
                        end do
                      else
                        tmp1=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0)
@@ -688,9 +787,11 @@ c++++++++++ following observations
                          call rexit("Error in the limits")
                        end if  
                      
-                       do l=1,i-1
-                          if(y(l).gt.tmp1.and.y(l).le.tmp2)then
+                       do l=1,countero
+                          if(y(whicho(l)).gt.tmp1.and.
+     &                       y(whicho(l)).le.tmp2)then
                              countern=countern+1
+                             whichn(countern)=whicho(l)
                           end if   
                        end do
                     end if
@@ -703,6 +804,9 @@ c++++++++++ following observations
                        ok=0
                      else  
                        countero=countern
+                       do l=1,countern
+                          whicho(l)=whichn(l)
+                       end do
                        j=j+1
                     end if   
                  end do
@@ -762,12 +866,20 @@ c++++++++++++++++ check if the user has requested an interrupt
                   countero=0
                   
                   if(y(i).le.quan)then
+                      parti=1
                       do l=1,nrec
-                         if(y(l).le.quan.and.l.ne.i)countero=countero+1
+                         if(y(l).le.quan.and.l.ne.i)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
-                    else
+                    else 
+                      parti=2
                       do l=1,nrec
-                         if(y(l).gt.quan.and.l.ne.i)countero=countero+1
+                         if(y(l).gt.quan.and.l.ne.i)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                   end if  
         
@@ -783,29 +895,36 @@ c++++++++++++++++ check if the user has requested an interrupt
                      nint=2**j
                      je2=j**2
                      prob=1.d0/dble(nint)
-                     k=1
-                     quan=invcdfnorm(prob,mu,sigma,1,0)
-                 
-                     do while(y(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                         quan=invcdfnorm(dble(k)*prob,mu,sigma,1,0)
-                       end if  
-                     end do
+
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,mu,sigma,1,0)
+               
+                     if(y(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if  
 
                      countern=0
                     
                      if(k.eq.1)then
-                        do l=1,nrec
-                           if(y(l).le.quan.and.l.ne.i)then
+                        do l=1,countero
+                           if(y(whicho(l)).le.quan.and.
+     &                        whicho(l).ne.i)then
                               countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                       else if(k.eq.nint)then
                         quan=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0) 
-                        do l=1,nrec
-                           if(y(l).gt.quan.and.l.ne.i)then
+                        do l=1,countero
+                           if(y(whicho(l)).gt.quan.and.
+     &                        whicho(l).ne.i)then
                               countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                       else
@@ -816,10 +935,12 @@ c++++++++++++++++ check if the user has requested an interrupt
                           call rexit("Error in the limits")
                         end if  
                      
-                        do l=1,nrec
-                           if(l.ne.i)then
-                           if(y(l).gt.tmp1.and.y(l).le.tmp2)then
-                             countern=countern+1
+                        do l=1,countero
+                           if(whicho(l).ne.i)then
+                           if(y(whicho(l)).gt.tmp1.and.
+     &                        y(whicho(l)).le.tmp2)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if
                            end if
                         end do
@@ -833,6 +954,9 @@ c++++++++++++++++ check if the user has requested an interrupt
                         ok=0
                       else  
                         countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
                         j=j+1
                      end if   
                   end do
@@ -841,7 +965,7 @@ c++++++++++++++++ check if the user has requested an interrupt
                  
                   loglikn=loglikn+dnrm(grid(i),mu,sigma,1)
 
-                  cpo(i)=cpo(i)+exp(loglikn)
+                  cpo(i)=cpo(i)+1.d0/exp(loglikn)
                end do
 
 c+++++++++++++ density 
@@ -860,12 +984,20 @@ c++++++++++++++++ check if the user has requested an interrupt
                   countero=0
                   
                   if(grid(i).le.quan)then
+                      parti=1
                       do l=1,nrec
-                         if(y(l).le.quan)countero=countero+1
+                         if(y(l).le.quan)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                     else
+                      parti=2
                       do l=1,nrec
-                         if(y(l).gt.quan)countero=countero+1
+                         if(y(l).gt.quan)then
+                            countero=countero+1
+                            whicho(countero)=l
+                         end if   
                       end do
                   end if  
         
@@ -881,26 +1013,35 @@ c++++++++++++++++ check if the user has requested an interrupt
                      nint=2**j
                      je2=j**2
                      prob=1.d0/dble(nint)
-                     k=1
-                     quan=invcdfnorm(prob,mu,sigma,1,0)
-                 
-                     do while(grid(i).gt.quan.and.k.le.(nint-1))
-                       k=k+1
-                       if(k.lt.nint)then
-                         quan=invcdfnorm(dble(k)*prob,mu,sigma,1,0)
-                       end if  
-                     end do
+
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,mu,sigma,1,0)
+               
+                     if(grid(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if  
 
                      countern=0
                     
                      if(k.eq.1)then
-                        do l=1,nrec
-                           if(y(l).le.quan)countern=countern+1
+                        do l=1,countero
+                           if(y(whicho(l)).le.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
                         end do
                       else if(k.eq.nint)then
                         quan=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0) 
-                        do l=1,nrec
-                           if(y(l).gt.quan)countern=countern+1
+                        do l=1,countero
+                           if(y(whicho(l)).gt.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
                         end do
                       else
                         tmp1=invcdfnorm(dble(k-1)*prob,mu,sigma,1,0)
@@ -910,9 +1051,11 @@ c++++++++++++++++ check if the user has requested an interrupt
                           call rexit("Error in the limits")
                         end if  
                      
-                        do l=1,nrec
-                           if(y(l).gt.tmp1.and.y(l).le.tmp2)then
+                        do l=1,countero
+                           if(y(whicho(l)).gt.tmp1.and.
+     &                        y(whicho(l)).le.tmp2)then
                               countern=countern+1
+                              whichn(countern)=whicho(l)
                            end if   
                         end do
                      end if
@@ -925,6 +1068,9 @@ c++++++++++++++++ check if the user has requested an interrupt
                         ok=0
                       else  
                         countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
                         j=j+1
                      end if   
                   end do
@@ -955,12 +1101,8 @@ c+++++++++++++ print
          acrate(i)=acrate(i)/dble(nscan)      
       end do   
      
-c      do i=1,nrec
-c         cpo(i)=dble(nsave)/cpo(i)
-c      end do
-
       do i=1,nrec
-         cpo(i)=cpo(i)/dble(nsave)
+         cpo(i)=dble(nsave)/cpo(i)
       end do
 
       do i=1,ngrid

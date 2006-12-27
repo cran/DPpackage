@@ -32,7 +32,45 @@ c       value is lower than list position
         else
           j=k-1
       end if
-      go to 1          
+      go to 1  
+      
+      if(efind.eq.0)then
+        call rexit("Error in efind")
+      end if
+      return
+      end
+
+c=======================================================================
+      subroutine sortvecind(n,index,vec1,vec2,i1,i2)
+c=======================================================================
+c     this routine sort the vector vec of dimension n in the positions
+c     i1,...,i2.
+c
+c     A.J.V., 2006
+      implicit none
+      integer n,i1,i2
+      integer index(n)
+      integer i
+      real*8 vec1(n),vec2(n),vwork(10000000)
+
+      if(n.gt.10000000)then
+	call rexit("increase dimension subroutine sortvecind")
+      end if
+      
+      if(i1.ge.i2)then
+	call rexit("i1 >= i2 in subroutine sortvecind")
+      end if
+      
+      do i=i1,i2
+         vwork(i)=vec2(i)
+      end do
+      
+      call qsort4(vec1,index,i1,i2)
+      
+      do i=i1,i2
+         vec2(i)=vwork(index(i))
+      end do
+      
       return
       end
       

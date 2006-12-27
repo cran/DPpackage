@@ -92,9 +92,9 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
 
 \value{
   An object of class \code{Pbinary} representing the parametric regression
-  model fit. Generic functions such as \code{print}, \code{plot}, and \code{summary} have 
-  methods to show the results of the fit. The results include only the regression 
-  coefficients, \code{beta}.
+  model fit. Generic functions such as \code{print}, \code{plot}, \code{summary}, 
+  \code{predict}, and \code{anova} have methods to show the results of the fit. 
+  The results include only the regression coefficients, \code{beta}.
   
   The MCMC samples of the parameters are stored in the object \code{thetasave}. 
   This object is included in the list \code{save.state} and is a matrix which can 
@@ -138,10 +138,10 @@ Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) Semiparametric Bayesian
       state <- NULL
 
     # MCMC parameters
-      nburn<-50
-      nsave<-200
-      nskip<-5
-      ndisplay<-100
+      nburn<-5000
+      nsave<-5000
+      nskip<-10
+      ndisplay<-1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
                    tune=1.1)
 
@@ -150,19 +150,23 @@ Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) Semiparametric Bayesian
       prior <- list(beta0=rep(0,2), Sbeta0=diag(10000,2))
 
     # Fit a logistic regression model
-      fit1 <- Pbinary(y~x,link="logit",prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit1 <- Pbinary(y~x,link="logit",prior=prior,
+                      mcmc=mcmc,state=state,status=TRUE) 
       fit1
 
     # Fit a probit regression model
-      fit2 <- Pbinary(y~x,link="probit",prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit2 <- Pbinary(y~x,link="probit",prior=prior, 
+                      mcmc=mcmc,state=state,status=TRUE) 
       fit2
 
     # Fit a cloglog regression model
-      fit3 <- Pbinary(y~x,link="cloglog",prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit3 <- Pbinary(y~x,link="cloglog",prior=prior,
+                      mcmc=mcmc,state=state,status=TRUE) 
       fit3
 
     # Fit a cauchy regression model
-      fit4 <- Pbinary(y~x,link="cauchy",prior=prior,mcmc=mcmc,state=state,status=TRUE) 
+      fit4 <- Pbinary(y~x,link="cauchy",prior=prior,
+                      mcmc=mcmc,state=state,status=TRUE) 
       fit4
 }      
 }

@@ -19,7 +19,8 @@ DPrandom(object,centered=FALSE,predictive=FALSE)
                  
 }
 \description{
-  
+  This generic function extracts Random Effects' information from DPpackage model
+  objects.  
 }
 
 \examples{

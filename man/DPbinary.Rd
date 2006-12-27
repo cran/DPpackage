@@ -47,7 +47,8 @@ DPbinary(formula,inter=TRUE,baseline="logistic",prior,mcmc,state,status,
                      the total number of scans to be saved, \code{ndisplay} giving
                      the number of saved scans to be displayed on the screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune} giving the Metropolis tuning parameter.}   
+                     out), and \code{tune} giving the Metropolis tuning parameter
+                     (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -98,14 +99,17 @@ DPbinary(formula,inter=TRUE,baseline="logistic",prior,mcmc,state,status,
   able to generate \eqn{V_1,\ldots,V_{n+1}}{V1,\ldots,Vn+1} which are exactly iid G, as proposed by Doss (1994). 
   Both Ferguson's definition of DP and the Sethuraman-Tiwari (1982) representation 
   of the process are used, as described in Jara, Garcia-Zattera and Lesaffre (2006).
+  An extra step which moves the clusters in such a way that the posterior distribution
+  is still a stationary distribution, is performed in order to improve the rate of
+  mixing.
 }
 
 
 \value{
   An object of class \code{DPbinary} representing the semiparametric logistic regression
-  model fit. Generic functions such as \code{print}, \code{plot}, and \code{summary} have 
-  methods to show the results of the fit. The results include \code{beta}, the precision
-  parameter (\code{alpha}), the number of clusters (\code{ncluster}), and the \code{link} 
+  model fit. Generic functions such as \code{print}, \code{plot}, \code{predict}, \code{summary},
+  and \code{anova} have methods to show the results of the fit. The results include \code{beta}, 
+  the precision parameter (\code{alpha}), the number of clusters (\code{ncluster}), and the \code{link} 
   function.
   
   The MCMC samples of the parameters and the errors in the model are stored in the object 
@@ -199,8 +203,10 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
       plot(fit1,ask=FALSE,param="link",nfigc=1,nfigr=1)
 
-    # Predictive Distribution
+    # Table of Pseudo Contour Probabilities
+      anova(fit1)
 
+    # Predictive Distribution
       npred<-40  
       xnew<-cbind(rep(1,npred),seq(0,4,length=npred))
 

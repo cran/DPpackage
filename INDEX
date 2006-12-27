@@ -4,6 +4,7 @@ deterioration           Time to Cosmetic Deterioration of Breast Cancer
                         Patients
 DPbinary                Bayesian analysis for a semiparametric
                         Bernoulli regression model
+DPcaterpillar           Caterpillar Plots for Random Effects
 DPdensity               Semiparametric Bayesian density estimation
 DPelicit                Performs a prior elicitation for the precision
                         parameter of a DP prior
@@ -20,6 +21,7 @@ DPrasch                 Bayesian analysis for a semiparametric Rasch
                         model
 DPraschpoisson          Bayesian analysis for a semiparametric Rasch
                         Poisson model
+DProc                   Semiparametric Bayesian ROC curve analysis
 DPsurvint               Bayesian analysis for a semiparametric AFT
                         regression model
 fleabeetles             Flea-beetles
