@@ -17,14 +17,14 @@ c     A.J.V., 2006
       end
 
 c=======================================================================                        
-      double precision function rexp(lambda)
+      double precision function rexpo(lambda)
 c=======================================================================                  
 c     This function generates a exp(lambda) random variable  
 c     A.J.V., 2005
       implicit none
       real*8 lambda
       real runif
-      rexp=-log(1.d0-dble(runif()))/lambda
+      rexpo=-log(1.d0-dble(runif()))/lambda
       return
       end     
 
@@ -280,7 +280,7 @@ c++++ Generating the rn
          end if
          i1=i1+1
       end do
-      
+     
       return
       end           
 
@@ -953,3 +953,101 @@ c     A.J.V., 2006
       rpois=ignpoi(mean)
       return
       end
+
+
+c=======================================================================      
+      subroutine rmult(n,p,ncat,x)
+c=======================================================================      
+c     This function gerenates a Multinomial random vector. 
+c     A.J.V., 2007
+      integer n,ncat,x(ncat)
+      real p(ncat-1)
+
+      call genmul(n,p,ncat,x)
+
+      return
+      end
+
+
+c======================================================================      
+      real*8 function rtchisq(nu,a,b,ainf,binf)
+c=======================================================================            
+c     generate truncated(a,b) Chisq(nu)
+c     a,b  = end points of interval (ainf = binf = .false.)   
+c     ainf = true, if left endpoint is 0; otherwise = false
+c     binf = true, if right endpoint is 1; otherwise = false      
+c     A.J.V., 2007
+      implicit none
+      real*8 nu,a,b
+      real*8 rchisq,invcdfchisq,cdfchisq
+      real*8 uni,tmp
+      logical ainf,binf
+      real runif
+
+      uni=dble(runif())
+
+      rtchisq=0.d0
+      if(ainf.and.binf) go to 110
+      if(ainf.or.binf) go to 100
+      
+      if(a.gt.b)then
+        call rexit("error in limits rtchisq")
+        rtchisq=a
+        return
+      end if  
+
+      tmp=cdfchisq(a,nu,1,0)+ 
+     &    uni*(cdfchisq(b,nu,1,0)-cdfchisq(a,nu,1,0))
+      rtchisq=invcdfchisq(tmp,nu,1,0)
+      go to 120
+
+100   if(ainf)then
+         tmp=uni*cdfchisq(b,nu,1,0)
+         rtchisq=invcdfchisq(tmp,nu,1,0)
+         go to 120
+      end if
+      if(binf)then
+         tmp=uni+(1.d0-uni)*cdfchisq(a,nu,1,0)
+         rtchisq=invcdfchisq(tmp,nu,1,0)
+         go to 120
+      end if
+
+110   rtchisq=rchisq(nu)
+
+120   continue
+
+      return
+      end      
+
+
+c======================================================================      
+      subroutine rperm(nl,n,p)
+c=======================================================================            
+c     generate a random permutation of the first n integers
+c     A.J.V., 2007
+      implicit none
+      integer n,nl,p(nl),i,j,k,ipj,itemp,m
+      real*8 u(100)
+      real runif
+
+      do i=1,n
+         p(i)=i
+      end do
+      
+      do i=1,n,100
+         m=min(n-i+1,100)
+         do j=1,100
+            u(j)=dble(runif())
+         end do
+         
+         do j=1,m
+            ipj=i+j-1
+            k=int(u(j)*(n-ipj+1))+ipj
+            itemp=p(ipj)
+            p(ipj)=p(k)
+            p(k)=itemp
+         end do
+      end do
+      return
+      end
+

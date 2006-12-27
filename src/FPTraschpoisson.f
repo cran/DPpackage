@@ -1,31 +1,34 @@
 
 c=======================================================================                      
-      subroutine fptraschpoi(datastr,imiss,ngrid,nmissing,nsubject,p,y,
-     &                       ninter,nlevel,  
-     &                       a0b0,b0,prec,sb,tau1,tau2,m,s,
-     &                       mcmc,nsave,tune3,tune4,tune5,
-     &                       acrate,cpo,f,faccum,randsave,thetasave,
-     &                       alpha,b,beta,mu,sigma,
-     &                       accums,assignb,betac,counter,endp,
-     &                       iflag,intpn,intpo,prob,rvecs,seed,
-     &                       work1,work2,work3,
-     &                       workmh1,workv1,workv2,workv3,
-     &                       xtx,xty,grid)
+      subroutine fptraschpoi(datastr,imiss,ngrid,nmissing,nsubject,p,y, #7
+     &                       roffset,                                   #1
+     &                       ninter,nlevel,                             #2
+     &                       a0b0,b0,prec,sb,tau1,tau2,m,s,             #8
+     &                       mcmc,nsave,tune3,tune4,tune5,              #5
+     &                       acrate,cpo,f,faccum,randsave,thetasave,    #6
+     &                       alpha,b,beta,mu,sigma,                     #5
+     &                       accums,assignb,betac,counter,endp,         #5
+     &                       iflag,intpn,intpo,prob,rvecs,seed,         #6
+     &                       work1,work2,work3,                         #3 
+     &                       workmh1,workv1,workv2,workv3,              #4
+     &                       xtx,xty,grid)                              #3   
 c=======================================================================                      
 c
 c     Subroutine `fptraschpoi' to run a Markov chain in the  
 c     semiparametric Rasch Poisson Count model using a Polya tree prior
 c     for the random effect distribution. 
 c
+c     Copyright: Alejandro Jara Vallejos, 2006-2007
+c
 c     Version 2.0: 
-c     Last modification: 22-11-2006.
+c     Last modification: 01-02-2007.
 c
 c     Changes and Bug fixes: 
 c
 c     Version 1.0 to Version 2.0:
 c          - Correction in computation of MH ratio for random effects.
+c          - Add offset.
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -65,6 +68,8 @@ c        nmissing    :  integer giving the number of missing
 c                       observations.
 c        nsubject    :  integer giving the number of subjects.
 c        p           :  integer giving the number of items.
+c        roffset     :  real matrix giving the offsets,
+c                       roffset(nsubject,p).
 c        y           :  integer matrix giving the response variable,
 c                       y(nsubject,p).
 c
@@ -255,7 +260,8 @@ c=======================================================================
 c+++++Data
       integer imiss,ngrid,nmissing,nsubject,p
       integer datastr(nmissing,2),y(nsubject,p)
-
+      real*8 roffset(nsubject,p)
+      
 c+++++Prior 
       integer ninter,nlevel
       real*8 aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1)
@@ -279,7 +285,7 @@ c+++++Current values of the parameters
 c+++++Working space - General
       integer i,ii,intlp,j,je2,k,k1,k2
       integer nint,npoints,sprint
-      real*8 dbet,dgamlog,dlnrm
+      real*8 dbet,dlnrm
       real*8 quan
       real*8 tmp1,tmp2,tmp3
 
@@ -296,11 +302,11 @@ c+++++Working space - Random effects Distribution
       real*8 endp(ninter-1)
       real*8 prob(ninter)
       real*8 rvecs(nlevel,ninter)
-      real*8 dnrm,cdfnorm,invcdfnorm
+      real*8 dnrm,dpoiss,cdfnorm,invcdfnorm
 
 c+++++Working space - RNG
       integer rpois,seed(2),seed1,seed2
-      real*8 rbeta,rnorm,rtlnorm
+      real*8 rbeta,rgamma,rnorm,rtlnorm
       real runif
 
 c+++++Working space - MCMC
@@ -320,12 +326,14 @@ c+++++Working space - GLM part
       integer yij
       real*8 acrate2
       real*8 eta,etac,gprime,gprimec,mean,meanc,offset,ytilde,ytildec
-      real*8 logp
 
 c+++++Working space - MH 
-      real*8 alphac,sigmac,muc,logcgkc,logcgko,logliko,loglikc,ratio
-      real*8 logpriorc,logprioro 
-
+      integer nu
+      real*8 alphac,sigmac,muc
+      real*8 logcgkn,logcgko
+      real*8 loglikn,logliko
+      real*8 logpriorn,logprioro
+      real*8 ratio,ssb
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -343,7 +351,6 @@ c++++ set random number generator
       
       call setall(seed1,seed2)
      
-      
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -371,9 +378,9 @@ c++++++++++++++++++++++++++++++++++
                i=datastr(ii,1)
                j=datastr(ii,2)
                if(j.eq.1)then
-                 eta=b(i)
+                 eta=b(i)+roffset(i,j)
                 else
-                 eta=b(i)-beta(j-1)
+                 eta=b(i)-beta(j-1)+roffset(i,j)
                end if
                
                mean=exp(eta)
@@ -391,7 +398,7 @@ c++++++++++++++++++++++++++++++++++
 
          do i=1,p-1
             do j=1,p-1
-               xtx(i,j)=0.d0
+               xtx(i,j)=prec(i,j)
                work1(i,j)=0.d0
                work2(i,j)=0.d0
                work3(i,j)=0.d0
@@ -402,23 +409,28 @@ c++++++++++++++++++++++++++++++++++
             workv3(i)=0.d0
             iflag(i)=0
          end do
+
+         logliko=0.d0         
          
          do i=1,nsubject
             do j=1,p-1
-               eta=b(i)-beta(j) 
-               offset=b(i)
+               yij=y(i,j+1)            
+               eta=b(i)-beta(j)+roffset(i,j+1) 
+               offset=b(i)+roffset(i,j+1) 
                mean=exp(eta)
                gprime=exp(-eta)
-               ytilde=eta+(dble(y(i,j+1))-mean)*gprime-offset
+               ytilde=eta+(dble(yij)-mean)*gprime-offset
                
                xtx(j,j)=xtx(j,j)+1.d0/gprime
                xty(j)=xty(j)-ytilde/gprime
+
+               logliko=logliko+dpoiss(dble(yij),mean,1)               
             end do
          end do
-         
+
          do i=1,p-1
             do j=1,p-1
-               work1(i,j)=xtx(i,j)+prec(i,j)          
+               work1(i,j)=xtx(i,j)          
             end do
          end do
 
@@ -432,54 +444,40 @@ c++++++++++++++++++++++++++++++++++
             workv2(i)=tmp1
          end do
 
-            
          call rmvnorm(p-1,workv2,work2,workmh1,workv3,betac)
 
-         call dmvn(p-1,betac,workv2,work2,tmp1,
+
+c+++++++ evaluating the candidate generating kernel
+
+         call dmvn(p-1,betac,workv2,work2,logcgko,
      &             workv1,work1,work3,workv3,iflag)                 
 
-         logp=0.d0            
-         logp=logp-tmp1
-            
-
-c+++++++ likelihood ratio
-
-         do i=1,nsubject
-            do j=1,p-1
-               eta=b(i)-beta(j) 
-               etac=b(i)-betac(j) 
-
-               logp=logp+
-     &              dble(y(i,j+1))*(etac-eta)-exp(etac)+exp(eta)
-            end do              
-         end do
-
-
+  
 c+++++++ prior ratio
 
-         tmp1=0.d0
-         tmp2=0.d0
+         logprioro=0.d0
+         logpriorn=0.d0
          
          do i=1,p-1
             do j=1,p-1
-               tmp1=tmp1+(betac(i)-b0(i))* 
+               logpriorn=logpriorn+(betac(i)-b0(i))* 
      &                    prec(i,j)      *
      &                   (betac(j)-b0(j))
 
-               tmp2=tmp2+(beta(i) -b0(i))* 
+               logprioro=logprioro+(beta(i) -b0(i))* 
      &                    prec(i,j)      *
      &                   (beta(j) -b0(j))
             end do
          end do
          
-         logp=logp-0.5d0*tmp1+0.5d0*tmp2
-
+         logpriorn=-0.5d0*logpriorn
+         logprioro=-0.5d0*logprioro
             
 c+++++++ candidate generating kernel contribution
 
          do i=1,p-1
             do j=1,p-1
-               xtx(i,j)=0.d0
+               xtx(i,j)=prec(i,j)
                work1(i,j)=0.d0
                work2(i,j)=0.d0
                work3(i,j)=0.d0
@@ -491,26 +489,30 @@ c+++++++ candidate generating kernel contribution
             iflag(i)=0
          end do
 
+         loglikn=0.d0         
 
          do i=1,nsubject
             do j=1,p-1
-               etac=b(i)-betac(j) 
-               offset=b(i)
+               yij=y(i,j+1)
+               etac=b(i)-betac(j)+roffset(i,j+1)  
+               offset=b(i)+roffset(i,j+1) 
                meanc=exp(etac)
                gprimec=exp(-etac)
-               ytildec=etac+(dble(y(i,j+1))-meanc)*gprimec-offset
+               ytildec=etac+(dble(yij)-meanc)*gprimec-offset
                
                xtx(j,j)=xtx(j,j)+1.d0/gprimec
                xty(j)=xty(j)-ytildec/gprimec
-            end do
-         end do
-         
-         do i=1,p-1
-            do j=1,p-1
-               work1(i,j)=xtx(i,j)+prec(i,j)          
+               
+               loglikn=loglikn+dpoiss(dble(yij),meanc,1)
             end do
          end do
 
+         do i=1,p-1
+            do j=1,p-1
+               work1(i,j)=xtx(i,j)          
+            end do
+         end do
+         
          call invdet(work1,p-1,work2,detlog,iflag,workv1)
 
          do i=1,p-1
@@ -520,21 +522,25 @@ c+++++++ candidate generating kernel contribution
             end do
             workv2(i)=tmp1
          end do
+
+c+++++++ evaluating the candidate generating kernel
             
-         call dmvn(p-1,beta,workv2,work2,tmp1,
+         call dmvn(p-1,beta,workv2,work2,logcgkn,
      &             workv1,work1,work3,workv3,iflag)                 
  
-         logp=logp+tmp1
 
 c+++++++ mh step
+           
+         ratio=dexp(loglikn-logliko+logcgkn-logcgko+
+     &              logpriorn-logprioro)
 
-         if(log(dble(runif())).lt.logp)then
+         if(dble(runif()).lt.ratio)then
             acrate(1)=acrate(1)+1.d0
             do i=1,p-1
                beta(i)=betac(i) 
             end do
          end if
-
+       
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
@@ -638,13 +644,16 @@ c+++++++ check if the user has requested an interrupt
             ztz=0.d0
             ztzinv=0.d0
             zty=0.d0
+            
+            logliko=0.d0                     
+           
             do j=1,p
                if(j.eq.1)then
-                  eta=b(i)
-                  offset=0.d0
+                  eta=b(i)+roffset(i,j)
+                  offset=roffset(i,j)
                  else
-                  eta=b(i)-beta(j-1)
-                  offset=-beta(j-1)
+                  eta=b(i)-beta(j-1)+roffset(i,j)
+                  offset=roffset(i,j)-beta(j-1)
                end if
                
                yij=y(i,j)
@@ -654,6 +663,8 @@ c+++++++ check if the user has requested an interrupt
 
                ztz=ztz+1.d0/gprime
                zty=zty+ytilde/gprime
+               
+               logliko=logliko+dpoiss(dble(yij),mean,1)               
             end do
 
             ztz=ztz+(1.d0/sigma**2)
@@ -663,29 +674,9 @@ c+++++++ check if the user has requested an interrupt
 
             tmp2=ztzinv*zty
  
-            thetac=rnorm(tmp2,sqrt(ztzinv))
+            thetac=rnorm(b(i),sqrt(ztzinv))
 
-            tmp1=dnrm(thetac,tmp2,sqrt(ztzinv),1)
-
-            logp=0.d0
-            logp=logp-tmp1
-
-c++++++++++ likelihood ratio
-
-            do j=1,p
-               if(j.eq.1)then
-                  eta=b(i)
-                  etac=thetac
-                 else
-                  eta=b(i)-beta(j-1)
-                  etac=thetac-beta(j-1)
-               end if
-               
-               yij=y(i,j)
-
-               logp=logp+
-     &              dble(yij)*(etac-eta)-exp(etac)+exp(eta)                     
-            end do         
+            logcgko=dnrm(thetac,b(i),sqrt(ztzinv),1)
 
 c++++++++++ prior ratio
 
@@ -714,26 +705,27 @@ c++++++++++ prior ratio
             end do
 
             tmp1=prob(intlp)*dble(ninter)*dnrm(thetac,mu,sigma,0) 
-            tmp1=log(tmp1)
+            logpriorn=log(tmp1)
 
             intlp=assignb(i,nlevel)
             tmp2=prob(intlp)*dble(ninter)*dnrm(b(i),mu,sigma,0) 
-            tmp2=log(tmp2)
-
-            logp=logp+tmp1-tmp2 
+            logprioro=log(tmp2)
 
 c++++++++++ candidate generating kernel contribution
+
+            loglikn=0.d0                     
 
             ztz=0.d0
             ztzinv=0.d0
             zty=0.d0
+             
             do j=1,p
                if(j.eq.1)then
-                  etac=thetac
-                  offset=0.d0
+                  etac=thetac+roffset(i,j)
+                  offset=roffset(i,j)
                  else
-                  etac=thetac-beta(j-1)
-                  offset=-beta(j-1)
+                  etac=thetac-beta(j-1)+roffset(i,j)
+                  offset=roffset(i,j)-beta(j-1)
                end if
                
                yij=y(i,j)
@@ -743,6 +735,8 @@ c++++++++++ candidate generating kernel contribution
 
                ztz=ztz+1.d0/gprimec
                zty=zty+ytildec/gprimec
+               
+               loglikn=loglikn+dpoiss(dble(yij),meanc,1)               
             end do
 
             ztz=ztz+(1.d0/sigma**2)
@@ -752,13 +746,15 @@ c++++++++++ candidate generating kernel contribution
 
             tmp2=ztzinv*zty
 
-            tmp1=dnrm(b(i),tmp2,sqrt(ztzinv),1)                 
-
-            logp=logp+tmp1
+            logcgkn=dnrm(b(i),thetac,sqrt(ztzinv),1)
 
 c++++++++++ mh step
+           
+            ratio=dexp(loglikn-logliko+
+     &                 logcgkn-logcgko+            
+     &                 logpriorn-logprioro)
 
-            if(log(dble(runif())).lt.logp)then
+            if(dble(runif()).lt.ratio)then
                acrate2=acrate2+1.d0
                b(i)=thetac
             end if
@@ -773,15 +769,11 @@ c++++++++++++++++++++++++++++++++++++++
 
          if(s.gt.0.d0)then
 
-         muc=rnorm(mu,tune3*0.025d0)
+         muc=rnorm(mu,tune3*sigma/sqrt(dble(nsubject)))
          
-         logcgkc=dnrm(mu ,muc,tune3*0.025d0,1) 
-         
-         logcgko=dnrm(muc,mu ,tune3*0.025d0,1)
-
 c+++++++ evaluate log-prior for candidate value of the parameters
 
-         logpriorc=dnrm(muc,m,sqrt(s),1)  
+         logpriorn=dnrm(muc,m,sqrt(s),1)  
 
 c+++++++ evaluate log-prior for current value of parameters
 
@@ -791,7 +783,7 @@ c+++++++ evaluate log-likelihood for current and candidate value
 c+++++++ of parameters
 
          logliko=0.d0
-         loglikc=0.d0
+         loglikn=0.d0
 
          do i=1,nsubject
 
@@ -863,15 +855,14 @@ c++++++++++ likelihood current
 c++++++++++ likelihood candidate
 
             tmp2=prob(intpn(i))*dble(ninter)*dnrm(b(i),muc,sigma,0) 
-            loglikc=loglikc+log(tmp2)
+            loglikn=loglikn+log(tmp2)
 
          end do
 
 
 c+++++++ acceptance/rejection step
 
-         ratio=dexp(loglikc+logpriorc-logliko-logprioro+
-     &              logcgkc-logcgko)
+         ratio=dexp(loglikn+logpriorn-logliko-logprioro)
 
          if(dble(runif()).lt.ratio)then
             mu=muc
@@ -890,15 +881,26 @@ c++++++++++++++++++++++++++++++++++++++
 
          if(tau1.gt.0.d0)then
 
-         sigmac=rtlnorm(log(sigma),tune4*0.025d0,0,0,.true.,.true.)
+         nu=(dble(nsubject))*tune4
+         ssb=(sigma**2)*dble(nu)
 
-         logcgkc=dlnrm(sigma ,log(sigmac),tune4*0.025d0,1) 
+         sigmac=sqrt(1.d0/
+     &          rgamma(0.5d0*(dble(nu)),0.5d0*ssb))
+
+         logcgko=
+     &      dble(nu)*log(sigma)-(0.5*dble(nu)+1.d0)*log(sigmac**2)
+     &     -ssb/(2.d0*(sigmac**2))
          
-         logcgko=dlnrm(sigmac,log(sigma) ,tune4*0.025d0,1)
+
+         ssb=(sigmac**2)*dble(nu)
+         logcgkn=
+     &      dble(nu)*log(sigmac)-(0.5*dble(nu)+1.d0)*log(sigma**2)
+     &     -ssb/(2.d0*(sigma**2))
+
 
 c+++++++ evaluate log-prior for candidate value of the parameters
 
-         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorc)  
+         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorn)  
 
 c+++++++ evaluate log-prior for current value of parameters
 
@@ -909,40 +911,10 @@ c+++++++ evaluate log-likelihood for current and candidate value
 c+++++++ of parameters
 
          logliko=0.d0
-         loglikc=0.d0
+         loglikn=0.d0
 
          do i=1,nsubject
 
-c++++++++++ possition lp current
-
-            nint=2
-            tmp1=1.d0/dble(nint)
-            quan=invcdfnorm(tmp1,mu,sigma,1,0) 
-                        
-            if(b(i).le.quan)then
-                intlp=1
-              else
-                intlp=2
-            end if  
-        
-            do j=2,nlevel
-               nint=2**j
-               tmp1=1.d0/dble(nint)            
-               k=intlp
-               k1=2*(k-1)+1
-               k2=2*(k-1)+2
-               
-               quan=invcdfnorm(dble(k1)*tmp1,mu,sigma,1,0) 
-               
-               if(b(i).le.quan)then
-                  intlp=k1
-                 else
-                  intlp=k2
-               end if  
-            end do
-            
-            intpo(i)=intlp
-            
 c++++++++++ possition lp candidate
 
             nint=2
@@ -981,15 +953,15 @@ c++++++++++ likelihood current
 c++++++++++ likelihood candidate
 
             tmp2=prob(intpn(i))*dble(ninter)*dnrm(b(i),mu,sigmac,0) 
-            loglikc=loglikc+log(tmp2)
+            loglikn=loglikn+log(tmp2)
 
          end do
 
 
 c+++++++ acceptance/rejection step
 
-         ratio=dexp(loglikc+logpriorc-logliko-logprioro+
-     &              logcgkc-logcgko)
+         ratio=dexp(loglikn+logpriorn-logliko-logprioro+
+     &              logcgkn-logcgko)
 
          if(dble(runif()).lt.ratio)then
             sigma=sigmac
@@ -1010,12 +982,12 @@ c++++++++++++++++++++++++++++++++++
 c++++++++++ sample candidates
 
             alphac=rtlnorm(log(alpha),tune5*0.1d0,0,0,.true.,.true.)
-            logcgkc=dlnrm(alpha ,log(alphac),tune5*0.1d0,1) 
+            logcgkn=dlnrm(alpha ,log(alphac),tune5*0.1d0,1) 
             logcgko=dlnrm(alphac,log(alpha ),tune5*0.1d0,1) 
 
 c++++++++++ evaluate log-prior for candidate value of the parameters
 
-            call dgamma2(alphac,aa0,ab0,logpriorc)  
+            call dgamma2(alphac,aa0,ab0,logpriorn)  
 
 c++++++++++ evaluate log-prior for current value of parameters
 
@@ -1029,7 +1001,7 @@ c+++++++++++ evaluate log-likelihood
             
             tmp1=alphac
             tmp2=alphac
-            loglikc=dbet(rvecs(1,1),tmp1,tmp2,1)
+            loglikn=dbet(rvecs(1,1),tmp1,tmp2,1)
 
             do i=1,nlevel-1
                nint=2**i
@@ -1043,13 +1015,13 @@ c+++++++++++ evaluate log-likelihood
 
                   tmp1=alphac*je2
                   tmp2=alphac*je2
-                  loglikc=loglikc+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
+                  loglikn=loglikn+dbet(rvecs(i+1,k1),tmp1,tmp2,1)
                end do
             end do   
 
 c++++++++++ acceptance step
-            ratio=dexp(loglikc+logpriorc-logliko-logprioro+
-     &                 logcgkc-logcgko)
+            ratio=dexp(loglikn+logpriorn-logliko-logprioro+
+     &                 logcgkn-logcgko)
 
             if(dble(runif()).lt.ratio)then
                alpha=alphac
@@ -1165,11 +1137,12 @@ c+++++++++++++ cpo
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
-                       eta=b(i)
+                       eta=b(i)+roffset(i,j)
                       else
-                       eta=b(i)-beta(j-1)
+                       eta=b(i)-beta(j-1)+roffset(i,j)
                      end if  
-                     tmp1=dble(yij)*eta-exp(eta)-dgamlog(dble(yij+1))
+                     mean=exp(eta)
+                     tmp1=dpoiss(dble(yij),mean,1)
                      cpo(i,j)=cpo(i,j)+1.0d0/exp(tmp1)   
                   end do
                end do

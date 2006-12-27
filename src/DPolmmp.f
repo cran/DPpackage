@@ -1,24 +1,39 @@
 
 c=======================================================================                      
-      subroutine spolmmp(datastr,maxni,ncateg,nrec,nsubject,nfixed,p,q,
-     &             subject,x,xtx,y,yr,z,a0b0,nu0,prec,psiinv,sb,smu,
-     &             tinv,mcmc,nsave,randsave,thetasave,cpo,alpha,b,bclus,
-     &             beta,betar,cutoff,mu,ncluster,sigma,ss,ccluster,
-     &             iflag,iflag2,iflagb,prob,res,seed,
-     &             sigmainv,theta,work1,work2,workb1,workb2,
-     &             workmh1,workmh2,workmh3,workk1,workkv1,workkm1,
-     &             workkm2,workv1,workv2,workvb1,workvb2,xty,ywork,zty,
-     &             ztz,ztzinv)
+      subroutine dpolmmp(datastr,maxni,ncateg,nrec,nsubject,nfixed,     #6
+     &                   p,q,subject,x,xtx,y,yr,z,                      #8 
+     &                   a0b0,nu0,prec,psiinv,sb,smu,tinv,              #7
+     &                   mcmc,nsave,                                    #2
+     &                   randsave,thetasave,cpo,                        #3
+     &                   alpha,b,bclus,beta,betar,cutoff,mu,ncluster,   #8
+     &                   sigma,ss,mc,ccluster,cstrt,                    #5
+     &                   iflag,iflag2,iflagb,prob,res,seed,             #6
+     &                   sigmainv,theta,work1,workb1,workb2,            #5
+     &                   workmh1,workmh2,workmh3,workk1,workkv1,        #5
+     &                   workkm1,workkm2,workv1,workvb1,                #4
+     &                   xty,ywork,zty,ztz,betasave,bsave)              #6
 c=======================================================================                      
+c     # of arguments = 65.
 c
-c     Version 1.0: 
-c     Last modification: 07-07-2006.
+c     Subroutine `dpolmmp' to run a Markov chain in the semiparametric 
+c     probit mixed model for ordinal data using a Dirichlet process
+c     prior for the distribution of the random effects. In this routine, 
+c     inference is based on the Polya urn representation of the 
+c     Dirichlet process.
 c
-c     Subroutine `spolmmp' to run a Markov chain in the semiparametric 
-c     probit mixed model for ordinal data. In this routine, inference 
-c     is based on the Polya urn representation of Dirichlet process.
+c     Copyright: Alejandro Jara, 2006-2007
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Version 2.0: 
+c
+c     Last modification: 25-04-2007.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - The "population" parameters betar are computed as a 
+c            functional of a DP instead of base on simple averages of
+c            the random effects.
+c          - The computation of the DIC was added.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -120,8 +135,9 @@ c                       randsave(nsave,q*(nsubject+1))
 c                       thetsave(nsave,q+nfixed+1+q+nuniq(Sigma)+2).
 c        thetasave   :  real matrix containing the mcmc samples for
 c                       the averaged random effects, fixed effects, 
-c                       error variance, and mean and covariance of
-c                       the baseline distribution, 
+c                       error variance,and mean and covariance of
+c                       the baseline distribution, cutoff points,
+c                       and centering distribution's parameters, 
 c                       thetsave(nsave,q+nfixed+q+nuniq(Sigma)+2+
 c                                ncateg-2).
 c
@@ -203,8 +219,6 @@ c        tpi         :  real parameter used to evaluate the normal
 c                       density.
 c        work1       :  real matrix used to update the fixed effects,
 c                       work1(p,p).
-c        work2       :  real matrix used to update the fixed effects,
-c                       work2(p,p).
 c        workb1      :  real matrix used to update the random effects,
 c                       workb1(q,q).
 c        workb2      :  real matrix used to update the random effects,
@@ -225,12 +239,8 @@ c        workkm2     :  real matrix used to update the cluster
 c                       structure, workkm2(maxni,maxni).
 c        workv1      :  real vector used to update the fixed effects,
 c                       workv1(p)
-c        workv2      :  real vector used to update the fixed effects,
-c                       workv2(p)
 c        workvb1     :  real vector used to update the random effects,
 c                       workvb1(p)
-c        workvb2     :  real vector used to update the random effects,
-c                       workvb2(p)
 c        xty         :  real vector used to save the product 
 c                       Xt(Y-Zb), xty(p).
 c        y           :  real vector giving the latent variables,
@@ -241,8 +251,6 @@ c        zty         :  real vector used to save the product
 c                       Zt(Y-Xbeta), zty(q).
 c        ztz         :  real matrix used to save the product 
 c                       ZtSigma^1Z, ztz(q,q).
-c        ztzinv      :  real matrix used to save the inverted 
-c                       ztz, ztzinv(q,q).
 c=======================================================================                  
       implicit none 
 
@@ -252,16 +260,16 @@ c+++++Data
       real*8 x(nrec,p),z(nrec,q),xtx(p,p)	
       
 c+++++Prior 
-      integer nu0
+      integer nu0,murand,sigmarand
       real*8 aa0,ab0,a0b0(2),prec(p,p),psiinv(q,q)
       real*8 sb(p),smu(q)
       real*8 tinv(q,q)      
 
 c+++++MCMC parameters
-      integer mcmc(3),nburn,nskip,nsave,ndisplay
+      integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec)
+      real*8 cpo(nrec,2)
       real*8 randsave(nsave,q*(nsubject+1))
       real*8 thetasave(nsave,q+nfixed+q+(q*(q+1)/2)+2+ncateg-2)
 
@@ -272,29 +280,71 @@ c+++++Current values of the parameters
       real*8 cutoff(ncateg-1)
       real*8 mu(q),sigma(q,q),sigmainv(q,q)
 
-c+++++Working space
-      integer ccluster(nsubject),evali,i,ii,iscan,isave,j,k,l,ni,ns
-      integer iflag(p),iflag2(maxni),iflagb(q)
-      integer nscan
-      integer since,sprint
-      integer seed(2),seed1,seed2,skipcount,dispcount
-      real*8 cdfnorm,detlog
-      real*8 prob(nsubject+1)
-      real*8 res(nrec),rtnorm,sigma2e
-      real*8 theta(q),tmp1,tmp2,tmp3,tpi
-      real*8 work1(p,p),work2(p,p)
+c+++++Seeds
+      integer seed(2),seed1,seed2
+
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++External working space
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+c+++++fixed effects
+      integer iflag(p)
+      real*8 work1(p,p)
+      real*8 workmh1(p*(p+1)/2)
+      real*8 workv1(p)
+      real*8 xty(p)
+
+c+++++random effects
+      integer iflag2(maxni),iflagb(q)
+      real*8 theta(q)
       real*8 workb1(q,q),workb2(q,q)
-      real*8 workmh1(p*(p+1)/2),workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
+      real*8 workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
       real*8 workk1(maxni,q)
       real*8 workkm1(maxni,maxni),workkm2(maxni,maxni)
-      real*8 workkv1(maxni),workv1(p),workv2(p),workvb1(q),workvb2(q)
-      real*8 xty(p)
-      real*8 y(nrec),ywork(maxni)
-      real*8 zty(q),ztz(q,q),ztzinv(q,q)
-      logical ainf,asup
-      parameter(tpi=6.283185307179586476925286766559d0)
+      real*8 workkv1(maxni),workvb1(q)
+      real*8 ywork(maxni)
+      real*8 zty(q),ztz(q,q)
+
+c+++++DP
+      integer cstrt(nsubject,nsubject)
+      integer ccluster(nsubject)
+      real*8 prob(nsubject+1)
+
+c+++++Residuals
+      real*8 res(nrec)
+
+c+++++Latent data
+      real*8 y(nrec)
+
+c++++ model´s performance
+      real*8 mc(5)
+      real*8 betasave(p+ncateg-1),bsave(nsubject,q)
       
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++Internal working space
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+c+++++General
+      integer evali,ii,i,j,k,l,ni,ns,ok 
+      integer since,sprint 
+      real*8 detlog,sigma2e
+      real*8 tmp1,tmp2,tmp3,tpi
+      parameter(tpi=6.283185307179586476925286766559d0)
+      logical ainf,asup
+      
+c+++++MCMC
+      integer dispcount,isave,iscan,nscan,skipcount 
+
+c+++++RNG and distributions
+      real*8 cdfnorm,rtnorm
       real runif
+
+c+++++DP
+      real*8 eps,rbeta,weight
+      parameter(eps=0.01)
+
+c++++ model´s performance
+      real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -303,6 +353,8 @@ c++++ parameters
       nburn=mcmc(1)
       nskip=mcmc(2)
       ndisplay=mcmc(3)
+      murand=mcmc(4)
+      sigmarand=mcmc(5)
 
       aa0=a0b0(1)
       ab0=a0b0(2)
@@ -316,17 +368,17 @@ c++++ set random number generator
 
       call setall(seed1,seed2)
      
-c++++ cluster structure
-
+c++++ set configurations
       do i=1,nsubject
          ccluster(ss(i))=ccluster(ss(i))+1
+         cstrt(ss(i),ccluster(ss(i)))=i
       end do
       
-
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+      dbar=0.d0
       isave=0
       skipcount=0
       dispcount=0
@@ -382,11 +434,10 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ fixed effects
 c++++++++++++++++++++++++++++++++++
 
-         if(nfixed.eq.0)go to 1
+         if(nfixed.gt.0)then
             do i=1,p
                xty(i)=sb(i)
                workv1(i)=0.d0
-               workv2(i)=0.d0
             end do
 
             do i=1,nrec
@@ -407,18 +458,18 @@ c++++++++++++++++++++++++++++++++++
                end do
             end do
 
-            call invdet(work1,p,work2,detlog,iflag,workv1)
+            call inverse(work1,p,iflag) 
 
             do i=1,p
                tmp1=0.d0
                do j=1,p
-                  tmp1=tmp1+work2(i,j)*xty(j) 
+                  tmp1=tmp1+work1(i,j)*xty(j) 
                end do
-               workv2(i)=tmp1
+               workv1(i)=tmp1
             end do
 
-            call rmvnorm(p,workv2,work2,workmh1,workv1,beta)
-1        continue            
+            call rmvnorm(p,workv1,work1,workmh1,xty,beta)
+         end if           
 
          
 c++++++++++++++++++++++++++++++++++         
@@ -453,7 +504,18 @@ c++++++++++++++++++++++++++++++
 c++++++++++ subject in cluster with more than 1 observations
              
             if(ns.gt.1)then
-          
+
+               j=1
+               ok=0
+               do while(ok.eq.0.and.j.le.ns)
+                  if(cstrt(ss(i),j).eq.i)ok=j
+                  j=j+1
+               end do
+   
+               do j=ok,ns-1
+                  cstrt(ss(i),j)=cstrt(ss(i),j+1)
+               end do
+
                ccluster(ss(i))=ccluster(ss(i))-1 
 
                do j=1,ncluster
@@ -506,7 +568,6 @@ c++++++++++ subject in cluster with more than 1 observations
                   end do
                end do
 
-
                do j=1,ni
                   workkm1(j,j)=workkm1(j,j)+sigma2e
                end do
@@ -531,6 +592,8 @@ c++++++++++ subject in cluster with more than 1 observations
                ss(i)=evali
                
                ccluster(evali)=ccluster(evali)+1
+
+               cstrt(evali,ccluster(evali))=i
                
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
@@ -551,8 +614,8 @@ c++++++++++ subject in cluster with more than 1 observations
                         ztz(j,k)=ztz(j,k)/sigma2e+sigmainv(j,k)
                      end do
                   end do   
-                  
-                  call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
+
+                  call inverse(ztz,q,iflagb)                   
                   
                   do j=1,q
                      tmp1=0.d0
@@ -574,12 +637,12 @@ c++++++++++ subject in cluster with more than 1 observations
                   do j=1,q
                      tmp1=0.d0
                      do k=1,q
-                        tmp1=tmp1+ztzinv(j,k)*zty(k) 
+                        tmp1=tmp1+ztz(j,k)*zty(k) 
                      end do
                      workvb1(j)=tmp1
                   end do
 
-                  call rmvnorm(q,workvb1,ztzinv,workmh2,workvb2,theta)
+                  call rmvnorm(q,workvb1,ztz,workmh2,zty,theta)
 
                   do j=1,q
                      bclus(evali,j)=theta(j)
@@ -597,7 +660,7 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          ccluster,ss,bclus,theta)                   
+     &                          cstrt,ccluster,ss,bclus,theta)                   
 	       end if
 	              
                ccluster(ncluster)=ccluster(ncluster)-1 
@@ -677,6 +740,8 @@ c++++++++++ subject in cluster with only 1 observation
                ss(i)=evali
                
                ccluster(evali)=ccluster(evali)+1
+
+               cstrt(evali,ccluster(evali))=i
                
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
@@ -698,8 +763,8 @@ c++++++++++ subject in cluster with only 1 observation
                      end do
                   end do   
  
-                  call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
-                  
+                  call inverse(ztz,q,iflagb)                   
+
                   do j=1,q
                      tmp1=0.d0
                      do k=1,ni
@@ -721,12 +786,12 @@ c++++++++++ subject in cluster with only 1 observation
                   do j=1,q
                      tmp1=0.d0
                      do k=1,q
-                        tmp1=tmp1+ztzinv(j,k)*zty(k) 
+                        tmp1=tmp1+ztz(j,k)*zty(k) 
                      end do
                      workvb1(j)=tmp1
                   end do
 
-                  call rmvnorm(q,workvb1,ztzinv,workmh2,workvb2,theta)
+                  call rmvnorm(q,workvb1,ztz,workmh2,zty,theta)
 
                   do j=1,q
                      bclus(evali,j)=theta(j)
@@ -754,28 +819,30 @@ c++++++++++ check if the user has requested an interrupt
                zty(i)=0.d0
             end do
 
-            do i=1,nsubject
-               if(ii.eq.ss(i))then
-                  ni=datastr(i,1) 
-                  do j=1,q
-                     do k=1,q
-                        tmp1=0.d0
-                        do l=1,ni
-                           tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)                           
-                        end do
-                        ztz(j,k)=ztz(j,k)+tmp1
-                     end do
-                  end do
-                  do j=1,q
+            ns=ccluster(ii)
+
+            do i=1,ns
+               ni=datastr(cstrt(ii,i),1) 
+               
+               do j=1,q
+                  do k=1,q
                      tmp1=0.d0
-                     do k=1,ni
-                        tmp1=tmp1+z(datastr(i,k+1),j)*
-     &                        res(datastr(i,k+1))
+                     do l=1,ni
+                        tmp1=tmp1+z(datastr(cstrt(ii,i),l+1),j)*
+     &                            z(datastr(cstrt(ii,i),l+1),k)                           
                      end do
-                     zty(j)=zty(j)+tmp1
-                  end do                  
-               end if
+                     ztz(j,k)=ztz(j,k)+tmp1
+                  end do
+               end do
+               
+               do j=1,q
+                  tmp1=0.d0
+                  do k=1,ni
+                     tmp1=tmp1+z(datastr(cstrt(ii,i),k+1),j)*
+     &                         res(datastr(cstrt(ii,i),k+1))
+                  end do
+                  zty(j)=zty(j)+tmp1
+               end do                  
             end do
             
             do i=1,q
@@ -784,8 +851,8 @@ c++++++++++ check if the user has requested an interrupt
                end do
             end do
 
-            call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
-            
+            call inverse(ztz,q,iflagb)                   
+
             do i=1,q
                tmp1=0.d0
                do j=1,q
@@ -797,43 +864,23 @@ c++++++++++ check if the user has requested an interrupt
             do i=1,q
                tmp1=0.d0
                do j=1,q
-                  tmp1=tmp1+ztzinv(i,j)*zty(j) 
+                  tmp1=tmp1+ztz(i,j)*zty(j) 
                end do
                workvb1(i)=tmp1
             end do
             
-            call rmvnorm(q,workvb1,ztzinv,workmh2,workvb2,theta)
+            call rmvnorm(q,workvb1,ztz,workmh2,zty,theta)
 
             do i=1,q
                bclus(ii,i)=theta(i)
             end do
-
-         end do
-
-
-c++++++++++++++++++++++++++++++++++         
-c+++++++ update b
-c++++++++++++++++++++++++++++++++++
-
-c+++++++ check if the user has requested an interrupt
-         call rchkusr()
-
-         do i=1,q
-            betar(i)=0.d0
-         end do
-
-         do i=1,nsubject
-            do j=1,q
-               b(i,j)=bclus(ss(i),j)
-               betar(j)=betar(j)+b(i,j)
+            
+            do i=1,ns
+               do j=1,q
+                  b(cstrt(ii,i),j)=theta(j)
+               end do
             end do
          end do
-
-         do i=1,q
-            betar(i)=betar(i)/dble(nsubject)
-         end do
-
-
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ Base line distribution
@@ -842,76 +889,78 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
 
-         do i=1,q
-            workvb1(i)=smu(i)
-            do j=1,q
-               workb1(i,j)=(sigmainv(i,j)*dble(ncluster))+psiinv(i,j)
-            end do
-         end do
+         if(murand.eq.1)then
 
-         call invdet(workb1,q,workb2,detlog,iflagb,workvb2)
-
-         do i=1,ncluster
-            do j=1,q
-               tmp1=0.d0
-               do k=1,q
-                  tmp1=tmp1+sigmainv(j,k)*bclus(i,k)
+            do i=1,q
+               zty(i)=smu(i)
+               do j=1,q
+                  ztz(i,j)=(sigmainv(i,j)*dble(ncluster))+psiinv(i,j)
                end do
-               workvb1(j)=workvb1(j)+tmp1
             end do
-         end do
-     
-         do i=1,q
-            workvb2(i)=0.d0
-         end do
-     
-         do i=1,q
-            tmp1=0.d0
-            do j=1,q
-               tmp1=tmp1+workb2(i,j)*workvb1(j)
-            end do
-            workvb2(i)=tmp1
-         end do
-          
-         call rmvnorm(q,workvb2,workb2,workmh2,workvb1,theta)
 
+            call inverse(ztz,q,iflagb)                   
+
+            do i=1,ncluster
+               do j=1,q
+                  tmp1=0.d0
+                  do k=1,q
+                     tmp1=tmp1+sigmainv(j,k)*bclus(i,k)
+                  end do
+                  zty(j)=zty(j)+tmp1
+               end do
+            end do
+        
+            do i=1,q
+               tmp1=0.d0
+               do j=1,q
+                  tmp1=tmp1+ztz(i,j)*zty(j)
+               end do
+               workvb1(i)=tmp1
+            end do
+          
+            call rmvnorm(q,workvb1,ztz,workmh2,zty,theta)
+
+            do i=1,q
+               mu(i)=theta(i)
+            end do
+         end if
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-     
-         do i=1,q
-            mu(i)=theta(i)
-            do j=1,q
-               ztz(i,j)=0.d0
-            end do
-         end do
-         
-         do i=1,ncluster
-            do j=1,q
-               do k=1,q
-                  ztz(j,k)=ztz(j,k)+               
-     &                       (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+
+         if(sigmarand.eq.1)then     
+            do i=1,q
+               do j=1,q
+                  ztz(i,j)=0.d0
                end do
             end do
-         end do
-
-         do i=1,q
-            do j=1,q
-               ztz(i,j)=ztz(i,j)+tinv(i,j)
+         
+            do i=1,ncluster
+               do j=1,q
+                  do k=1,q
+                     ztz(j,k)=ztz(j,k)+               
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+                  end do
+               end do
             end do
-         end do
 
-
-         call riwishart(q,nu0+ncluster,ztz,workb1,workb2,workvb1,
-     &                  workmh2,workmh3,iflagb)
-
-         do i=1,q
-            do j=1,q
-               sigma(i,j)=ztz(i,j)
-               sigmainv(i,j)=workb1(i,j)
+            do i=1,q
+               do j=1,q
+                  ztz(i,j)=ztz(i,j)+tinv(i,j)
+               end do
             end do
-         end do
 
+
+            call riwishart(q,nu0+ncluster,ztz,workb1,workb2,workvb1,
+     &                     workmh2,workmh3,iflagb)
+
+            do i=1,q
+               do j=1,q
+                  sigma(i,j)=ztz(i,j)
+                  sigmainv(i,j)=workb1(i,j)
+               end do
+            end do
+         end if   
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ Precision parameter
@@ -919,7 +968,6 @@ c++++++++++++++++++++++++++++++++++
          if(aa0.gt.0.d0)then
             call samalph(alpha,aa0,ab0,ncluster,nsubject)
          end if 
-
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ cutoff points
@@ -956,7 +1004,99 @@ c++++++++++++++++++++++++++++++++++
                isave=isave+1
                dispcount=dispcount+1
 
-c+++++++++++++ regression coefficient information
+c+++++++++++++ random effects
+
+               k=0
+               do i=1,nsubject
+                  do j=1,q
+                     bsave(i,j)=bsave(i,j)+b(i,j)                  
+                     k=k+1
+                     randsave(isave,k)=b(i,j)
+                  end do   
+               end do
+
+c+++++++++++++ predictive information
+
+               do i=1,ncluster
+                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+               end do
+               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+               call simdisc(prob,nsubject+1,ncluster+1,evali)
+               
+               if(evali.le.ncluster)then
+                  do j=1,q
+                     theta(j)=bclus(evali,j)
+                  end do
+               end if
+               if(evali.gt.ncluster)then
+                  call rmvnorm(q,mu,sigma,workmh2,zty,theta)
+               end if
+               
+               do i=1,q
+                  k=k+1
+                  randsave(isave,k)=theta(i) 
+               end do
+
+c+++++++++++++ functional parameters
+               
+               tmp1=rbeta(1.d0,alpha+dble(nsubject))
+               do i=1,q
+                  betar(i)=tmp1*theta(i)
+               end do
+               tmp2=tmp1
+               weight=(1.d0-tmp1)
+               
+               do while((1.d0-tmp2).gt.eps)
+                  tmp3=rbeta(1.d0,alpha+dble(nsubject))
+                  tmp1=weight*tmp3
+                  weight=weight*(1.d0-tmp3)
+
+                  do i=1,ncluster
+                     prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+                  end do
+                  prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+                  call simdisc(prob,nsubject+1,ncluster+1,evali)
+               
+                  if(evali.le.ncluster)then
+                     do j=1,q
+                        theta(j)=bclus(evali,j)
+                     end do
+                  end if
+                  if(evali.gt.ncluster)then
+                     call rmvnorm(q,mu,sigma,workmh2,zty,theta)
+                  end if
+
+                  do i=1,q
+                     betar(i)=betar(i)+tmp1*theta(i)
+                  end do
+                  tmp2=tmp2+tmp1
+               end do
+
+               do i=1,ncluster
+                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+               end do
+               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+               call simdisc(prob,nsubject+1,ncluster+1,evali)
+               
+               if(evali.le.ncluster)then
+                  do j=1,q
+                     theta(j)=bclus(evali,j)
+                  end do
+               end if
+               if(evali.gt.ncluster)then
+                  call rmvnorm(q,mu,sigma,workmh2,zty,theta)
+               end if
+               
+               tmp1=weight
+
+               do i=1,q
+                  betar(i)=betar(i)+tmp1*theta(i)
+               end do
+
+c+++++++++++++ regression coefficients
 
                do i=1,q
                   thetasave(isave,i)=betar(i)
@@ -965,6 +1105,7 @@ c+++++++++++++ regression coefficient information
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
+                     betasave(i)=betasave(i)+beta(i)                     
                   end do
                end if   
 
@@ -990,56 +1131,27 @@ c+++++++++++++ cutoff points
                   thetasave(isave,q+nfixed+q+k+i-1)=cutoff(i)
                end do
 
+               do i=1,ncateg-1
+                  betasave(p+i)=betasave(p+i)+cutoff(i)                              
+               end do
+
 c+++++++++++++ cluster information
                k=(q*(q+1)/2)+ncateg-2  
                thetasave(isave,q+nfixed+q+k+1)=ncluster
                thetasave(isave,q+nfixed+q+k+2)=alpha
                
-c+++++++++++++ random effects
-
-               k=0
-               do i=1,nsubject
-                  do j=1,q
-                     k=k+1
-                     randsave(isave,k)=b(i,j)
-                  end do   
-               end do
-
-
-c+++++++++++++ predictive information
-
-               do i=1,ncluster
-                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
-               end do
-               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
-
-               call simdisc(prob,nsubject+1,ncluster+1,evali)
-               
-               if(evali.le.ncluster)then
-                  do j=1,q
-                     theta(j)=bclus(evali,j)
-                  end do
-               end if
-               if(evali.gt.ncluster)then
-                  call rmvnorm(q,mu,sigma,workmh2,workvb2,theta)
-               end if
-               
-               do i=1,q
-                  k=k+1
-                  randsave(isave,k)=theta(i) 
-               end do
-
 c+++++++++++++ cpo
-
+               dbarc=0.d0
                do i=1,nrec
-                 
                   tmp1=0.d0
                   tmp2=0.d0
                   tmp3=0.d0
-
-                  do j=1,p
-                     tmp1=tmp1+x(i,j)*beta(j)
-                  end do
+                  
+                  if(nfixed.gt.0)then
+                     do j=1,p
+                        tmp1=tmp1+x(i,j)*beta(j)
+                     end do
+                  end if   
 		  do j=1,q
 		     tmp1=tmp1+z(i,j)*b(subject(i),j)
                   end do
@@ -1063,8 +1175,13 @@ c+++++++++++++ cpo
                      end if
                   end do                  
                   
-                  cpo(i)=cpo(i)+1.0d0/tmp3
+                  cpo(i,1)=cpo(i,1)+1.0d0/tmp3
+                  cpo(i,2)=cpo(i,2)+tmp3
+                  dbarc=dbarc+log(tmp3)
                end do
+
+c+++++++++++++ dic
+               dbar=dbar-2.d0*dbarc
 
 c+++++++++++++ print
                skipcount = 0
@@ -1082,9 +1199,69 @@ c+++++++++++++ print
       end do
       
       do i=1,nrec
-         cpo(i)=dble(nsave)/cpo(i)
+         cpo(i,1)=dble(nsave)/cpo(i,1)
+         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
       end do
             
+      do i=1,p+ncateg-1
+         betasave(i)=betasave(i)/dble(nsave)
+      end do
+
+      do i=1,nsubject
+         do j=1,q
+            bsave(i,j)=bsave(i,j)/dble(nsave)
+         end do
+      end do   
+
+      dhat=0.d0
+      lpml=0.d0
+
+      do i=1,nrec
+         tmp1=0.d0
+         tmp2=0.d0
+         tmp3=0.d0
+         
+         if(nfixed.gt.0)then
+            do j=1,p
+               tmp1=tmp1+x(i,j)*betasave(j)
+            end do
+         end if   
+	  do j=1,q
+	     tmp1=tmp1+z(i,j)*bsave(subject(i),j)
+         end do
+         
+         if(yr(i).eq.1)then
+            tmp1=betasave(p+1)-tmp1
+            tmp3=cdfnorm(tmp1,0.d0,1.d0,1,0)
+         end if
+      
+         if(yr(i).eq.ncateg)then
+            tmp1=betasave(p+ncateg-1)-tmp1
+            tmp3=cdfnorm(tmp1,0.d0,1.d0,0,0)                  
+         end if
+
+         do j=2,ncateg-1
+            if(yr(i).eq.j)then
+               tmp2=betasave(p+j)-tmp1
+               tmp3=betasave(p+j-1)-tmp1
+               tmp3=cdfnorm(tmp2,0.d0,1.d0,1,0)-
+     &              cdfnorm(tmp3,0.d0,1.d0,1,0)                  
+            end if
+         end do                  
+         dhat=dhat+log(tmp3)
+         lpml=lpml+log(cpo(i,1))
+      end do
+      dhat=-2.d0*dhat      
+
+      dbar=dbar/dble(nsave)
+      pd=dbar-dhat
+      
+      mc(1)=dbar
+      mc(2)=dhat
+      mc(3)=pd
+      mc(4)=dbar+pd
+      mc(5)=lpml
+      
       
       return
       end

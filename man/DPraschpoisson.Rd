@@ -11,7 +11,8 @@
    
 \usage{
 
-DPraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
+DPraschpoisson(y,prior,mcmc,offset,state,status,
+               grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()))
      
 }
 
@@ -44,6 +45,9 @@ DPraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
                      on the screen when every \code{ndisplay} iterations have been carried
                      out).}   
 
+    \item{offset}{   this can be used to specify an a priori known component to
+                     be included in the linear predictor during the fitting.}
+
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
     
@@ -51,6 +55,9 @@ DPraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
                      object \code{state}.}
+
+    \item{grid}{     grid points where the density estimate is 
+                     evaluated. The default is seq(-10,10,length=1000).}
 
     \item{data}{     data frame.}       
     

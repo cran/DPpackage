@@ -32,10 +32,18 @@
 ###
 
 
-FPTrasch<-function(y,prior,mcmc,state,status,delete=FALSE,data=sys.frame(sys.parent()))
+FPTrasch<-function(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),delete=FALSE,data=sys.frame(sys.parent()))
 UseMethod("FPTrasch")
 
-FPTrasch.default<-function(y,prior,mcmc,state,status,delete=FALSE,data)
+FPTrasch.default<-
+function(y,
+         prior,
+         mcmc,
+         state,
+         status,
+         grid=seq(-10,10,length=1000),
+         delete=FALSE,
+         data=sys.frame(sys.parent()))
 {
          #########################################################################################
          # call parameters
@@ -218,8 +226,7 @@ FPTrasch.default<-function(y,prior,mcmc,state,status,delete=FALSE,data)
          #########################################################################################
          acrate<-rep(0,5)
          cpo<-matrix(0,nrow=nsubject,ncol=p)
-         ngrid<-500
-	 grid<-seq(-6,6,length=ngrid)
+         ngrid<-length(grid)
 	 f<-rep(0,ngrid)
          faccum<-rep(0,ngrid)
          

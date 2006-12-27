@@ -394,7 +394,8 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       do i=1,nvar
          do j=1,nvar
-            propv(i,j)=sigma(i,j)
+c            propv(i,j)=sigma(i,j)
+            propv(i,j)=0.d0            
          end do
       end do
       
@@ -728,7 +729,7 @@ c+++++++ Candidate generating kernel
          
          do i=1,nvar
             do j=1,nvar
-               sigmac(i,j)=(nu-dble(nvar-1))*sigma(i,j)
+               sigmac(i,j)=(nu-dble(nvar+1))*sigma(i,j)
             end do
          end do
 
@@ -754,11 +755,11 @@ c+++++++ Candidate generating kernel
          logcgkn=logcgkn+nu*detlog2
 
          tmp2=0.d0
-         do i=1,2
-            do j=1,2
+         do i=1,nvar
+            do j=1,nvar
                tmp1=0.d0 
-               do k=1,2
-                  tmp1=tmp1+(nu-dble(nvar-1))*
+               do k=1,nvar
+                  tmp1=tmp1+(nu-dble(nvar+1))*
      &                       sigmac(i,k)*sigmainv(k,j)        
                end do
                if(i.eq.j)tmp2=tmp2+tmp1
@@ -772,11 +773,11 @@ c+++++++ Candidate generating kernel
          logcgko=logcgko+nu*detlog1
          
          tmp2=0.d0
-         do i=1,2
-            do j=1,2
+         do i=1,nvar
+            do j=1,nvar
                tmp1=0.d0 
-               do k=1,2
-                  tmp1=tmp1+(nu-dble(nvar-1))*
+               do k=1,nvar
+                  tmp1=tmp1+(nu-dble(nvar+1))*
      &                       sigma(i,k)*sigmainvc(k,j)        
                end do
                if(i.eq.j)tmp2=tmp2+tmp1
@@ -799,10 +800,11 @@ c+++++++ End candidate generating kernel
 
          do i=1,nvar
             do j=1,nvar
-               propv(i,j)=sigmac(i,j)
+c                propv(i,j)=sigmac(i,j)
+                propv(i,j)=0.d0 
             end do
          end do
-         call cholesky(nvar,propv,workmh)
+         call cholesky(nvar,sigmac,workmh)
       
          do i=1,nvar
             do j=1,i
@@ -999,9 +1001,9 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c++++++++++ sample candidates
 
-            cparc=rtlnorm(log(cpar),tune3*0.2,0,0,.true.,.true.)
-            logcgkn=dlnrm(cpar ,log(cparc),tune3*0.2,1) 
-            logcgko=dlnrm(cparc,log(cpar ),tune3*0.2,1) 
+            cparc=rtlnorm(log(cpar),tune3*1.0,0,0,.true.,.true.)
+            logcgkn=dlnrm(cpar ,log(cparc),tune3*1.0,1) 
+            logcgko=dlnrm(cparc,log(cpar ),tune3*1.0,1) 
 
 c++++++++++ evaluate log-prior for candidate value of the parameters
 
@@ -1217,7 +1219,7 @@ c++++++++++++++++ check if the user has requested an interrupt
             
                   loglikn=loglikn+
      &              log((2.d0**nvar)*cpar+dble((2.d0**nvar)*countero))-
-     &              log((2.d0**nvar)*cpar+dble(i-1))
+     &              log((2.d0**nvar)*cpar+dble(nrec-1))
 
                   if(countero.eq.0) go to 5
 

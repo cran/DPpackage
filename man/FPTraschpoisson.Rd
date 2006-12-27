@@ -11,7 +11,8 @@
    
 \usage{
 
-FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
+FPTraschpoisson(y,prior,mcmc,offset,state,status,
+                grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()))
      
 }
 
@@ -47,6 +48,9 @@ FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
                      Metropolis tuning baseline mean, baseline variance, and precision parameter, 
                      respectively (the default value is 1.1).}   
 
+    \item{offset}{   this can be used to specify an a priori known component to
+                     be included in the linear predictor during the fitting.}
+
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
     
@@ -54,6 +58,9 @@ FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
                      object \code{state}.}
+
+    \item{grid}{     grid points where the density estimate is 
+                     evaluated. The default is seq(-10,10,length=1000).}
 
     \item{data}{     data frame.}       
     
@@ -85,7 +92,6 @@ FPTraschpoisson(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
   value, set \eqn{\tau_1}{tau1} to NULL in the prior specification. 
   To let \eqn{\mu}{mu} to be fixed at a particular
   value, set \eqn{\mu_b}{mub} to NULL in the prior specification.
-
 
   In the computational implementation of the model, Metropolis-Hastings steps are used to 
   sample the posterior distribution of the regression coefficients and 

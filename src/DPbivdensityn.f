@@ -9,10 +9,6 @@ c=======================================================================
      &                 workv2,workv3,ywork)
 c=======================================================================                      
 c
-c     Version 1.0: 
-c
-c     Last modification: 05-10-2006.
-c
 c     Subroutine `bivspdenn' to run a Markov chain in the DP mixture of  
 c     bivariate normals model. In this routine, inference is based on the 
 c     Polya urn representation of the Dirichlet process. The algorithm
@@ -21,7 +17,11 @@ c     `spdenn` is that this includes a grid of points where the density
 c     estimate is evaluated. This fucntion can be used only for dimension
 c     <=2.
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2007
+c
+c     Version 1.0: 
+c
+c     Last modification: 09-04-2007.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
+c     Alejandro Jara
 c     Biostatistical Centre
 c     Katholieke Universiteit Leuven
 c     U.Z. Sint-Rafaël
@@ -462,26 +462,6 @@ c++++++++++ observation in cluster with only 1 element
                end do
 
                do k=1,nvar
-                  do l=1,nvar
-                     workm3(k,l)=psiinv1(k,l)
-                  end do
-               end do
-
-               call riwishart(nvar,nu1,workm3,workm1,workm2,workv1,
-     &                           workmh1,workmh2,iflag)
-
-               do k=1,nvar
-                  do l=1,nvar
-                     s1(k,l)=workm3(k,l)/dble(k0)
-                     sigmaclus(ncluster+1,ihmssf(k,l,nvar))=
-     &                         workm3(k,l)
-                  end do
-               end do
-               
-               call rmvnorm(nvar,m1,s1,workmh1,workv1,theta) 
-
-               do k=1,nvar
-                  muclus(ncluster+1,k)=theta(k)
                   muwork(k)=muclus(ncluster+1,k)
                   do l=1,nvar
                      sigmawork(k,l)=

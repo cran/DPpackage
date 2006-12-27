@@ -2,10 +2,11 @@
 \alias{DPglmm}
 \alias{DPglmm.default}
 
-\title{Bayesian analysis for a semiparametric generalized linear mixed model}
+\title{Bayesian analysis for a semiparametric generalized linear mixed model using a MDP}
 \description{
     This function generates a posterior density sample for a 
-    semiparametric generalized linear mixed model. 
+    semiparametric generalized linear mixed model using a Dirichlet Process
+    or a Mixture of Dirichlet process prior for the distribution of the random effects.
 }
   
   
@@ -49,20 +50,31 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
                      must be specified if \code{a0} is missing, see details
                      below), \code{nu0} and \code{Tinv} giving the hyperparameters of the 
                      inverted Wishart prior distribution for the scale matrix of the normal
-                     baseline distribution, \code{mub} and \code{Sb} giving the hyperparameters 
+                     baseline distribution, \code{sigma} giving the value of the covariance
+                     matrix of the centering distribution (it must be specified if 
+                     \code{nu0} and \code{tinv} are missing), 
+                     \code{mub} and \code{Sb} giving the hyperparameters 
                      of the normal prior distribution for the mean of the normal
-                     baseline distribution and, \code{beta0} and \code{Sbeta0} giving the 
+                     baseline distribution, \code{mu} giving the value of the mean of the
+                     centering distribution (it must be specified if 
+                     \code{mub} and \code{Sb} are missing),
+                     \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the fixed effects
-                     (must be specified only if fixed effects are considered in the model). 
+                     (must be specified only if fixed effects are considered in the model),
+                     and \code{tau1} and \code{tau2} giving the hyperparameters for the 
+                     gamma prior distribution for the inverse of the precision parameter 
+                     of the Gamma model 
+                     (they must be specified only if the Gamma model is considered). 
                      }
 
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
                      the following integers: \code{nburn} giving the number of burn-in 
                      scans, \code{nskip} giving the thinning interval, \code{nsave} giving
-                     the total number of scans to be saved, and \code{ndisplay} giving
+                     the total number of scans to be saved, \code{ndisplay} giving
                      the number of saved scans to be displayed on the screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out).}   
+                     out), \code{tune1} giving the positive Metropolis tuning parameter for the 
+                     precision parameter of the Gamma model (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -101,12 +113,15 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
   or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
   Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
-  value set, \eqn{a_0}{a0} to NULL in the prior specification.
+  value set, \eqn{a_0}{a0} to NULL in the prior specification. 
+  
+  The inverse of the dispersion parameter of the Gamma model
+  is modeled using \code{gamma} distribution, \eqn{\Gamma(\tau_1/2,\tau_2/2)}{Gamma(tau1/2,tau2/2)}. 
   
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and the MCMC is model-specific. 
   
-  For the \code{poisson} and \code{binomial} (when the total number of cases, \code{n}, is 
+  For the \code{poisson}, \code{Gamma}, and \code{binomial} (when the total number of cases, \code{n}, is 
   specified) MCMC methods for nonconjugate priors (see, MacEachern and Muller, 1998; Neal, 2000) 
   are used. Specifically, the algorithm 8 with \code{m=1} of Neal (2000), is considered in 
   the \code{DPglmm} function. In this case, the fully conditional distributions for fixed and 
@@ -128,14 +143,18 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   Escobar and West, 1998). For the logistic model, the full conditional distribution of the scale 
   parameters, \eqn{\lambda_{ij}}{lambdaij} are sampled via the rejection sampling algorithm as proposed by Holmes and
   Held (2006).
+
+  The \eqn{\beta_R}{betaR} parameters are sampled using
+  the \eqn{\epsilon}{epsilon}-DP approximation proposed by Muliere and Tardella (1998), with
+  \eqn{\epsilon}{epsilon}=0.01.  
 }
 
 \value{
   An object of class \code{DPglmm} representing the generalized linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
-  and \code{summary} have methods to show the results of the fit. The results include 
+  \code{summary}, and \code{anova} have methods to show the results of the fit. The results include 
   \code{betaR}, \code{betaF}, \code{mu}, the elements of \code{Sigma}, the precision parameter 
-  \code{\alpha}, and the number of clusters.
+  \code{\alpha}, the number of clusters, and the dispersion parameter of the Gamma model.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -159,15 +178,17 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   
   \item{beta}{ giving the value of the fixed effects.}
   
-  \item{betar}{ giving the mean value of the random effects.}
-
   \item{mu}{ giving the mean of the normal baseline distributions.}
   
   \item{sigma}{ giving the variance matrix of the normal baseline distributions.}
+
+  \item{phi}{ giving the precision parameter for the Gamma model (if needed).}
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPlmm}}, \code{\link{DPolmm}}
+\code{\link{DPrandom}},
+\code{\link{DPlmm}}   , \code{\link{DPolmm}} ,
+\code{\link{DPMlmm}}  ,\code{\link{DPMglmm}} , \code{\link{DPMolmm}}
 }
 
 \references{
@@ -190,6 +211,9 @@ Holmes, C.C. and Held, L. (2006) Bayesian auxiliary variable models for binary
 
 MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
   Models. Journal of Computational and Graphical Statistics, 7 (2): 223-338.
+
+Muliere, P. and Tardella, L. (1998) Approximating distributions of random functionals
+  of Ferguson-Dirichlet priors. The Canadian Journal of Statistics, 26(2): 283-297.
 
 Neal, R. M. (2000) Markov Chain sampling methods for Dirichlet process mixture models.
   Journal of Computational and Graphical Statistics, 9:249-265.

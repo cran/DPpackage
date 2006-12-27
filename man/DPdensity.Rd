@@ -2,7 +2,7 @@
 \alias{DPdensity}
 \alias{DPdensity.default}
 
-\title{Semiparametric Bayesian density estimation}
+\title{Semiparametric Bayesian density estimation using a DPM of normals}
 \description{
     This function generates a posterior density sample for a 
     Dirichlet process mixture of normals model.
@@ -142,7 +142,7 @@ DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
 }
 
 \seealso{
-\code{\link{DPrandom}}
+\code{\link{DPrandom}}, \code{\link{PTdensity}}, \code{\link{BDPdensity}}
 }
 
 \references{

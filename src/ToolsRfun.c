@@ -32,6 +32,11 @@ double F77_SUB(cdfbetas)(double *x, double *a, double *b, int *lower_tail, int *
 }
 
 
+double F77_SUB(cdfchisq)(double *x, double *df, int *lower_tail, int *log_p)
+{
+	return pchisq(*x, *df, *lower_tail, *log_p);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Quantile
@@ -114,6 +119,11 @@ double F77_SUB(dgamm)(double *x, double *shape, double *scale, int *give_log)
 	return dgamma(*x, *shape, *scale, *give_log);
 }
 
+double F77_SUB(dpoiss)(double *x, double *lambda, int *give_log)
+{
+	return dpois(*x, *lambda, *give_log);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Math functions
@@ -123,6 +133,13 @@ double F77_SUB(dgamlog)(double *x)
 {
 	return lgammafn(*x);
 }
+
+
+double F77_SUB(trigamm)(double *x)
+{
+	return trigamma(*x);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Print on screen

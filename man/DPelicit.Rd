@@ -53,7 +53,7 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 
      The default method, \code{"JGL"}, is based on the exact value of the mean and 
      the variance of the number of clusters given the precision parameter 
-     alpha (see, Jara, Garcia-Zatera and Lesaffre, 2006).
+     alpha (see, Jara, Garcia-Zatera and Lesaffre, 2007).
     
      The Method \code{"KMQ"} is base on the Liu (1996) approximation to 
      the expected value and the variance of the number of clusters given the
@@ -67,9 +67,9 @@ DPelicit(n,method='JGL',a0=NULL,b0=NULL,mean=NULL,std=NULL)
 
 \references{
 
-Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) A Dirichlet Process mixture model for 
-  the analysis of correlated binary responses. To appear in Computational Statistics and 
-  Data Analysis.
+Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2007) A Dirichlet Process mixture model for 
+  the analysis of correlated binary responses. Computational Statistics and 
+  Data Analysis 51: 5402-5415.
 
 Kottas, A., Muller, P., Quintana, F. (2005) Nonparametric Bayesian modeling for multivariate
   ordinal data, Journal of Computational and Graphical Statistics 14: 610-625.

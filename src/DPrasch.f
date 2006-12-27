@@ -10,9 +10,6 @@ c=======================================================================
      &                   prob,seed1,seed2,workmh1,workv1,grid)
 c=======================================================================                      
 c
-c     Version 1.0: 
-c     Last modification: 24-09-2006.
-c
 c     Subroutine `sprasch' to run a Markov chain in the  
 c     semiparametric Rasch model using a Dirichlet process prior
 c     for the random effect distribution. In this routine, inference 
@@ -20,7 +17,10 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations. 
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2007
+c
+c     Version 1.0: 
+c     Last modification: 09-04-2007.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -485,7 +485,7 @@ c++++++++++ subject in cluster with only 1 observation
      &                        tmp1)
                end do
                
-               theta=rnorm(mu,sigma)
+               theta=b(i)
 
                tmp1=0.d0
                

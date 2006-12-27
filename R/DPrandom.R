@@ -150,6 +150,120 @@ function(object,centered=FALSE,predictive=FALSE)
      
    }
 
+   if(is(object, "PTlmm"))
+   {
+      random<-matrix(0,nrow=object$nsubject,ncol=object$nrandom)
+      predp<-rep(0,object$nrandom)
+      predsd<-rep(0,object$nrandom)
+      predse<-rep(0,object$nrandom)
+      predl<-rep(0,object$nrandom)
+      predu<-rep(0,object$nrandom)
+      predm<-rep(0,object$nrandom)
+      
+      randommat<-matrix(object$save.state$randsave,
+                 nrow=object$mcmc$nsave,ncol=object$nrandom*(object$nsubject+1))
+
+      dimnames(randommat)<-dimnames(object$save.state$randsave)
+      
+      thetamat<-matrix(object$save.state$thetasave,nrow=object$mcmc$nsave, 
+                       ncol=object$dimen)
+      
+      counter<-0
+      for(i in 1:object$nsubject){
+          for(j in 1:object$nrandom){
+              counter<-counter+1
+              if(centered)
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter]-
+                                     object$save.state$thetasave[,j])
+              }
+              else
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter])              
+              }
+          }
+      }
+      
+      type<-1
+      dimnames(random)<-list(object$namesre1,object$namesre2)
+      z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
+              predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
+      
+      if(predictive==TRUE)
+      {
+      	 for(i in 1:object$nrandom)
+      	 { 		
+      	     counter<-counter+1	
+      	     if(centered)
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i]))      	     	
+
+                vec<-object$save.state$randsave[,counter]-object$save.state$thetasave[,i]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	     else
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]))      	     	
+
+                vec<-object$save.state$randsave[,counter]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	 }
+      	 
+      	 predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+         dimnames(predtable) <- list(object$namesre2, c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	 z$prediction<-predtable
+      }
+      class(z)<-c("DPrandom") 
+      return(z)
+     
+   }
+
+
 
    if(is(object, "DPglmm")){
       random<-matrix(0,nrow=object$nsubject,ncol=object$nrandom)
@@ -264,6 +378,120 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
 
+   if(is(object, "PTglmm")){
+      random<-matrix(0,nrow=object$nsubject,ncol=object$nrandom)
+      predp<-rep(0,object$nrandom)
+      predsd<-rep(0,object$nrandom)
+      predse<-rep(0,object$nrandom)
+      predl<-rep(0,object$nrandom)
+      predu<-rep(0,object$nrandom)
+      predm<-rep(0,object$nrandom)
+      
+      randommat<-matrix(object$save.state$randsave,
+                 nrow=object$mcmc$nsave,ncol=object$nrandom*(object$nsubject+1))
+      
+      dimnames(randommat)<-dimnames(object$save.state$randsave)
+      
+      thetamat<-matrix(object$save.state$thetasave,nrow=object$mcmc$nsave, 
+                       ncol=object$dimen)
+      
+      counter<-0
+      for(i in 1:object$nsubject){
+          for(j in 1:object$nrandom){
+              counter<-counter+1
+              if(centered)
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter]-
+                                     object$save.state$thetasave[,j])
+              }
+              else
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter])              
+              }
+          }
+      }
+      
+      type<-1
+      dimnames(random)<-list(object$namesre1,object$namesre2)
+      z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
+              predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
+      
+      if(predictive==TRUE)
+      {
+      	 for(i in 1:object$nrandom)
+      	 { 		
+      	     counter<-counter+1	
+      	     if(centered)
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i]))      	     	
+
+                vec<-object$save.state$randsave[,counter]-object$save.state$thetasave[,i]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	     else
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]))      	     	
+
+                vec<-object$save.state$randsave[,counter]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	 }
+      	 
+      	 predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+         dimnames(predtable) <- list(object$namesre2, c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	 z$prediction<-predtable
+      }
+      class(z)<-c("DPrandom") 
+      return(z)
+     
+   }
+
+
+
    if(is(object, "DPolmm"))
    {
       random<-matrix(0,nrow=object$nsubject,ncol=object$nrandom)
@@ -376,6 +604,121 @@ function(object,centered=FALSE,predictive=FALSE)
       return(z)
      
    }
+
+
+   if(is(object, "PTolmm"))
+   {
+      random<-matrix(0,nrow=object$nsubject,ncol=object$nrandom)
+      predp<-rep(0,object$nrandom)
+      predsd<-rep(0,object$nrandom)
+      predse<-rep(0,object$nrandom)
+      predl<-rep(0,object$nrandom)
+      predu<-rep(0,object$nrandom)
+      predm<-rep(0,object$nrandom)
+      
+      randommat<-matrix(object$save.state$randsave,
+                 nrow=object$mcmc$nsave,ncol=object$nrandom*(object$nsubject+1))
+      
+      dimnames(randommat)<-dimnames(object$save.state$randsave)
+      
+      thetamat<-matrix(object$save.state$thetasave,nrow=object$mcmc$nsave, 
+                       ncol=object$dimen)
+      
+      counter<-0
+      for(i in 1:object$nsubject){
+          for(j in 1:object$nrandom){
+              counter<-counter+1
+              if(centered)
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter]-
+                                     object$save.state$thetasave[,j])
+              }
+              else
+              {
+                   random[i,j]<-mean(object$save.state$randsave[,counter])              
+              }
+          }
+      }
+
+      type<-1      
+      dimnames(random)<-list(object$namesre1,object$namesre2)
+      z<-list(randomm=random,randommat=randommat,thetamat=thetamat,centered=centered,
+              predictive=predictive,nsubject=object$nsubject,nrandom=object$nrandom,
+              modelname=object$modelname,call=object$call,type=type,nsave=object$mcmc$nsave)
+      
+      if(predictive==TRUE)
+      {
+      	 for(i in 1:object$nrandom)
+      	 { 		
+      	     counter<-counter+1	
+      	     if(centered)
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]-
+                                object$save.state$thetasave[,i]))      	     	
+
+                vec<-object$save.state$randsave[,counter]-object$save.state$thetasave[,i]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	     else
+      	     {
+                predp[i]<-mean(object$save.state$randsave[,counter])      	     	
+
+                predm[i]<-median(object$save.state$randsave[,counter])      	     	
+
+                predsd[i]<-sqrt(var(object$save.state$randsave[,counter]))      	     	
+
+                vec<-object$save.state$randsave[,counter]
+                
+                n<-length(vec)
+                
+                alpha<-0.05
+                
+                alow<-rep(0,2)
+                
+                aupp<-rep(0,2)
+                
+       
+                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                predl[i]<-a$alow[1]            
+                predu[i]<-a$aupp[1]
+                
+                predse[i]<-predsd[i]/sqrt(n)
+      	     }
+      	 }
+      	 
+      	 predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+         dimnames(predtable) <- list(object$namesre2, c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	 z$prediction<-predtable
+      }
+      class(z)<-c("DPrandom") 
+      return(z)
+     
+   }
+
 
    if(is(object, "DPdensity"))
    {
@@ -725,8 +1068,73 @@ function(object,centered=FALSE,predictive=FALSE)
        return(z)
    }
 
- 
-}###
+
+   if(is(object, "DPmeta") || is(object, "DPMmeta"))
+   {
+
+       if (centered) 
+       { 
+	   stop("This option is not implemented for DPmeta.\n")
+       }
+
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nrec+1)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+       
+       random<-apply(object$save.state$randsave,2,mean)
+       random<-random[-(object$nrec+1)]
+       
+       random<-as.matrix(random,ncol=1)
+       colnames(random)<-names(object$coefficients)[1]
+
+       type<-2      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nrec,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
+
+       if(predictive==TRUE)
+       {
+          predp<-mean(object$save.state$randsave[,object$nrec+1])      	     	
+
+          predm<-median(object$save.state$randsave[,object$nrec+1])      	     	
+
+          predsd<-sqrt(var(object$save.state$randsave[,object$nrec+1]))      	     	
+
+          vec<-object$save.state$randsave[,object$nrec+1]
+          
+          n<-length(vec)
+          
+          alpha<-0.05
+          
+          alow<-rep(0,2)
+          
+          aupp<-rep(0,2)
+          
+       
+          a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                      alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          predl<-a$alow[1]            
+          predu<-a$aupp[1]
+          
+          predse<-predsd/sqrt(n)
+     	 
+      	  predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+                "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+}
+
+
+###
 ### Tools for DPrandom: print, plot
 ###
 ### Copyright: Alejandro Jara Vallejos, 2006

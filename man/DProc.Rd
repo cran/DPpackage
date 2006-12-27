@@ -2,7 +2,7 @@
 \alias{DProc}
 \alias{DProc.default}
 
-\title{Semiparametric Bayesian ROC curve analysis}
+\title{Semiparametric Bayesian ROC curve analysis using DPM of normals}
 \description{
     This function performs a ROC curve analysis based on 
     a posterior density sample for Dirichlet process mixture of normals 

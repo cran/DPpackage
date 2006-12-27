@@ -2,10 +2,12 @@
 \alias{DPlmm}
 \alias{DPlmm.default}
 
-\title{Bayesian analysis for a semiparametric linear mixed model}
+\title{Bayesian analysis for a semiparametric linear mixed model using a MDP}
 \description{
     This function generates a posterior density sample for a 
-    semiparametric linear mixed model. 
+    semiparametric linear mixed model using a Dirichlet process
+    or a Mixture of Dirichlet process prior for the distribution of the 
+    random effects. 
 }
   
   
@@ -33,9 +35,15 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
                      must be specified if \code{a0} and \code{b0} are missing, see details
                      below), \code{nu0} and \code{Tinv} giving the hyperparameters of the 
                      inverted Wishart prior distribution for the scale matrix of the normal
-                     baseline distribution, \code{mub} and \code{Sb} giving the hyperparameters 
+                     baseline distribution, \code{sigma} giving the value of the covariance
+                     matrix of the centering distribution (it must be specified if 
+                     \code{nu0} and \code{tinv} are missing),
+                     \code{mub} and \code{Sb} giving the hyperparameters 
                      of the normal prior distribution for the mean of the normal
-                     baseline distribution, \code{beta0} and \code{Sbeta0} giving the 
+                     baseline distribution, \code{mu} giving the value of the mean of the
+                     centering distribution (it must be specified if 
+                     \code{mub} and \code{Sb} are missing),
+                     \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the fixed effects
                      (must be specified only if fixed effects are considered in the model)
                      and, \code{tau1} and \code{tau2} giving the hyperparameters for the 
@@ -92,14 +100,17 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and on the use of MCMC methods for conjugate priors (Escobar, 1994;
-  Escobar and West, 1998). 
+  Escobar and West, 1998). The \eqn{\beta_R}{betaR} parameters are sampled using
+  the \eqn{\epsilon}{epsilon}-DP approximation proposed by Muliere and Tardella (1998), with
+  \eqn{\epsilon}{epsilon}=0.01.
+    
   
 }
 
 \value{
   An object of class \code{DPlmm} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
-  and \code{summary} have methods to show the results of the fit. 
+  \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{betaR}, \code{betaF}, \code{sigma2e}, 
   \code{mu}, the elements of \code{Sigma}, \code{\alpha}, and the 
   number of clusters.
@@ -126,8 +137,6 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   \item{beta}{ giving the value of the fixed effects.}
   
-  \item{betar}{ giving the mean value of the random effects.}
-
   \item{mu}{ giving the mean of the normal baseline distributions.} 
   
   \item{sigma}{ giving the variance matrix of the normal baseline distributions.}
@@ -136,7 +145,9 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPglmm}}, \code{\link{DPolmm}}
+\code{\link{DPrandom}},
+\code{\link{DPglmm}} , \code{\link{DPolmm}} ,
+\code{\link{DPMlmm}} , \code{\link{DPMglmm}}, \code{\link{DPMolmm}}
 }
 
 \references{
@@ -150,6 +161,9 @@ Escobar, M.D. and West, M. (1995) Bayesian Density Estimation and Inference
 Escobar, M.D. and West, M. (1998) Computing Bayesian Nonparametric Hierarchical Models,
   in Practical Nonparametric and Semiparametric Bayesian Statistics, 
   eds: D. Dey, P. Muller, D. Sinha, New York: Springer-Verlag, pp. 1-22.
+
+Muliere, P. and Tardella, L. (1998) Approximating distributions of random functionals
+  of Ferguson-Dirichlet priors. The Canadian Journal of Statistics, 26(2): 283-297.
 
 Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal data,
   New York: Springer-Verlag.
@@ -165,9 +179,8 @@ Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal dat
 
     # Prior information
 
-      tinv<-diag(10,2)
-      prior<-list(alpha=1,nu0=4.01,tau1=0.001,tau2=0.001,
-      tinv=tinv,mub=rep(0,2),Sb=diag(1000,2))
+      prior<-list(alpha=1,nu0=4.01,tau1=0.01,tau2=0.01,
+                  tinv=diag(10,2),mub=rep(0,2),Sb=diag(1000,2))
 
     # Initial state
       state <- NULL
@@ -175,7 +188,7 @@ Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal dat
     # MCMC parameters
 
       nburn<-5000
-      nsave<-25000
+      nsave<-10000
       nskip<-20
       ndisplay<-1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)

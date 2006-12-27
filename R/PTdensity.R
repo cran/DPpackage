@@ -21,7 +21,7 @@
 ###
 ### The authors's contact information:
 ###
-###      Alejandro Jara Vallejos
+###      Alejandro Jara
 ###      Biostatistical Centre
 ###      Katholieke Universiteit Leuven
 ###      U.Z. Sint-Rafaël

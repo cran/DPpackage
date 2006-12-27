@@ -72,7 +72,7 @@ function(object, midpoint="mean", hpd=TRUE , ask=TRUE, nfigr=1, nfigc=1, ...)
        
        segs <- segs[, order(segs[1, ])]
 
-       oldpar <- par(no.readonly = TRUE)
+       #oldpar <- par(no.readonly = TRUE)
        if (is.na(mar)) 
            mar = c(4, 6, 1 + 2 * (nchar(main) > 0), 5)
        par(mar = mar)
@@ -101,7 +101,7 @@ function(object, midpoint="mean", hpd=TRUE , ask=TRUE, nfigr=1, nfigc=1, ...)
     
        if (nchar(xlab)) 
            mtext(xlab, 1, line = 2)
-       par(oldpar)
+       #par(oldpar)
    }
 
    if(is(object, "DPrandom"))
@@ -160,7 +160,7 @@ function(object, midpoint="mean", hpd=TRUE , ask=TRUE, nfigr=1, nfigc=1, ...)
       start<-1
       end<-nsubject
 
-      oldpar <- par(no.readonly = TRUE)
+      #oldpar <- par(no.readonly = TRUE)
       par(ask = ask)
       layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
 
@@ -171,7 +171,7 @@ function(object, midpoint="mean", hpd=TRUE , ask=TRUE, nfigr=1, nfigc=1, ...)
           end<-start+nsubject-1
           caterpillar.plot(segs=work,xlab = renames[i]) 
       }
-      par(oldpar)     
+      #par(oldpar)     
    }
 }
 

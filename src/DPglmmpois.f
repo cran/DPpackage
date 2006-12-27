@@ -1,30 +1,39 @@
 
 c=======================================================================                      
-      subroutine sppoislme(datastr,maxni,nrec,nsubject,nfixed,p,q,
-     &                     subject,x,y,z,roffset,
-     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tinv,
-     &                     mcmc,nsave,
-     &                     acrate,cpo,randsave,thetasave,
-     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,
-     &                     sigmainv,ss,
-     &                     betac,ccluster,iflag,iflagb,prob,quadf,seed,
-     &                     theta,thetac,work1,work2,work3,workb1,
-     &                     workb2,workmh1,workmh2,workmh3,workv1,workv2,
-     &                     workv3,workvb1,workvb2,workvb3,xtx,xty,
-     &                     zty,ztz,
-     &                     ztzinv)
+      subroutine dpglmmpois(datastr,maxni,mpar,nrec,nsubject,nfixed,p,q,#8
+     &                     subject,x,y,z,roffset,                       #5 
+     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tinv,         #8
+     &                     mcmc,nsave,                                  #2
+     &                     acrate,cpo,randsave,thetasave,               #4
+     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,  #8
+     &                     sigmainv,ss,mc,                              #3
+     &                     betac,ccluster,iflagp,iflagb,newtheta,prob,  #6 
+     &                     quadf,seed,theta,thetac,workp1,workp2,workb1,#7
+     &                     workb2,workmh1,workmh2,workmh3,workvp1,      #5 
+     &                     workvb1,workvb2,xtx,xty,                     #4
+     &                     zty,ztz,cstrt,betasave,bsave)                #5
 c=======================================================================                      
+c     # of arguments = 65.
 c
-c     Version 1.0: 
-c     Last modification: 27-04-2006.
-c
-c     Subroutine `sppoislme' to run a Markov chain in the  
+c     Subroutine `dpglmmpois' to run a Markov chain in the  
 c     semiparametric poison mixed model. In this routine, inference 
 c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2007
+c
+c     Version 2.0: 
+c
+c     Last modification: 25-04-2007.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - The "population" parameters betar are computed as a 
+c            functional of a DP instead of base on simple averages of
+c            the random effects.
+c          - The computation of the DIC was added.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -42,7 +51,7 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
+c     Alejandro Jara
 c     Biostatistical Centre
 c     Katholieke Universiteit Leuven
 c     U.Z. Sint-Rafaël
@@ -67,7 +76,7 @@ c                       if nfixed is 0 then p=1.
 c        p           :  integer giving the number of fixed coefficients.
 c        q           :  integer giving the number of random effects.
 c        roffset     :  real vector giving the real offset for each
-c                       observation.
+c                       observation, roffset(nrec).
 c        subject     :  integer vector giving the subject for each.
 c                       observation, subject(nsubject).
 c        x           :  real matrix giving the design matrix for the 
@@ -176,9 +185,9 @@ c        dispcount   :  index.
 c        evali       :  integer indicator used in updating the state.
 c        i           :  index. 
 c        ii          :  index. 
-c        iflag       :  integer vector used to invert the of the lhs
+c        iflagp      :  integer vector used to invert the of the lhs
 c                       least square solution for the fixed effects,
-c                       iflag(p).
+c                       iflagp(p).
 c        iflagb      :  integer vector used to invert the of the lhs
 c                       least square solution for the random effects,
 c                       iflagb(q).
@@ -188,7 +197,7 @@ c        j           :  index.
 c        k           :  index. 
 c        l           :  index.
 c        prob        :  real vector used to update the cluster 
-c                       structure, prob(nsubject+2).
+c                       structure, prob(nsubject+1).
 c        quadf       :  real matrix used to save the bilinear product
 c                       of random effects, quadf(q,q).
 c        ni          :  integer indicator used in updating the state. 
@@ -207,12 +216,10 @@ c        thetac      :  real vector used to save randomnly generated
 c                       random effects, thetac(q).
 c        tmp1        :  real used to accumulate quantities. 
 c        tmp2        :  real used to accumulate quantities.
-c        work1       :  real matrix used to update the fixed effects,
-c                       work1(p,p).
-c        work2       :  real matrix used to update the fixed effects,
-c                       work2(p,p).
-c        work3       :  real matrix used to update the fixed effects,
-c                       work3(p,p).
+c        workp1      :  real matrix used to update the fixed effects,
+c                       workp1(p,p).
+c        workp2      :  real matrix used to update the fixed effects,
+c                       workp2(p,p).
 c        workb1      :  real matrix used to update the random effects,
 c                       workb1(q,q).
 c        workb2      :  real matrix used to update the random effects,
@@ -223,18 +230,12 @@ c        workmh2     :  real vector used to update the random effects,
 c                       workmh2(q*(q+1)/2).
 c        workmh3     :  real vector used to update the random effects,
 c                       workmh3(q*(q+1)/2).
-c        workv1      :  real vector used to update the fixed effects,
-c                       workv1(p).
-c        workv2      :  real vector used to update the fixed effects,
-c                       workv2(p).
-c        workv3      :  real vector used to update the fixed effects,
-c                       workv3(p).
+c        workvp1     :  real vector used to update the fixed effects,
+c                       workvp1(p).
 c        workvb1     :  real vector used to update the random effects,
 c                       workvb1(q).
 c        workvb2     :  real vector used to update the random effects,
 c                       workvb2(q).
-c        workvb3     :  real vector used to update the random effects,
-c                       workvb3(q).
 c        xtx         :  real matrix givind the product X^tX, xtx(p,p).
 c        xty         :  real vector used to save the product 
 c                       Xt(Y-Zb), xty(p).
@@ -242,28 +243,26 @@ c        zty         :  real vector used to save the product
 c                       Zt(Y-Xbeta), zty(q).
 c        ztz         :  real matrix used to save the product 
 c                       ZtSigma^1Z, ztz(q,q).
-c        ztzinv      :  real matrix used to save the inverted 
-c                       ztz, ztzinv(q,q).
 c=======================================================================                  
       implicit none 
 
 c+++++Data
-      integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
+      integer maxni,mpar,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1),y(nrec)
       real*8 roffset(nrec),x(nrec,p),z(nrec,q)	
       
 c+++++Prior 
-      integer nu0
+      integer nu0,murand,sigmarand
       real*8 aa0,ab0,a0b0(2),b0(p),prec(p,p),psiinv(q,q)
       real*8 sb(p),smu(q)
       real*8 tinv(q,q)      
 
 c+++++MCMC parameters
-      integer mcmc(3),nburn,nskip,nsave,ndisplay
+      integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
       real*8 acrate(2)
-      real*8 cpo(nrec)
+      real*8 cpo(nrec,2)
       real*8 randsave(nsave,q*(nsubject+1))
       real*8 thetasave(nsave,q+nfixed+q+(q*(q+1)/2)+2)
 
@@ -273,48 +272,71 @@ c+++++Current values of the parameters
       real*8 betar(q),bclus(nsubject,q)
       real*8 mu(q),sigma(q,q),sigmainv(q,q)
 
-c+++++Working space - Loops
-      integer ii,i,j,k,l
+c+++++Seeds
+      integer seed(2),seed1,seed2
 
-c+++++Working space - Random effects
-      integer iflagb(q)
-      real*8 quadf(q,q)
-      real*8 thetac(q)
-      real*8 zty(q),ztz(q,q),ztzinv(q,q)
-      real*8 workb1(q,q),workb2(q,q)
-      real*8 workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
-      real*8 workvb1(q),workvb2(q),workvb3(q)
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++External working space
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-c+++++Working space - RNG
-      integer seed(3),seed1,seed2,seed3
-      real runif
-
-c+++++Working space - MCMC
-      integer iscan,isave,nscan
-      integer sprint,skipcount,dispcount
-      
-c+++++Working space - Configurations
-      integer ccluster(nsubject),evali 
-      integer ni,ns
-      integer since
-      real*8 dgamlog,prob(nsubject+2)
-      real*8 tmp1,tmp2
-      real*8 theta(q)
-
-c+++++Working space - Fixed effects
-      integer iflag(p)
+c+++++fixed effects
+      integer iflagp(p)
       real*8 betac(p)
-      real*8 detlog
       real*8 xtx(p,p),xty(p)
       real*8 workmh1(p*(p+1)/2)
-      real*8 work1(p,p),work2(p,p),work3(p,p)
-      real*8 workv1(p),workv2(p),workv3(p)
+      real*8 workp1(p,p),workp2(p,p)
+      real*8 workvp1(p)
 
-c+++++Working space - GLM part
+c+++++random effects
+      integer iflagb(q)
+      real*8 quadf(q,q)
+      real*8 theta(q)
+      real*8 thetac(q)
+      real*8 zty(q),ztz(q,q)
+      real*8 workb1(q,q),workb2(q,q)
+      real*8 workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
+      real*8 workvb1(q),workvb2(q)
+
+c+++++DP
+      integer ccluster(nsubject),cstrt(nsubject,nsubject)
+      real*8 newtheta(q,mpar)
+      real*8 prob(nsubject+mpar)
+
+c++++ model´s performance
+      real*8 mc(5)
+      real*8 betasave(p),bsave(nsubject,q)
+
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+c+++++Internal working space
+c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+c+++++General
+      integer ii,i,jj,j,k,ll,l
+      integer evali 
+      integer ihmssf,ni,ns
+      integer ok,since,sprint 
       integer yij
       real*8 acrate2
-      real*8 eta,etac,gprime,gprimec,mean,meanc,offset,ytilde,ytildec
-      real*8 logp
+      real*8 eta,mean,offset,ytilde
+      real*8 logcgkn,logcgko
+      real*8 loglikn,logliko
+      real*8 logpriorn,logprioro
+      real*8 ratio
+      real*8 tmp1,tmp2,tmp3
+
+c+++++MCMC
+      integer dispcount,isave,iscan,nscan,skipcount 
+
+c+++++RNG and distributions
+      real*8 dpoiss,rnorm
+      real runif
+
+c+++++DP
+      real*8 eps,rbeta,weight
+      parameter(eps=0.01)
+
+c++++ model´s performance
+      real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -323,25 +345,29 @@ c++++ parameters
       nburn=mcmc(1)
       nskip=mcmc(2)
       ndisplay=mcmc(3)
+      murand=mcmc(4)
+      sigmarand=mcmc(5)
+      
       aa0=a0b0(1)
       ab0=a0b0(2)
       
 c++++ set random number generator
       seed1=seed(1)
       seed2=seed(2)
-      seed3=seed(3)
       
       call setall(seed1,seed2)
      
 c++++ cluster structure
       do i=1,nsubject
          ccluster(ss(i))=ccluster(ss(i))+1
+         cstrt(ss(i),ccluster(ss(i)))=i
       end do
       
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+      dbar=0.d0
       isave=0
       skipcount=0
       dispcount=0
@@ -349,7 +375,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       call cpu_time(sec0)
       sec00=0.d0
-      
+
       do iscan=1,nscan
 
 c+++++++ check if the user has requested an interrupt
@@ -359,27 +385,21 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ fixed effects
 c++++++++++++++++++++++++++++++++++
 
-         if(nfixed.eq.0)go to 1
-         
+         if(nfixed.gt.0)then
+
             do i=1,p
                do j=1,p
-                  xtx(i,j)=0.d0
-                  work1(i,j)=0.d0
-                  work2(i,j)=0.d0
-                  work3(i,j)=0.d0
+                  xtx(i,j)=prec(i,j)
                end do
                xty(i)=sb(i)
-               workv1(i)=0.d0
-               workv2(i)=0.d0
-               workv3(i)=0.d0
-               iflag(i)=0
             end do
+            
+            logliko=0.d0
             
             do i=1,nrec
                eta=0.d0
                offset=0.d0
-               mean=0.d0
-               gprime=0.d0
+               yij=y(i)               
                
                do j=1,p
                   eta=eta+x(i,j)*beta(j)
@@ -391,179 +411,129 @@ c++++++++++++++++++++++++++++++++++
                end do
                
                eta=eta+roffset(i)
-               
-               offset=offset+roffset(i)
+               offset=offset+roffset(i)  
                
                mean=exp(eta)
-               
-               gprime=exp(-eta)
-               
-               ytilde=eta+(dble(y(i))-mean)*gprime-offset
-               
+               ytilde=eta+(dble(yij)-mean)*exp(-eta)-offset
+
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprime
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*exp(eta)
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde*exp(eta)
                end do
+               
+               logliko=logliko+dpoiss(dble(yij),mean,1)
             end do
-
-            do i=1,p
-               do j=1,p
-                  work1(i,j)=xtx(i,j)+prec(i,j)          
-               end do
-            end do
-
-            call invdet(work1,p,work2,detlog,iflag,workv1)
+            
+            call inverse(xtx,p,iflagp)
             
             do i=1,p
                tmp1=0.d0
                do j=1,p
-c                  work2(i,j)=work2(i,j)*1.5
-                  tmp1=tmp1+work2(i,j)*xty(j) 
+                  tmp1=tmp1+xtx(i,j)*xty(j) 
                end do
-               workv2(i)=tmp1
+               workvp1(i)=tmp1
             end do
 
-            
-            call rmvnorm(p,workv2,work2,workmh1,workv3,betac)
+            call rmvnorm(p,workvp1,xtx,workmh1,xty,betac)
 
-            call dmvn(p,betac,workv2,work2,tmp1,
-     &                workv1,work1,work3,workv3,iflag)                 
+c++++++++++ evaluating the candidate generating kernel
 
-            logp=0.d0            
-            logp=logp-tmp1
-            
-
-c++++++++++ likelihood ratio
-
-            do i=1,nrec
-               eta=0.d0
-               etac=0.d0
-               
-               do j=1,p
-                  eta=eta+x(i,j)*beta(j)
-                  etac=etac+x(i,j)*betac(j)
-               end do
-               
-               do j=1,q
-                  eta=eta+z(i,j)*b(subject(i),j) 
-                  etac=etac+z(i,j)*b(subject(i),j) 
-               end do
-               
-               eta=eta+roffset(i)
-               etac=etac+roffset(i)
-
-               logp=logp+
-     &              dble(y(i))*(etac-eta)-exp(etac)+exp(eta)
-     
-            end do
+            call dmvn2(p,betac,workvp1,xtx,logcgko,
+     &                 xty,workp1,workp2,iflagp)                 
 
 c++++++++++ prior ratio
 
-            tmp1=0.d0
-            tmp2=0.d0
+            logprioro=0.d0
+            logpriorn=0.d0
             
             do i=1,p
                do j=1,p
-                  tmp1=tmp1+(betac(i)-b0(i))* 
+                  logpriorn=logpriorn+(betac(i)-b0(i))* 
      &                       prec(i,j)      *
      &                      (betac(j)-b0(j))
 
-                  tmp2=tmp2+(beta(i) -b0(i))* 
+                  logprioro=logprioro+(beta(i) -b0(i))* 
      &                       prec(i,j)      *
      &                      (beta(j) -b0(j))
                end do
             end do
             
-            logp=logp-0.5d0*tmp1+0.5d0*tmp2
+            logpriorn=-0.5d0*logpriorn
+            logprioro=-0.5d0*logprioro
             
 c++++++++++ candidate generating kernel contribution
 
             do i=1,p
                do j=1,p
-                  xtx(i,j)=0.d0
-                  work1(i,j)=0.d0
-                  work2(i,j)=0.d0
-                  work3(i,j)=0.d0
+                  xtx(i,j)=prec(i,j)
                end do
                xty(i)=sb(i)
-               workv1(i)=0.d0
-               workv2(i)=0.d0
-               workv3(i)=0.d0
-               iflag(i)=0
             end do
-        
+
+            loglikn=0.d0
+            
             do i=1,nrec
-               etac=0.d0
+               eta=0.d0
                offset=0.d0
-               meanc=0.d0
-               gprimec=0.d0
+               yij=y(i)               
                
                do j=1,p
-                  etac=etac+x(i,j)*betac(j)
+                  eta=eta+x(i,j)*betac(j)
                end do
                
                do j=1,q
-                  etac=etac+z(i,j)*b(subject(i),j) 
+                  eta=eta+z(i,j)*b(subject(i),j) 
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
 
-               etac=etac+roffset(i)
-
+               eta=eta+roffset(i)
                offset=offset+roffset(i)
-               
-               meanc=exp(etac)
-               
-               gprimec=exp(-etac)
-               
-               ytildec=etac+(dble(y(i))-meanc)*gprimec-offset
+
+               mean=exp(eta)
+               ytilde=eta+(dble(yij)-mean)*exp(-eta)-offset
                
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprimec
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*exp(eta)
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytildec/gprimec
+                  xty(j)=xty(j)+x(i,j)*ytilde*exp(eta)
                end do
+               
+               loglikn=loglikn+dpoiss(dble(yij),mean,1)
             end do
 
-            do i=1,p
-               do j=1,p
-                  work1(i,j)=xtx(i,j)+prec(i,j)          
-               end do
-            end do
-
-            call invdet(work1,p,work2,detlog,iflag,workv1)
+            call inverse(xtx,p,iflagp)
 
             do i=1,p
                tmp1=0.d0
                do j=1,p
-c                  work2(i,j)=work2(i,j)*1.5
-                  tmp1=tmp1+work2(i,j)*xty(j) 
+                  tmp1=tmp1+xtx(i,j)*xty(j) 
                end do
-               workv2(i)=tmp1
+               workvp1(i)=tmp1
             end do
-            
-            call dmvn(p,beta,workv2,work2,tmp1,
-     &                workv1,work1,work3,workv3,iflag)                 
- 
-            logp=logp+tmp1
+
+c++++++++++ evaluating the candidate generating kernel
+
+            call dmvn2(p,beta,workvp1,xtx,logcgkn,
+     &                 xty,workp1,workp2,iflagp)                 
+
 
 c++++++++++ mh step
 
-c            call dblepr("logp",-1,logp,1)  
+            ratio=(loglikn-logliko+logcgkn-logcgko+
+     &            logpriorn-logprioro)
 
-            if(log(dble(runif())).lt.logp)then
+            if(log(dble(runif())).lt.ratio)then
                acrate(1)=acrate(1)+1.d0
                do i=1,p
                   beta(i)=betac(i) 
                end do
             end if
-            
-1        continue            
+         end if
 
         
-         
 c++++++++++++++++++++++++++++++++++         
 c+++++++ random effects 
 c++++++++++++++++++++++++++++++++++
@@ -572,6 +542,7 @@ c++++++++++++++++++++++++++++++
 c+++++++ a) Polya Urn 
 c++++++++++++++++++++++++++++++
 
+         call cholesky(q,sigma,workmh2)
 
          do i=1,nsubject
          
@@ -581,6 +552,17 @@ c++++++++++++++++++++++++++++++
 c++++++++++ observation in cluster with more than 1 element
              
             if(ns.gt.1)then
+ 
+               j=1
+               ok=0
+               do while(ok.eq.0.and.j.le.ns)
+                  if(cstrt(ss(i),j).eq.i)ok=j
+                  j=j+1
+               end do
+    
+               do j=ok,ns-1
+                  cstrt(ss(i),j)=cstrt(ss(i),j+1)
+               end do
  
                ccluster(ss(i))=ccluster(ss(i))-1 
                
@@ -596,51 +578,68 @@ c++++++++++ observation in cluster with more than 1 element
 		     do l=1,q
 		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
-                     
+
                      eta=eta+roffset(datastr(i,k+1))
 
-                     tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                         dgamlog(dble(yij+1))
+                     mean=exp(eta)
 
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
      &                        tmp1)
                end do
-               
-               call rmvnorm(q,mu,sigma,workmh2,workvb1,theta)
-               
-               tmp1=0.d0
-               do k=1,ni
-                  yij=y(datastr(i,k+1))
-                      
-                  eta=0.d0
-                  do l=1,p
-                     eta=eta+x(datastr(i,k+1),l)*beta(l)
+
+               do ll=1,mpar
+                  do j=1,q
+                     theta(j)=mu(j)
                   end do
- 		  do l=1,q
- 		     eta=eta+z(datastr(i,k+1),l)*theta(l)
+                  jj = 0
+                  do j=1,q
+                     do k=j,q
+                        jj = jj + 1
+                        theta(k)=theta(k)+workmh2(jj)*rnorm(0.d0,1.d0)
+                    end do
                   end do
-                  eta=eta+roffset(datastr(i,k+1))
+               
+                  tmp1=0.d0
+                  do k=1,ni
+                     yij=y(datastr(i,k+1))
                       
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))
-               end do
+                     eta=0.d0
+                     do l=1,p
+                        eta=eta+x(datastr(i,k+1),l)*beta(l)
+                     end do
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*theta(l)
+                     end do
+                     eta=eta+roffset(datastr(i,k+1))
+
+                     mean=exp(eta)
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
+                  end do
  
-               prob(ncluster+1)=exp(log(alpha)+tmp1)
+                  prob(ncluster+ll)=exp(log(alpha/dble(mpar))+tmp1)
+                  
+                  do j=1,q
+                     newtheta(j,ll)=theta(j) 
+                  end do
+               end do  
                
-               call simdisc(prob,nsubject+2,ncluster+1,evali)
+               call simdisc(prob,nsubject+mpar,ncluster+mpar,evali)
 
                if(evali.le.ncluster)then
                   ss(i)=evali
                   ccluster(evali)=ccluster(evali)+1
+                  cstrt(evali,ccluster(evali))=i
                end if   
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
                   ss(i)=ncluster
                   ccluster(ncluster)=1
+                  cstrt(ncluster,ccluster(ncluster))=i
 	          do j=1,q
-	             bclus(ncluster,j)=theta(j)
+	             bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
 	          end do
                end if               
             end if
@@ -650,10 +649,10 @@ c++++++++++ subject in cluster with only 1 observation
             if(ns.eq.1)then
                 
                since=ss(i)
-                
+
                if(since.lt.ncluster)then
-                   call relabelg(i,since,nsubject,q,ncluster,
-     &                          ccluster,ss,bclus,theta)                   
+                   call relabel(i,since,nsubject,q,ncluster,
+     &                          cstrt,ccluster,ss,bclus,theta)                   
 	       end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
@@ -671,66 +670,84 @@ c++++++++++ subject in cluster with only 1 observation
 		     do l=1,q
 		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
-                     
                      eta=eta+roffset(datastr(i,k+1))
 
-                     tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                         dgamlog(dble(yij+1))                     
-
+                     mean=exp(eta)
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
      &                        tmp1)
                end do
 
-               call rmvnorm(q,mu,sigma,workmh2,workvb1,theta)
+               do ll=1,mpar
+                  if(ll.eq.1)then
+                     do j=1,q
+                        theta(j)=b(i,j)
+                     end do
+                   else
+                     do j=1,q
+                        thetac(j)=rnorm(0.d0,1.d0)
+                     end do
+                     do j=1,q
+                        tmp1=0.d0
+                        do k=1,j
+                           tmp1=tmp1*workmh2(ihmssf(j,k,q))*thetac(k) 
+                        end do
+                        theta(j)=mu(j)+tmp1
+                     end do
+                  end if
                
-               tmp1=0.d0
-               do k=1,ni
-                  yij=y(datastr(i,k+1))
+                  tmp1=0.d0
+                  do k=1,ni
+                     yij=y(datastr(i,k+1))
                       
-                  eta=0.d0
-                  do l=1,p
-                     eta=eta+x(datastr(i,k+1),l)*beta(l)
-                  end do
- 		  do l=1,q
- 		     eta=eta+z(datastr(i,k+1),l)*theta(l)
-                  end do
-                  
-                  eta=eta+roffset(datastr(i,k+1))
-                      
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))                  
+                     eta=0.d0
+                     do l=1,p
+                        eta=eta+x(datastr(i,k+1),l)*beta(l)
+                     end do
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*theta(l)
+                     end do
+                     eta=eta+roffset(datastr(i,k+1))
 
-               end do
+                     mean=exp(eta)
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
+                  end do
  
-               prob(ncluster+1)=exp(log(alpha)+tmp1)
+                  prob(ncluster+ll)=exp(log(alpha/dble(mpar))+tmp1)
+                  
+                  do j=1,q
+                     newtheta(j,ll)=theta(j) 
+                  end do
+               end do  
                
-               call simdisc(prob,nsubject+2,ncluster+1,evali)
+               call simdisc(prob,nsubject+mpar,ncluster+mpar,evali)
 
                if(evali.le.ncluster)then
                   ss(i)=evali
                   ccluster(evali)=ccluster(evali)+1
+                  cstrt(evali,ccluster(evali))=i
                end if   
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
                   ss(i)=ncluster
                   ccluster(ncluster)=1
+                  cstrt(ncluster,ccluster(ncluster))=i
 	          do j=1,q
-	             bclus(ncluster,j)=theta(j)
+	             bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
 	          end do
-               end if      
-	    
+               end if               
 	    end if
-
          end do
-
-
-c         call intpr("ncluster",-1,ncluster,1)  
 
 c++++++++++++++++++++++++++++++
 c+++++++ b) Resampling step
 c++++++++++++++++++++++++++++++
+
+         do i=1,q
+            betar(i)=0.d0
+         end do
 
          acrate2=0.d0
          
@@ -740,259 +757,189 @@ c++++++++++ check if the user has requested an interrupt
             call rchkusr()
 
             do i=1,q
+               theta(i)=bclus(ii,i)
+               tmp1=0.d0
                do j=1,q
-                  ztz(i,j)=0.d0
-                  ztzinv(i,j)=0.d0
-                  workb1(i,j)=0.d0
-                  workb2(i,j)=0.d0
+                  ztz(i,j)=sigmainv(i,j)
+                  tmp1=tmp1+sigmainv(i,j)*mu(j)
                end do
-               zty(i)=0.d0
-               workvb1(i)=0.d0
-               workvb2(i)=0.d0
-               workvb3(i)=0.d0
-               iflagb(i)=0
+               zty(i)=tmp1
             end do
+
+            logliko=0.d0
             
-            do i=1,nsubject
-               if(ii.eq.ss(i))then
-                  ni=datastr(i,1) 
-                  do j=1,ni
-                     eta=0.d0
-                     offset=0.d0
-                     mean=0.d0
-                     gprime=0.d0
-
-                     yij=y(datastr(i,j+1))
-                     
-                     do k=1,p
-                        eta=eta+x(datastr(i,j+1),k)*beta(k)
-                        offset=offset+x(datastr(i,j+1),k)*beta(k)
-                     end do
-                     do k=1,q
-                        eta=eta+z(datastr(i,j+1),k)*bclus(ii,k)
-                     end do
-                   
-                     eta=eta+roffset(datastr(i,j+1))
-                     
-                     offset=offset+roffset(datastr(i,j+1))
-
-                     mean=exp(eta)
+            do jj=1,ccluster(ii)
+                
+               i=cstrt(ii,jj) 
+               ni=datastr(i,1)
                
-                     gprime=exp(-eta)
-
-                     ytilde=eta+(dble(yij)-mean)*gprime-offset
-                     
-                     do k=1,q
-                        do l=1,q
-                           ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                                       z(datastr(i,j+1),l)/gprime
-                        end do
-                        zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                         ytilde/gprime
-                     end do
+               do j=1,ni
+                  eta=0.d0
+                  offset=0.d0
+                  yij=y(datastr(i,j+1))
+                  
+                  do k=1,p
+                     eta=eta+x(datastr(i,j+1),k)*beta(k)
+                     offset=offset+x(datastr(i,j+1),k)*beta(k)
                   end do
-               end if
+                  
+                  do k=1,q
+                     eta=eta+z(datastr(i,j+1),k)*theta(k)
+                  end do
+                
+                  eta=eta+roffset(datastr(i,j+1))
+                  offset=offset+roffset(datastr(i,j+1))
+
+                  mean=exp(eta)
+                  ytilde=eta+(dble(yij)-mean)*exp(-eta)-offset
+
+                  do k=1,q
+                     do l=1,q
+                        ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
+     &                          z(datastr(i,j+1),l)*exp(eta)
+                     end do
+                     zty(k)=zty(k)+z(datastr(i,j+1),k)*
+     &                      ytilde*exp(eta)
+                  end do
+
+                  logliko=logliko+dpoiss(dble(yij),mean,1)                  
+               end do
             end do
     
-            do i=1,q
-               do j=1,q
-                  ztz(i,j)=ztz(i,j)+sigmainv(i,j)
-               end do
-            end do
-
-            call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
+            call inverse(ztz,q,iflagb)
 
             do i=1,q
                tmp1=0.d0
                do j=1,q
-                  tmp1=tmp1+sigmainv(i,j)*mu(j)   
-               end do
-               zty(i)=zty(i)+tmp1
-            end do
-          
-            do i=1,q
-               tmp1=0.d0
-               do j=1,q
-                  tmp1=tmp1+ztzinv(i,j)*zty(j) 
+                  tmp1=tmp1+ztz(i,j)*zty(j) 
                end do
                workvb1(i)=tmp1
             end do
   
-            call rmvnorm(q,workvb1,ztzinv,workmh2,workvb2,thetac)
+            call rmvnorm(q,workvb1,ztz,workmh2,workvb2,thetac)
 
-            call dmvn(q,thetac,workvb1,ztzinv,tmp1,
-     &                workvb2,workb1,workb2,workvb3,iflagb)                 
- 
-            logp=0.d0
-            logp=logp-tmp1
+c++++++++++ evaluating the candidate generating kernel
 
+            call dmvn2(q,thetac,workvb1,ztz,logcgko,
+     &                 workvb2,workb1,workb2,iflagb)                 
 
-c++++++++++ likelihood ratio
-
-            do i=1,nsubject
-               if(ii.eq.ss(i))then
-                  ni=datastr(i,1) 
-                  do j=1,ni
-                     eta=0.d0
-                     etac=0.d0
-
-                     yij=y(datastr(i,j+1))
-                     
-                     do k=1,p
-                        eta=eta+x(datastr(i,j+1),k)*beta(k)
-                        etac=etac+x(datastr(i,j+1),k)*beta(k)
-                     end do
-                     do k=1,q
-                        eta=eta+z(datastr(i,j+1),k)*bclus(ii,k)
-                        etac=etac+z(datastr(i,j+1),k)*thetac(k)
-                     end do
-                     
-                     eta=eta+roffset(datastr(i,j+1))
-                     etac=etac+roffset(datastr(i,j+1))
-
-                     logp=logp+
-     &                    dble(yij)*(etac-eta)-exp(etac)+exp(eta)                     
-                  end do
-               end if
-            end do
- 
 c++++++++++ prior ratio
  
-            tmp1=0.d0
-            tmp2=0.d0
+            logprioro=0.d0
+            logpriorn=0.d0
             
             do i=1,q
                do j=1,q
-                  tmp1=tmp1+(thetac(i)-mu(i))* 
+                  logpriorn=logpriorn+(thetac(i)-mu(i))* 
      &                       sigmainv(i,j)      *
      &                      (thetac(j)-mu(j))
 
-                  tmp2=tmp2+(bclus(ii,i) -mu(i))* 
+                  logprioro=logprioro+(theta(i) -mu(i))* 
      &                       sigmainv(i,j)      *
-     &                      (bclus(ii,j) -mu(j))
+     &                      (theta(j) -mu(j))
                end do
             end do
             
-            logp=logp-0.5d0*tmp1+0.5d0*tmp2 
+            logpriorn=-0.5d0*logpriorn
+            logprioro=-0.5d0*logprioro
+
 
 c++++++++++ candidate generating kernel contribution
 
-
             do i=1,q
+               tmp1=0.d0            
                do j=1,q
-                  ztz(i,j)=0.d0
-                  ztzinv(i,j)=0.d0
-                  workb1(i,j)=0.d0
-                  workb2(i,j)=0.d0
+                  ztz(i,j)=sigmainv(i,j)
+                  tmp1=tmp1+sigmainv(i,j)*mu(j)                     
                end do
-               zty(i)=0.d0
-               workvb1(i)=0.d0
-               workvb2(i)=0.d0
-               workvb3(i)=0.d0
-               iflagb(i)=0
+               zty(i)=tmp1
             end do
-   
-                 
-            do i=1,nsubject
-               if(ii.eq.ss(i))then
-                  ni=datastr(i,1) 
-                  do j=1,ni
-                     etac=0.d0
-                     offset=0.d0
-                     meanc=0.d0
-                     gprimec=0.d0
 
-                     yij=y(datastr(i,j+1))
-                     
-                     do k=1,p
-                        etac=etac+x(datastr(i,j+1),k)*beta(k)
-                        offset=offset+x(datastr(i,j+1),k)*beta(k)
-                     end do
-                     do k=1,q
-                        etac=etac+z(datastr(i,j+1),k)*thetac(k)
-                     end do
+            loglikn=0.d0   
 
-                     etac=etac+roffset(datastr(i,j+1))
-                     
-                     offset=offset+roffset(datastr(i,j+1))
-
-                     meanc=exp(etac)
- 
-                     gprimec=exp(-etac)
-
-                     ytildec=etac+(dble(yij)-meanc)*gprimec-offset
-                     
-                     do k=1,q
-                        do l=1,q
-                           ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                          z(datastr(i,j+1),l)/gprimec
-                        end do
-                        zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                         ytildec/gprimec
-                     end do
+            do jj=1,ccluster(ii)
+               i=cstrt(ii,jj)                  
+               ni=datastr(i,1) 
+               do j=1,ni
+                  eta=0.d0
+                  offset=0.d0
+                  yij=y(datastr(i,j+1))
+                  
+                  do k=1,p
+                     eta=eta+x(datastr(i,j+1),k)*beta(k)
+                     offset=offset+x(datastr(i,j+1),k)*beta(k)
                   end do
-               end if
-            end do
-    
-            do i=1,q
-               do j=1,q
-                  ztz(i,j)=ztz(i,j)+sigmainv(i,j)
+                  do k=1,q
+                     eta=eta+z(datastr(i,j+1),k)*thetac(k)
+                  end do
+
+                  eta=eta+roffset(datastr(i,j+1))
+                  offset=offset+roffset(datastr(i,j+1))
+
+                  mean=exp(eta)
+                  ytilde=eta+(dble(yij)-mean)*exp(-eta)-offset
+                 
+                  do k=1,q
+                     do l=1,q
+                        ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
+     &                       z(datastr(i,j+1),l)*exp(eta)
+                     end do
+                     zty(k)=zty(k)+z(datastr(i,j+1),k)*
+     &                      ytilde*exp(eta)
+                  end do
+
+                  loglikn=loglikn+dpoiss(dble(yij),mean,1)                                    
                end do
             end do
 
-            call invdet(ztz,q,ztzinv,detlog,iflagb,workvb2)
+            call inverse(ztz,q,iflagb)
 
             do i=1,q
                tmp1=0.d0
                do j=1,q
-                  tmp1=tmp1+sigmainv(i,j)*mu(j)   
-               end do
-               zty(i)=zty(i)+tmp1
-            end do
-          
-            do i=1,q
-               tmp1=0.d0
-               do j=1,q
-                  tmp1=tmp1+ztzinv(i,j)*zty(j) 
+                  tmp1=tmp1+ztz(i,j)*zty(j) 
                end do
                workvb1(i)=tmp1
-               theta(i)=bclus(ii,i)
             end do
-  
-            call dmvn(q,theta,workvb1,ztzinv,tmp1,
-     &                workvb2,workb1,workb2,workvb3,iflagb)                 
- 
-            logp=logp+tmp1
+
+            call dmvn2(q,theta,workvb1,ztz,logcgkn,
+     &                 workvb2,workb1,workb2,iflagb)                 
 
 
 c++++++++++ mh step
 
-            if(log(dble(runif())).lt.logp)then
+            ratio=(loglikn-logliko+logcgkn-logcgko+
+     &            logpriorn-logprioro)
+
+            if(log(dble(runif())).lt.ratio)then
                acrate2=acrate2+1.d0
                do i=1,q
                   bclus(ii,i)=thetac(i) 
+                  betar(i)=betar(i)+thetac(i)
+               end do
+               
+               do jj=1,ccluster(ii)
+                  i=cstrt(ii,jj) 
+                  do j=1,q
+                     b(i,j)=thetac(j)
+                  end do
+               end do
+            else  
+               do i=1,q
+                  bclus(ii,i)=theta(i) 
+                  betar(i)=betar(i)+theta(i)
+               end do
+
+               do jj=1,ccluster(ii)
+                  i=cstrt(ii,jj) 
+                  do j=1,q
+                     b(i,j)=theta(j)
+                  end do
                end do
             end if
          end do
 
          acrate(2)=acrate(2)+acrate2/dble(ncluster)
-
-         do i=1,q
-            betar(i)=0.d0
-         end do
-
-         do i=1,nsubject
-            do j=1,q
-               b(i,j)=bclus(ss(i),j)
-               betar(j)=betar(j)+b(i,j)
-            end do
-         end do
-
-         do i=1,q
-            betar(i)=betar(i)/dble(nsubject)
-         end do
-
-c         call dblepr("betar",-1,betar,q)  
 
 
 c++++++++++++++++++++++++++++++++++         
@@ -1002,86 +949,81 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
 
-         do i=1,q
-            workvb1(i)=smu(i)
-            do j=1,q
-               workb1(i,j)=(sigmainv(i,j)*dble(ncluster))+psiinv(i,j)
-            end do
-         end do
-
-         call invdet(workb1,q,workb2,detlog,iflagb,workvb2)
-
-         do i=1,ncluster
-            do j=1,q
-               tmp1=0.d0
-               do k=1,q
-                  tmp1=tmp1+sigmainv(j,k)*bclus(i,k)
+         if(murand.eq.1)then
+            do i=1,q
+               do j=1,q
+                  workb1(i,j)=(sigmainv(i,j)*dble(ncluster))+psiinv(i,j)
                end do
-               workvb1(j)=workvb1(j)+tmp1
             end do
-         end do
-     
-         do i=1,q
-            workvb2(i)=0.d0
-         end do
-     
-         do i=1,q
-            tmp1=0.d0
-            do j=1,q
-               tmp1=tmp1+workb2(i,j)*workvb1(j)
-            end do
-            workvb2(i)=tmp1
-         end do
-          
-         call rmvnorm(q,workvb2,workb2,workmh2,workvb1,theta)
 
+            call inverse(workb1,q,iflagb)
+
+            do i=1,q
+               tmp1=0.d0
+               do j=1,q
+                  tmp1=tmp1+sigmainv(i,j)*betar(j)
+               end do
+               workvb1(i)=smu(i)+tmp1
+            end do
+     
+            do i=1,q
+               tmp1=0.d0
+               do j=1,q
+                  tmp1=tmp1+workb1(i,j)*workvb1(j)
+               end do
+               workvb2(i)=tmp1
+            end do
+          
+            call rmvnorm(q,workvb2,workb1,workmh2,workvb1,theta)
+
+            do i=1,q
+               mu(i)=theta(i)
+            end do
+         end if
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-     
-         do i=1,q
-            mu(i)=theta(i)
-            do j=1,q
-               quadf(i,j)=0.d0
-            end do
-         end do
 
-c         call dblepr("mu",-1,mu,q)  
-
-
-         do i=1,ncluster
-            do j=1,q
-               do k=1,q
-                  quadf(j,k)=quadf(j,k)+               
-     &                       (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+         if(sigmarand.eq.1)then               
+            do i=1,q
+               do j=1,q
+                  quadf(i,j)=0.d0
                end do
             end do
-         end do
 
-         do i=1,q
-            do j=1,q
-               quadf(i,j)=quadf(i,j)+tinv(i,j)
+            do i=1,ncluster
+               do j=1,q
+                  do k=1,q
+                     quadf(j,k)=quadf(j,k)+               
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+                  end do
+               end do
             end do
-         end do
 
-         call riwishart(q,nu0+ncluster,quadf,workb1,workb2,workvb1,
-     &                  workmh2,workmh3,iflagb)
-
-         do i=1,q
-            do j=1,q
-               sigma(i,j)=quadf(i,j)
-               sigmainv(i,j)=workb1(i,j)
+            do i=1,q
+               do j=1,q
+                  quadf(i,j)=quadf(i,j)+tinv(i,j)
+               end do
             end do
-         end do
 
-c         call dblepr("sigma",-1,sigma,q*q)  
+            call riwishart(q,nu0+ncluster,quadf,workb1,workb2,workvb1,
+     &                     workmh2,workmh3,iflagb)
 
+            do i=1,q
+               do j=1,q
+                  sigma(i,j)=quadf(i,j)
+                  sigmainv(i,j)=workb1(i,j)
+               end do
+            end do
+         end if   
+         
 c++++++++++++++++++++++++++++++++++         
 c+++++++ Precision parameter
 c++++++++++++++++++++++++++++++++++
          if(aa0.gt.0.d0)then
             call samalph(alpha,aa0,ab0,ncluster,nsubject)
          end if 
+
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ save samples
@@ -1093,8 +1035,99 @@ c++++++++++++++++++++++++++++++++++
                isave=isave+1
                dispcount=dispcount+1
 
-c+++++++++++++ regression coefficient information
+c+++++++++++++ random effects
 
+               k=0
+               do i=1,nsubject
+                  do j=1,q
+                     bsave(i,j)=bsave(i,j)+b(i,j)                  
+                     k=k+1
+                     randsave(isave,k)=b(i,j)
+                  end do   
+               end do
+
+c+++++++++++++ predictive information
+
+               do i=1,ncluster
+                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+               end do
+               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+               call simdisc(prob,nsubject+mpar,ncluster+1,evali)
+               
+               if(evali.le.ncluster)then
+                  do j=1,q
+                     theta(j)=bclus(evali,j)
+                  end do
+               end if
+               if(evali.gt.ncluster)then
+                  call rmvnorm(q,mu,sigma,workmh2,workvb1,theta)
+               end if
+               
+               do i=1,q
+                  k=k+1
+                  randsave(isave,k)=theta(i) 
+               end do
+
+c+++++++++++++ functional parameters
+               
+               tmp1=rbeta(1.d0,alpha+dble(nsubject))
+               do i=1,q
+                  betar(i)=tmp1*theta(i)
+               end do
+               tmp2=tmp1
+               weight=(1.d0-tmp1)
+               
+               do while((1.d0-tmp2).gt.eps)
+                  tmp3=rbeta(1.d0,alpha+dble(nsubject))
+                  tmp1=weight*tmp3
+                  weight=weight*(1.d0-tmp3)
+
+                  do i=1,ncluster
+                     prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+                  end do
+                  prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+                  call simdisc(prob,nsubject+1,ncluster+1,evali)
+               
+                  if(evali.le.ncluster)then
+                     do j=1,q
+                        theta(j)=bclus(evali,j)
+                     end do
+                  end if
+                  if(evali.gt.ncluster)then
+                     call rmvnorm(q,mu,sigma,workmh2,workvb2,theta)
+                  end if
+
+                  do i=1,q
+                     betar(i)=betar(i)+tmp1*theta(i)
+                  end do
+                  tmp2=tmp2+tmp1
+               end do
+
+               do i=1,ncluster
+                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
+               end do
+               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
+
+               call simdisc(prob,nsubject+1,ncluster+1,evali)
+               
+               if(evali.le.ncluster)then
+                  do j=1,q
+                     theta(j)=bclus(evali,j)
+                  end do
+               end if
+               if(evali.gt.ncluster)then
+                  call rmvnorm(q,mu,sigma,workmh2,workvb2,theta)
+               end if
+               
+               tmp1=weight
+
+               do i=1,q
+                  betar(i)=betar(i)+tmp1*theta(i)
+               end do
+
+c+++++++++++++ regression coefficients
                do i=1,q
                   thetasave(isave,i)=betar(i)
                end do
@@ -1102,6 +1135,7 @@ c+++++++++++++ regression coefficient information
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
+                     betasave(i)=betasave(i)+beta(i)                     
                   end do
                end if   
 
@@ -1126,61 +1160,32 @@ c+++++++++++++ cluster information
                thetasave(isave,q+nfixed+q+k+1)=ncluster
                thetasave(isave,q+nfixed+q+k+2)=alpha
 
-
-c+++++++++++++ random effects
-
-               k=0
-               do i=1,nsubject
-                  do j=1,q
-                     k=k+1
-                     randsave(isave,k)=b(i,j)
-                  end do   
-               end do
-
-
-c+++++++++++++ predictive information
-
-               do i=1,ncluster
-                  prob(i)=dble(ccluster(i))/(alpha+dble(nsubject))
-               end do
-               prob(ncluster+1)=alpha/(alpha+dble(nsubject))
-
-               call simdisc(prob,nsubject+2,ncluster+1,evali)
-               
-               if(evali.le.ncluster)then
-                  do j=1,q
-                     theta(j)=bclus(evali,j)
-                  end do
-               end if
-               if(evali.gt.ncluster)then
-                  call rmvnorm(q,mu,sigma,workmh2,workvb2,theta)
-               end if
-               
-               do i=1,q
-                  k=k+1
-                  randsave(isave,k)=theta(i) 
-               end do
-
 c+++++++++++++ cpo
-
+               dbarc=0.d0
                do i=1,nrec
                   yij=y(i)
-                  
                   eta=0.d0
-
-                  do j=1,p
-                     eta=eta+x(i,j)*beta(j)
-                  end do
+                  if(nfixed.gt.0)then
+                     do j=1,p
+                        eta=eta+x(i,j)*beta(j)
+                     end do
+                  end if   
 		  do j=1,q
 		     eta=eta+z(i,j)*b(subject(i),j)
                   end do
+                  eta=eta+roffset(i)               
+                  mean=exp(eta)
                   
-                  eta=eta+roffset(i)
-
-                  tmp1=dble(yij)*eta-exp(eta)-dgamlog(dble(yij+1))
-
-                  cpo(i)=cpo(i)+1.0d0/exp(tmp1)  
+                  tmp1=dpoiss(dble(yij),mean,0)
+                  cpo(i,1)=cpo(i,1)+1.0d0/tmp1
+                  cpo(i,2)=cpo(i,2)+tmp1                  
+                  
+                  tmp1=dpoiss(dble(yij),mean,1)
+                  dbarc=dbarc+tmp1
                end do
+
+c+++++++++++++ dic
+               dbar=dbar-2.d0*dbarc   
 
 c+++++++++++++ print
                skipcount = 0
@@ -1201,47 +1206,49 @@ c+++++++++++++ print
       acrate(2)=acrate(2)/dble(nscan)    
       
       do i=1,nrec
-         cpo(i)=dble(nsave)/cpo(i)
+         cpo(i,1)=dble(nsave)/cpo(i,1)
+         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
       end do
+
+      do i=1,p
+         betasave(i)=betasave(i)/dble(nsave)
+      end do
+
+      do i=1,nsubject
+         do j=1,q
+            bsave(i,j)=bsave(i,j)/dble(nsave)
+         end do
+      end do   
+
+      dhat=0.d0
+      lpml=0.d0
+      do i=1,nrec
+         yij=y(i)
+         eta=0.d0
+         do j=1,p
+            eta=eta+x(i,j)*betasave(j)
+         end do
+	 do j=1,q
+	   eta=eta+z(i,j)*bsave(subject(i),j)
+         end do
+         eta=eta+roffset(i)             
+         
+         mean=exp(eta)
+         dhat=dhat+dpoiss(dble(yij),mean,1)
+         lpml=lpml+log(cpo(i,1))
+      end do
+      dhat=-2.d0*dhat      
+
+      dbar=dbar/dble(nsave)
+      pd=dbar-dhat
+      
+      mc(1)=dbar
+      mc(2)=dhat
+      mc(3)=pd
+      mc(4)=dbar+pd
+      mc(5)=lpml
+            
             
       return
       end
-      
-
-c=======================================================================      
-      subroutine relabelg(ind,since,nsubject,q,ncluster,ccluster,ss,
-     &                   bclus,theta)
-c=======================================================================
-c     relabel the clusters after the elimination of one of them
-c     A.J.V., 2005
-      implicit none
-      integer i,j,ind,since,nsubject,q,ncluster,ccluster(nsubject)
-      integer ss(nsubject)
-      real*8 bclus(nsubject,q),theta(q)
-
-      do i=1,q
-         theta(i)=bclus(since,i)
-      end do
-      
-      do i=since+1,ncluster
-         do j=1,nsubject
-            if(ss(j).eq.i)then
-               ss(j)=i-1 
-            end if
-         end do
-         do j=1,q
-            bclus(i-1,j)=bclus(i,j)
-         end do
-         ccluster(i-1)=ccluster(i)
-      end do
-      
-      ss(ind)=ncluster
-      
-      do i=1,q
-         bclus(ncluster,i)=theta(i)
-      end do
-      ccluster(ncluster)=1
-      
-      return
-      end  
       

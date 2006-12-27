@@ -11,7 +11,8 @@
    
 \usage{
 
-FPTrasch(y,prior,mcmc,state,status,delete=FALSE,data=sys.frame(sys.parent()))
+FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
+         delete=FALSE,data=sys.frame(sys.parent()))
      
 }
 
@@ -53,6 +54,9 @@ FPTrasch(y,prior,mcmc,state,status,delete=FALSE,data=sys.frame(sys.parent()))
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
                      object \code{state}.}
+
+    \item{grid}{     grid points where the density estimate is 
+                     evaluated. The default is seq(-10,10,length=1000).}
                      
     \item{delete}{   a logical variable indicating whether all items that no one gets 
                      right or no one gets wrong and all persons with no items right or no 

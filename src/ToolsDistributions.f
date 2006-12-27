@@ -193,3 +193,169 @@ c     A.J.V., 2005
       return
       end
 
+
+c=======================================================================
+      subroutine dmvn2(n,x,mu,sigma,eval,vv,a,sigma2,iflag)        
+c=======================================================================
+c     return the log of a multivariate normal density
+c     A.J.V., 2005
+      implicit none
+      integer n,i,j
+      real*8 mu(n),sigma(n,n),x(n),vv(n)
+      real*8 a(n,n),sigma2(n,n),det,sse,eval
+      integer iflag(n)
+      real*8 work1,work2,work3,tpi
+     
+      work1=0.d0
+      work2=0.d0
+      work3=0.d0
+      det=0.d0
+      sse=0.d0
+	  
+      det=0.d0
+      
+      tpi=6.283185307179586476925286766559d0
+       
+      work1=-(dble(n)*log(tpi))
+    
+      do i=1,n
+         do j=1,n
+            a(i,j)=sigma(i,j)
+         end do
+      end do
+
+      call invdet(a,n,sigma2,det,iflag,vv)
+
+      work2=det
+   
+      do i=1,n
+         vv(i)=x(i)-mu(i)
+      end do
+   
+      do i=1,n
+         do j=1,n
+            sse=sse+vv(i)*sigma2(i,j)*vv(j)          
+         end do
+      end do
+
+      work3=sse
+     
+      eval=(work1-work2-work3)/2.d0
+      
+      return
+      end
+
+
+c=======================================================================
+      subroutine diwishart(kk,nu,sigma,tinv,workm1,workm2,workv,iflag,
+     &                     eval)        
+c=======================================================================
+c     return the log of a inverted wishart density (proportional only)
+c     W~InvWishart(nu,T) 
+c     p(W) \propto |Tinv|^{nu/2} |Sigma|^{(nu+kk+1)/2} 
+c                  exp(-0.5*tr(Tinv Sigmainv))
+c     A.J.V., 2007
+
+      implicit none
+c-----input      
+      integer kk,nu
+      real*8 sigma(kk,kk),tinv(kk,kk)
+
+c-----output      
+      real*8 eval
+      
+c-----input-working       
+      integer iflag(kk)      
+      real*8 workm1(kk,kk),workm2(kk,kk)
+      real*8 workv(kk)
+
+c-----working
+      integer i,j,k  
+      real*8 detlogt,detlogs
+      real*8 trace,tmp1
+
+      do i=1,kk
+         do j=1,kk
+            workm1(i,j)=sigma(i,j)
+         end do
+      end do
+      call invdet(workm1,kk,workm2,detlogs,iflag,workv)
+      
+      do i=1,kk
+         do j=1,kk
+            workm1(i,j)=0.d0
+         end do
+      end do
+      
+      do i=1,kk
+         do j=1,kk
+            tmp1=0.d0
+            do k=1,kk
+               tmp1=tmp1+tinv(i,k)*workm2(k,j)
+            end do
+            workm1(i,j)=tmp1
+         end do
+      end do
+      
+      trace=0.d0
+      do i=1,kk
+         trace=trace+workm1(i,i)
+      end do
+
+      do i=1,kk
+         do j=1,kk
+            workm1(i,j)=tinv(i,j)
+         end do
+      end do
+      call invdet(workm1,kk,workm2,detlogt,iflag,workv)
+
+       
+      eval=  0.5d0*dble(nu)*detlogt
+     &      -0.5d0*(dble(nu+kk+1))*detlogs
+     &      -0.5d0*trace
+      
+      return
+      end
+
+
+c=======================================================================
+      subroutine dmvnd(n,x,mu,sigma,eval,iflag)        
+c=======================================================================
+c     return the log of a multivariate normal density
+c     in this routine sigma is destroyed!!!.
+c     A.J.V., 2007
+      implicit none
+      integer n,i,j
+      real*8 mu(n),sigma(n,n),x(n)
+      real*8 det,sse,eval
+      integer iflag(n)
+      real*8 work1,work2,work3,tpi
+     
+      work1=0.d0
+      work2=0.d0
+      work3=0.d0
+      det=0.d0
+      sse=0.d0
+	  
+      det=0.d0
+      
+      tpi=6.283185307179586476925286766559d0
+       
+      work1=-(dble(n)*log(tpi))
+    
+      call inversedet(sigma,n,iflag,det)
+
+      work2=det
+   
+      do i=1,n
+         do j=1,n
+            sse=sse+(x(i)-mu(i))*sigma(i,j)*(x(j)-mu(j))
+         end do
+      end do
+
+      work3=sse
+     
+      eval=(work1-work2-work3)/2.d0
+      
+      return
+      end

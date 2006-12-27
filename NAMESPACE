@@ -1,6 +1,8 @@
 useDynLib(DPpackage)
 
 export( 
+        BDPdensity,
+        BDPdensity.default,
         CSDPbinary,
         CSDPbinary.default,
         DPbinary,
@@ -14,6 +16,18 @@ export(
         DPglmm.default,
         DPlmm,
         DPlmm.default,
+        DPmeta,
+        DPmeta.default,
+        DPMglmm,
+        DPMglmm.default,
+        DPMlmm,
+        DPMlmm.default,
+        DPMmeta,
+        DPMmeta.default,
+        DPMrandom,
+        DPMrandom.default,
+        DPMolmm,
+        DPMolmm.default,
         DPolmm,
         DPolmm.default,
         DPpsBF,        
@@ -48,6 +62,11 @@ importFrom(graphics, plot)
 
 S3method(print, anovaPsCP)
 
+S3method(print, BDPdensity)
+S3method(plot, BDPdensity)
+S3method(summary, BDPdensity)
+S3method(print, summaryBDPdensity)
+
 S3method(print, CSDPbinary)
 S3method(plot, CSDPbinary)
 S3method(summary, CSDPbinary)
@@ -73,16 +92,52 @@ S3method(print, DPglmm)
 S3method(plot, DPglmm)
 S3method(summary, DPglmm)
 S3method(print, summaryDPglmm)
+S3method(anova, DPglmm)
 
 S3method(print, DPlmm)
 S3method(plot, DPlmm)
 S3method(summary, DPlmm)
 S3method(print, summaryDPlmm)
+S3method(anova, DPlmm)
+
+S3method(print, DPmeta)
+S3method(plot, DPmeta)
+S3method(summary, DPmeta)
+S3method(print, summaryDPmeta)
+S3method(anova, DPmeta)
+
+S3method(print, DPMglmm)
+S3method(plot, DPMglmm)
+S3method(summary, DPMglmm)
+S3method(print, summaryDPMglmm)
+S3method(anova, DPMglmm)
+
+S3method(print, DPMlmm)
+S3method(plot, DPMlmm)
+S3method(summary, DPMlmm)
+S3method(print, summaryDPMlmm)
+S3method(anova, DPMlmm)
+
+S3method(print, DPMmeta)
+S3method(plot, DPMmeta)
+S3method(summary, DPMmeta)
+S3method(print, summaryDPMmeta)
+S3method(anova, DPMmeta)
+
+S3method(print, DPMrandom)
+S3method(plot, DPMrandom)
+
+S3method(print, DPMolmm)
+S3method(plot, DPMolmm)
+S3method(summary, DPMolmm)
+S3method(print, summaryDPMolmm)
+S3method(anova, DPMolmm)
 
 S3method(print, DPolmm)
 S3method(plot, DPolmm)
 S3method(summary, DPolmm)
 S3method(print, summaryDPolmm)
+S3method(anova, DPolmm)
 
 S3method(print, DPpsBF)
 
@@ -144,4 +199,5 @@ S3method(plot, PTlm)
 S3method(summary, PTlm)
 S3method(print, summaryPTlm)
 S3method(anova, PTlm)
+
 

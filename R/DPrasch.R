@@ -32,10 +32,18 @@
 ###
 
 
-DPrasch<-function(y,prior,mcmc,state,status,delete=FALSE,data=sys.frame(sys.parent()))
+DPrasch<-function(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),delete=FALSE,data=sys.frame(sys.parent()))
 UseMethod("DPrasch")
 
-DPrasch.default<-function(y,prior,mcmc,state,status,delete=FALSE,data)
+DPrasch.default<-
+function(y,
+         prior,
+         mcmc,
+         state,
+         status,
+         grid=seq(-10,10,length=1000),
+         delete=FALSE,
+         data=sys.frame(sys.parent()))
 {
          #########################################################################################
          # call parameters
@@ -217,8 +225,8 @@ DPrasch.default<-function(y,prior,mcmc,state,status,delete=FALSE,data)
          #########################################################################################
          acrate<-rep(0,2)
          cpo<-matrix(0,nrow=nsubject,ncol=p)
-         ngrid<-500
-	 grid<-rev(seq(-6,6,length=ngrid))
+         grid<-rev(grid)
+	 ngrid<-length(grid)
          faccum<-rep(0,ngrid)
          thetasave<-matrix(0,nrow=nsave,ncol=p+3)
          randsave<-matrix(0,nrow=nsave,ncol=nsubject+1)
@@ -722,7 +730,7 @@ DPrasch.default<-function(y,prior,mcmc,state,status,delete=FALSE,data)
     ans$nsubject<-object$nsubject
     ans$acrate<-object$acrate
 
-    class(ans) <- "summaryDPraschpoisson"
+    class(ans) <- "summaryDPrasch"
     return(ans)
 }
 

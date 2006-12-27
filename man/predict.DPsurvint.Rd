@@ -9,7 +9,7 @@
     
 \usage{
 
-predict.DPsurvint(object,grid,xnew=NULL,hpd=TRUE, ...)
+\method{predict}{DPsurvint}(object,grid,xnew=NULL,hpd=TRUE, ...)
 
 }
 

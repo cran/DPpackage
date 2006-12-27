@@ -2,8 +2,8 @@
 ### Fit a Rasch Poisson model with a Dirichlet Process prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 24-09-2006.
+### Copyright: Alejandro Jara Vallejos, 2006 - 2007
+### Last modification: 01-02-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -32,10 +32,19 @@
 ###
 
 
-DPraschpoisson<-function(y,prior,mcmc,state,status,data=sys.frame(sys.parent()))
+DPraschpoisson<-function(y,prior,mcmc,offset,state,status,grid=seq(-10,10,length=1000),
+                         data=sys.frame(sys.parent()))
 UseMethod("DPraschpoisson")
 
-DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
+DPraschpoisson.default<-
+function(y,
+         prior,
+         mcmc,
+         offset=NULL,
+         state,
+         status,
+         grid=seq(-10,10,length=1000),
+         data=sys.frame(sys.parent()))
 {
          #########################################################################################
          # call parameters
@@ -163,12 +172,59 @@ DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
          #########################################################################################
          acrate<-rep(0,2)
          cpo<-matrix(0,nrow=nsubject,ncol=p)
-         ngrid<-500
-	 grid<-rev(seq(-6,6,length=ngrid))
+         grid<-rev(grid)         
+         ngrid<-length(grid)
          faccum<-rep(0,ngrid)
          thetasave<-matrix(0,nrow=nsave,ncol=p+3)
          randsave<-matrix(0,nrow=nsave,ncol=nsubject+1)
          
+         #########################################################################################
+         # MLE estimation
+         #########################################################################################
+         
+         RaschMLE<-function(y,nitem,nsubject,offset)
+         {
+             ywork2<-rep(0,nsubject*nitem)
+             roffset<-rep(0,nsubject*nitem)
+             x<-matrix(0,nrow=nsubject*nitem,ncol=nitem)
+             count<-0
+             for(i in 1:nsubject)
+             {
+                 
+                 for(j in 1:nitem)
+                 {
+                    count<-count+1
+                    ywork2[count]<-y[i,j]
+                    x[count,1]<-1
+                    if(j>1)
+                    {
+                      x[count,j]<--1
+                    }
+                    roffset[count]<-offset[i,j]
+                  }
+             }
+             out<-NULL
+
+             fit0<-glm.fit(x=x, y=ywork2,offset=roffset, family = poisson(log))
+             out$beta<-fit0$coefficients
+             p1 <- 1:nitem
+             Qr <- fit0$qr
+             out$cov <- chol2inv(Qr$qr[p1, p1, drop = FALSE])
+             return(out)
+	 }
+	 
+         if(is.null(offset))
+	 {
+	     roffset<-matrix(0,nrow=nsubject,ncol=p)
+  	 }
+  	 else
+  	 {
+  	     roffset<-offset
+  	 }
+	 
+         fit0<-RaschMLE(ywork,p,nsubject,roffset)
+
+
 
          #########################################################################################
          # parameters depending on status
@@ -176,17 +232,11 @@ DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
        
     	 if(status==TRUE)
 	 {
-                b<-rep(0,nsubject)
-                bclus<-rep(0,nsubject)
-                
-                diff<-apply(ywork, 2, mean)
-                beta<-rep(0,(p-1))
-                for(i in 1:(p-1))
-                {
-                    beta[i]<-log(diff[1])-log(diff[i+1])                
-                }
-                ncluster<-1
-                ss<-rep(1,nsubject)
+                beta<-fit0$beta[2:p]
+                b<-rnorm(nsubject,mean=fit0$beta[1],sd=sigma)
+                bclus<-b
+                ncluster<-nsubject
+                ss<-seq(1,nsubject)
    	 }
 	 
       	 if(status==FALSE)
@@ -195,7 +245,7 @@ DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
 	        b<-state$b
                 bclus<-state$bclus 
                 beta<-state$beta
-                mu<-sate$mu
+                mu<-state$mu
 	        ncluster<-state$ncluster
 	        sigma<-state$sigma
 	        sigmainv<-1/sigma
@@ -224,6 +274,14 @@ DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
          xtx<-matrix(0,nrow=p-1,ncol=p-1)
          xty<-rep(0,p-1)
 
+         if(is.null(offset))
+	 {
+	     roffset<-matrix(0,nrow=nsubject,ncol=p)
+  	 }
+  	 else
+  	 {
+  	     roffset<-offset
+  	 }
 
          #########################################################################################
          # calling the fortran code
@@ -238,6 +296,7 @@ DPraschpoisson.default<-function(y,prior,mcmc,state,status,data)
   	 	nsubject   =as.integer(nsubject),
 	 	p          =as.integer(p),
   	 	y          =as.integer(ywork),
+  	 	roffset    =as.double(roffset),
   	 	a0b0       =as.double(a0b0),
   	 	b0         =as.double(b0),
   	 	prec       =as.double(prec),

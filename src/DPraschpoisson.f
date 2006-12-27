@@ -1,6 +1,7 @@
 
 c=======================================================================                      
       subroutine spraschpoi(datastr,imiss,ngrid,nmissing,nsubject,p,y,
+     &                      roffset, 
      &                      a0b0,b0,prec,psiinv,sb,smu,tau1,tau2,
      &                      mcmc,nsave,
      &                      acrate,cpo,faccum,randsave,thetasave,
@@ -12,16 +13,22 @@ c=======================================================================
      &                      xtx,xty,grid)
 c=======================================================================                      
 c
-c     Version 1.0: 
-c     Last modification: 24-09-2006.
-c
 c     Subroutine `spraschpoi' to run a Markov chain in the  
 c     semiparametric Rasch Poissin Count model. In this routine, inference 
 c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara Vallejos, 2006 - 2007
+c
+c     Version 3.0: 
+c
+c     Last modification: 01-02-2007.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Add offset.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -62,6 +69,8 @@ c        nmissing    :  integer giving the number of missing
 c                       observations.
 c        nsubject    :  integer giving the number of subjects.
 c        p           :  integer giving the number of items.
+c        roffset     :  real matrix giving the offsets,
+c                       roffset(nsubject,p).
 c        y           :  integer matrix giving the response variable,
 c                       y(nsubject,p).
 c
@@ -219,6 +228,7 @@ c=======================================================================
 c+++++Data
       integer imiss,ngrid,nmissing,nsubject,p
       integer datastr(nmissing,2),y(nsubject,p)
+      real*8 roffset(nsubject,p)
 
 c+++++Prior 
       real*8 aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1),psiinv
@@ -256,12 +266,17 @@ c+++++Working space - RNG
 c+++++Working space - MCMC
       integer iscan,isave,nscan
       integer sprint,skipcount,dispcount
+      real*8 dpoiss
+      real*8 logcgkn,logcgko
+      real*8 loglikn,logliko
+      real*8 logpriorn,logprioro
+      real*8 ratio
       
 c+++++Working space - Configurations
       integer ccluster(nsubject),evali 
       integer ns
       integer since
-      real*8 dgamlog,prob(nsubject+2)
+      real*8 prob(nsubject+2)
       real*8 tmp1,tmp2
       real*8 theta
 
@@ -278,7 +293,6 @@ c+++++Working space - GLM part
       integer yij
       real*8 acrate2
       real*8 eta,etac,gprime,gprimec,mean,meanc,offset,ytilde,ytildec
-      real*8 logp
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -326,9 +340,9 @@ c++++++++++++++++++++++++++++++++++
                i=datastr(ii,1)
                j=datastr(ii,2)
                if(j.eq.1)then
-                 eta=b(i)
+                 eta=b(i)+roffset(i,j)
                 else
-                 eta=b(i)-beta(j-1)
+                 eta=b(i)-beta(j-1)+roffset(i,j)
                end if
                
                mean=exp(eta)
@@ -346,7 +360,7 @@ c++++++++++++++++++++++++++++++++++
 
          do i=1,p-1
             do j=1,p-1
-               xtx(i,j)=0.d0
+               xtx(i,j)=prec(i,j)
                work1(i,j)=0.d0
                work2(i,j)=0.d0
                work3(i,j)=0.d0
@@ -357,27 +371,26 @@ c++++++++++++++++++++++++++++++++++
             workv3(i)=0.d0
             iflag(i)=0
          end do
+
+         logliko=0.d0         
          
          do i=1,nsubject
             do j=1,p-1
-               eta=b(i)-beta(j) 
-               offset=b(i)
+               yij=y(i,j+1)
+               eta=b(i)-beta(j)+roffset(i,j+1) 
+               offset=b(i)+roffset(i,j+1) 
                mean=exp(eta)
                gprime=exp(-eta)
-               ytilde=eta+(dble(y(i,j+1))-mean)*gprime-offset
+               ytilde=eta+(dble(yij)-mean)*gprime-offset
                
                xtx(j,j)=xtx(j,j)+1.d0/gprime
                xty(j)=xty(j)-ytilde/gprime
+               
+               logliko=logliko+dpoiss(dble(yij),mean,1)
             end do
          end do
          
-         do i=1,p-1
-            do j=1,p-1
-               work1(i,j)=xtx(i,j)+prec(i,j)          
-            end do
-         end do
-
-         call invdet(work1,p-1,work2,detlog,iflag,workv1)
+         call invdet(xtx,p-1,work2,detlog,iflag,workv1)
             
          do i=1,p-1
             tmp1=0.d0
@@ -387,54 +400,38 @@ c++++++++++++++++++++++++++++++++++
             workv2(i)=tmp1
          end do
 
-            
          call rmvnorm(p-1,workv2,work2,workmh1,workv3,betac)
 
-         call dmvn(p-1,betac,workv2,work2,tmp1,
+c+++++++ evaluating the candidate generating kernel
+
+         call dmvn(p-1,betac,workv2,work2,logcgko,
      &             workv1,work1,work3,workv3,iflag)                 
-
-         logp=0.d0            
-         logp=logp-tmp1
-            
-
-c+++++++ likelihood ratio
-
-         do i=1,nsubject
-            do j=1,p-1
-               eta=b(i)-beta(j) 
-               etac=b(i)-betac(j) 
-
-               logp=logp+
-     &              dble(y(i,j+1))*(etac-eta)-exp(etac)+exp(eta)
-            end do              
-         end do
-
 
 c+++++++ prior ratio
 
-         tmp1=0.d0
-         tmp2=0.d0
+         logprioro=0.d0
+         logpriorn=0.d0
          
          do i=1,p-1
             do j=1,p-1
-               tmp1=tmp1+(betac(i)-b0(i))* 
+               logpriorn=logpriorn+(betac(i)-b0(i))* 
      &                    prec(i,j)      *
      &                   (betac(j)-b0(j))
 
-               tmp2=tmp2+(beta(i) -b0(i))* 
+               logprioro=logprioro+(beta(i) -b0(i))* 
      &                    prec(i,j)      *
      &                   (beta(j) -b0(j))
             end do
          end do
          
-         logp=logp-0.5d0*tmp1+0.5d0*tmp2
+         logpriorn=-0.5d0*logpriorn
+         logprioro=-0.5d0*logprioro
 
-            
 c+++++++ candidate generating kernel contribution
 
          do i=1,p-1
             do j=1,p-1
-               xtx(i,j)=0.d0
+               xtx(i,j)=prec(i,j)
                work1(i,j)=0.d0
                work2(i,j)=0.d0
                work3(i,j)=0.d0
@@ -446,27 +443,25 @@ c+++++++ candidate generating kernel contribution
             iflag(i)=0
          end do
 
+         loglikn=0.d0         
 
          do i=1,nsubject
             do j=1,p-1
-               etac=b(i)-betac(j) 
-               offset=b(i)
+               yij=y(i,j+1)
+               etac=b(i)-betac(j)+roffset(i,j+1)  
+               offset=b(i)+roffset(i,j+1) 
                meanc=exp(etac)
                gprimec=exp(-etac)
-               ytildec=etac+(dble(y(i,j+1))-meanc)*gprimec-offset
+               ytildec=etac+(dble(yij)-meanc)*gprimec-offset
                
                xtx(j,j)=xtx(j,j)+1.d0/gprimec
                xty(j)=xty(j)-ytildec/gprimec
+               
+               loglikn=loglikn+dpoiss(dble(yij),meanc,1)               
             end do
          end do
          
-         do i=1,p-1
-            do j=1,p-1
-               work1(i,j)=xtx(i,j)+prec(i,j)          
-            end do
-         end do
-
-         call invdet(work1,p-1,work2,detlog,iflag,workv1)
+         call invdet(xtx,p-1,work2,detlog,iflag,workv1)
 
          do i=1,p-1
             tmp1=0.d0
@@ -475,22 +470,25 @@ c+++++++ candidate generating kernel contribution
             end do
             workv2(i)=tmp1
          end do
+
+c+++++++ evaluating the candidate generating kernel
             
-         call dmvn(p-1,beta,workv2,work2,tmp1,
+         call dmvn(p-1,beta,workv2,work2,logcgkn,
      &             workv1,work1,work3,workv3,iflag)                 
  
-         logp=logp+tmp1
 
 c+++++++ mh step
+           
+         ratio=dexp(loglikn-logliko+logcgkn-logcgko+
+     &              logpriorn-logprioro)
 
-         if(log(dble(runif())).lt.logp)then
+         if(dble(runif()).lt.ratio)then
             acrate(1)=acrate(1)+1.d0
             do i=1,p-1
                beta(i)=betac(i) 
             end do
          end if
             
-
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
 
@@ -518,16 +516,15 @@ c++++++++++ observation in cluster with more than 1 element
                   tmp1=0.d0
                   
                   yij=y(i,1)
-                  eta=bclus(j)
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))
+                  eta=bclus(j)+roffset(i,1) 
+                  mean=exp(eta)
+                  tmp1=tmp1+dpoiss(dble(yij),mean,1)
 
                   do k=1,p-1
                      yij=y(i,k+1)
-                     eta=bclus(j)-beta(k)
-
-                     tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                         dgamlog(dble(yij+1))
+                     eta=bclus(j)-beta(k)+roffset(i,k+1) 
+                     mean=exp(eta)
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
@@ -539,18 +536,16 @@ c++++++++++ observation in cluster with more than 1 element
                tmp1=0.d0
                
                yij=y(i,1)
-               eta=theta
-               tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                   dgamlog(dble(yij+1))
+               eta=theta+roffset(i,1) 
+               mean=exp(eta)
+               tmp1=tmp1+dpoiss(dble(yij),mean,1)
 
                do k=1,p-1
                   yij=y(i,k+1)
-                  eta=theta-beta(k)
-
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))
+                  eta=theta-beta(k)+roffset(i,k+1) 
+                  mean=exp(eta)
+                  tmp1=tmp1+dpoiss(dble(yij),mean,1)
                end do
-
 
                prob(ncluster+1)=exp(log(alpha)+tmp1)
                
@@ -569,7 +564,7 @@ c++++++++++ observation in cluster with more than 1 element
             end if
 
 c++++++++++ subject in cluster with only 1 observation
-             
+
             if(ns.eq.1)then
                 
                since=ss(i)
@@ -582,43 +577,39 @@ c++++++++++ subject in cluster with only 1 observation
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
 
-
                do j=1,ncluster
                   
                   tmp1=0.d0
-                  
                   yij=y(i,1)
-                  eta=bclus(j)
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))
+                  eta=bclus(j)+roffset(i,1) 
+                  mean=exp(eta)
+                  tmp1=tmp1+dpoiss(dble(yij),mean,1)
 
                   do k=1,p-1
                      yij=y(i,k+1)
-                     eta=bclus(j)-beta(k)
-
-                     tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                         dgamlog(dble(yij+1))
+                     eta=bclus(j)-beta(k)+roffset(i,k+1) 
+                     mean=exp(eta)
+                     tmp1=tmp1+dpoiss(dble(yij),mean,1)
                   end do
 
                   prob(j)=exp(log(dble(ccluster(j)))+
      &                        tmp1)
                end do
                
-               theta=rnorm(mu,sigma)
+               theta=b(i)
 
                tmp1=0.d0
                
                yij=y(i,1)
-               eta=theta
-               tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                   dgamlog(dble(yij+1))
+               eta=theta+roffset(i,1) 
+               mean=exp(eta)
+               tmp1=tmp1+dpoiss(dble(yij),mean,1)
 
                do k=1,p-1
                   yij=y(i,k+1)
-                  eta=theta-beta(k)
-
-                  tmp1=tmp1+dble(yij)*eta-exp(eta)-
-     &                      dgamlog(dble(yij+1))
+                  eta=theta-beta(k)+roffset(i,k+1) 
+                  mean=exp(eta)
+                  tmp1=tmp1+dpoiss(dble(yij),mean,1)
                end do
 
                prob(ncluster+1)=exp(log(alpha)+tmp1)
@@ -655,16 +646,18 @@ c++++++++++ check if the user has requested an interrupt
             ztz=0.d0
             ztzinv=0.d0
             zty=0.d0
+
+            logliko=0.d0                     
             
             do i=1,nsubject
                if(ii.eq.ss(i))then
                  do j=1,p
                     if(j.eq.1)then
-                       eta=bclus(ii)
-                       offset=0.d0
+                       eta=bclus(ii)+roffset(i,j)
+                       offset=roffset(i,j)
                       else
-                       eta=bclus(ii)-beta(j-1)
-                       offset=-beta(j-1)
+                       eta=bclus(ii)-beta(j-1)+roffset(i,j)
+                       offset=roffset(i,j)-beta(j-1)
                     end if
                     
                     yij=y(i,j)
@@ -674,6 +667,8 @@ c++++++++++ check if the user has requested an interrupt
 
                     ztz=ztz+1.d0/gprime
                     zty=zty+ytilde/gprime
+                    
+                    logliko=logliko+dpoiss(dble(yij),mean,1)
                  end do
                end if
             end do
@@ -687,45 +682,26 @@ c++++++++++ check if the user has requested an interrupt
  
             thetac=rnorm(tmp2,sqrt(ztzinv))
 
-            tmp1=dnrm(thetac,tmp2,sqrt(ztzinv),1)
+c++++++++++ evaluating the candidate generating kernel
 
-            logp=0.d0
-            logp=logp-tmp1
-
-
-c++++++++++ likelihood ratio
-
-            do i=1,nsubject
-               if(ii.eq.ss(i))then
-                 do j=1,p
-                    if(j.eq.1)then
-                       eta=bclus(ii)
-                       etac=thetac
-                      else
-                       eta=bclus(ii)-beta(j-1)
-                       etac=thetac-beta(j-1)
-                    end if
-                    
-                    yij=y(i,j)
-
-                    logp=logp+
-     &                   dble(yij)*(etac-eta)-exp(etac)+exp(eta)                     
-                 end do
-               end if
-            end do
-
+            logcgko=dnrm(thetac,tmp2,sqrt(ztzinv),1)
 
 c++++++++++ prior ratio
 
-            tmp1=(thetac-mu)* 
+            logprioro=0.d0
+            logpriorn=0.d0
+         
+            logpriorn=(thetac-mu)* 
      &            sigmainv*
      &           (thetac-mu)
 
-            tmp2=(bclus(ii)-mu)* 
+            logprioro=(bclus(ii)-mu)* 
      &            sigmainv*
      &           (bclus(ii)-mu)
             
-            logp=logp-0.5d0*tmp1+0.5d0*tmp2 
+            logpriorn=-0.5d0*logpriorn
+            logprioro=-0.5d0*logprioro
+
 
 c++++++++++ candidate generating kernel contribution
 
@@ -733,15 +709,17 @@ c++++++++++ candidate generating kernel contribution
             ztzinv=0.d0
             zty=0.d0
 
+            loglikn=0.d0                     
+            
             do i=1,nsubject
                if(ii.eq.ss(i))then
                  do j=1,p
                     if(j.eq.1)then
-                       etac=thetac
-                       offset=0.d0
+                       etac=thetac+roffset(i,j)
+                       offset=roffset(i,j)
                       else
-                       etac=thetac-beta(j-1)
-                       offset=-beta(j-1)
+                       etac=thetac-beta(j-1)+roffset(i,j)
+                       offset=roffset(i,j)-beta(j-1)
                     end if
                     
                     yij=y(i,j)
@@ -751,6 +729,8 @@ c++++++++++ candidate generating kernel contribution
 
                     ztz=ztz+1.d0/gprimec
                     zty=zty+ytildec/gprimec
+                    
+                    loglikn=loglikn+dpoiss(dble(yij),meanc,1)
                  end do
                end if
             end do
@@ -761,17 +741,18 @@ c++++++++++ candidate generating kernel contribution
             zty=zty+sigmainv*mu
 
             tmp2=ztzinv*zty
- 
+
+c++++++++++ evaluating the candidate generating kernel
+
             theta=bclus(ii)
-
-            tmp1=dnrm(theta,tmp2,sqrt(ztzinv),1)                 
-
-            logp=logp+tmp1
-
+            logcgkn=dnrm(theta,tmp2,sqrt(ztzinv),1)                 
 
 c++++++++++ mh step
+           
+            ratio=dexp(loglikn-logliko+logcgkn-logcgko+
+     &                 logpriorn-logprioro)
 
-            if(log(dble(runif())).lt.logp)then
+            if(dble(runif()).lt.ratio)then
                acrate2=acrate2+1.d0
                bclus(ii)=thetac
             end if
@@ -904,11 +885,12 @@ c+++++++++++++ cpo
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
-                       eta=b(i)
+                       eta=b(i)+roffset(i,j)
                       else
-                       eta=b(i)-beta(j-1)
+                       eta=b(i)-beta(j-1)+roffset(i,j)
                      end if  
-                     tmp1=dble(yij)*eta-exp(eta)-dgamlog(dble(yij+1))
+                     mean=exp(eta)
+                     tmp1=dpoiss(dble(yij),mean,1)
                      cpo(i,j)=cpo(i,j)+1.0d0/exp(tmp1)   
                   end do
                end do

@@ -2,10 +2,11 @@
 \alias{DPolmm}
 \alias{DPolmm.default}
 
-\title{Bayesian analysis for a semiparametric ordinal linear mixed model}
+\title{Bayesian analysis for a semiparametric ordinal linear mixed model using a MDP}
 \description{
     This function generates a posterior density sample for a 
-    semiparametric ordinal linear mixed model. 
+    semiparametric ordinal linear mixed model using a Dirichlet Process
+    or a Mixture of Dirichlet process prior for the distribution of the random effects.  
 }
   
   
@@ -33,9 +34,15 @@ DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
                      must be specified if \code{a0} and \code{b0} are missing, see details
                      below), \code{nu0} and \code{Tinv} giving the hyperparameters of the 
                      inverted Wishart prior distribution for the scale matrix of the normal
-                     baseline distribution, \code{mub} and \code{Sb} giving the hyperparameters 
+                     baseline distribution, \code{sigma} giving the value of the covariance
+                     matrix of the centering distribution (it must be specified if 
+                     \code{nu0} and \code{tinv} are missing),
+                     \code{mub} and \code{Sb} giving the hyperparameters 
                      of the normal prior distribution for the mean of the normal
-                     baseline distribution, \code{beta0} and \code{Sbeta0} giving the 
+                     baseline distribution, \code{mu} giving the value of the mean of the
+                     centering distribution (it must be specified if 
+                     \code{mub} and \code{Sb} are missing),
+                     \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the fixed effects
                      (must be specified only if fixed effects are considered in the model). 
                      }
@@ -88,19 +95,20 @@ DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   or fixed at some particular value. When \eqn{\alpha}{alpha} is random the method described by
   Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
   value, set \eqn{a_0}{a0} to NULL in the prior specification.
-
+  
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and on the use of MCMC methods for conjugate priors (Escobar, 1994;
-  Escobar and West, 1998). 
+  Escobar and West, 1998). The \eqn{\beta_R}{betaR} parameters are sampled using
+  the \eqn{\epsilon}{epsilon}-DP approximation proposed by Muliere and Tardella (1998), with
+  \eqn{\epsilon}{epsilon}=0.01.  
 }
 
 \value{
   An object of class \code{DPolmm} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
-  and \code{summary} have methods to show the results of the fit. 
+  \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{betaR}, \code{betaF}, \code{mu}, the elements of 
-  \code{Sigma}, \code{\alpha}, and the 
-  number of clusters.
+  \code{Sigma}, the cutoff points, \code{\alpha}, and the number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -127,15 +135,15 @@ DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   \item{beta}{ giving the value of the fixed effects.}
   
-  \item{betar}{ giving the mean value of the random effects.}
-
   \item{mu}{ giving the mean of the normal baseline distributions.} 
   
   \item{sigma}{ giving the variance matrix of the normal baseline distributions.}
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPglmm}}, \code{\link{DPlmm}}
+\code{\link{DPrandom}},
+\code{\link{DPlmm}}  , \code{\link{DPglmm}}, 
+\code{\link{DPMglmm}}, \code{\link{DPMlmm}}, \code{\link{DPMolmm}}
 }
 
 \references{
@@ -152,6 +160,9 @@ Escobar, M.D. and West, M. (1998) Computing Bayesian Nonparametric Hierarchical 
 
 Molenberghs, G. and Verbeke, G. (2005). Models for discrete longitudinal data,
   New York: Springer-Verlag.
+  
+Muliere, P. and Tardella, L. (1998) Approximating distributions of random functionals
+  of Ferguson-Dirichlet priors. The Canadian Journal of Statistics, 26(2): 283-297.
 }
 
 \examples{
@@ -161,13 +172,11 @@ Molenberghs, G. and Verbeke, G. (2005). Models for discrete longitudinal data,
       data(psychiatric)
       attach(psychiatric)
 
-      sweekt<-sweek*tx
-
     # MCMC parameters
 
       nburn<-5000
       nsave<-10000
-      nskip<-20
+      nskip<-10
       ndisplay<-100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
@@ -182,10 +191,10 @@ Molenberghs, G. and Verbeke, G. (2005). Models for discrete longitudinal data,
                   beta0=rep(0,3),Sbeta0=diag(1000,3))
 
 
-    # Fit the model
+    # Fitting the model
 
 
-      fit1<-DPolmm(fixed=imps79o~sweek+tx+sweekt,random=~1|id,prior=prior,
+      fit1<-DPolmm(fixed=imps79o~sweek+tx+sweek*tx,random=~1|id,prior=prior,
                    mcmc=mcmc,state=state,status=TRUE)
       fit1
 

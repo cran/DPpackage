@@ -2,7 +2,7 @@
 \alias{PTdensity}
 \alias{PTdensity.default}
 
-\title{Nonparametric Bayesian density estimation using Polya Trees}
+\title{Nonparametric Bayesian density estimation using Mixtures of Polya Trees}
 \description{
     This function generates a posterior density sample for a 
     Mixture of Polya trees model.
@@ -126,7 +126,7 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
 }
 
 \seealso{
-\code{\link{DPdensity}}
+\code{\link{DPdensity}}, \code{\link{BDPdensity}}
 }
 
 \references{
