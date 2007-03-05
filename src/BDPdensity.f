@@ -15,9 +15,14 @@ c     Bernstein-Dirichlet model.
 c
 c     Copyright: Alejandro Jara, 2007
 c
-c     Version 1.0:
+c     Version 2.0: 
 c
-c     Last modification: 20-05-2007.
+c     Last modification: 05-07-2007.
+c     
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - The Bush and McEachern resampling step has been added.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -119,7 +124,7 @@ c        cstrt       :  integer matrix used to save the cluster
 c                       structure, cstrt(nrec,nrec).
 c        prob        :  real vector used to update the cluster 
 c                       structure, prob(nrec+1).
-c        prob        :  real vector used to update the degree of BP,
+c        probk       :  real vector used to update the degree of BP,
 c                       probk(kmax).
 c        dispcount   :  index. 
 c        i           :  index. 
@@ -193,10 +198,13 @@ c+++++Internal working space
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++General
-      integer evali,i,j,l,ns,ok
-      integer since,sprint 
+      integer evali,i,ii,j,l,ns,ok
+      integer since,sprint,status
+      real*8 bound
       real*8 tmp1,tmp2,tmp3
-
+      real*8 tt1,tt2,tt3,tt4
+      real*8 yrand,yrand2
+      
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
@@ -204,7 +212,10 @@ c+++++CPU time
       real*8 sec00,sec0,sec1,sec
 
 c+++++RNG and distributions
-      real*8 rbeta,dbet
+      real*8 cdfbetas
+      real*8 dbet
+      real*8 rbeta
+      real runif
 
 c++++ parameters
       nburn=mcmc(1)
@@ -282,7 +293,7 @@ c++++++++++ subject in cluster with more than 1 observations
 
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
-                  call sampleybd(x(i),kmax,a0,b0,k,tmp1)                  
+                  call sampleybd(x(i),kmax,probk,a0,b0,k,tmp1)
                   yclus(evali)=tmp1
                end if
             end if
@@ -315,7 +326,7 @@ c++++++++++ subject in cluster with only 1 observation
                
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
-                  call sampleybd(x(i),kmax,a0,b0,k,tmp1)                  
+                  call sampleybd(x(i),kmax,probk,a0,b0,k,tmp1)
                   yclus(evali)=tmp1
                end if            
             end if  
@@ -328,9 +339,55 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
          
-         do i=1,ncluster
-            do j=1,ccluster(i)
-               y(cstrt(i,j))=yclus(i)
+         do ii=1,ncluster
+            ns=ccluster(ii)
+
+            do i=1,k
+               tmp1=       
+     &             (cdfbetas(dble(i)/dble(k),a0,b0,1,0)-
+     &              cdfbetas(dble(i-1)/dble(k),a0,b0,1,0))
+     
+               do l=1,ns
+                  tmp2=dbet(x(cstrt(ii,l)),dble(i),dble(k-i+1),0)   
+                  tmp1=tmp1*tmp2
+               end do
+               probk(i)=tmp1
+            end do
+
+            call simdisc(probk,kmax,k,j)
+
+            if(a0.eq.1.d0.and.b0.eq.1.d0)then
+               yrand=(dble(j-1)+dble(runif()))/dble(k)
+             else
+               tt3=dble(j-1)/dble(k)
+               tt4=1.d0-dble(j-1)/dble(k)
+               call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
+               if(status.ne.0)then
+                  call rexit("Error in ´bdpdensity´")      
+               end if
+               tmp1=tt1
+       
+               tt3=dble(j)/dble(k)
+               tt4=1.d0-dble(j)/dble(k)
+               call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
+               if(status.ne.0)then
+                  call rexit("Error in ´bdpdensity´")      
+               end if
+               tmp2=tt1
+ 
+               tmp3=tmp1+dble(runif())*(tmp2-tmp1) 
+       
+               call cdfbet(2,tmp3,1.d0-tmp3,yrand,yrand2,a0,b0,
+     &                     status,bound)
+               if(status.ne.0)then
+                  call rexit("Error in ´bdpdensity´")      
+               end if
+            end if
+
+            yclus(ii)=yrand
+         
+            do j=1,ns
+               y(cstrt(ii,j))=yclus(ii)
             end do
          end do   
 
@@ -387,7 +444,11 @@ c+++++++++++++ predictive information
                   tmp1=yclus(evali)
                end if
                if(evali.gt.ncluster)then
-                  tmp1=rbeta(a0,b0)
+                  if(a0.eq.1.d0.and.b0.eq.1.d0)then
+                     tmp1=dble(runif())
+                   else
+                     tmp1=rbeta(a0,b0)
+                  end if   
                end if
                randsave(isave,nrec+1)=tmp1
 
@@ -398,6 +459,11 @@ c+++++++++++++ predictive information
                      tmp2=dbet(grid(i),dble(l),dble(k-l+1),0)   
                      tmp1=tmp1+tmp2*prob(j)
                   end do
+                  if(a0.eq.1.d0.and.b0.eq.1.d0)then
+                     tmp3=dble(runif())
+                   else
+                     tmp3=rbeta(a0,b0)
+                  end if   
                   tmp3=rbeta(a0,b0)
                   call jcomponentbd(tmp3,k,l)                  
                   tmp2=dbet(grid(i),dble(l),dble(k-l+1),0)   

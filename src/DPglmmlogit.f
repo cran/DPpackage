@@ -1226,7 +1226,7 @@ c=======================================================================
 c     generate the scale parameter for a logistic distribution
 c     A.J.V., 2006
       implicit none
-      integer ok,rint,lint
+      integer ok,rint,llint
       real*8 r,eval,rnorm
       real*8 y,u,tmp1
       real runif
@@ -1252,7 +1252,7 @@ c     A.J.V., 2006
          end if
 
          if(eval.le.(4.d0/3.d0))then
-            ok=lint(u,eval)
+            ok=llint(u,eval)
          end if
       end do
       return
@@ -1300,7 +1300,7 @@ c     A.J.V., 2006
       
       
 c=======================================================================   
-      integer function lint(u,eval)
+      integer function llint(u,eval)
 c=======================================================================   
 c     A.J.V., 2006
       implicit none
@@ -1331,7 +1331,7 @@ c     A.J.V., 2006
       tmp1=h+log(z)
 
       if(tmp1.gt.iu)then
-        lint=1
+        llint=1
         go to 2
       end if
 
@@ -1343,7 +1343,7 @@ c     A.J.V., 2006
       tmp1=h+log(z)
       
       if(tmp1.lt.iu)then
-        lint=0
+        llint=0
         go to 2
       end if
       

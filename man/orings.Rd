@@ -1,6 +1,7 @@
 \name{orings}
 \alias{orings}
 \docType{data}
+\encoding{latin1}
 \title{Challenger Space Shuttle O-Ring Data}
 \description{
 The motivation for collecting this database was the explosion of the
@@ -16,12 +17,12 @@ between 53ºF and 81ºF.
 \format{
   A data frame with 138 observations on the following 4 variables.
   \describe{
-    \item{\code{ThermalDistress}}{a numeric vector indicating wether the
-                                  o-ring experienced thermal distress}
-    \item{\code{Temperature}}{a numeric vector giving the launch 
-                              temperature (degrees F)}
-    \item{\code{Pressure}}{a numeric vector giving the leak-check pressure (psi)}
-    \item{\code{Flight}}{a numeric vector giving the temporal order of flight}
+    \item{ThermalDistress}{a numeric vector indicating wether the
+                           o-ring experienced thermal distress}
+    \item{Temperature}{a numeric vector giving the launch 
+                       temperature (degrees F)}
+    \item{Pressure}{a numeric vector giving the leak-check pressure (psi)}
+    \item{Flight}{a numeric vector giving the temporal order of flight}
   }
 }
 

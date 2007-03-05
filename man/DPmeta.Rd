@@ -32,8 +32,8 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
                      must be specified if \code{a0} and \code{b0} are missing, see details
                      below), \code{tau1} and \code{tau2} giving the hyperparameters for the 
                      prior distribution of the variance of the centering distribution,
-                     \code{sigma} giving the value of the covariance
-                     matrix of the centering distribution (it must be specified if 
+                     \code{sigma} giving the value of the variance
+                     of the centering distribution (it must be specified if 
                      \code{tau1} and \code{tau2} are missing),
                      \code{mub} and \code{Sb} giving the hyperparameters 
                      of the normal prior distribution for the mean of the normal
@@ -135,7 +135,7 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 \seealso{
 \code{\link{DPrandom}},
 \code{\link{DPMmeta}},
-\code{\link{DPlmm}}  ,\code{\link{DPglmm}} , \code{\link{DPolmm}} ,
+\code{\link{DPlmm}}  , \code{\link{DPglmm}} , \code{\link{DPolmm}} ,
 \code{\link{DPMlmm}} , \code{\link{DPMglmm}}, \code{\link{DPMolmm}}
 }
 
@@ -234,3 +234,4 @@ Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

@@ -1,6 +1,7 @@
 \name{CSDPbinary}
 \alias{CSDPbinary}
 \alias{CSDPbinary.default}
+\encoding{latin1}
 
 \title{Bayesian analysis for a semiparametric logistic regression model}
 \description{
@@ -23,25 +24,25 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 
    \item{baseline}{  a description of the baseline error distribution to
                      be used in the model. The baseline distributions considered by 
-                     \code{CSDPbinary} so far is \code{logistic}.} 
+                     \code{CSDPbinary} so far is \emph{logistic}.} 
                      
    \item{prior}{     a list giving the prior information. The list includes the following
-                     parameters: \code{a0} and \code{b0} giving the hyperparameters for
+                     parameters: \emph{a0} and \emph{b0} giving the hyperparameters for
                      prior distribution of the precision parameter of the Centrally-Standarized 
-                     Dirichlet process prior, \code{alpha} giving the value of the precision 
-                     parameter (it must be specified if \code{a0} and \code{b0} are missing, 
-                     see the details below), and \code{beta0} and \code{Sbeta0} giving the 
+                     Dirichlet process prior, \emph{alpha} giving the value of the precision 
+                     parameter (it must be specified if \emph{a0} and \emph{b0} are missing, 
+                     see the details below), and \emph{beta0} and \emph{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the regression
                      coefficients.}
                
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
-                     the following integers: \code{nburn} giving the number of burn-in 
-                     scans, \code{nskip} giving the thinning interval, \code{nsave} giving
-                     the total number of scans to be saved, \code{ntheta} giving the thinning 
-                     interval for the \code{theta} parameter (if missing, the value 1 is considered), 
-                     \code{ndisplay} giving the number of saved scans to be displayed on the screen 
-                     (the function reports on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune} giving the Metropolis tuning parameter
+                     the following integers: \emph{nburn} giving the number of burn-in 
+                     scans, \emph{nskip} giving the thinning interval, \emph{nsave} giving
+                     the total number of scans to be saved, \emph{ntheta} giving the thinning 
+                     interval for the \emph{theta} parameter (if missing, the value 1 is considered), 
+                     \emph{ndisplay} giving the number of saved scans to be displayed on the screen 
+                     (the function reports on the screen when every \emph{ndisplay} iterations have been carried
+                     out), and \emph{tune} giving the Metropolis tuning parameter
                      (the default value is 1.1).}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
@@ -50,10 +51,10 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
     \item{status}{   a logical variable indicating whether this run is new (\code{TRUE}) or the 
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
-                     object \code{state}.}
+                     object \emph{state}.}
 
     \item{misc}{     misclassification information. When used, this list must include
-                     two objects, \code{sens} and \code{spec}, giving the sensitivity and
+                     two objects, \emph{sens} and \emph{spec}, giving the sensitivity and
                      specificity, respectively. Both can be a vector or a scalar. 
                      This information is used to correct for misclassification in the
                      conditional bernoulli model.}
@@ -88,8 +89,8 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{\beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
 
-  The precision parameter, \eqn{\alpha}{alpha}, of the \code{CSDP} prior 
-  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
+  The precision parameter, \eqn{\alpha}{alpha}, of the \emph{CSDP} prior 
+  can be considered as random, having a \emph{Gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
   or fixed at some particular value. When \eqn{\alpha}{alpha} is random a strategy similar to the method 
   described by Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
   value, set \eqn{a_0}{a0} to NULL in the prior specification.
@@ -110,25 +111,25 @@ CSDPbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
 \value{
   An object of class \code{CSDPbinary} representing the semiparametric logistic regression
   model fit. Generic functions such as \code{print}, \code{plot}, \code{predict}, \code{summary},
-  and \code{anova} have methods to show the results of the fit. The results include \code{beta}, 
-  the precision parameter (\code{alpha}), the number of clusters (\code{ncluster}), and 
-  the \code{link} function.
+  and \code{anova} have methods to show the results of the fit. The results include \emph{beta}, 
+  the precision parameter (\emph{alpha}), the number of clusters (\emph{ncluster}), and 
+  the \emph{link} function.
   
   The MCMC samples of the parameters and the errors in the model are stored in the object 
-  \code{thetasave} and \code{randsave}, respectively. Both objects are included in the 
-  list \code{save.state} and are matrices which can be analyzed directly by functions 
+  \emph{thetasave} and \emph{randsave}, respectively. Both objects are included in the 
+  list \emph{save.state} and are matrices which can be analyzed directly by functions 
   provided by the coda package.
   
-  The list \code{state} in the output object contains the current value of the parameters 
+  The list \emph{state} in the output object contains the current value of the parameters 
   necessary to restart the analysis. If you want to specify different starting values 
-  to run multiple chains set \code{status=TRUE} and create the list state based on 
-  this starting values. In this case the list \code{state} must include the following objects:
+  to run multiple chains set \emph{status=TRUE} and create the list state based on 
+  this starting values. In this case the list \emph{state} must include the following objects:
   
   \item{beta}{ giving the value of the regression coefficients.} 
   
   \item{theta}{giving the value of the third quartile parameter.}  
   
-  \item{v}{ giving the value of the errors (it must be consistent with \code{yi = I(Vi < xi beta)}.}, 
+  \item{v}{ giving the value of the errors (it must be consistent with \emph{yi = I(Vi < xi beta)}.}, 
   
   \item{y}{ giving the value of the true response binary variable (only if the model
   considers correction for misclassification).} 
@@ -239,3 +240,4 @@ Alejandro Jara Vallejos \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

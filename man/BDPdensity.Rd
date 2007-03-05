@@ -70,7 +70,7 @@ BDPdensity(y,support=3,ngrid=1000,prior,mcmc,state,status,
   where, \eqn{y_i}{yi} is the transformed data to lie in [0,1], \code{kmax} is the upper limit of the discrete uniform prior for the degree of the Bernstein
   polynomial, \eqn{\alpha}{alpha} is the total mass parameter of the Dirichlet process component,
   and \eqn{G_0}{G0} is the centering distribution of the DP. The centering distribution corresponds
-  to a \eqn{G_0=Beta(a_0,b_0)}{G0=Btea(a0,b0)} distribution.
+  to a \eqn{G_0=Beta(a_0,b_0)}{G0=Beta(a0,b0)} distribution.
   
   The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
@@ -172,3 +172,4 @@ Fernando Quintana \email{<quintana@mat.puc.cl>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

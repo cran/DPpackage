@@ -187,7 +187,7 @@ c     A.J.V. 2007
 c=======================================================================
       integer ia(1),ja(1),ibeg,iend,ivbeg,i,j
       real*8 qaq
-      real*8a(1),q(1)
+      real*8 a(1),q(1)
       
       qaq=0
       do 10 i=ibeg,iend

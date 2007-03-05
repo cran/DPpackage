@@ -355,6 +355,9 @@ c++++ parameters
       nskip=mcmc(2)
       ndisplay=mcmc(3)
 
+      aa0=a0b0(1)
+      ab0=a0b0(2)
+
       nu01=nu(1)
       nu02=nu(2)
       
@@ -1304,7 +1307,7 @@ c+++++++++++++ print
 	 do j=1,q
 	   eta=eta+z(i,j)*bsave(subject(i),j)
          end do
-         eta=eta+x(i,p+1)                  
+         eta=eta+roffset(i)                  
          
          mean=exp(eta)
          dhat=dhat+dpoiss(dble(yij),mean,1)

@@ -111,10 +111,10 @@ c       value is lower than list position
       end if
       go to 1  
       
-      if(efind.eq.0)then
-        call rexit("Error in efind")
-      end if
-      return
+c      if(efind.eq.0)then
+c        call rexit("Error in efind")
+c      end if
+c      return
       end
 
 c=======================================================================
@@ -605,8 +605,8 @@ c     A.J.V., 2007
       end if
       return
       end
-      
-      
+
+    
 c=======================================================================      
       subroutine inversedet(ainv,n,ipiv,detlog)
 c=======================================================================      
@@ -836,3 +836,64 @@ C-----------------------------------------------------------------------
  
  1001 RETURN
       END
+
+
+c=======================================================================      
+      subroutine cholesky2(nr,n,a,l)
+c=======================================================================      
+c     Subroutine to do a Double precision Half stored CHOLesky
+c     decomposition.  Calculate Cholesky decomposition of symmetric,
+c     positive definite matrix A which is LOWER HALF-STORED.  The matrix
+c     l is the output.
+c     A.J.V., 2007
+      implicit none
+      integer nr,n,i,ii,j,jj,k,kk
+      real*8 a(nr,nr),l(nr*(nr+1)/2)
+      real*8 aii,scal,rtemp
+
+      jj=0
+      do i=1,n
+         do j=i,n
+            jj=jj+1
+            l(jj)=a(i,j)
+         end do
+      end do   
+      
+      ii = 1
+      do i = 1,n-1
+         aii = l(ii)
+         if (aii.le.0.d0) then
+            call rexit("matrix is not pd in chol subroutine")
+            return
+         end if
+         aii = sqrt(aii)
+         l(ii) = aii
+         scal = 1.d0/aii
+         do j = ii+1,ii+n-i
+            l(j) = scal*l(j)
+         end do
+
+         jj = 1
+         do j = ii+1,ii+n-i
+            if (l(j).ne.0.d0) then
+               rtemp = -1.d0 * l(j)
+               kk = ii + jj + n - i
+               do k = j,ii+n-i
+                  l(kk) = l(kk) + l(k)*rtemp
+                  kk = kk + 1
+               end do
+            end if
+            jj = jj + n - i - j + ii + 1
+         end do
+         ii = ii + n - i + 1
+      end do
+      aii = l(ii)
+      if (aii.le.0.d0) then
+            call rexit("matrix is not pd in chol subroutine")
+          return 
+      end if
+      aii = sqrt(aii)
+      l(ii) = aii
+      return
+      end
+

@@ -75,3 +75,4 @@ DPcaterpillar(object, midpoint="mean", hpd=TRUE , ask=TRUE,
 }
 }
 \keyword{aplot}
+\keyword{nonparametric}

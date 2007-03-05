@@ -316,8 +316,8 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
     if(is.null(object$prior$a0))
     {
       dimen<-2
-      coef.p<-object$coefficients[1:dimen2]
-      mat<-matrix(thetasave[,1:dimen2],ncol=1)
+      coef.p<-object$coefficients[1:dimen]
+      mat<-matrix(thetasave[,1:dimen],ncol=1)
     }
     else
     {

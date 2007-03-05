@@ -84,3 +84,4 @@ DPMrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
 }
 }
 \keyword{models}
+\keyword{nonparametric}

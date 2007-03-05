@@ -73,3 +73,4 @@ DPrandom(object,centered=FALSE,predictive=FALSE)
 }
 }
 \keyword{models}
+\keyword{nonparametric}

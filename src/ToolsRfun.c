@@ -37,6 +37,11 @@ double F77_SUB(cdfchisq)(double *x, double *df, int *lower_tail, int *log_p)
 	return pchisq(*x, *df, *lower_tail, *log_p);
 }
 
+double F77_SUB(cdfpoiss)(double *x, double *lambda, int *lower_tail, int *log_p)
+{
+	return ppois(*x, *lambda, *lower_tail, *log_p);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Quantile
@@ -107,6 +112,11 @@ double F77_SUB(dlogit)(double *x, double *location, double *scale, int *give_log
 	return dlogis(*x, *location, *scale, *give_log);
 }
 
+double F77_SUB(dcauch)(double *x, double *location, double *scale, int *give_log)
+{
+	return dcauchy(*x, *location, *scale, *give_log);
+}
+
 
 double F77_SUB(dbet)(double *x, double *a, double *b, int *give_log)
 {
@@ -138,6 +148,26 @@ double F77_SUB(dgamlog)(double *x)
 double F77_SUB(trigamm)(double *x)
 {
 	return trigamma(*x);
+}
+
+double F77_SUB(powerxy)(double *x, double *y)
+{
+    return R_pow(*x, *y);
+}
+
+double F77_SUB(powerxi)(double *x, int *i)
+{
+    return R_pow_di(*x, *i);
+}
+
+double F77_SUB(log1px)(double *x)
+{
+    return log1p(*x);
+}
+
+double F77_SUB(log1pxmx)(double *x)
+{
+    return log1pmx(*x);
 }
 
 

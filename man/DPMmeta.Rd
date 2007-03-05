@@ -136,7 +136,7 @@ DPMmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 
 \seealso{
 \code{\link{DPMrandom}},
-\code{\link{DPmeta}},
+\code{\link{DPmeta}} 
 \code{\link{DPMglmm}}, \code{\link{DPMolmm}},
 \code{\link{DPlmm}}  , \code{\link{DPglmm}}, \code{\link{DPolmm}}
 
@@ -234,3 +234,4 @@ Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

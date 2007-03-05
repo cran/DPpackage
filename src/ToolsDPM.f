@@ -13,6 +13,35 @@ c=======================================================================
 c=======================================================================                  
 
 c=======================================================================      
+      subroutine relabeldpmc(ind,since,nsubject,ncluster,ccluster,ss,
+     &                       cstrt)
+c=======================================================================
+c     relabel the clusters after the elimination of one of them
+c     A.J.V., 2007
+      implicit none
+      integer i,j,ind,since,nsubject,ncluster,ccluster(nsubject)
+      integer ss(nsubject),cstrt(nsubject,nsubject)
+      
+      do i=since+1,ncluster
+         do j=1,nsubject
+            if(ss(j).eq.i)then
+               ss(j)=i-1 
+            end if
+         end do
+         do j=1,ccluster(i)
+            cstrt(i-1,j)=cstrt(i,j) 
+         end do
+         ccluster(i-1)=ccluster(i)
+      end do
+      
+      ss(ind)=ncluster
+      ccluster(ncluster)=1
+      
+      return
+      end  
+
+
+c=======================================================================      
       subroutine relabeldpm(ind,since,nsubject,q,ncluster,ccluster,ss,
      &                      cstrt)
 c=======================================================================

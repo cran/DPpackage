@@ -247,6 +247,57 @@ c     A.J.V., 2005
 
 
 c=======================================================================
+      subroutine dmvn3(nr,n,x,mu,sigma,eval,vv,a,sigma2,iflag)        
+c=======================================================================
+c     return the log of a multivariate normal density
+c     A.J.V., 2005
+      implicit none
+      integer nr,n,i,j
+      real*8 mu(nr),sigma(nr,nr),x(nr),vv(nr)
+      real*8 a(nr,nr),sigma2(nr,nr),det,sse,eval
+      integer iflag(nr)
+      real*8 work1,work2,work3,tpi
+     
+      work1=0.d0
+      work2=0.d0
+      work3=0.d0
+      det=0.d0
+      sse=0.d0
+	  
+      det=0.d0
+      
+      tpi=6.283185307179586476925286766559d0
+       
+      work1=-(dble(n)*log(tpi))
+    
+      do i=1,n
+         do j=1,n
+            a(i,j)=sigma(i,j)
+         end do
+      end do
+
+      call invdet2(a,nr,n,sigma2,det,iflag,vv)      
+      
+      work2=det
+   
+      do i=1,n
+         vv(i)=x(i)-mu(i)
+      end do
+   
+      do i=1,n
+         do j=1,n
+            sse=sse+vv(i)*sigma2(i,j)*vv(j)          
+         end do
+      end do
+
+      work3=sse
+     
+      eval=(work1-work2-work3)/2.d0
+      
+      return
+      end
+
+c=======================================================================
       subroutine diwishart(kk,nu,sigma,tinv,workm1,workm2,workv,iflag,
      &                     eval)        
 c=======================================================================
@@ -359,3 +410,146 @@ c     A.J.V., 2007
       
       return
       end
+      
+c=======================================================================
+      subroutine dtmvn(n,mu,sigma,lower,upper,work1,work2,typeint,
+     &                 ynew,yold,logcgkn)
+c=======================================================================
+c     evaluate the canditate generating distribution in the 
+c     multivariate truncated normal generation using a 
+c     Gibbs sampler. 
+c
+c     typeint=1 (left)
+c     typeint=2 (interval)
+c     typeint=3 (right)
+c     typeint=4 (unconstrained support)    
+c     typeint=5 known, not sampled
+c
+c     A.J.V. 2007
+c=======================================================================
+      implicit none
+
+c+++++Input
+      integer n
+      integer typeint(n)
+      real*8 mu(n),sigma(n,n)
+      real*8 lower(n),upper(n)
+      real*8 work1(n,n),work2(n,n)
+      real*8 ynew(n),yold(n)
+
+c+++++Output
+      real*8 logcgkn
+
+c+++++Working
+      integer i,j,k,maxn
+      parameter(maxn=50)
+      real*8 dnrm,cdfnorm
+      real*8 muv(maxn)
+      real*8 muc,sigmac
+      real*8 tmp1
+      real*8 slow,supp
+      real*8 yv(maxn)
+      real*8 yt(maxn)
+      logical ainf,binf      
+
+c+++++Algorithm
+
+      if(maxn.lt.n)then
+         call rexit("Increase ´maxn´ in ´dtmvn´")
+      end if   
+
+      logcgkn=0.d0 
+      
+      do i=1,n
+         yt(i)=ynew(i)
+      end do
+
+      do i=1,n
+         yt(i)=yold(i)
+
+         call condmvn(i,sigma,n,work1,work2)
+         sigmac=sqrt(work1(1,1))
+      
+         do j=1,n
+            tmp1=0.d0
+            do k=1,n
+               tmp1=tmp1+work2(j,k)*mu(k) 
+            end do
+            muv(j)=tmp1
+
+            tmp1=0.d0
+            do k=1,n
+               tmp1=tmp1+work2(j,k)*yt(k) 
+            end do
+            yv(j)=tmp1
+         end do
+
+         muc=mu(i)
+         do j=2,n
+             muc=muc-work1(1,j)*(yv(j)-muv(j))
+         end do
+      
+         if(typeint(i).eq.1)then
+            ainf=.true.
+            binf=.false. 
+          else if(typeint(i).eq.2)then
+            ainf=.false.
+            binf=.false. 
+          else if(typeint(i).eq.3)then
+            ainf=.false.
+            binf=.true. 
+          else 
+            ainf=.true.
+            binf=.true. 
+         end if
+         
+         slow=lower(i)
+         supp=upper(i)
+         
+         if(typeint(i).ne.5)then
+            logcgkn=logcgkn+dnrm(yt(i),muc,sigmac,1)
+
+            if(typeint(i).eq.1)then
+               logcgkn=logcgkn-cdfnorm(supp,muc,sigmac,1,1)
+
+             else if(typeint(i).eq.2)then
+               logcgkn=logcgkn-
+     &             log(               
+     &                  cdfnorm(supp,muc,sigmac,1,0)-
+     &                  cdfnorm(slow,muc,sigmac,1,0)
+     &                ) 
+             else if(typeint(i).eq.3)then
+               logcgkn=logcgkn-cdfnorm(slow,muc,sigmac,0,1)
+            end if
+
+         end if  
+      end do
+      return
+      end
+
+c=======================================================================
+      subroutine dtriang(x,a,b,c,dens)        
+c=======================================================================
+c     return the density of a triangular(a,b,c) distribution
+c     a = lim inf
+c     b = lim sup
+c     c = mode
+c     A.J.V., 2007
+c=======================================================================
+      implicit none
+      real*8 a,b,c,x
+      real*8 dens
+      
+      dens=0.d0
+      if(a.le.x.and.x.le.c)then
+         dens=2.d0*(x-a)/((b-a)*(c-a))
+      end if
+      if(c.le.x.and.x.le.b)then
+         dens=2.d0*(b-x)/((b-a)*(b-c))
+      end if
+
+      return
+      end
+     
+      
+        

@@ -395,7 +395,7 @@ function(object,grid,xnew=NULL,hpd=TRUE, ...)
    	     xnew<-rep(0,object$p)
    	     ngrid<-length(grid)
    	     nrec<-object$nrec
-   	     
+   	     nsave<-dim(object$save.state$thetasave)[1]
    	     mulog<-object$save.state$thetasave[,(object$p+1)]
 	     sdlog<-sqrt(object$save.state$thetasave[,(object$p+2)])
 	     alpha<-sqrt(object$save.state$thetasave[,(object$p+4)])
@@ -413,6 +413,7 @@ function(object,grid,xnew=NULL,hpd=TRUE, ...)
    	     pnew<-dim(xnew)[2]
    	     ngrid<-length(grid)
    	     nrec<-object$nrec
+   	     nsave<-dim(object$save.state$thetasave)[1]
    	     
    	     mulog<-object$save.state$thetasave[,(object$p+1)]
    	     sdlog<-sqrt(object$save.state$thetasave[,(object$p+2)])

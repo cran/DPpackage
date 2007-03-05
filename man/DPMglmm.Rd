@@ -173,7 +173,7 @@ DPMglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
 
   \item{sigmab}{ giving the variance matrix of the normal baseline distributions.}
  
-  \item{phi}{ giving the precision parameter for the Gamma model (if needed).}
+  \item{phi}{ giving the dispersion parameter for the Gamma model (if needed).}
 
 }
 
@@ -230,8 +230,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
                   tbinv=diag(1,1),
                   mb=rep(0,1),
                   Sb=diag(1000,1),
-                  beta0<-rep(0,9),
-                  Sbeta0<-diag(1000,9))
+                  beta0=rep(0,9),
+                  Sbeta0=diag(1000,9))
 
     # Initial state
       state <- NULL
@@ -281,3 +281,4 @@ Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

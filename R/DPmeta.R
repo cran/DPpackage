@@ -81,6 +81,7 @@ function(formula,
   	 p<-dim(x)[2]
   	 p<-p-1
   	 x<-x[,-1]
+  	 nfixed<-p
          if(p==0)
          {
             nfixed <- 0
@@ -91,6 +92,11 @@ function(formula,
        #########################################################################################
        # elements for Pseudo Countour Probabilities' computation
        #########################################################################################
+
+         Terms <- if (missing(data)) 
+              terms(formula)
+         else terms(formula, data = data)
+
          possiP <- NULL
          if(nfixed>0)
          {
@@ -99,8 +105,8 @@ function(formula,
             nvar <- dim(mat)[1]
             nfact <- dim(mat)[2]
             possiP <- matrix(0,ncol=2,nrow=nfact)
-            if (missing(data)) dataF <- model.frame(formula=fixed,xlev=NULL)
-               dataF <- model.frame(formula=fixed,data,xlev=NULL)
+            if (missing(data)) dataF <- model.frame(formula=formula,xlev=NULL)
+               dataF <- model.frame(formula=formula,data,xlev=NULL)
             namD <- names(dataF)
             isF <- sapply(dataF, function(x) is.factor(x) || is.logical(x))
             nlevel <- rep(0,nvar)
@@ -115,7 +121,7 @@ function(formula,
                    nlevel[i]<-1
                 }
             }
-            startp<-1+q
+            startp<-1+1
             for(i in 1:nfact)
             {
                 tmp1<-1
@@ -216,6 +222,7 @@ function(formula,
             { 
                stop("*sigma* must be specified in the prior object when it is not considered as random.\n")     
             }
+            sigma<-prior$sigma
             tau1 <- -1
             tau2 <- -1
   	 }
@@ -306,8 +313,8 @@ function(formula,
 	           b<-rep(0,nrec)
 		   bclus<-rep(0,nrec)
                    beta<-coefficients(fit0)[1:p]
-
-	           for(i in 1:nsubject){
+                   
+	           for(i in 1:nrec){
 	               b[i]<-coefficients(fit0)[p+1]+bzs[i]
    		       bclus[i]<-b[i]
 	           }
@@ -349,11 +356,13 @@ function(formula,
 	           beta<-rep(0,p)
 	        }
 
-                if(murand==1)
+                if(murand==0)
                 {
    	            mu<-state$mu
-   	        }    
-                if(sigmarand==1)
+   	        }
+   	        
+   	        sigma <- 1/rgamma(1,shape=tau1/2,scale=tau2/2)
+                if(sigmarand==0)
                 {
    	            sigma<-state$sigma
    	        }    
@@ -735,7 +744,7 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
        table <- data.frame(df,P) 
        dimnames(table) <- list(rownames(possiP), c("Df","PsCP"))
        structure(table, heading = c("Table of Pseudo Contour Probabilities\n", 
-        paste("Response:", deparse(formula(object$fixed)[[2]]))), class = c("anovaPsCP",
+        paste("Response:", deparse(formula(object$formula)[[2]]))), class = c("anovaPsCP",
         "data.frame"))
     }    
 }
@@ -933,7 +942,6 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
     ans$mc<-coef.table
     
     ans$nrec<-object$nrec
-    ans$nsubject<-object$nsubject
 
     class(ans) <- "summaryDPmeta"
     return(ans)

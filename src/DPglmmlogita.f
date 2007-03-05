@@ -416,23 +416,26 @@ c++++++++++++++++++++++++++++++++++
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
                
+               mean=exp(eta)/(1.d0+exp(eta))
+               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
+               
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
                ytilde=eta+(dble(yij)-mean)*gprime-offset
                
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
-              
                do j=1,p
-                  do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*gprime
+                  do l=1,p
+                     xtx(j,l)=xtx(j,l)+x(i,j)*x(i,l)/gprime
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde*gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
                end do
 
-               mean=exp(eta)/(1.d0+exp(eta))               
-               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             call inverse(xtx,p,iflag)      
@@ -480,23 +483,26 @@ c++++++++++ evaluating the likelihood
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
                
+               mean=exp(eta)/(1.d0+exp(eta))
+               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
+               
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
                ytilde=eta+(dble(yij)-mean)*gprime-offset
-
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
-
+               
                do j=1,p
-                  do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*gprime
+                  do l=1,p
+                     xtx(j,l)=xtx(j,l)+x(i,j)*x(i,l)/gprime
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde*gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
                end do
 
-               mean=exp(eta)/(1.d0+exp(eta))               
-               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             call inverse(xtx,p,iflag)      
@@ -777,26 +783,28 @@ c++++++++++ check if the user has requested an interrupt
                      eta=eta+z(datastr(i,j+1),k)*theta(k)
                   end do
 
+                  mean=exp(eta)/(1.d0+exp(eta))
+                  logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
+
+                  tmp1=mean*(1.0d0-mean)
+                  if(tmp1.le.0.0001d0)then
+                     tmp1=0.0001d0
+                  end if   
+               
+                  gprime=1.d0/(dble(nij)*tmp1)
+
                   mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-
-                  gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
                   ytilde=eta+(dble(yij)-mean)*gprime-offset
                
-                  gprime=
-     &             exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
-
                   do k=1,q
                      do l=1,q
                         ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                          z(datastr(i,j+1),l)*gprime
+     &                          z(datastr(i,j+1),l)/gprime
                      end do
                      zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                      ytilde*gprime
+     &                      ytilde/gprime
                   end do
 
-                  mean=exp(eta)/(1.d0+exp(eta))               
-                  logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
                end do
             end do
     
@@ -870,26 +878,27 @@ c++++++++++ candidate generating kernel contribution
                      eta=eta+z(datastr(i,j+1),k)*thetac(k)
                   end do
 
-                  mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
+                  mean=exp(eta)/(1.d0+exp(eta))
+                  loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
 
-                  gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
-                  ytilde=eta+(dble(yij)-mean)*gprime-offset
+                  tmp1=mean*(1.0d0-mean)
+                  if(tmp1.le.0.0001d0)then
+                     tmp1=0.0001d0
+                  end if   
                
-                  gprime=
-     &              exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
+                  gprime=1.d0/(dble(nij)*tmp1)
+
+                  mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
+                  ytilde=eta+(dble(yij)-mean)*gprime-offset
 
                   do k=1,q
                      do l=1,q
                         ztz(k,l)=ztz(k,l)+z(datastr(i,j+1),k)*
-     &                          z(datastr(i,j+1),l)*gprime
+     &                          z(datastr(i,j+1),l)/gprime
                      end do
                      zty(k)=zty(k)+z(datastr(i,j+1),k)*
-     &                      ytilde*gprime
+     &                      ytilde/gprime
                   end do
-
-                  mean=exp(eta)/(1.d0+exp(eta))               
-                  loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
                end do
             end do
     

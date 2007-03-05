@@ -156,8 +156,8 @@ c     binf = true, if right endpoint is 1; otherwise = false
 c     A.J.V., 2006
       implicit none
       real*8 alpha,beta,a,b
-      real*8 rbeta,invcdfbeta,cdfbeta
-      real*8 uni,tmp
+      real*8 rbeta,invcdfbetas,cdfbetas
+      real*8 uni,tmp,tmp1,tmp2
       logical ainf,binf
       real runif
 
@@ -172,20 +172,24 @@ c     A.J.V., 2006
         return
       end if  
 
-      tmp=cdfbeta(a,alpha,beta)+ 
-     &    uni*(cdfbeta(b,alpha,beta)-cdfbeta(a,alpha,beta))
+      tmp1=cdfbetas(a,alpha,beta,1,0)
+      tmp2=cdfbetas(b,alpha,beta,1,0)
+      tmp=tmp1+uni*(tmp2-tmp1)
      
-      rtbeta=invcdfbeta(tmp,alpha,beta)
+      rtbeta=invcdfbetas(tmp,alpha,beta,1,0)
       go to 120
 
 100   if(ainf)then
-         tmp=uni*cdfbeta(b,alpha,beta)
-         rtbeta=invcdfbeta(tmp,alpha,beta)
+
+         tmp2=cdfbetas(b,alpha,beta,1,0)
+         tmp=uni*tmp2
+         rtbeta=invcdfbetas(tmp,alpha,beta,1,0)
          go to 120
       end if
       if(binf)then
-         tmp=uni+(1.d0-uni)*cdfbeta(a,alpha,beta) 
-         rtbeta=invcdfbeta(tmp,alpha,beta)
+         tmp1=cdfbetas(a,alpha,beta,1,0)      
+         tmp=uni+(1.d0-uni)*tmp1
+         rtbeta=invcdfbetas(tmp,alpha,beta,1,0)
          go to 120
       end if
 
@@ -242,7 +246,6 @@ c     A.J.V., 2005
       end do   
       return
       end         
-
 
 c=======================================================================
       subroutine simdisc(prob,n,m,val)
@@ -551,7 +554,7 @@ c     A.J.V., 2006
       call mvnchol(n,work1,mean,work2,y)
       return
       end      
-      
+
 c=======================================================================      
       subroutine mvnchol(n,l,mean,work,y)
 c=======================================================================      
@@ -583,6 +586,57 @@ c     A.J.V., 2006
       end do
       return
       end
+ 
+c=======================================================================            
+      subroutine rmvnorm2(nr,n,mean,sigma,work1,work2,y)
+c=======================================================================      
+c     Subroutine to generate vector of N normal variates with 
+c     mean = MEAN and variance = SIGMA
+c     A.J.V., 2007
+      implicit none
+      integer nr,n
+      real*8 mean(nr),sigma(nr,nr),work1(nr*(nr+1)/2),work2(nr),y(nr)
+
+      call cholesky2(nr,n,sigma,work1)
+      call mvnchol2(nr,n,work1,mean,work2,y)
+      return
+      end      
+
+c=======================================================================      
+      subroutine mvnchol2(nr,n,l,mean,work,y)
+c=======================================================================      
+c     Subroutine to generate vector of N normal variates with 
+c     mean = MEAN and variance = LL', i.e., L is the Cholesky
+c     decomposition of the desired variance-covariance structure.
+c     WORK is a double precision work vector of at least N elements.
+c     The subroutine calls NORMAL for a vector of N iid normal(0,1)
+c     deviates (stored in work).  The new variables are calculated as 
+c     MEAN + L*WORK.
+c     A.J.V., 2007
+      implicit none
+      integer nr,n,i,j,jj
+      real*8 l(nr*(nr+1)/2),mean(nr),work(nr),y(nr)
+      real*8 rnorm
+      
+      do i=1,n
+         work(i)=rnorm(0.d0,1.d0)
+      end do
+      
+      do i=1,n
+         y(i)=mean(i)
+      end do
+      
+      jj = 0
+      
+      do i = 1,n
+         do j = i,n
+            jj = jj + 1
+            y(j) = y(j) + l(jj)*work(i)
+         end do
+      end do
+      return
+      end
+ 
  
 c=======================================================================      
       subroutine normalvec(n,work)
@@ -745,7 +799,7 @@ c             is halfstored (upper triangle)
 
       implicit none
       integer*4 maxvar,nv,n,nv1,i,j,k,ndf,jk,cnt,maxn
-      parameter(maxvar=15)
+      parameter(maxvar=70)
       real*8 l,s,z,v,b,acc,chi(1)
       dimension l(maxn*(maxn+1)/2),s(maxn*(maxn+1)/2)
       dimension z(maxvar,maxvar),v(maxvar),b(maxvar,maxvar)
@@ -1051,3 +1105,313 @@ c     A.J.V., 2007
       return
       end
 
+
+c=======================================================================
+      subroutine rtmvn2(n,mu,sigma,lower,upper,l,typeint,y)
+c=======================================================================
+c     simulate multivariate truncated normal variables using a 
+c     recursive approach. The samples can only be used in MH
+c     steps. They are not proper samples from a TMVN distribution.
+c
+c     A.J.V. 2007
+c=======================================================================
+      implicit none
+
+c+++++Input 
+c     typeint=1 (left)
+c     typeint=2 (interval)
+c     typeint=3 (right)
+c     typeint=4 (unconstrained support)    
+
+      integer n,typeint(n)
+      real*8 mu(n),sigma(n,n),lower(n),upper(n),l(n*(n+1)/2)
+
+c+++++Output  
+      real*8 y(n)
+
+c+++++Working      
+      integer i,j,maxn,ihmssf
+      parameter(maxn=50)
+      real*8 a(maxn,maxn),slow,supp,tmp1,z(maxn)
+      real*8 rtnorm
+      logical ainf,binf      
+
+c+++++Check dimenions
+      if(n.gt.maxn)then
+	call rexit("increase dimension maxn in subroutine rtmvn2")
+      end if
+
+c+++++Algorithm 
+
+      do i=1,n
+         do j=1,n
+            a(i,j)=0.d0
+         end do 
+      end do
+ 
+      call cholesky(n,sigma,l)
+
+      do i=1,n
+         do j=1,i
+            a(i,j)=l(ihmssf(i,j,n))
+         end do 
+      end do
+
+      do i=1,n
+         if(typeint(i).eq.1)then
+            ainf=.true.
+            binf=.false. 
+          else if(typeint(i).eq.2)then
+            ainf=.false.
+            binf=.false. 
+          else if(typeint(i).eq.3)then
+            ainf=.false.
+            binf=.true. 
+          else 
+            ainf=.true.
+            binf=.true. 
+         end if
+      
+         if(i.eq.1)then
+            slow=(lower(i)-mu(i))/a(i,i)
+            supp=(upper(i)-mu(i))/a(i,i)
+          else
+            tmp1=0.d0
+            do j=1,i-1
+               tmp1=tmp1+a(i,j)*z(j)
+            end do
+            slow=(lower(i)-mu(i)-tmp1)/a(i,i)
+            supp=(upper(i)-mu(i)-tmp1)/a(i,i)
+         end if
+         
+         z(i)=rtnorm(0.d0,1.d0,slow,supp,ainf,binf)
+      end do
+      
+      do i=1,n
+         tmp1=0.d0
+         do j=1,n
+            tmp1=tmp1+a(i,j)*z(j)   
+         end do
+         y(i)=mu(i)+tmp1
+      end do
+
+      return
+      end
+
+c=======================================================================                        
+      integer function rpoiss(mu)
+c=======================================================================                  
+c     This function generates a poisson random variable  
+c     A.J.V., 2006
+      implicit none
+      real*8 mu
+      integer ignpoi
+      real mur
+      
+      mur=mu
+      rpoiss=ignpoi(mur)
+      return
+      end         
+
+c=======================================================================
+      subroutine rtmvn(n,mu,sigma,lower,upper,work1,work2,typeint,
+     &                 y,logcgko)
+c=======================================================================
+c     simulate multivariate truncated normal variables using a 
+c     Gibbs sampler. 
+c
+c     typeint=1 (left)
+c     typeint=2 (interval)
+c     typeint=3 (right)
+c     typeint=4 (unconstrained support)    
+c     typeint=5 known, not sampled
+c
+c     A.J.V. 2007
+c=======================================================================
+      implicit none
+
+c+++++Input
+      integer n
+      integer typeint(n)
+      real*8 mu(n),sigma(n,n)
+      real*8 lower(n),upper(n)
+      real*8 work1(n,n),work2(n,n)
+
+c+++++Output
+      real*8 y(n),logcgko
+
+c+++++Working
+      integer i,j,k,maxn
+      parameter(maxn=50)
+      real*8 dnrm,cdfnorm
+      real*8 muv(maxn)
+      real*8 muc,sigmac
+      real*8 rtnorm
+      real*8 tmp1
+      real*8 slow,supp
+      real*8 yv(maxn)
+      logical ainf,binf      
+
+c+++++Algorithm
+
+      if(maxn.lt.n)then
+         call rexit("Increase ´maxn´ in ´rtmvn´")
+      end if   
+
+      logcgko=0.d0 
+
+      do i=1,n
+         call condmvn(i,sigma,n,work1,work2)
+         sigmac=sqrt(work1(1,1))
+      
+         do j=1,n
+            tmp1=0.d0
+            do k=1,n
+               tmp1=tmp1+work2(j,k)*mu(k) 
+            end do
+            muv(j)=tmp1
+
+            tmp1=0.d0
+            do k=1,n
+               tmp1=tmp1+work2(j,k)*y(k) 
+            end do
+            yv(j)=tmp1
+         end do
+
+         muc=mu(i)
+         do j=2,n
+             muc=muc-work1(1,j)*(yv(j)-muv(j))
+         end do
+      
+         if(typeint(i).eq.1)then
+            ainf=.true.
+            binf=.false. 
+          else if(typeint(i).eq.2)then
+            ainf=.false.
+            binf=.false. 
+          else if(typeint(i).eq.3)then
+            ainf=.false.
+            binf=.true. 
+          else 
+            ainf=.true.
+            binf=.true. 
+         end if
+         
+         slow=lower(i)
+         supp=upper(i)
+         
+         if(typeint(i).ne.5)then
+            y(i)=rtnorm(muc,sigmac,slow,supp,ainf,binf)
+            logcgko=logcgko+dnrm(y(i),muc,sigmac,1)
+
+            if(typeint(i).eq.1)then
+               logcgko=logcgko-cdfnorm(supp,muc,sigmac,1,1)
+
+             else if(typeint(i).eq.2)then
+               logcgko=logcgko-
+     &             log(               
+     &                  cdfnorm(supp,muc,sigmac,1,0)-
+     &                  cdfnorm(slow,muc,sigmac,1,0)
+     &                ) 
+             else if(typeint(i).eq.3)then
+               logcgko=logcgko-cdfnorm(slow,muc,sigmac,0,1)
+            end if
+
+         end if  
+
+      end do
+      return
+      end
+
+
+c======================================================================      
+      integer function rpoiss2(mu)
+c======================================================================            
+c     generate a Poisson(mu) random number
+c     A.J.V., 2007
+c======================================================================
+      implicit none
+      integer i
+      real*8 mu,uni,p,f
+      real runif
+
+      i=0
+      p=dexp(-mu)
+      f=p
+      uni=dble(runif())
+
+      rpoiss2=i
+      do while(uni.ge.f)
+         p=mu*p/dble(i+1)
+         f=f+p
+         i=i+1
+         rpoiss2=i
+      end do
+
+      return
+      end      
+
+
+c======================================================================      
+      subroutine rtbetas(alpha,beta,a,b,ainf,binf,val)
+c=======================================================================            
+c     generate truncated(a,b) Beta(alpha,beta)
+c     a,b  = end points of interval (ainf = binf = .false.)   
+c     ainf = true, if left endpoint is 0; otherwise = false
+c     binf = true, if right endpoint is 1; otherwise = false      
+c     A.J.V., 2006
+      implicit none
+      real*8 alpha,beta,a,b
+      real*8 bound      
+      real*8 rbeta
+      real*8 val
+      real*8 uni,tmp,tmp1,tmp2,tmp3,tmp4
+      logical ainf,binf
+      real runif
+      integer status
+
+      uni=dble(runif())
+      val=0.d0
+      if(ainf.and.binf) go to 110
+      if(ainf.or.binf) go to 100
+      
+      if(a.gt.b)then
+        call rexit("error in limits rtbetas")
+        val=a
+        return
+      end if  
+
+
+      call cdfbet(1,tmp1,tmp3,a,1.d0-a,alpha,beta,status,bound)
+      call cdfbet(1,tmp2,tmp3,b,1.d0-b,alpha,beta,status,bound)
+      tmp=tmp1+uni*(tmp2-tmp1)
+      
+      tmp2=1.d0-tmp
+      call cdfbet(2,tmp,tmp2,val,tmp4,alpha,beta,status,bound)
+
+      go to 120
+
+100   if(ainf)then
+
+         call cdfbet(1,tmp2,tmp3,b,1.d0-b,alpha,beta,status,bound)
+         tmp=uni*tmp2
+         tmp2=1.d0-tmp
+         call cdfbet(2,tmp,tmp2,val,tmp4,alpha,beta,status,bound)
+         go to 120
+      end if
+      if(binf)then
+
+         call cdfbet(1,tmp1,tmp3,a,1.d0-a,alpha,beta,status,bound)
+         tmp=uni+(1.d0-uni)*tmp1
+      
+         tmp2=1.d0-tmp
+         call cdfbet(2,tmp,tmp2,val,tmp4,alpha,beta,status,bound)
+         go to 120
+      end if
+
+110   val=rbeta(alpha,beta)
+
+120   continue
+
+      return
+      end      

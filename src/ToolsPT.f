@@ -1094,7 +1094,7 @@ c-----Output
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
-      integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok 
+      integer i,ihmssf,j,je2,k,k1,l,nint,ok 
       real*8 invcdfnorm,prob,quan,tmp1
 
 c-----Routine
@@ -1179,7 +1179,6 @@ c-----Routine
          do k=1,nrand
             
             k1=2*(parti(k)-1)+1
-            k2=2*(parti(k)-1)+2
             quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
 
             limw(k)=quan
@@ -1337,7 +1336,7 @@ c-----Output
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
-      integer i,j,je2,k,k1,k2,l,nint,ok 
+      integer i,j,je2,k,k1,l,nint,ok 
       real*8 invcdfnorm,prob,quan
 
 c-----Routine
@@ -1422,7 +1421,6 @@ c-----Routine
          do k=1,nrand
             
             k1=2*(parti(k)-1)+1
-            k2=2*(parti(k)-1)+2
             quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
 
             limw(k)=quan
@@ -2351,50 +2349,6 @@ c     Alejandro Jara, 2006
 
 
 c=======================================================================
-      subroutine locationptu(x,m,n,loca)
-c=======================================================================
-c     function that return the succesive location of x across the 
-c     finite tree of length m. This is based on a standard normal 
-c     distribution.
-c     Alejandro Jara, 2007
-c=======================================================================
-      implicit none
-      integer m,n,loca(n)
-      integer i,k,k1,k2,nint
-      real*8 invcdfnorm
-      real*8 prob,quan
-      real*8 x
-      
-      if(m.gt.n)then
-        call rexit("Error in ´locationpt´")
-      end if
-
-      quan=0.d0
-      if(x.le.quan)then
-        k=1
-       else
-        k=2
-      end if  
-
-      loca(1)=k
-      
-      do i=2,m
-         nint=2**i
-         prob=1.d0/dble(nint)
-         k1=2*(k-1)+1
-         k2=2*(k-1)+2
-         quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
-         if(x.le.quan)then
-           k=k1
-          else
-           k=k2
-         end if  
-         loca(i)=k
-      end do
-      return
-      end
-
-c=======================================================================
       subroutine locationptm(nvar,x,m,maxm,parti,pattern,loca)
 c=======================================================================
 c     function that return the succesive location of the vector x(nvar) 
@@ -2662,7 +2616,6 @@ c++++ First level sets
 c++++ Sets for other levels
 
       do i=2,m
-
          ngroup=2**(nvar*(i-1))
          do j=1,ngroup
 
@@ -2852,4 +2805,2150 @@ c++++ computing the means for each set
 
 
 
+c=======================================================================
+      subroutine sampredellpt(nrec,nsubject,nrand,m,ssb,cparb,whicho,
+     &                        whichn,workm,workmh,workv,mub,sigmab,b)   
+c=======================================================================
+c     This subroutine generates a sample 'b' from the predictive
+c     distribution arising in a marginal Multivariate PT using a 
+c     elliptical binary partition.
+c     The output 'b' is in a normal form.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c+++++Input 
+      integer nrec,nsubject,nrand,m
+      integer whicho(nrec),whichn(nrec)
+      real*8 cparb,ssb(nsubject),b(nrand)
+      real*8 workm(nrand,nrand),workmh(nrand*(nrand+1)/2),workv(nrand)
+      real*8 mub(nrand),sigmab(nrand,nrand)
+
+c+++++internal working variables
+      integer countero,countern 
+      integer i,ihmssf,j,je2,k1,k2  
+      integer n1,n2
+      integer nint
+      integer ok
+      integer parti
+      
+      real*8 ellip
+      real*8 invcdfchisq
+      real*8 linf,lsup
+      real*8 prob
+      real*8 quan
+      real*8 rnorm
+      real*8 rtchisq
+      real*8 tmp1,tmp2
+      
+      real runif
+      
+      logical ainf,binf
+
+c+++++algorithm
+
+      j=1  
+      nint=2
+      prob=1.d0/dble(nint)
+      quan=invcdfchisq(prob,dble(nrand),1,0)
+      
+      n1=0
+      n2=0
+
+      do i=1,nsubject
+         if(ssb(i).le.quan)then
+            n1=n1+1
+           else
+            n2=n2+1
+         end if  
+      end do
+
+      tmp1=log(     cparb+dble(n1))-
+     &     log(2.d0*cparb+dble(nsubject))
+      
+      tmp1=exp(tmp1)
+      countero=0
+
+      if(dble(runif()).le.tmp1)then
+         parti=1
+         do i=1,nsubject
+            if(ssb(i).le.quan)then
+               countero=countero+1
+               whicho(countero)=i
+            end if  
+         end do
+        else
+         parti=2
+         do i=1,nsubject
+            if(ssb(i).gt.quan)then
+               countero=countero+1
+               whicho(countero)=i
+             end if  
+         end do
+      end if
+
+      if(countero.eq.0) go to 1  
+
+      ok=1
+      j=2
+      do while(ok.eq.1.and.j.le.m)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+   
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+
+         quan=invcdfchisq(dble(k1)*prob,dble(nrand),1,0)
+
+         countern=0
+
+         do i=1,countero
+            if(ssb(whicho(i)).le.quan)then
+               countern=countern+1
+            end if   
+         end do
+
+         tmp1=log(     cparb*dble(je2)+dble(countern))-
+     &        log(2.d0*cparb*dble(je2)+dble(countero))
+      
+         tmp1=exp(tmp1)
+
+
+         if(dble(runif()).le.tmp1)then
+            parti=k1
+            do i=1,countero
+               if(ssb(whicho(i)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(i)
+               end if   
+            end do
+           else
+            parti=k2
+            do i=1,countero
+               if(ssb(whicho(i)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(i)
+               end if   
+            end do
+         end if
+
+         if(countern.eq.0)then
+            ok=0
+           else 
+            countero=countern
+            do i=1,countern
+               whicho(i)=whichn(i)
+            end do
+            j=j+1
+         end if   
+      end do
+
+1     continue
+
+c++++ Now j indicates the level of the partition and parti the interval
+
+      nint=2**j
+      prob=1.d0/dble(nint)
+
+      if(parti.eq.1)then
+         quan=invcdfchisq(dble(parti)*prob,dble(nrand),1,0)
+
+         ainf=.true.
+         binf=.false.
+         linf=0.d0
+         lsup=quan
+         ellip=rtchisq(dble(nrand),linf,lsup,ainf,binf)
+         
+       else if(parti.eq.nint)then
+         quan=invcdfchisq(dble(parti-1)*prob,dble(nrand),1,0)
+
+         ainf=.false.
+         binf=.true.
+         linf=quan
+         lsup=0.d0
+         ellip=rtchisq(dble(nrand),linf,lsup,ainf,binf)
+
+       else
+         tmp1=invcdfchisq(dble(parti-1)*prob,dble(nrand),1,0)
+         tmp2=invcdfchisq(dble(parti  )*prob,dble(nrand),1,0)
+         
+         if(tmp1.ge.tmp2)then
+            call rexit("Error in the limits")
+         end if  
+
+         ainf=.false.
+         binf=.false.
+         linf=tmp1
+         lsup=tmp2
+         ellip=rtchisq(dble(nrand),linf,lsup,ainf,binf)
+      end if
+      
+      tmp1=0.d0
+      do i=1,nrand
+         workv(i)=rnorm(0.d0,1.d0)
+         tmp1=tmp1+workv(i)**2
+      end do
+      
+      do i=1,nrand
+         workv(i)=sqrt(ellip)*workv(i)/sqrt(tmp1)
+      end do
+
+
+      call cholesky(nrand,sigmab,workmh)
+
+      do i=1,nrand
+         do j=1,nrand
+            workm(i,j)=0.d0
+         end do
+      end do
+        
+      do i=1,nrand
+         do j=1,i
+            workm(i,j)=workmh(ihmssf(i,j,nrand))
+         end do
+      end do
+
+      do i=1,nrand
+         tmp1=0.d0
+         do j=1,nrand
+            tmp1=tmp1+workm(i,j)*workv(j)   
+         end do
+         b(i)=tmp1+mub(i)
+      end do
+
+      return
+      end
+
+
+
+c=======================================================================                  
+      subroutine loglik_ell(m,nrec,nsubject,nrand,b,ssb,
+     &                      sigmainvbc,detlogsbc,cparb,
+     &                      whicho,whichn,
+     &                      loglikc)
+c======================================================================= 
+c     This subroutine evaluate the log-likelihood for a random effect
+c     in a marginal Multivariate PT, using an elliptical binary 
+c     partition.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none 
+
+c-----Input
+      integer m,nrand,nrec,nsubject
+      integer whicho(nrec),whichn(nrec)
+      real*8 cparb,detlogsbc,b(nsubject,nrand)
+      real*8 ssb(nsubject)
+      real*8 sigmainvbc(nrand,nrand)
+       
+c-----Output
+      real*8 loglikc,sseval
+
+c-----Working
+      integer i,j,je2,k,k1,k2,l
+      integer countero,countern,parti,nint,ok
+      real*8 invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
+
+c-----Routine
+
+      loglikc=0.d0
+      tpi=6.283185307179586476925286766559d0      
+      
+      do i=1,nsubject
+
+         
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         tmp1=0.d0
+         do k=1,nrand
+            do l=1,nrand
+               tmp1=tmp1+b(i,k)*sigmainvbc(k,l)*b(i,l)
+            end do
+         end do
+         ssb(i)=tmp1
+         sseval=tmp1
+
+c+++++++ first subject
+         if(i.eq.1)then
+
+           tmp1=-(dble(nrand)*log(tpi))
+           tmp2=detlogsbc
+           tmp3=sseval
+      
+           loglikc=loglikc+(tmp1-tmp2-tmp3)/2.d0
+
+c+++++++ following subjects
+          else
+          
+           nint=2
+           prob=1.d0/dble(nint)
+           quan=invcdfchisq(prob,dble(nrand),1,0)
+      
+           countero=0
+      
+           if(sseval.le.quan)then
+              parti=1
+              do l=1,i-1
+                if(ssb(l).le.quan)then
+                   countero=countero+1
+                   whicho(countero)=l
+                 end if  
+              end do
+            else
+              parti=2
+              do l=1,i-1
+                 if(ssb(l).gt.quan)then
+                   countero=countero+1
+                   whicho(countero)=l
+                 end if  
+              end do
+           end if  
+   
+           loglikc=loglikc+
+     &         log(2.d0*cparb+dble(2*countero))-
+     &         log(2.d0*cparb+dble(i-1))
+
+           if(countero.eq.0) go to 1  
+
+           ok=1
+           j=2
+           do while(ok.eq.1.and.j.le.m)
+              nint=2**j
+              je2=j**2
+              prob=1.d0/dble(nint)
+   
+              k1=2*(parti-1)+1
+              k2=2*(parti-1)+2
+              quan=invcdfchisq(dble(k1)*prob,dble(nrand),1,0)
+
+              if(sseval.le.quan)then
+                 parti=k1
+                 k=k1
+                else
+                 parti=k2
+                 k=k2
+              end if  
+
+              countern=0
+
+              if(k.eq.1)then
+                 do l=1,countero
+                    if(ssb(whicho(l)).le.quan.and.
+     &                 whicho(l).ne.i)then
+                       countern=countern+1
+                       whichn(countern)=whicho(l)
+                    end if   
+                 end do
+               else if(k.eq.nint)then
+                 quan=invcdfchisq(dble(k-1)*prob,dble(nrand),1,0)
+                 do l=1,countero
+                    if(ssb(whicho(l)).gt.quan.and.
+     &                 whicho(l).ne.i)then
+                       countern=countern+1
+                       whichn(countern)=whicho(l)
+                    end if   
+                 end do
+               else
+                 tmp1=invcdfchisq(dble(k-1)*prob,dble(nrand),1,0)
+                 tmp2=invcdfchisq(dble(k  )*prob,dble(nrand),1,0)
+
+                 if(tmp1.ge.tmp2)then
+                   call rexit("Error in the limits")
+                 end if  
+         
+                 do l=1,countero
+                    if(whicho(l).ne.i)then
+                    if(ssb(whicho(l)).gt.tmp1.and.
+     &                 ssb(whicho(l)).le.tmp2)then
+                       countern=countern+1
+                       whichn(countern)=whicho(l)
+                    end if
+                    end if
+                 end do
+              end if
+
+              loglikc=loglikc+
+     &               log(2.d0*cparb*dble(je2)+dble(2*countern))-
+     &               log(2.d0*cparb*dble(je2)+dble(  countero))
+
+              if(countern.eq.0)then
+                 ok=0
+               else  
+                 countero=countern
+                 j=j+1
+              end if   
+           end do
+
+1          continue
+
+           tmp1=-(dble(nrand)*log(tpi))
+           tmp2=detlogsbc
+           tmp3=sseval
+
+           loglikc=loglikc+(tmp1-tmp2-tmp3)/2.d0
+         end if
+      end do
+
+      return
+      end
+      
+
+      
+c=======================================================================                  
+      subroutine condptpriorell(ind,m,nrec,nsubject,nrand,theta,ssb,
+     &                          sigmainvb,detlogsb,cparb,
+     &                          whicho,whichn,
+     &                          logprior,sseval)
+c======================================================================= 
+c     This subroutine evaluate the log-prior for a random effect
+c     in a marginal Multivariate PT, using an elliptical binary 
+c     partition.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none 
+
+c-----Input
+      integer ind,m,nrand,nrec,nsubject
+      integer whicho(nrec),whichn(nrec)
+      real*8 cparb,detlogsb,theta(nrand)
+      real*8 ssb(nsubject)
+      real*8 sigmainvb(nrand,nrand)
+       
+c-----Output
+      real*8 logprior,sseval
+
+c-----Working
+      integer i,j,je2,k,k1,k2,l
+      integer countero,countern,parti,nint,ok
+      real*8 invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
+
+c-----Routine
+      logprior=0.d0
+      tpi=6.283185307179586476925286766559d0      
+      
+c++++ check if the user has requested an interrupt
+      call rchkusr()
+      
+      tmp1=0.d0
+      do i=1,nrand
+         do j=1,nrand
+            tmp1=tmp1+theta(i)*sigmainvb(i,j)*theta(j)
+         end do
+      end do
+      sseval=tmp1
+
+      nint=2
+      prob=1.d0/dble(nint)
+      quan=invcdfchisq(prob,dble(nrand),1,0)
+      
+      countero=0
+      
+      if(sseval.le.quan)then
+          parti=1
+          do i=1,nsubject
+             if(ssb(i).le.quan.and.i.ne.ind)then
+               countero=countero+1
+               whicho(countero)=i
+             end if  
+          end do
+        else
+          parti=2
+          do i=1,nsubject
+             if(ssb(i).gt.quan.and.i.ne.ind)then
+               countero=countero+1
+               whicho(countero)=i
+             end if  
+          end do
+      end if  
+   
+      logprior=logprior+
+     &     log(2.d0*cparb+dble(2*countero))-
+     &     log(2.d0*cparb+dble(nsubject-1))
+
+      if(countero.eq.0) go to 1
+
+      ok=1
+      j=2
+      do while(ok.eq.1.and.j.le.m)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+   
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+         quan=invcdfchisq(dble(k1)*prob,dble(nrand),1,0)
+
+         if(sseval.le.quan)then
+            parti=k1
+            k=k1
+           else
+            parti=k2
+            k=k2
+         end if  
+
+         countern=0
+
+         if(k.eq.1)then
+            do l=1,countero
+               if(ssb(whicho(l)).le.quan.and.
+     &            whicho(l).ne.ind)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k.eq.nint)then
+            quan=invcdfchisq(dble(k-1)*prob,dble(nrand),1,0)
+            do l=1,countero
+               if(ssb(whicho(l)).gt.quan.and.
+     &            whicho(l).ne.ind)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfchisq(dble(k-1)*prob,dble(nrand),1,0)
+            tmp2=invcdfchisq(dble(k  )*prob,dble(nrand),1,0)
+
+            if(tmp1.ge.tmp2)then
+              call rexit("Error in the limits")
+            end if  
+         
+            do l=1,countero
+               if(whicho(l).ne.ind)then
+               if(ssb(whicho(l)).gt.tmp1.and.
+     &            ssb(whicho(l)).le.tmp2)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if
+               end if
+            end do
+         end if
+        
+         logprior=logprior+
+     &          log(2.d0*cparb*dble(je2)+dble(2*countern))-
+     &          log(2.d0*cparb*dble(je2)+dble(  countero))
+
+         if(countern.eq.0)then
+            ok=0
+          else  
+            countero=countern
+            j=j+1
+         end if   
+      end do
+
+1     continue
+
+      tmp1=-(dble(nrand)*log(tpi))
+      tmp2=detlogsb
+      tmp3=sseval
+      
+      logprior=logprior+(tmp1-tmp2-tmp3)/2.d0
+
+      return
+      end
+
+
+c=======================================================================                  
+c=======================================================================                  
+c     SUBROUTINES FOR UNIVARIATE POLYA TREES
+c=======================================================================                  
+c=======================================================================                  
+
+c======================================================================= 
+      subroutine loglik_unippt(nsubject,mdzero,maxm,alpha,mu,sigma,b,
+     &                        whicho,whichn,logliko)
+c======================================================================= 
+c     This subroutine evaluate the log-likelihood for 
+c     the baseline parameters in a random effect model using
+c     in a marginal univariate partially specified PT.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer mdzero,maxm,nsubject
+      real*8 alpha
+      real*8 mu,sigma 
+      real*8 b(nsubject)
+
+c++++ Working External
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internal
+      integer countero,countern
+      integer i,j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logliko
+
+      logliko=0.d0
+      do i=1,nsubject
+         call rchkusr()   
+c+++++++ first observation
+         if(i.eq.1)then
+              logliko=dnrm(b(1),mu,sqrt(sigma),1)
+c+++++++ following observations
+           else
+              quan=mu
+              countero=0
+              if(b(i).le.quan) then
+                  parti=1
+                  do l=1,i-1
+                     if(b(l).le.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
+               else
+                  parti=2
+                  do l=1,i-1
+                     if(b(l).gt.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
+              end if  
+              if(mdzero.ne.0)then 
+                 logliko=logliko+
+     &            log(2.d0*alpha+dble(2*countero))-
+     &            log(2.d0*alpha+dble(i-1))
+              end if 
+
+              if(countero.eq.0)go to 1
+              ok=1
+              j=2
+              do while(ok.eq.1.and.j.le.maxm)
+                 nint=2**j
+                 je2=j**2
+                 prob=1.d0/dble(nint)
+              
+                 k1=2*(parti-1)+1
+                 k2=2*(parti-1)+2
+                 quan=invcdfnorm(dble(k1)*prob,mu,
+     &                           sqrt(sigma),1,0)
+                 if(b(i).le.quan)then
+                   parti=k1
+                   k=k1
+                  else
+                   parti=k2
+                    k=k2
+                 end if  
+                 countern=0
+                 if(k.eq.1)then
+                    do l=1,countero
+                       if(b(whicho(l)).le.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                  else if(k.eq.nint)then
+                    quan=invcdfnorm(dble(k-1)*prob,mu,
+     &                              sqrt(sigma),1,0) 
+                    do l=1,countero
+                       if(b(whicho(l)).gt.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                  else
+                    tmp1=invcdfnorm(dble(k-1)*prob,mu,
+     &                              sqrt(sigma),1,0)
+                    tmp2=invcdfnorm(dble(k  )*prob,mu,
+     &                              sqrt(sigma),1,0)
+
+                    if(tmp1.ge.tmp2)then
+                       call rexit("Error in the limits")
+                    end if  
+                 
+                    do l=1,countero
+                       if(b(whicho(l)).gt.tmp1.and.
+     &                    b(whicho(l)).le.tmp2)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                 end if
+              
+                 logliko=logliko+
+     &                 log(2.d0*alpha*dble(je2)+dble(2*countern))-
+     &                 log(2.d0*alpha*dble(je2)+dble(  countero))
+
+                 if(countern.eq.0)then
+                    ok=0
+                  else  
+                    countero=countern
+                    do l=1,countern
+                       whicho(l)=whichn(l)
+                    end do
+                    j=j+1
+                 end if   
+              end do
+1             continue
+              logliko=logliko+dnrm(b(i),mu,sqrt(sigma),1)
+         end if
+      end do
+      return
+      end
+
+c======================================================================= 
+      subroutine loglik_unifpt(nsubject,mdzero,alpha,mu,sigma,b,
+     &                         whicho,whichn,logliko)
+c======================================================================= 
+c     This subroutine evaluate the log-likelihood for 
+c     the baseline parameters in a random effect model using
+c     in a marginal univariate fully specified PT.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer mdzero,nsubject
+      real*8 alpha
+      real*8 mu,sigma 
+      real*8 b(nsubject)
+
+c++++ Working External
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internal
+      integer countero,countern
+      integer i,j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logliko
+
+      logliko=0.d0
+      do i=1,nsubject
+         call rchkusr()   
+c+++++++ first observation
+         if(i.eq.1)then
+              logliko=dnrm(b(1),mu,sqrt(sigma),1)
+c+++++++ following observations
+           else
+              quan=mu
+              countero=0
+              if(b(i).le.quan) then
+                  parti=1
+                  do l=1,i-1
+                     if(b(l).le.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
+               else
+                  parti=2
+                  do l=1,i-1
+                     if(b(l).gt.quan)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
+              end if  
+              if(mdzero.ne.0)then 
+                 logliko=logliko+
+     &            log(2.d0*alpha+dble(2*countero))-
+     &            log(2.d0*alpha+dble(i-1))
+              end if 
+
+              if(countero.eq.0)go to 1
+              ok=1
+              j=2
+              do while(ok.eq.1)
+                 nint=2**j
+                 je2=j**2
+                 prob=1.d0/dble(nint)
+              
+                 k1=2*(parti-1)+1
+                 k2=2*(parti-1)+2
+                 quan=invcdfnorm(dble(k1)*prob,mu,
+     &                           sqrt(sigma),1,0)
+                 if(b(i).le.quan)then
+                   parti=k1
+                   k=k1
+                  else
+                   parti=k2
+                    k=k2
+                 end if  
+                 countern=0
+                 if(k.eq.1)then
+                    do l=1,countero
+                       if(b(whicho(l)).le.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                  else if(k.eq.nint)then
+                    quan=invcdfnorm(dble(k-1)*prob,mu,
+     &                              sqrt(sigma),1,0) 
+                    do l=1,countero
+                       if(b(whicho(l)).gt.quan)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                  else
+                    tmp1=invcdfnorm(dble(k-1)*prob,mu,
+     &                              sqrt(sigma),1,0)
+                    tmp2=invcdfnorm(dble(k  )*prob,mu,
+     &                              sqrt(sigma),1,0)
+
+                    if(tmp1.ge.tmp2)then
+                       call rexit("Error in the limits")
+                    end if  
+                 
+                    do l=1,countero
+                       if(b(whicho(l)).gt.tmp1.and.
+     &                    b(whicho(l)).le.tmp2)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                       end if   
+                    end do
+                 end if
+              
+                 logliko=logliko+
+     &                 log(2.d0*alpha*dble(je2)+dble(2*countern))-
+     &                 log(2.d0*alpha*dble(je2)+dble(  countero))
+
+                 if(countern.eq.0)then
+                    ok=0
+                  else  
+                    countero=countern
+                    do l=1,countern
+                       whicho(l)=whichn(l)
+                    end do
+                    j=j+1
+                 end if   
+              end do
+1             continue
+              logliko=logliko+dnrm(b(i),mu,sqrt(sigma),1)
+         end if
+      end do
+      return
+      end
+
+
+c=======================================================================                  
+      subroutine condupptprior(theta,ii,maxm,mdzero,nsubject,alpha,mu,
+     &                         sigma,b,
+     &                         whicho,whichn,logprioro)
+c======================================================================= 
+c     This subroutine evaluate the log-contional prior distribution,
+c     arising in a marginal univariate partially specified PT, 
+c     for subject 'ii' with value 'theta'.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer maxm,mdzero,nsubject,ii
+      real*8 alpha,mu,sigma,b(nsubject),theta
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logprioro
+      
+      logprioro=0.d0
+      
+      quan=mu
+      countero=0
+      if(theta.le.quan) then
+          parti=1
+          do l=1,nsubject
+             if(b(l).le.quan.and.l.ne.ii)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+        else
+          parti=2
+          do l=1,nsubject
+             if(b(l).gt.quan.and.l.ne.ii)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+      end if  
+
+      if(mdzero.ne.0)then 
+         logprioro=logprioro+
+     &    log(2.d0*alpha+dble(2*countero))-
+     &    log(2.d0*alpha+dble(nsubject-1))
+      end if 
+
+      if(countero.eq.0)go to 1
+
+      ok=1
+      j=2
+      do while(ok.eq.1.and.j.le.maxm)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+        
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+         quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0)
+      
+         if(theta.le.quan)then
+           parti=k1
+           k=k1
+          else
+           parti=k2
+           k=k2
+         end if  
+         
+         countern=0
+
+         if(k.eq.1)then
+            do l=1,countero
+               if(b(whicho(l)).le.quan.and.
+     &            whicho(l).ne.ii)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k.eq.nint)then
+            quan=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan.and.
+     &            whicho(l).ne.ii)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k  )/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+              call rexit("Error in the limits")
+            end if  
+         
+            do l=1,countero
+               if(whicho(l).ne.ii)then
+               if(b(whicho(l)).gt.tmp1.and.
+     &            b(whicho(l)).le.tmp2)then
+                 countern=countern+1
+                 whichn(countern)=whicho(l)
+               end if
+               end if
+            end do
+         end if
+        
+         logprioro=logprioro+
+     &       log(2.d0)+                
+     &       log(     alpha*dble(je2)+dble(  countern))-
+     &       log(2.d0*alpha*dble(je2)+dble(  countero))
+
+         if(countern.eq.0)then
+             ok=0
+           else  
+             countero=countern
+             do l=1,countern
+                whicho(l)=whichn(l)
+             end do
+             j=j+1
+         end if   
+      end do
+1     continue
+
+      logprioro=logprioro+dnrm(theta,mu,sqrt(sigma),1)
+      
+      return
+      end
+
+c=======================================================================                  
+      subroutine condufptprior(theta,ii,mdzero,nsubject,alpha,mu,
+     &                         sigma,b,
+     &                         whicho,whichn,logprioro)
+c======================================================================= 
+c     This subroutine evaluate the log-contional prior distribution,
+c     arising in a marginal univariate fully specified PT, 
+c     for subject 'ii' with value 'theta'.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer mdzero,nsubject,ii
+      real*8 alpha,mu,sigma,b(nsubject),theta
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logprioro
+      
+      logprioro=0.d0
+      
+      quan=mu
+      countero=0
+      if(theta.le.quan) then
+          parti=1
+          do l=1,nsubject
+             if(b(l).le.quan.and.l.ne.ii)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+        else
+          parti=2
+          do l=1,nsubject
+             if(b(l).gt.quan.and.l.ne.ii)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+      end if  
+
+      if(mdzero.ne.0)then 
+         logprioro=logprioro+
+     &    log(2.d0*alpha+dble(2*countero))-
+     &    log(2.d0*alpha+dble(nsubject-1))
+      end if 
+
+      if(countero.eq.0)go to 1
+
+      ok=1
+      j=2
+      do while(ok.eq.1)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+        
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+         quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0)
+      
+         if(theta.le.quan)then
+           parti=k1
+           k=k1
+          else
+           parti=k2
+           k=k2
+         end if  
+         
+         countern=0
+
+         if(k.eq.1)then
+            do l=1,countero
+               if(b(whicho(l)).le.quan.and.
+     &            whicho(l).ne.ii)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k.eq.nint)then
+            quan=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan.and.
+     &            whicho(l).ne.ii)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k  )/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+              call rexit("Error in the limits")
+            end if  
+         
+            do l=1,countero
+               if(whicho(l).ne.ii)then
+               if(b(whicho(l)).gt.tmp1.and.
+     &            b(whicho(l)).le.tmp2)then
+                 countern=countern+1
+                 whichn(countern)=whicho(l)
+               end if
+               end if
+            end do
+         end if
+        
+         logprioro=logprioro+
+     &       log(2.d0)+                
+     &       log(     alpha*dble(je2)+dble(  countern))-
+     &       log(2.d0*alpha*dble(je2)+dble(  countero))
+
+         if(countern.eq.0)then
+             ok=0
+           else  
+             countero=countern
+             do l=1,countern
+                whicho(l)=whichn(l)
+             end do
+             j=j+1
+         end if   
+      end do
+1     continue
+
+      logprioro=logprioro+dnrm(theta,mu,sqrt(sigma),1)
+      
+      return
+      end
+
+
+c=======================================================================                  
+      subroutine sampupptpred(maxm,mdzero,nsubject,alpha,mu,
+     &                       sigma,b,
+     &                       whicho,whichn,theta)
+c======================================================================= 
+c     This subroutine get a sample from the predictive distribution
+c     from a univariate partially specified PT.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer maxm,mdzero,nsubject
+      real*8 alpha,mu,sigma,b(nsubject)
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint
+      integer ok
+      real*8 invcdfnorm,rtnorm
+      real*8 linf,lsup
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2,tmp3
+      
+      logical ainf,binf
+
+      real runif
+      
+c++++ Output
+      real*8 theta
+
+      quan=mu
+      countern=0
+      do l=1,nsubject
+         if(b(l).le.quan)then
+            countern=countern+1
+         end if
+      end do
+
+      if(mdzero.ne.0)then 
+         tmp3=exp(
+     &     log(     alpha+dble(countern))-
+     &     log(2.d0*alpha+dble(nsubject)))                  
+        else
+         tmp3=0.5d0
+      end if   
+      
+      countero=0
+      
+      if(dble(runif()).le.tmp3)then
+         k=1
+         do l=1,nsubject
+            if(b(l).le.quan)then
+               countero=countero+1
+               whicho(countero)=l
+            end if
+         end do
+       else
+         k=2
+         do l=1,nsubject
+            if(b(l).gt.quan)then
+               countero=countero+1
+               whicho(countero)=l
+            end if   
+         end do
+      end if
+      
+      ok=1
+      j=2
+      do while(ok.eq.1.and.j.le.maxm)
+         
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+         
+         k1=2*(k-1)+1
+         k2=2*(k-1)+2
+         
+         countern=0
+           
+         if(k1.eq.1)then
+            quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k1.eq.nint)then
+            quan=invcdfnorm(dble(k1-1)*prob,mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k1-1)*prob,mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k1  )*prob,mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+               call rexit("Error in the limits")
+            end if  
+              
+            do l=1,countero
+                 if(b(whicho(l)).gt.tmp1.and.
+     &              b(whicho(l)).le.tmp2)then
+                    countern=countern+1
+                    whichn(countern)=whicho(l)
+                 end if   
+            end do
+         end if
+         
+         tmp3=exp(
+     &        log(     alpha*dble(je2)+dble(countern))-
+     &        log(2.d0*alpha*dble(je2)+dble(countero)))                  
+
+         if(dble(runif()).le.tmp3)then
+             k=k1
+           else
+             k=k2
+             countern=countero-countern
+         end if
+
+         if(countern.eq.0)then
+            ok=0
+           else 
+            countero=countern
+            do l=1,countern
+               whicho(l)=whichn(l)
+            end do
+            j=j+1
+          end if   
+      end do
+      
+      if(j.gt.maxm)j=maxm
+
+c+++++Now j indicates the partition and k the interval
+
+      nint=2**j
+      prob=1.d0/dble(nint)
+
+      if(k.eq.1)then
+         quan=invcdfnorm(dble(k)*prob,mu,sqrt(sigma),1,0) 
+
+         ainf=.true.
+         binf=.false.
+         linf=0.d0
+         lsup=quan
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+         
+       else if(k.eq.nint)then
+         quan=invcdfnorm(dble(k-1)*prob,mu,sqrt(sigma),1,0) 
+
+         ainf=.false.
+         binf=.true.
+         linf=quan
+         lsup=0.d0
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+
+       else
+         tmp1=invcdfnorm(dble(k-1)*prob,mu,sqrt(sigma),1,0)
+         tmp2=invcdfnorm(dble(k  )*prob,mu,sqrt(sigma),1,0)
+
+         if(tmp1.ge.tmp2)then
+            call rexit("Error in the limits")
+         end if  
+
+         ainf=.false.
+         binf=.false.
+         linf=tmp1
+         lsup=tmp2
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+      end if
+      
+      return
+      end
+
+c=======================================================================                  
+      subroutine sampufptpred(mdzero,nsubject,alpha,mu,
+     &                        sigma,b,
+     &                        whicho,whichn,theta)
+c======================================================================= 
+c     This subroutine get a sample from the predictive distribution
+c     from a univariate fully specified PT.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer mdzero,nsubject
+      real*8 alpha,mu,sigma,b(nsubject)
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint
+      integer ok
+      real*8 invcdfnorm,rtnorm
+      real*8 linf,lsup
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2,tmp3
+      
+      logical ainf,binf
+
+      real runif
+      
+c++++ Output
+      real*8 theta
+
+      quan=mu
+      countern=0
+      do l=1,nsubject
+         if(b(l).le.quan)then
+            countern=countern+1
+         end if
+      end do
+
+      if(mdzero.ne.0)then 
+         tmp3=exp(
+     &     log(     alpha+dble(countern))-
+     &     log(2.d0*alpha+dble(nsubject)))                  
+        else
+         tmp3=0.5d0
+      end if   
+      
+      countero=0
+      
+      if(dble(runif()).le.tmp3)then
+         k=1
+         do l=1,nsubject
+            if(b(l).le.quan)then
+               countero=countero+1
+               whicho(countero)=l
+            end if
+         end do
+       else
+         k=2
+         do l=1,nsubject
+            if(b(l).gt.quan)then
+               countero=countero+1
+               whicho(countero)=l
+            end if   
+         end do
+      end if
+      
+      ok=1
+      j=2
+      do while(ok.eq.1)
+         
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+         
+         k1=2*(k-1)+1
+         k2=2*(k-1)+2
+         
+         countern=0
+           
+         if(k1.eq.1)then
+            quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k1.eq.nint)then
+            quan=invcdfnorm(dble(k1-1)*prob,mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k1-1)*prob,mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k1  )*prob,mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+               call rexit("Error in the limits")
+            end if  
+              
+            do l=1,countero
+                 if(b(whicho(l)).gt.tmp1.and.
+     &              b(whicho(l)).le.tmp2)then
+                    countern=countern+1
+                    whichn(countern)=whicho(l)
+                 end if   
+            end do
+         end if
+         
+         tmp3=exp(
+     &        log(     alpha*dble(je2)+dble(countern))-
+     &        log(2.d0*alpha*dble(je2)+dble(countero)))                  
+
+         if(dble(runif()).le.tmp3)then
+             k=k1
+           else
+             k=k2
+             countern=countero-countern
+         end if
+
+         if(countern.eq.0)then
+            ok=0
+           else 
+            countero=countern
+            do l=1,countern
+               whicho(l)=whichn(l)
+            end do
+            j=j+1
+          end if   
+      end do
+      
+c+++++Now j indicates the partition and k the interval
+
+      nint=2**j
+      prob=1.d0/dble(nint)
+
+      if(k.eq.1)then
+         quan=invcdfnorm(dble(k)*prob,mu,sqrt(sigma),1,0) 
+
+         ainf=.true.
+         binf=.false.
+         linf=0.d0
+         lsup=quan
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+         
+       else if(k.eq.nint)then
+         quan=invcdfnorm(dble(k-1)*prob,mu,sqrt(sigma),1,0) 
+
+         ainf=.false.
+         binf=.true.
+         linf=quan
+         lsup=0.d0
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+
+       else
+         tmp1=invcdfnorm(dble(k-1)*prob,mu,sqrt(sigma),1,0)
+         tmp2=invcdfnorm(dble(k  )*prob,mu,sqrt(sigma),1,0)
+
+         if(tmp1.ge.tmp2)then
+            call rexit("Error in the limits")
+         end if  
+
+         ainf=.false.
+         binf=.false.
+         linf=tmp1
+         lsup=tmp2
+         theta=rtnorm(mu,sqrt(sigma),linf,lsup,ainf,binf)
+      end if
+      
+      return
+      end
+
+c=======================================================================
+      subroutine locationupt(x,m,n,loca,mu,sigma)
+c=======================================================================
+c     function that return the succesive location of x across the 
+c     finite univariate tree of length m. This is based on a 
+c     normal(mu,sigma) distribution.
+c
+c     Alejandro Jara, 2007
+c=======================================================================
+      implicit none
+      integer m,n,loca(n)
+      integer i,k,k1,k2,nint
+      real*8 invcdfnorm
+      real*8 prob,quan
+      real*8 mu,sigma
+      real*8 x
+      
+      if(m.gt.n)then
+        call rexit("Error in ´locationpt´")
+      end if
+
+      quan=mu
+      if(x.le.quan)then
+        k=1
+       else
+        k=2
+      end if  
+
+      loca(1)=k
+      
+      do i=2,m
+         nint=2**i
+         prob=1.d0/dble(nint)
+         k1=2*(k-1)+1
+         k2=2*(k-1)+2
+         quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0)
+         if(x.le.quan)then
+           k=k1
+          else
+           k=k2
+         end if  
+         loca(i)=k
+      end do
+      return
+      end
+
+
+c=======================================================================
+      subroutine accumcountupt(nsubject,mu,sigma,m,b,maxm,loca,
+     &                         ntotals,nhash,maxnzr,tmp,counts,nr,
+     &                         ia,ja,a)
+c=======================================================================
+c     accumulate the number of subjects.  
+c
+c     Alejandro Jara, 2007
+c=======================================================================
+      implicit none
+      integer i,j
+      integer m,nsubject,maxm
+      integer loca(maxm)
+      real*8 mu,sigma
+      real*8 b(nsubject),theta,one
+      parameter(one=1.d0)
+      
+      integer nhash,maxnzr,nr
+      real*8 counts(nhash,3)
+      integer ntotals,ia(ntotals+1),ja(maxnzr),tmp(ntotals)
+      real*8 a(maxnzr)
+
+      nr=0
+      do i=1,nsubject
+         theta=b(i)
+         call locationupt(theta,m,maxm,loca,mu,sigma)         
+         do j=1,m
+            call hashm(one,loca(j),j,counts,nhash,nr)
+         end do
+      end do
+      
+      call hashiajaa(counts,nhash,ntotals,ia,ja,a,maxnzr,tmp)
+      
+      return
+      end
+
+
+c=======================================================================
+      subroutine sprobupt(mdzero,cpar,m,ntotals,maxnzr,
+     &                    ia,ja,a,tmp1,tmp2)
+c=======================================================================
+c     generate probabilities for a finite univariate PT.  
+c     Alejandro Jara, 2007
+c=======================================================================
+      implicit none
+      integer mdzero,i,j,k,l,ista,iend
+      integer m,narea,ntotals,maxnzr
+      integer ia(ntotals+1),ja(maxnzr)
+      real*8 a(maxnzr)
+      real*8 cpar
+      real*8 mass(2)
+      real*8 rvecs(2)
+      real*8 tmp1(ntotals),tmp2(ntotals)
+
+      integer ngroup,nvar
+      real*8 je2
+      
+      narea=2 
+      nvar=1
+      
+c++++ First level probabilities
+      ngroup=1
+      do k=1,narea
+         mass(k)=cpar
+      end do
+
+      ista=1
+      iend=2
+      
+      if(mdzero.ne.0)then
+         do k=ista,iend
+            do l=ia(k),ia(k+1)-1
+               if(ja(l).eq.1)mass(k-ista+1)=mass(k-ista+1)+a(l)
+            end do
+         end do
+         call dirichlet(mass,2,2,rvecs)
+         do k=ista,iend
+            tmp1(k)=rvecs(k)
+            tmp2(k)=rvecs(k)
+         end do
+       else
+         do k=ista,iend
+            rvecs(k)=1.d0/dble(narea)
+            tmp1(k)=rvecs(k)
+            tmp2(k)=rvecs(k)
+         end do
+      end if
+      
+c++++ Probabilities for the other levels
+
+      do i=2,m
+         je2=i**2
+         ngroup=2**(nvar*(i-1))
+         do j=1,ngroup
+
+            do k=1,narea
+               mass(k)=cpar*je2
+            end do
+            
+            ista=narea*(j-1)+1
+            iend=ista+narea-1
+            
+            do k=ista,iend
+               do l=ia(k),ia(k+1)-1
+                  if(ja(l).eq.i)mass(k-ista+1)=mass(k-ista+1)+a(l)
+               end do
+            end do
+            call dirichlet(mass,2,2,rvecs)
+            
+            do k=ista,iend
+               tmp2(k)=rvecs(k-ista+1)*tmp1(j)
+            end do
+         end do
+        
+         if(i.lt.m)then
+            do j=1,2**(nvar*i)
+               tmp1(j)=tmp2(j)
+            end do
+         end if   
+      end do
+      
+      return
+      end
+
+
+c=======================================================================
+      subroutine setsupt(m,ntotals,liminf1,liminf2,limsup1,limsup2)
+c=======================================================================
+c     computes the limtis of the sets in a finite univariate PT
+c
+c     Alejandro Jara, 2007
+c=======================================================================
+      implicit none
+      integer m,ntotals
+      integer pattern(1)
+      real*8 liminf1(ntotals),liminf2(ntotals)
+      real*8 limsup1(ntotals),limsup2(ntotals)
+      integer i,j,k,ngroup,ista,narea,nvar
+      real*8 linf,lsup,quan
+
+c++++ Algorithm
+      nvar=1
+      narea=2**nvar  
+      
+c++++ First level sets
+
+      do i=1,narea
+         call binaryrepinv(nvar,i,pattern)
+         if(pattern(1).eq.0)then
+            liminf1(i)=-999999.d0
+            limsup1(i)=0.d0
+            liminf2(i)=-999999.d0
+            limsup2(i)=0.d0
+          else
+            liminf1(i)=0.d0
+            limsup1(i)=+999999.d0
+            liminf2(i)=0.d0
+            limsup2(i)=+999999.d0
+         end if 
+      end do
+
+c++++ Sets for other levels
+
+      do i=2,m
+         ngroup=2**(nvar*(i-1))
+         do j=1,ngroup
+
+            ista=(2**nvar)*(j-1)+1
+
+            do k=1,narea
+               call binaryrepinv(nvar,k,pattern)
+
+               linf=liminf1(j)
+               lsup=limsup1(j)
+               call quandetpt(linf,lsup,quan)
+                  
+               if(pattern(1).eq.0)then
+                  liminf2(ista+k-1)=linf
+                  limsup2(ista+k-1)=quan
+                else
+                  liminf2(ista+k-1)=quan
+                  limsup2(ista+k-1)=lsup
+               end if 
+               
+            end do
+         end do
+         
+         if(i.lt.m)then
+            do j=1,2**(nvar*i)
+               liminf1(j)=liminf2(j)
+               limsup1(j)=limsup2(j)
+            end do
+         end if   
+      end do
+      return
+      end
+
+
+c=======================================================================
+      subroutine momupt(m,ntotals,liminf,limsup,probs,
+     &                  means,covs)
+c=======================================================================
+c     computes the moments of a finite univariate PT
+c
+c     Alejandro Jara, 2007
+c=======================================================================
+      implicit none
+      integer m,ntotals
+      real*8 liminf(ntotals)
+      real*8 limsup(ntotals)
+      real*8 probs(ntotals)
+      real*8 means,covs
+      
+      integer i,nsets,nvar
+      real*8 linf,lsup,muwork1,muwork2
+      real*8 cdfnorm,dnrm
+      real*8 tmp1,tmp2,tmp3,tmp4
+      real*8 tmass
+
+c++++ Algorithm
+      nvar=1
+      nsets=2**(nvar*m)  
+      means=0.d0 
+      covs=0.d0 
+      
+      if(nsets.gt.ntotals)then
+         call rexit("Error in ´mompt´: nsets > ntotals")            
+      end if
+      
+      tmass=0.d0
+      do i=1,nsets
+         linf=liminf(i)
+         lsup=limsup(i)
+         tmp1=dnrm(linf,0.d0,1.d0,0)
+         tmp2=dnrm(lsup,0.d0,1.d0,0)
+         tmp3=cdfnorm(linf,0.d0,1.d0,1,0)
+         tmp4=cdfnorm(lsup,0.d0,1.d0,1,0)
+         muwork1= - (tmp2-tmp1)/(tmp4-tmp3)
+         means=means+probs(i)*muwork1
+            
+         muwork2=1.d0 - (lsup*tmp2-linf*tmp1)/(tmp4-tmp3) 
+         covs=covs+probs(i)*muwork2
+
+         tmass=tmass+probs(i)
+      end do
+
+      covs=covs-means*means   
+
+      return
+      end
+
+
+c=======================================================================
+      subroutine samplefuncupt(mdzero,m,nsubject,cpar,b,mu,sigma,
+     &                         means,covs)
+c=======================================================================
+      implicit none
+      integer i,j
+      integer mdzero,m,nsubject
+      real*8 cpar,b(nsubject)
+      real*8 mu,sigma
+      real*8 means,covs
+
+c++++ parameters
+      integer maxm,ntotals,ntotalp,nhash,maxnzr
+      parameter(maxm=20)
+      parameter(ntotals=2**(2*6),ntotalp=5460)
+      parameter(nhash=ntotalp,maxnzr=ntotalp)
+      integer loca(maxm),mwork,nr
+      integer ia(ntotals+1),ja(maxnzr),tmp(ntotals)
+
+      real*8 a(maxnzr)    
+      real*8 counts(nhash,3)
+      real*8 probw1(ntotals),probw2(ntotals)
+      real*8 liminf1(ntotals),liminf2(ntotals)
+      real*8 limsup1(ntotals),limsup2(ntotals)
+      
+      mwork=m
+      do while(ntotals.lt.(2**mwork))
+         mwork=mwork-1
+      end do
+
+      if(mwork.lt.1)then
+        call rexit("Error in ´samplefuncupt´: maxm < 1")      
+      end if
+      
+      if(mwork.gt.maxm)then
+        call rexit("Error in ´samplefuncupt´: increase maxm")      
+      end if
+
+      nr=0
+      do i=1,nhash
+         do j=1,3
+            counts(i,j)=0.d0
+         end do   
+      end do
+
+c++++ set the MPT parameters      
+
+      call accumcountupt(nsubject,mu,sigma,m,b,maxm,loca,
+     &                   ntotals,nhash,maxnzr,tmp,counts,nr,
+     &                   ia,ja,a)
+
+c++++ sampling probabilities
+
+      call sprobupt(mdzero,cpar,mwork,ntotals,maxnzr,
+     &              ia,ja,a,probw1,probw2)
+
+c++++ finding sets
+
+      call setsupt(mwork,ntotals,liminf1,liminf2,limsup1,limsup2)
+
+c++++ computing the means for each set
+
+      call momupt(mwork,ntotals,liminf2,limsup2,probw2,
+     &            means,covs)
+
+      return
+      end
+
+
+c=======================================================================                  
+      subroutine gridupptprior(theta,maxm,mdzero,nsubject,alpha,mu,
+     &                         sigma,b,
+     &                         whicho,whichn,logprioro)
+c======================================================================= 
+c     This subroutine evaluate the log-contional prior distribution,
+c     arising in a marginal univariate partially specified PT, 
+c     for a value in a grid 'theta'.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer maxm,mdzero,nsubject
+      real*8 alpha,mu,sigma,b(nsubject),theta
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logprioro
+      
+      logprioro=0.d0
+      
+      quan=mu
+      countero=0
+      if(theta.le.quan) then
+          parti=1
+          do l=1,nsubject
+             if(b(l).le.quan)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+        else
+          parti=2
+          do l=1,nsubject
+             if(b(l).gt.quan)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+      end if  
+
+      if(mdzero.ne.0)then 
+         logprioro=logprioro+
+     &    log(2.d0*alpha+dble(2*countero))-
+     &    log(2.d0*alpha+dble(nsubject))
+      end if 
+
+      if(countero.eq.0)go to 1
+
+      ok=1
+      j=2
+      do while(ok.eq.1.and.j.le.maxm)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+        
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+         quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0)
+      
+         if(theta.le.quan)then
+           parti=k1
+           k=k1
+          else
+           parti=k2
+           k=k2
+         end if  
+         
+         countern=0
+
+         if(k.eq.1)then
+            do l=1,countero
+               if(b(whicho(l)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k.eq.nint)then
+            quan=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k  )/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+              call rexit("Error in the limits")
+            end if  
+         
+            do l=1,countero
+               if(b(whicho(l)).gt.tmp1.and.
+     &            b(whicho(l)).le.tmp2)then
+                 countern=countern+1
+                 whichn(countern)=whicho(l)
+               end if
+            end do
+         end if
+        
+         logprioro=logprioro+
+     &       log(2.d0)+                
+     &       log(     alpha*dble(je2)+dble(  countern))-
+     &       log(2.d0*alpha*dble(je2)+dble(  countero))
+
+         if(countern.eq.0)then
+             ok=0
+           else  
+             countero=countern
+             do l=1,countern
+                whicho(l)=whichn(l)
+             end do
+             j=j+1
+         end if   
+      end do
+1     continue
+
+      logprioro=logprioro+dnrm(theta,mu,sqrt(sigma),1)
+      
+      return
+      end
+
+
+c=======================================================================                  
+      subroutine gridufptprior(theta,mdzero,nsubject,alpha,mu,
+     &                         sigma,b,
+     &                         whicho,whichn,logprioro)
+c======================================================================= 
+c     This subroutine evaluate the log-contional prior distribution,
+c     arising in a marginal univariate fully specified PT, 
+c     for a value in a grid 'theta'.
+c
+c     Alejandro Jara, 2007
+c======================================================================= 
+      implicit none
+
+c++++ Input
+      integer mdzero,nsubject
+      real*8 alpha,mu,sigma,b(nsubject),theta
+
+c++++ Working Externals
+      integer whicho(nsubject),whichn(nsubject)
+
+c++++ Working Internals
+      integer countero,countern
+      integer j,je2,k,k1,k2,l,nint,parti
+      integer ok
+      real*8 dnrm,invcdfnorm
+      real*8 prob
+      real*8 quan
+      real*8 tmp1,tmp2
+
+c++++ Output
+      real*8 logprioro
+      
+      logprioro=0.d0
+      
+      quan=mu
+      countero=0
+      if(theta.le.quan) then
+          parti=1
+          do l=1,nsubject
+             if(b(l).le.quan)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+        else
+          parti=2
+          do l=1,nsubject
+             if(b(l).gt.quan)then
+                countero=countero+1
+                whicho(countero)=l
+             end if   
+          end do
+      end if  
+
+      if(mdzero.ne.0)then 
+         logprioro=logprioro+
+     &    log(2.d0*alpha+dble(2*countero))-
+     &    log(2.d0*alpha+dble(nsubject))
+      end if 
+
+      if(countero.eq.0)go to 1
+
+      ok=1
+      j=2
+      do while(ok.eq.1)
+         nint=2**j
+         je2=j**2
+         prob=1.d0/dble(nint)
+        
+         k1=2*(parti-1)+1
+         k2=2*(parti-1)+2
+         quan=invcdfnorm(dble(k1)*prob,mu,sqrt(sigma),1,0)
+      
+         if(theta.le.quan)then
+           parti=k1
+           k=k1
+          else
+           parti=k2
+           k=k2
+         end if  
+         
+         countern=0
+
+         if(k.eq.1)then
+            do l=1,countero
+               if(b(whicho(l)).le.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else if(k.eq.nint)then
+            quan=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0) 
+            do l=1,countero
+               if(b(whicho(l)).gt.quan)then
+                  countern=countern+1
+                  whichn(countern)=whicho(l)
+               end if   
+            end do
+          else
+            tmp1=invcdfnorm(dble(k-1)/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+            tmp2=invcdfnorm(dble(k  )/dble(nint),mu,
+     &                      sqrt(sigma),1,0)
+
+            if(tmp1.ge.tmp2)then
+              call rexit("Error in the limits")
+            end if  
+         
+            do l=1,countero
+               if(b(whicho(l)).gt.tmp1.and.
+     &            b(whicho(l)).le.tmp2)then
+                 countern=countern+1
+                 whichn(countern)=whicho(l)
+               end if
+            end do
+         end if
+        
+         logprioro=logprioro+
+     &       log(2.d0)+                
+     &       log(     alpha*dble(je2)+dble(  countern))-
+     &       log(2.d0*alpha*dble(je2)+dble(  countero))
+
+         if(countern.eq.0)then
+             ok=0
+           else  
+             countero=countern
+             do l=1,countern
+                whicho(l)=whichn(l)
+             end do
+             j=j+1
+         end if   
+      end do
+1     continue
+
+      logprioro=logprioro+dnrm(theta,mu,sqrt(sigma),1)
+      
+      return
+      end
 

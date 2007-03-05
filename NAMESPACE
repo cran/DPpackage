@@ -49,10 +49,15 @@ export(
         FPTraschpoisson.default,
         Pbinary,
         Pbinary.default,
+        ps,
+        PSgam,
+        PSgam.default,
         PTdensity,
         PTdensity.default,
         PTlm,
-        PTlm.default
+        PTlm.default,
+        TDPdensity,
+        TDPdensity.default
 )
 
 
@@ -189,6 +194,12 @@ S3method(print, summaryPbinary)
 S3method(predict, Pbinary)
 S3method(anova, Pbinary)
 
+S3method(print, PSgam)
+S3method(plot, PSgam)
+S3method(summary, PSgam)
+S3method(print, summaryPSgam)
+S3method(anova, PSgam)
+
 S3method(print, PTdensity)
 S3method(plot, PTdensity)
 S3method(summary, PTdensity)
@@ -200,4 +211,8 @@ S3method(summary, PTlm)
 S3method(print, summaryPTlm)
 S3method(anova, PTlm)
 
+S3method(print, TDPdensity)
+S3method(plot, TDPdensity)
+S3method(summary, TDPdensity)
+S3method(print, summaryTDPdensity)
 

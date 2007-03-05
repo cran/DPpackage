@@ -1,8 +1,8 @@
 ### PTlm.R                   
-### Fit a semiparametric median regression model.
+### Fit a semiparametric regression model.
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 13-12-2006.
+### Copyright: Alejandro Jara, 2007
+### Last modification: 25-08-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 ###
 ### The author's contact information:
 ###
-###      Alejandro Jara Vallejos
+###      Alejandro Jara
 ###      Biostatistical Centre
 ###      Katholieke Universiteit Leuven
 ###      U.Z. Sint-Rafaël
@@ -31,12 +31,13 @@
 ###
 
 "PTlm"<-
-function(formula,ngrid=200,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
+function(formula,ngrid=200,grid=NULL,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("PTlm")
 
 "PTlm.default"<-
 function(formula,
          ngrid=200,
+         grid=NULL,
          prior,
          mcmc,
          state,
@@ -57,181 +58,365 @@ function(formula,
 	 mf <- eval(mf, parent.frame())
 
          #########################################################################################
-         # data structure
+         # data and model structure
          #########################################################################################
+         if(is.null(prior$frstlprob))
+         {
+           mdzero<-1
+         }
+         else
+         {
+           mdzero<-0
+           if(prior$frstlprob)mdzero<-1
+         }
 
-  	 y<- model.response(mf,"numeric")
+ 	 y<- model.response(mf,"numeric")
   	 nrec<-length(y)
   	 x<-model.matrix(formula)
   	 p<-dim(x)[2]
 
+	 if(mdzero==0)
+  	 {
+            p<-p-1
+            if(p>1)
+            {
+               x<-x[,-1]
+            }   
+         }   
+  	 nfixed<-p
+         if(p==0)
+         {
+            nfixed <- 0
+            p <- 1
+            x <- matrix(0,nrow=nrec,ncol=1)
+         }
+
+
          #########################################################################################
          # Elements for Pseudo Countour Probabilities' computation
          #########################################################################################
+         Terms <- if (missing(data)) 
+              terms(formula)
+         else terms(formula, data = data)
 
-         tt<-terms(formula,data=data)
-         mat<-attr(tt,"factors")
-         namfact<-colnames(mat)
-         nvar<-dim(mat)[1]
-         nfact<-dim(mat)[2]
-         possiP<-matrix(0,ncol=2,nrow=nfact)
-         dataF<-model.frame(formula,data,xlev=NULL)
-         namD<-names(dataF)
-         isF<-sapply(dataF, function(x) is.factor(x) || is.logical(x))
-         nlevel<-rep(0,nvar)
-         for(i in 1:nvar)
+         ntanova<-0   
+         if((mdzero==1) & (nfixed==1)) ntanova<-1
+
+         possiP <- NULL
+         if((nfixed>0) & (ntanova==0))
          {
-             if(isF[i])
-             {
-                nlevel[i]<-length(table(dataF[[i]]))
-             }
-             else
-             {
-                nlevel[i]<-1
-             }
-         }
-         startp<-1+attr(tt, "intercept")
-         for(i in 1:nfact)
-         {
-             tmp1<-1
-             for(j in 1:nvar)
-             {
-                 if(mat[j,i]==1 && isF[j])
-                 {
-                    tmp1<-tmp1*(nlevel[j]-1)
-                 }
-             }
-             endp<-startp+tmp1-1
-             possiP[i,1]<-startp    
-             possiP[i,2]<-endp
-             startp<-endp+1
-         }
-         dimnames(possiP)<-list(namfact,c("Start","End"))
+            mat <- attr(Terms,"factors")
+            namfact <- colnames(mat)
+            nvar <- dim(mat)[1]
+            nfact <- dim(mat)[2]
+            possiP <- matrix(0,ncol=2,nrow=nfact)
+            if (missing(data)) dataF <- model.frame(formula=formula,xlev=NULL)
+               dataF <- model.frame(formula=formula,data,xlev=NULL)
+            namD <- names(dataF)
+            isF <- sapply(dataF, function(x) is.factor(x) || is.logical(x))
+            nlevel <- rep(0,nvar)
+            for(i in 1:nvar)
+            {
+                if(isF[i])
+                {
+                   nlevel[i]<-length(table(dataF[[i]]))
+                }
+                else
+                {
+                   nlevel[i]<-1
+                }
+            }
+
+            startp<-1+1
+            if(mdzero==1)startp<-1+2
+
+            for(i in 1:nfact)
+            {
+                tmp1<-1
+                for(j in 1:nvar)
+                {
+                    if(mat[j,i]==1 && isF[j])
+                    {
+                       tmp1<-tmp1*(nlevel[j]-1)
+                    }
+                }
+                endp<-startp+tmp1-1
+                possiP[i,1]<-startp    
+                possiP[i,2]<-endp
+                startp<-endp+1
+            }
+            dimnames(possiP)<-list(namfact,c("Start","End"))
+         }   
 
 
          #########################################################################################
          # prior information
          #########################################################################################
 
+         if(nfixed==0)
+         {
+            betapv<-matrix(0,nrow=1,ncol=1)
+            betpm<-rep(0,1)
+            propv<-matrix(0,nrow=1,ncol=1)
+         }
+         else
+         {
+            betapm<-prior$beta0
+            betapv<-prior$Sbeta0
+            propv<-solve(t(x)%*%x+solve(prior$Sbeta0))
+
+            if(length(betapm)!=p)
+            { 
+                   stop("Error in the dimension of the mean of the normal prior for the fixed effects.\n")     
+            }
+
+            if(dim(betapv)[1]!=p || dim(betapv)[2]!=p)
+            { 
+                   stop("Error in the dimension of the covariance of the normal prior for the fixed effects.\n")     
+            }
+
+         }
+
 	 if(is.null(prior$a0))
 	 {
-		a0b0<-c(-1,-1)
-		alpha<-prior$alpha
+	    alpharand<-0 
+            a0b0<-c(-1,-1)
+	    alpha<-prior$alpha
 	 }
 	 else
 	 {
-	 	a0b0<-c(prior$a0,prior$b0)
-	 	alpha<-rgamma(1,prior$a0,prior$b0)
+	    alpharand<-1 	 
+	    a0b0<-c(prior$a0,prior$b0)
+	    alpha<-rgamma(1,prior$a0,prior$b0)
 	 }
 	
-	 betapm<-prior$beta0
-	 betapv<-prior$Sbeta0
-	 tau<-c(prior$tau1,prior$tau2)
+         if(mdzero==1)
+         {
+            murand<-0
+            mu<-0
+            m0<-0
+            s0<--1
+         }
+         else
+         {
+            if(is.null(prior$mub))
+            {
+               murand<-0 
+               if(is.null(prior$mu))
+               { 
+                  stop("*mu* must be specified in the prior object when it is not considered as random.\n")     
+               }
+               if(length(prior$mu) != 1)
+               { 
+                  stop("Error in the dimension of the mean the centering distribution.\n")     
+               }
+               m0<-1
+               s0<--1
+            }
+            else
+            {
+               murand<-1
+               s0<-prior$Sb
+               m0<-prior$mub
+               if(length(prior$mub) != 1)
+               { 
+                  stop("Error in the dimension of the mean of the normal prior for the mean of the centering distribution.\n")     
+               }
+               if(!is.null(dim(s0)) && ( dim(s0)[1]!=1 || dim(s0)[2]!=1 ))
+               { 
+                  stop("Error in the dimension of the covariance of the normal prior for the mean of the centering distribution.\n")     
+               }
+            }
+         }
+
+  	 if(is.null(prior$tau1))
+  	 {
+  	    sigmarand<-0
+            if(is.null(prior$sigma2))
+            { 
+               stop("The variance *sigma2* must be specified in the prior object when it is not considered as random.\n")     
+            }
+            sigma2<-prior$sigma2
+            tau1<- -1
+            tau2<- -1
+  	 }
+  	 else
+  	 {
+  	    sigmarand<-1
+            tau1<-prior$tau1
+            tau2<-prior$tau2
+
+            if(tau1<=0 || tau2<0)
+            { 
+                stop("The hyperparameter of the gamma prior for the centering variance must be positive")     
+            }
+            sigma2<-tau1/tau2
+         }
+
+	 tau<-c(tau1,tau2)
+
+         maxm <- prior$M
 	
          #########################################################################################
          # mcmc specification
          #########################################################################################
 
-  	 if(is.null(mcmc$tune1))
-  	 {
-  	    tune1<-1.1
-  	 }
-  	 else
-  	 {
-  	    tune1<-mcmc$tune1
-  	 }
-
-  	 if(is.null(mcmc$tune2))
-  	 {
-  	    tune2<-1.1
-  	 }
-  	 else
-  	 {
-  	    tune2<-mcmc$tune2
-  	 }
-
-  	 if(is.null(mcmc$tune3))
-  	 {
-  	    tune3<-1.1
-  	 }
-  	 else
-  	 {
-  	    tune3<-mcmc$tune3
-  	 }
-  	 
-         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-         nsave<-mcmc$nsave
-
-	 fit0<- lm(y~x[,2:p])
-	 propv<- vcov(fit0)
-	 
-	 propv<-diag(tune1,p)%*%propv%*%diag(tune1,p)
-
-         beta<-coefficients(fit0)
-         
-         s2<-sum((resid(fit0))**2)/(nrec-p)
-	 
+         if(missing(mcmc))
+         {
+            nburn <- 1000
+            nsave <- 1000
+            nskip <- 0
+            ndisplay <- 100
+            mcmcvec<-c(nburn,nskip,ndisplay)
+         }
+         else
+         {
+            mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+            nsave<-mcmc$nsave
+         }
 
          #########################################################################################
          # output
          #########################################################################################
-         left<-min(resid(fit0))-0.5*sqrt(var(resid(fit0)))
-         right<-max(resid(fit0))+0.5*sqrt(var(resid(fit0)))
+         
+         acrate<-rep(0,4)
+         if(mdzero==1)
+         {
+  	    fit0<- glm.fit(x, y, family= gaussian(link = "identity"))   
+  	    beta<-coefficients(fit0)
+            left<-min(resid(fit0))-0.5*sqrt(var(resid(fit0)))
+            right<-max(resid(fit0))+0.5*sqrt(var(resid(fit0)))
+         }
+         else
+         {
+  	    fit0<- glm.fit(cbind(x,rep(1,nrec)), y, family= gaussian(link = "identity"))   
+  	    beta<-coefficients(fit0)[1:p]
+            left<-min(coefficients(fit0)[p+1]+resid(fit0))-0.5*sqrt(var(resid(fit0)))
+            right<-max(coefficients(fit0)[p+1]+resid(fit0))+0.5*sqrt(var(resid(fit0)))
+         }
+ 
+         cpo<-rep(0,nrec)
+         
+         if(is.null(grid))
+	 {
+            grid <- seq(left,right,length=ngrid)
+         }
+         else
+         {
+            ngrid <- length(grid)  
+         }
 
-	 grid<-seq(left,right,length=ngrid)
 	 f<-rep(0,ngrid)
-
-	 thetasave <- matrix(0, nrow=nsave, ncol=p+2)
+	 thetasave <- matrix(0, nrow=nsave, ncol=nfixed+3)
 	 randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
-	 
-	
+
          #########################################################################################
          # parameters depending on status
          #########################################################################################
 
 	 if(status==TRUE)
 	 {
-	 	beta <- beta
-		v <- resid(fit0)
-		sigma2<-s2
+	        if(alpharand==1)
+	        {
+	           alpha<-1
+	        }
+	        else
+	        {
+	           alpha<-prior$alpha  
+	        }
+
+	        if(murand==1)
+	        {
+  	            mu<-coefficients(fit0)[p+1]
+  	        }
+  	        else
+  	        {
+                    if(mdzero==0)mu<-prior$mu
+  	        }
+  	        
+	        if(sigmarand==1)
+	        {
+                   sigma2<-sum((resid(fit0))**2)/(nrec-p)
+                }
+                else
+                {
+                   sigma2<-prior$sigma2
+                }
+
+                if(mdzero==1)
+                {
+  		   v <- resid(fit0)
+  		}
+  		else
+  		{
+                   v <- mu+resid(fit0)
+                }   
+	        
+                mcmcad<-c(0.1,0.0,
+                          -6.0,1.0,0.0,0.0,0.0,
+                          -6.0,1.0,0.0,0.0,0.0,
+                          -3.0,1.0,0.0,0.0,0.0,
+                          0.0)
 	 }	
 	 if(status==FALSE)
 	 {
-	        alpha<-state$alpha 
 		beta<-state$beta
-		v<-state$v
-		sigma2<-state$sigma2
+	        
+	        if(alpharand==1)
+	        {
+	           alpha<-state$alpha 
+	        }
+	        if(murand==1)
+	        {
+	           mu<-state$mu
+	        }
+	        if(sigmarand==1)
+	        {
+	           sigma2<-state$sigma2
+	        }
+
+	        v <- state$v
+	        
+	        if(is.null(state$mcmcad))
+	        {
+                   mcmcad<-c(0.1,0.0,
+                            -6.0,1.0,0.0,0.0,0.0,
+                            -6.0,1.0,0.0,0.0,0.0,
+                            -3.0,1.0,0.0,0.0,0.0,                            
+                             0.0)
+	        }
+	        else
+	        {
+	           mcmcad<-state$mcmcad
+	        }
 	 }
 
          #########################################################################################
          # working space
          #########################################################################################
-
-         mu<-0
-
-         seed<-c(sample(1:29000,1),sample(1:29000,1),sample(1:29000,1))
-
- 	 acrate<-rep(0,3)
-	 cpo<-rep(0,nrec)
-	 betac<-rep(0,p)
+         seed<-c(sample(1:29000,1),sample(1:29000,1))
+         mdzero<-0
  	 iflag<-rep(0,p)
- 	 vc<-rep(0,nrec)
  	 whicho<-rep(0,nrec)
 	 whichn<-rep(0,nrec)
+	 betac<-rep(0,p)
 	 workm1<-matrix(0,nrow=p,ncol=p)
 	 workm2<-matrix(0,nrow=p,ncol=p)
 	 workmh1<-rep(0,(p*(p+1)/2))
 	 workv1<-rep(0,p)
 	 workv2<-rep(0,p)
+ 	 vc<-rep(0,nrec)
+	 xtx<-matrix(0,nrow=p,ncol=p)
 	
          #########################################################################################
          # calling the fortran code
          #########################################################################################
- 
+
          if(is.null(prior$M))
          {
- 	        foo <- .Fortran("ptlm",
-  	 	ngrid      =as.integer(ngrid),
+            foo <- .Fortran("ptlmp",
+  	 	mdzero    =as.integer(mdzero),
+  	 	ngrid     =as.integer(ngrid),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		x         =as.double(x),	 	
@@ -240,17 +425,18 @@ function(formula,
 		betapm    =as.double(betapm),		
 		betapv    =as.double(betapv),		
 		tau       =as.double(tau),
+		m0        =as.double(m0),
+		s0        =as.double(s0), 
 		mcmc      =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
-		tune2     =as.double(tune2),
-		tune3     =as.double(tune3),
+ 	 	mcmcad    =as.double(mcmcad),
                 seed      =as.integer(seed),
 		acrate    =as.double(acrate),
 		randsave  =as.double(randsave),
 		thetasave =as.double(thetasave),
                 cpo       =as.double(cpo),
-                f          =as.double(f),
+                f         =as.double(f),
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
 		mu        =as.double(mu),
@@ -264,17 +450,18 @@ function(formula,
 		workmh1   =as.double(workmh1),
 		workv1    =as.double(workv1),
 		workv2    =as.double(workv2),
-		grid       =as.double(grid),
-		whicho     =as.integer(whicho),
-		whichn     =as.integer(whichn),
-		PACKAGE="DPpackage")	         
+		grid      =as.double(grid),
+		whicho    =as.integer(whicho),
+		whichn    =as.integer(whichn),
+		xtx       =as.double(xtx),
+		PACKAGE="DPpackage")	                  
          }
          else
          {
-             	maxm<-prior$M
- 	        foo <- .Fortran("ptlmp",
-	 	maxm      =as.integer(maxm),
-  	 	ngrid      =as.integer(ngrid),
+            foo <- .Fortran("ptlmp",
+  	 	maxm      =as.integer(maxm),
+  	 	mdzero    =as.integer(mdzero),
+  	 	ngrid     =as.integer(ngrid),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),
 		x         =as.double(x),	 	
@@ -283,17 +470,18 @@ function(formula,
 		betapm    =as.double(betapm),		
 		betapv    =as.double(betapv),		
 		tau       =as.double(tau),
+		m0        =as.double(m0),
+		s0        =as.double(s0), 
 		mcmc      =as.integer(mcmcvec),
 		nsave     =as.integer(nsave),
 		propv     =as.double(propv),
-		tune2     =as.double(tune2),
-		tune3     =as.double(tune3),
-		seed      =as.integer(seed),
+ 	 	mcmcad    =as.double(mcmcad),
+                seed      =as.integer(seed),
 		acrate    =as.double(acrate),
 		randsave  =as.double(randsave),
 		thetasave =as.double(thetasave),
                 cpo       =as.double(cpo),
- 		f          =as.double(f),                
+                f         =as.double(f),
 		alpha     =as.double(alpha),		
 		beta      =as.double(beta),
 		mu        =as.double(mu),
@@ -307,21 +495,21 @@ function(formula,
 		workmh1   =as.double(workmh1),
 		workv1    =as.double(workv1),
 		workv2    =as.double(workv2),
- 		grid       =as.double(grid),
-		whicho     =as.integer(whicho),
-		whichn     =as.integer(whichn),
-		PACKAGE="DPpackage")	
+		grid      =as.double(grid),
+		whicho    =as.integer(whicho),
+		whichn    =as.integer(whichn),
+		xtx       =as.double(xtx),
+		PACKAGE="DPpackage")	         
          }
- 
-
+         
          #########################################################################################
          # save state
          #########################################################################################
 	
- 	 thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=(p+2))
+ 	 thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=(nfixed+3))
  	 randsave<-matrix(foo$randsave,nrow=nsave, ncol=(nrec+1))
  	 
-	 colnames(thetasave)<-c(dimnames(x)[[2]],"sigma2","alpha")
+	 colnames(thetasave)<-c(dimnames(x)[[2]],"mu","sigma2","alpha")
 
          qnames<-NULL
          for(i in 1:nrec){
@@ -333,29 +521,41 @@ function(formula,
          
          colnames(randsave)<-qnames
 
-	 model.name<-"Bayesian Semiparametric Median Regression Model"
-	 coeff<-rep(0,(p+2))
-	 for(i in 1:(p+2)){
-	 	coeff[i]<-mean(thetasave[,i])
-	 }
-	 names(coeff)<-c(dimnames(x)[[2]],"sigma2","alpha")
+	 model.name<-"Bayesian Semiparametric Regression Model"
+         coeff<-apply(thetasave,2,mean)		
 	
-	 state <- list(alpha=foo$alpha,beta=foo$beta,v=foo$v,sigma2=foo$sigma2)	
+	 state <- list(alpha=foo$alpha,
+                       beta=foo$beta,
+                       v=foo$v,
+                       mu=foo$mu,
+                       sigma2=foo$sigma2,
+     	               mcmcad=foo$mcmcad)	
 		      
 	 save.state <- list(thetasave=thetasave,randsave=randsave)
 
          if(is.null(prior$a0))
 	 {
-            acrate<-foo$acrate[1:2]
+            acrate<-foo$acrate[1:3]
          }
          else
          {
             acrate<-foo$acrate
          }   
 
-	 z<-list(modelname=model.name,coefficients=coeff,acrate=acrate,call=cl,
-	         prior=prior,mcmc=mcmc,state=state,save.state=save.state,cpo=foo$cpo,
-	         nrec=nrec,p=p,dens=foo$f,grid=grid,possiP=possiP)
+	 z<-list(modelname=model.name,
+                 coefficients=coeff,
+                 acrate=acrate,
+                 call=cl,
+	         prior=prior,
+                 mcmc=mcmc,
+                 state=state,
+                 save.state=save.state,
+                 cpo=foo$cpo,
+	         nrec=nrec,
+                 p=p,
+                 dens=foo$f,
+                 grid=grid,
+                 possiP=possiP)
 	
 	 cat("\n\n")
 	 class(z)<-c("PTlm")
@@ -366,8 +566,8 @@ function(formula,
 ###
 ### Tools for PTlm: anova, print, summary, plot
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 13-12-2006.
+### Copyright: Alejandro Jara Vallejos, 2007
+### Last modification: 14-08-2007.
 
 
 "anova.PTlm"<-function(object, ...)
@@ -766,11 +966,9 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
 }
 
 
-
-
 "summary.PTlm"<-function(object, hpd=TRUE, ...) 
 {
-    dimen<-object$p+1
+    dimen<-object$p+2
     coef.p<-object$coefficients[1:dimen]
     coef.sd<-rep(0,dimen)
     coef.se<-rep(0,dimen)

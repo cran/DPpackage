@@ -1,6 +1,7 @@
 \name{Pbinary}
 \alias{Pbinary}
 \alias{Pbinary.default}
+\encoding{latin1}
 
 \title{Bayesian analysis for a parametric Bernoulli regression model}
 \description{
@@ -23,21 +24,21 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
                      
    \item{link}{      a description of the link function to
                      be used in the model. The links considered by 
-                     \code{Pbinary} so far are \code{logit} (default), \code{probit},
-                     \code{cloglog}, and \code{cauchy}.} 
+                     \code{Pbinary} so far are \emph{logit} (default), \emph{probit},
+                     \emph{cloglog}, and \emph{cauchy}.} 
 
    \item{prior}{     a list giving the prior information. The list includes the following
-                     parameters: \code{beta0} and \code{Sbeta0} giving the 
+                     parameters: \emph{beta0} and \emph{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the regression
                      coefficients.}
                
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
-                     the following integers: \code{nburn} giving the number of burn-in 
-                     scans, \code{nskip} giving the thinning interval, \code{nsave} giving
-                     the total number of scans to be saved, \code{ndisplay} giving
+                     the following integers: \emph{nburn} giving the number of burn-in 
+                     scans, \emph{nskip} giving the thinning interval, \emph{nsave} giving
+                     the total number of scans to be saved, \emph{ndisplay} giving
                      the number of saved scans to be displayed on the screen (the function reports 
-                     on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune} giving the Metropolis tuning parameter.}   
+                     on the screen when every \emph{ndisplay} iterations have been carried
+                     out), and \emph{tune} giving the Metropolis tuning parameter.}   
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -45,10 +46,10 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
     \item{status}{   a logical variable indicating whether this run is new (\code{TRUE}) or the 
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
-                     object \code{state}.}
+                     object \emph{state}.}
 
     \item{misc}{     misclassification information. When used, this list must include
-                     two objects, \code{sens} and \code{spec}, giving the sensitivity and
+                     two objects, \emph{sens} and \emph{spec}, giving the sensitivity and
                      specificity, respectively. Both can be a vector or a scalar. 
                      This information is used to correct for misclassification in the
                      conditional bernoulli model.}
@@ -70,8 +71,8 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
   where \eqn{\pi_i = F(X_i \beta)}{pii = F(Xi beta)} and \eqn{F} is a distribution
   function on the real line known as the inverse of the link function
   in the context of generalized linear models. The links considered by 
-  \code{Pbinary} so far are \code{logit} (default), \code{probit},
-  \code{cloglog}, and \code{cauchy}. 
+  \code{Pbinary} so far are \emph{logit} (default), \emph{probit},
+  \emph{cloglog}, and \emph{cauchy}. 
   
   To complete the model specification, the following
   prior distribution is assumed,
@@ -82,7 +83,7 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
   of the regression coefficients. The Metropolis proposal distribution is 
   centered at its current value and the variance-covariance matrix 
   correspond to the variance-covariance matrix of the MLEs times the 
-  tunning parameter, \code{tune}, specified in the \code{mcmc} list.
+  tunning parameter, \emph{tune}, specified in the \emph{mcmc} list.
   
   When the model considers correction for misclassification, a modified 
   link function is used. The modified link is a function of the
@@ -94,16 +95,16 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
   An object of class \code{Pbinary} representing the parametric regression
   model fit. Generic functions such as \code{print}, \code{plot}, \code{summary}, 
   \code{predict}, and \code{anova} have methods to show the results of the fit. 
-  The results include only the regression coefficients, \code{beta}.
+  The results include only the regression coefficients, \emph{beta}.
   
-  The MCMC samples of the parameters are stored in the object \code{thetasave}. 
-  This object is included in the list \code{save.state} and is a matrix which can 
+  The MCMC samples of the parameters are stored in the object \emph{thetasave}. 
+  This object is included in the list \emph{save.state} and is a matrix which can 
   be analyzed directly by functions provided by the coda package.
   
-  The list \code{state} in the output object contains the current value of the parameters 
+  The list \emph{state} in the output object contains the current value of the parameters 
   necessary to restart the analysis. If you want to specify different starting values 
-  to run multiple chains set \code{status=TRUE} and create the list state based on 
-  this starting values. In this case the list \code{state} must include the following objects:
+  to run multiple chains set \emph{status=TRUE} and create the list state based on 
+  this starting values. In this case the list \emph{state} must include the following objects:
   
   \item{beta}{ giving the value of the regression coefficients.} 
 }

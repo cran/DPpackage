@@ -70,7 +70,7 @@ DPMolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   This generic function fits an ordinal linear mixed-effects model with a probit link (see, e.g.,
   Molenberghs and Verbeke, 2005):
 
-  \deqn{Y_{ij} = k, \mbox{\ if } \gamma_{k-1} \leq  W_{ij} < \gamma_{k}, k=1,\ldots,K}{Yij = k, if gammak-1 \leq Wij < gammak, k=1,\ldots,K}
+  \deqn{Y_{ij} = k, \mbox{\ if } \gamma_{k-1} \le  W_{ij} < \gamma_{k}, k=1,\ldots,K}{Yij = k, if gammak-1 \le Wij < gammak, k=1,\ldots,K}
   \deqn{W_{ij} \mid \beta_F, \beta_R , b_i  \sim N(X_{ij} \beta_F + Z_{ij} \beta_R + Z_{ij} b_i, 1), i=1,\ldots,N, j=1,\ldots,n_i}{Wij | betaF, betaR , bi ~ N(Xij betaF + Zij betaR + Zij bi, 1), i=1,\ldots,N, j=1,\ldots,ni}
   \deqn{\theta_i | G,\Sigma \sim \int N(m,\Sigma) G(dm)}{thetai | G, Sigma ~ int N(m,Sigma)G(dm)}
   \deqn{G | \alpha, \mu_b,\Sigma_b \sim DP(\alpha N(\mu_b,\Sigma_b))}{G | alpha, mub, Sigmab ~ DP(alpha N(mub, Sigmab))}
@@ -234,3 +234,4 @@ Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
 }
 
 \keyword{models}
+\keyword{nonparametric}

@@ -383,6 +383,8 @@ c++++ parameters
       nskip=mcmc(2)
       ndisplay=mcmc(3)
 
+      aa0=a0b0(1)
+      ab0=a0b0(2)
       nu01=nu(1)
       nu02=nu(2)
       tune4=nu(3)

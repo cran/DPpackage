@@ -1069,12 +1069,12 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
 
-   if(is(object, "DPmeta") || is(object, "DPMmeta"))
+   if(is(object, "DPmeta") || is(object, "DPMmeta")  || is(object, "PTmeta"))
    {
 
        if (centered) 
        { 
-	   stop("This option is not implemented for DPmeta.\n")
+	   stop("This option is not implemented for DPmeta, DPMmeta or PTmeta.\n")
        }
 
        randommat<-matrix(object$save.state$randsave,

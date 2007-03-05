@@ -354,6 +354,9 @@ c++++ parameters
       nskip=mcmc(2)
       ndisplay=mcmc(3)
 
+      aa0=a0b0(1)
+      ab0=a0b0(2)
+
       nu01=nu(1)
       nu02=nu(2)
       
@@ -420,26 +423,26 @@ c++++++++++++++++++++++++++++++++
                   eta=eta+z(i,j)*b(subject(i),j) 
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
+
+               mean=exp(eta)/(1.d0+exp(eta))
+               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
                
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
                ytilde=eta+(dble(yij)-mean)*gprime-offset
-               
-               tmp1=tmp1+ytilde**2
-               
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
-              
+
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*gprime
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprime
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde*gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
                end do
-
-               mean=exp(eta)/(1.d0+exp(eta))               
-               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             do i=1,p
@@ -506,25 +509,25 @@ c++++++++++ evaluating the likelihood
                   offset=offset+z(i,j)*b(subject(i),j) 
                end do
                
+               mean=exp(eta)/(1.d0+exp(eta))
+               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
+               
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
-
                ytilde=eta+(dble(yij)-mean)*gprime-offset
-
-               tmp1=tmp1+ytilde**2
-
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
 
                do j=1,p
                   do k=1,p
-                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)*gprime
+                     xtx(j,k)=xtx(j,k)+x(i,j)*x(i,k)/gprime
                   end do
-                  xty(j)=xty(j)+x(i,j)*ytilde*gprime
+                  xty(j)=xty(j)+x(i,j)*ytilde/gprime
                end do
-
-               mean=exp(eta)/(1.d0+exp(eta))               
-               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             do i=1,p
@@ -639,23 +642,29 @@ c++++++++++ generating a candidate
                do k=1,q
                   eta=eta+z(datastr(ii,j+1),k)*theta(k)
                end do
+
+               mean=exp(eta)/(1.d0+exp(eta))
+               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
                
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
                ytilde=eta+(dble(yij)-mean)*gprime-offset
 
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
                do k=1,q
                   do l=1,q
                      ztz(k,l)=ztz(k,l)+
      &                        z(datastr(ii,j+1),k)*
-     &                        z(datastr(ii,j+1),l)*gprime
+     &                        z(datastr(ii,j+1),l)/gprime
                   end do
-                  zty(k)=zty(k)+z(datastr(ii,j+1),k)*ytilde*gprime
+                  zty(k)=zty(k)+z(datastr(ii,j+1),k)*ytilde/gprime
                end do
 
-               mean=exp(eta)/(1.d0+exp(eta))
-               logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             call inverse(ztz,q,iflagr)      
@@ -707,22 +716,28 @@ c++++++++++ evaluating the likelihood
                   eta=eta+z(datastr(ii,j+1),k)*thetac(k)
                end do
                
+               mean=exp(eta)/(1.d0+exp(eta))
+               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
+
+               tmp1=mean*(1.0d0-mean)
+               if(tmp1.le.0.0001d0)then
+                  tmp1=0.0001d0
+               end if   
+               
+               gprime=1.d0/(dble(nij)*tmp1)
+
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
-               gprime=exp(2.d0*log(1.d0+exp(eta))-eta-log(dble(nij)))
                ytilde=eta+(dble(yij)-mean)*gprime-offset
 
-               gprime=exp(-2.d0*log(1.d0+exp(eta))+eta+log(dble(nij)))               
                do k=1,q
                   do l=1,q
                      ztz(k,l)=ztz(k,l)+
      &                        z(datastr(ii,j+1),k)*
-     &                        z(datastr(ii,j+1),l)*gprime
+     &                        z(datastr(ii,j+1),l)/gprime
                   end do
-                  zty(k)=zty(k)+z(datastr(ii,j+1),k)*ytilde*gprime
+                  zty(k)=zty(k)+z(datastr(ii,j+1),k)*ytilde/gprime
                end do
 
-               mean=exp(eta)/(1.d0+exp(eta))
-               loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
             end do
 
             call inverse(ztz,q,iflagr)      

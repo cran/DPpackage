@@ -92,6 +92,11 @@ function(formula,
        #########################################################################################
        # elements for Pseudo Countour Probabilities' computation
        #########################################################################################
+
+         Terms <- if (missing(data)) 
+              terms(formula)
+         else terms(formula, data = data)
+
          possiP <- NULL
          if(nfixed>0)
          {
@@ -100,8 +105,8 @@ function(formula,
             nvar <- dim(mat)[1]
             nfact <- dim(mat)[2]
             possiP <- matrix(0,ncol=2,nrow=nfact)
-            if (missing(data)) dataF <- model.frame(formula=fixed,xlev=NULL)
-               dataF <- model.frame(formula=fixed,data,xlev=NULL)
+            if (missing(data)) dataF <- model.frame(formula=formula,xlev=NULL)
+               dataF <- model.frame(formula=formula,data,xlev=NULL)
             namD <- names(dataF)
             isF <- sapply(dataF, function(x) is.factor(x) || is.logical(x))
             nlevel <- rep(0,nvar)
@@ -323,9 +328,9 @@ function(formula,
 		   mu<-rep(0,nrec)
                    beta<-coefficients(fit0)[1:p]
 
-	           for(i in 1:nsubject){
+	           for(i in 1:nrec){
 	               b[i]<-coefficients(fit0)[p+1]+bzs[i]
-   		       mu[i]<-coefficients(fit0)[p+1]+bzs2[i]
+   		       mu[i]<-coefficients(fit0)[p+1]+bzsb[i]
 	           }
                    
 	           if(murand==1)
@@ -500,27 +505,6 @@ function(formula,
 	                    musave=musave,
 	                    clustsave=clustsave)
 
-
-
-	 z<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nfixed=foo$nfixed,
-                 nrandom=1,                 
-                 cpo=cpo,
-                 fso=fso,                 
-                 alphapr=alphapr,
-                 x=x,
-                 mf=mf,
-                 y=y,
-                 possiP=possiP,
-                 formula=formula,
-                 mc=mc)
 
 	 z<-list(modelname=model.name,
 	         coefficients=coeff,
@@ -778,7 +762,7 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
        table <- data.frame(df,P) 
        dimnames(table) <- list(rownames(possiP), c("Df","PsCP"))
        structure(table, heading = c("Table of Pseudo Contour Probabilities\n", 
-        paste("Response:", deparse(formula(object$fixed)[[2]]))), class = c("anovaPsCP",
+        paste("Response:", deparse(formula(object$formula)[[2]]))), class = c("anovaPsCP",
         "data.frame"))
     }    
 }
