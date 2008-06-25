@@ -2,8 +2,8 @@
 ### Fit a linear Dirichlet Process mixture of normal model for
 ### density estimation
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
-### Last modification: 05-10-2006.
+### Copyright: Alejandro Jara, 2006-2007-2008
+### Last modification: 02-06-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -641,7 +641,7 @@ DPdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,method="neal",d
              fun1<-foo$fun1
              fun2<-foo$fun2
           }
-          else
+          if(nvar==2)
           {
              x1<-foo$grid1
              x2<-foo$grid2

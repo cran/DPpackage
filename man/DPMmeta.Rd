@@ -148,7 +148,7 @@ Escobar, M.D. and West, M. (1995) Bayesian Density Estimation and Inference
 
 MacEachern, S.N. (1998) Computational Methods for Mixture of Dirichlet Process Models,
   in Practical Nonparametric and Semiparametric Bayesian Statistics, 
-  eds: D. Dey, P. Muller, D. Sinha, New York: Springer-Verlag, pp. 1-22.
+  eds: D. Dey, P. Muller, D. Sinha, New York: Springer-Verlag, pp. 23-44.
   
 Muliere, P. and Tardella, L. (1998) Approximating distributions of random functionals
   of Ferguson-Dirichlet priors. The Canadian Journal of Statistics, 26(2): 283-297.

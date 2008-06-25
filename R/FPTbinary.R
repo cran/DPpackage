@@ -2,7 +2,7 @@
 ### Fit a bernoulli regression model using
 ### a simple Finite Polya tree prior for the link function.
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2006
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2007-2008
 ### Last modification: 15-12-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ###
 ### The authors's contact information:
 ###
-###      Alejandro Jara Vallejos
+###      Alejandro Jara
 ###      Biostatistical Centre
 ###      Katholieke Universiteit Leuven
 ###      U.Z. Sint-Rafaël

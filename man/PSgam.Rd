@@ -120,8 +120,6 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
   \item{phi}{ giving the dispersion parameter for the Gamma or gaussian model (if needed).}  
 }
 
-\seealso{
-}
 
 \references{
 Eilers, P.H.C. and Marx, B.D. (1996) Flexible Smoothing with B-splines and 

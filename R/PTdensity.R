@@ -1,7 +1,7 @@
 ### PTdensity.R                   
 ### Fit a Mixture of Polya trees for density estimation
 ###
-### Copyright:Alejandro Jara and Tim Hanson, 2006
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2007-2008
 ###
 ### Last modification: 28-11-2006.
 ###

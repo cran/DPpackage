@@ -11,6 +11,15 @@ c     AUXILIARY FUNCTIONS/COMMON FUNCTIONS
 c=======================================================================                  
 c=======================================================================                  
 c=======================================================================                  
+
+c=======================================================================      
+      integer function ifloor(x)
+c=======================================================================      
+      implicit none
+      real*8 x
+      ifloor=x
+      if(ifloor.gt.x) ifloor=ifloor-1
+      end  
       
 c=======================================================================      
       subroutine nrmu(nsteps,nsubject,betar,b,z,sigma2,kk,mu0,s0,
@@ -118,20 +127,20 @@ c=======================================================================
        real*8 y
 c       j=int(y*dble(k))+1
        
-       j=iceil(y*dble(k))
+       j=iceil(y*k)
        
        if(y.gt.dble(j)/dble(k))then
           call dblepr("y",-1,y,1)
           call intpr("k",-1,k,1)
           call intpr("j",-1,j,1)          
-          call rexit("Error in ´jcomponent´")      
+          call rexit("Error in 'jcomponent'")      
        end if
 
        if(y.lt.dble(j-1)/dble(k))then
           call dblepr("y",-1,y,1)
           call intpr("k",-1,k,1)
           call intpr("j",-1,j,1)                    
-          call rexit("Error in ´jcomponent´")      
+          call rexit("Error in 'jcomponent'")      
        end if
       
        return

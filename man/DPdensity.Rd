@@ -73,7 +73,7 @@ DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
 \details{
   This generic function fits a Dirichlet process mixture of normal model for density
   estimation (Escobar and West, 1995):
-  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}{y | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n}
+  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}{yi | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n}
   \deqn{(\mu_i,\Sigma_i) | G \sim G}{(mui,Sigmai) | G ~ G}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
   

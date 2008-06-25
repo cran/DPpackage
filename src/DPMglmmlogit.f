@@ -18,7 +18,7 @@ c     Subroutine `dpmglmmlogit' to run a Markov chain in a semiparametric
 c     logit mixed effect model, using a Dirichlet process mixture of 
 c     normals prior for the distribution of the random effects.
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2008
 c
 c     Version 1.0:
 c
@@ -308,7 +308,7 @@ c+++++DPM
 c+++++Kernel
       real*8 quadf(q,q)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 mc(5)
       real*8 betasave(p),bsave(nsubject,q)
 

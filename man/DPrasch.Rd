@@ -141,7 +141,7 @@ DPrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{FPTrasch}}}
+\code{\link{DPrandom}}, \code{\link{FPTrasch}}
 }
 
 \references{

@@ -1,12 +1,16 @@
 
 .onAttach <- function(...) {
      cat("##\n## Dirichlet Process Package (DPpackage)\n")
-     cat("## Copyright (C) 2006-2007, Alejandro Jara\n")
+     cat("## Copyright (C) 2006-2007-2008, Alejandro Jara\n")
      cat("## Biostatistical Centre \n")
      cat("## Catholic University of Leuven \n")
      cat("##\n## Support provided by the KUL-PUC bilateral\n")
-     cat("## (Belgium-Chile) grant BIL05/03\n##\n")
+     cat("## (Belgium-Chile) grant BIL05/03 and the NIH/NCI\n")
+     cat("## R01CA75981 grant \n##\n")
 }
+
+
+
 
 .onUnload <- function(libpath) {
     library.dynam.unload("DPpackage", libpath)

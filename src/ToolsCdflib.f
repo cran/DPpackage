@@ -6191,13 +6191,13 @@ C     See that SMALL and BIG bound the zero and set QINCR
 C
       x = small
 C     GET-FUNCTION-VALUE
-      ASSIGN 10 TO i99999
+      i99999=1
       GO TO 300
 
    10 fsmall = fx
       x = big
 C     GET-FUNCTION-VALUE
-      ASSIGN 20 TO i99999
+      i99999=2
       GO TO 300
 
    20 fbig = fx
@@ -6234,7 +6234,7 @@ C     GET-FUNCTION-VALUE
       step = max(absstp,relstp*abs(x))
 C      YY = F(X) - Y
 C     GET-FUNCTION-VALUE
-      ASSIGN 90 TO i99999
+      i99999=3
       GO TO 300
 
    90 yy = fx
@@ -6259,7 +6259,7 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C      YY = F(XUB) - Y
   120 x = xub
 C     GET-FUNCTION-VALUE
-      ASSIGN 130 TO i99999
+      i99999=4
       GO TO 300
 
   130 yy = fx
@@ -6294,7 +6294,7 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 C      YY = F(XLB) - Y
   190 x = xlb
 C     GET-FUNCTION-VALUE
-      ASSIGN 200 TO i99999
+      i99999=5
       GO TO 300
 
   200 yy = fx
@@ -6329,7 +6329,7 @@ C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   260 CALL dzror(status,x,fx,xlo,xhi,qdum1,qdum2)
       IF (.NOT. (status.EQ.1)) GO TO 280
 C     GET-FUNCTION-VALUE
-      ASSIGN 270 TO i99999
+      i99999=6
       GO TO 300
 
   270 CONTINUE
@@ -6438,7 +6438,12 @@ C     TO GET-FUNCTION-VALUE
       RETURN
 
   310 CONTINUE
-      GO TO i99999
+      if(i99999.eq.1) go to 10
+      if(i99999.eq.2) go to 20
+      if(i99999.eq.3) go to 90
+      if(i99999.eq.4) go to 130
+      if(i99999.eq.5) go to 200
+      if(i99999.eq.6) go to 270
 
       END
       DOUBLE PRECISION FUNCTION dlanor(x)
@@ -7104,7 +7109,7 @@ C     .. Executable Statements ..
       b = xlo
       x = xlo
 C     GET-FUNCTION-VALUE
-      ASSIGN 10 TO i99999
+      i99999=1
       GO TO 270
 
    10 fb = fx
@@ -7112,7 +7117,7 @@ C     GET-FUNCTION-VALUE
       a = xlo
       x = xlo
 C     GET-FUNCTION-VALUE
-      ASSIGN 20 TO i99999
+      i99999=2
       GO TO 270
 C
 C     Check that F(ZXLO) < 0 < F(ZXHI)  or
@@ -7193,7 +7198,7 @@ C
       xlo = b
       x = xlo
 C     GET-FUNCTION-VALUE
-      ASSIGN 200 TO i99999
+      i99999=3
       GO TO 270
 
   200 fb = fx
@@ -7293,7 +7298,9 @@ C     TO GET-FUNCTION-VALUE
       RETURN
 
   280 CONTINUE
-      GO TO i99999
+      if(i99999.eq.1)go to 10
+      if(i99999.eq.2)go to 20
+      if(i99999.eq.3)go to 200
 
       END
       DOUBLE PRECISION FUNCTION erf(x)

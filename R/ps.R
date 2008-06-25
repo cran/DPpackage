@@ -6,7 +6,7 @@
 ### 40 equally spaced knots and a first order difference penalty 
 ### when it enters the model.
 ###
-### Copyright: Alejandro Jara, 2007
+### Copyright: Alejandro Jara, 2007-2008
 ### Last modification: 23-07-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify

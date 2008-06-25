@@ -1,7 +1,7 @@
 ### PSgam.R                   
 ### Fit generalized additive linear mixed model with B splines 
 ###
-### Copyright: Alejandro Jara, 2007
+### Copyright: Alejandro Jara, 2007-2008
 ### Last modification: 26-07-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify

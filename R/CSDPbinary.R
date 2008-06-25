@@ -1,7 +1,7 @@
 ### CSDPbinary.R
 ### Fit a semiparametric bernoulli regression model.
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
+### Copyright: Alejandro Jara, 2006-2007-2008
 ### Last modification: 22-12-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 ###
 ### The author's contact information:
 ###
-###      Alejandro Jara Vallejos
+###      Alejandro Jara
 ###      Biostatistical Centre
 ###      Katholieke Universiteit Leuven
 ###      U.Z. Sint-Rafaël

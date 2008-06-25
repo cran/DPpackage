@@ -1,7 +1,7 @@
 ### TDPdensity.R                   
 ### For density estimation using a Triangular-Dirichlet prior
 ###
-### Copyright: Alejandro Jara, 2007
+### Copyright: Alejandro Jara, 2007-2008
 ### Last modification: 05-07-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify

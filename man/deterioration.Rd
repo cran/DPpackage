@@ -38,7 +38,6 @@ Finkelstein, D.M. and Wolfe, R.A. (1985). A semiparametric model for regression 
 }
 
 \references{
-
 Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
   Interval-Censored Data. Journal of Computational and Graphical Statistics, 
   13: 341-361.

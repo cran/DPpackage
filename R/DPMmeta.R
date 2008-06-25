@@ -3,7 +3,7 @@
 ### Dirichlet Process mixture of normals prior for the distribution of 
 ### the random effects.
 ###
-### Copyright: Alejandro Jara, 2006-2007
+### Copyright: Alejandro Jara, 2006-2007-2008
 ### Last modification: 30-04-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify

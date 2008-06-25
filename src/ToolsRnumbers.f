@@ -133,6 +133,22 @@ c     A.J.V., 2005
         end
 
 c=======================================================================                        
+      double precision function rbeta2(a0,b0)
+c=======================================================================                  
+c     This function generates a beta random variable  
+c     A.J.V., 2006
+      implicit none
+      real*8 a0,b0,tmp,rgamma,tmp1,tmp2
+
+      tmp1=rgamma(a0,1.d0) 
+      tmp2=rgamma(b0,1.d0) 
+      tmp=tmp1/(tmp1+tmp2) 
+      rbeta2=tmp
+      return
+      end         
+
+
+c=======================================================================                        
       double precision function rbeta(a0,b0)
 c=======================================================================                  
 c     This function generates a beta random variable  
@@ -1414,4 +1430,71 @@ c     A.J.V., 2006
 120   continue
 
       return
+      end   
+
+
+c======================================================================      
+      subroutine rtpoiss(lambda,a,b,alim,blim,out)
+c=======================================================================            
+c     generate truncated(a,b) Poisson(lambda)
+c     a,b  = end points of interval (alim = blim = 0)   
+c     alim = 1, if left endpoint is 0; otherwise = 0
+c     blim = 1, if right endpoint is +Infty; otherwise = 0      
+c     A.J.V., 2008
+      implicit none
+      real*8 lambda,aa,bb
+      integer rpois,out,a,b,alim,blim
+      real*8 cdfpoiss,invcdfpoiss
+      real*8 uni,tmp,tmp1,tmp2
+      real runif
+
+      tmp=0.d0
+      tmp1=0.d0
+      tmp2=0.d0 
+      uni=dble(runif())
+      out=0
+      aa=dble(a)
+      bb=dble(b)
+
+      if(alim.eq.1.and.blim.eq.1) go to 110
+      if(alim.eq.1.or.blim.eq.1) go to 100
+      
+      if(a.gt.b)then
+        call rexit("error in limits rtpoiss")
+        out=a
+        return
+      end if  
+
+      tmp1=cdfpoiss(aa,lambda,1,0)
+      tmp2=cdfpoiss(bb,lambda,1,0)
+      tmp=tmp1+uni*(tmp2-tmp1)
+
+c      call dblepr("tmp1",-1,tmp1,1)     
+c      call dblepr("tmp2",-1,tmp2,1)     
+c      call dblepr("tmp",-1,tmp,1)
+
+      out=invcdfpoiss(tmp,lambda,1,0)
+      if(out.gt.b)out=b
+      if(out.lt.a)out=a
+      go to 120
+
+100   if(alim.eq.1)then
+         tmp2=cdfpoiss(bb,lambda,1,0)
+         tmp=uni*tmp2
+         out=invcdfpoiss(tmp,lambda,1,0)
+         go to 120
+      end if
+      if(blim.eq.1)then
+         tmp1=cdfpoiss(aa,lambda,1,0)      
+         tmp=uni+(1.d0-uni)*tmp1
+         out=invcdfpoiss(tmp,lambda,1,0)
+         go to 120
+      end if
+
+110   out=rpois(lambda)
+
+120   continue
+
+      return
       end      
+

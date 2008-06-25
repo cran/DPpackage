@@ -1,8 +1,13 @@
 Package: DPpackage
-Version: 1.0-5
-Date: 2007-03-05
+Version: 1.0-6
+Date: 2008-06-25
 Title: Bayesian Nonparametric and Semiparametric Analysis
-Author: Alejandro Jara <Alejandro.JaraVallejos@med.kuleuven.be>
+Author: Alejandro Jara <Alejandro.JaraVallejos@med.kuleuven.be> with
+        contributions from 
+        Timothy Hanson <hanson@biostat.umn.edu>, 
+        Fernando A. Quintana <quintana@mat.puc.cl>, 
+        Peter Mueller <pmueller@mdanderson.org>, and
+        Gary L. Rosner <glrosner@mdanderson.org>.
 Maintainer: Alejandro Jara <Alejandro.JaraVallejos@med.kuleuven.be> 
 Description: 
   This package contains functions to perform inference via
@@ -10,10 +15,11 @@ Description:
   semiparametric models. Although the name of the package was motivated
   by the Dirichlet Process prior, the package considers and will consider
   other priors on functional spaces. So far, DPpackage includes models 
-  considering Dirichlet Process, Polya Trees, Mixtures of Triangular distributions, 
-  and Random Bernstein polynomials priors. The package
+  considering Dirichlet Processes, Dependent Dirichlet Processes, Polya Trees, 
+  Mixtures of Triangular distributions, and Random Bernstein polynomials priors. The package
   also includes models considering Penalized B-Splines.
-  Currently the package includes semiparametric models for density estimation, ROC curve analysis,
+  Currently the package includes semiparametric models for marginal and 
+  conditional density estimation, ROC curve analysis,
   interval censored data, binary regression models, generalized linear mixed 
   models, IRT type models, and generalized additive models. The package also contains functions 
   to compute Pseudo-Bayes factors for model comparison, and to elicitate the precision 
@@ -23,4 +29,4 @@ Description:
   the coda package.
 License: GPL version 2 or newer
 URL: http://www.student.kuleuven.ac.be/%7Es0166452/software.html
-Packaged: Fri Sep 14 02:45:31 2007; Administrador
+Packaged: Sun Jul 13 22:58:42 2008; alejandro

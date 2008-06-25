@@ -83,6 +83,11 @@ double F77_SUB(invcdfchisq)(double *p, double *df, int *lower_tail, int *log_p)
 	return qchisq(*p, *df, *lower_tail, *log_p);
 }
 
+double F77_SUB(invcdfpoiss)(double *p, double *lambda, int *lower_tail, int *log_p)
+{
+	return qpois(*p, *lambda, *lower_tail, *log_p);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //Density

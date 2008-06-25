@@ -8,6 +8,8 @@ export(
         DPbinary,
         DPbinary.default,
         DPcaterpillar,
+        DPcdensity,
+        DPcdensity.default,        
         DPdensity,
         DPdensity.default,        
         DPelicit,
@@ -18,6 +20,8 @@ export(
         DPlmm.default,
         DPmeta,
         DPmeta.default,
+        DPmultmeta,
+        DPmultmeta.default,
         DPMglmm,
         DPMglmm.default,
         DPMlmm,
@@ -47,6 +51,10 @@ export(
         FPTrasch.default,
         FPTraschpoisson,
         FPTraschpoisson.default,
+        HDPdensity,
+        HDPdensity.default,
+        LDDPdensity,
+        LDDPdensity.default,
         Pbinary,
         Pbinary.default,
         ps,
@@ -56,6 +64,10 @@ export(
         PTdensity.default,
         PTlm,
         PTlm.default,
+        PTmeta,
+        PTmeta.default,
+        PTrandom,
+        PTrandom.default,
         TDPdensity,
         TDPdensity.default
 )
@@ -91,6 +103,11 @@ S3method(plot, DPdensity)
 S3method(summary, DPdensity)
 S3method(print, summaryDPdensity)
 
+S3method(print, DPcdensity)
+S3method(plot, DPcdensity)
+S3method(summary, DPcdensity)
+S3method(print, summaryDPcdensity)
+
 S3method(print, DPelicit)
 
 S3method(print, DPglmm)
@@ -110,6 +127,11 @@ S3method(plot, DPmeta)
 S3method(summary, DPmeta)
 S3method(print, summaryDPmeta)
 S3method(anova, DPmeta)
+
+S3method(print, DPmultmeta)
+S3method(plot, DPmultmeta)
+S3method(summary, DPmultmeta)
+S3method(print, summaryDPmultmeta)
 
 S3method(print, DPMglmm)
 S3method(plot, DPMglmm)
@@ -187,6 +209,13 @@ S3method(plot, FPTraschpoisson)
 S3method(summary, FPTraschpoisson)
 S3method(print, summaryFPTraschpoisson)
 
+S3method(predict, HDPdensity)
+
+S3method(print, LDDPdensity)
+S3method(plot, LDDPdensity)
+S3method(summary, LDDPdensity)
+S3method(print, summaryLDDPdensity)
+
 S3method(print, Pbinary)
 S3method(plot, Pbinary)
 S3method(summary, Pbinary)
@@ -210,6 +239,15 @@ S3method(plot, PTlm)
 S3method(summary, PTlm)
 S3method(print, summaryPTlm)
 S3method(anova, PTlm)
+
+S3method(print, PTmeta)
+S3method(plot, PTmeta)
+S3method(summary, PTmeta)
+S3method(print, summaryPTmeta)
+S3method(anova, PTmeta)
+
+S3method(print, PTrandom)
+S3method(plot, PTrandom)
 
 S3method(print, TDPdensity)
 S3method(plot, TDPdensity)

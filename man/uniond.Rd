@@ -72,12 +72,7 @@
   available, there still appeared to be a gender gap in wages. There is no 
   readily available explanation for this gender gap.
 }
-\source{
 
-}
-\references{
-
-}
 \examples{
 data(uniond)
 ## maybe str(uniond) ; plot(uniond) ...

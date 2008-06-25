@@ -2,7 +2,7 @@
 ### Fit a Rasch model with a mixture of Dirichlet process prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara Vallejos, 2006
+### Copyright: Alejandro Jara, 2006-2007-2008
 ### Last modification: 24-09-2006.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 ###
 ### The author's contact information:
 ###
-###      Alejandro Jara Vallejos
+###      Alejandro Jara
 ###      Biostatistical Centre
 ###      Katholieke Universiteit Leuven
 ###      U.Z. Sint-Rafaël

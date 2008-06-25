@@ -897,3 +897,93 @@ c     A.J.V., 2007
       return
       end
 
+
+c=======================================================================      
+      subroutine cumsum(nr,n,vec,vecsum)
+c=======================================================================      
+c     Subroutine to compute the cumulative sum. 
+c     A.J.V., 2007
+      implicit none
+      integer i,nr,n  
+      real*8 vec(nr),vecsum(nr)
+      real*8 tmp1
+
+      tmp1=vec(1)
+      tmp1=vecsum(1)
+
+      do i=2,n
+         tmp1=tmp1+vec(i)
+         vecsum(i)=tmp1
+      end do
+      return
+      end
+
+c=======================================================================      
+      subroutine permut(l,n,r)
+c=======================================================================      
+c     Subroutine to give the l-th row of a permutation matrix. 
+c     A.J.V., 2007
+      implicit integer (a-z)
+      dimension r(n)
+
+c+++++Init
+      h=1
+      do 5 k=1,n
+           h=h*k
+5     r(k)=k
+
+c+++++Body
+      do 10 k=1,n
+         p=n-k+1
+         h=h/p
+         q=mod((l-1)/h,p)+1            
+         if(q.eq.1) goto 10
+
+c++++++++Rotate data
+         s=r(k+q-1)
+         do m=k+q-1,k+1,-1
+            r(m)=r(m-1)
+         end do 
+         r(k)=s
+10    continue
+
+      return
+      end
+
+
+c=======================================================================      
+      subroutine genpermmat(l,n,r,q)
+c=======================================================================      
+c     Subroutine to genetare the l-th permutation matrix. 
+c     A.J.V., 2007
+      implicit none
+
+c+++++Input
+      integer l,n
+
+c+++++Output
+      real*8 q(n,n)
+
+c+++++External working space
+      integer r(n)   
+
+c+++++Internal working space
+      integer i,j
+
+c+++++Body
+      do i=1,n
+         do j=1,n
+            q(i,j)=0.d0
+         end do
+      end do
+
+      call permut(l,n,r)
+      do i=1,n
+         q(i,r(i))=1.d0
+      end do
+
+      return
+      end
+
+
+
