@@ -74,5 +74,10 @@ DPcaterpillar(object, midpoint="mean", hpd=TRUE , ask=TRUE,
       DPcaterpillar(DPrandom(fit1))
 }
 }
+
+\author{
+Alejandro Jara \email{<ajarav@udec.cl>}
+}
+
 \keyword{aplot}
 \keyword{nonparametric}

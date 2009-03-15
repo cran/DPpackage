@@ -25,7 +25,7 @@ c
 c     Subroutine `dpsurvint' to run a Markov chain in the  
 c     semiparametric atf model for interval censored data. 
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2009.
 c
 c     Version 3.0: 
 c
@@ -60,16 +60,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c
@@ -494,7 +494,7 @@ c++++ evaluate log-prior for current value of parameters
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-	
+
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ MH to updating regression coefficients and G +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -738,7 +738,7 @@ c+++++++ check if the user has requested an interrupt
                call intpr("Imax",-1,imax,1)
                call rexit("Zero Probability")
               else
-               call simdiscint(prob,maxint,imin,imax,evali)               
+               call simdiscint(prob,maxint,imin,imax,evali)
             end if   
 
             if(evali.lt.imin)then
@@ -774,7 +774,7 @@ c+++++++ check if the user has requested an interrupt
 
 c+++++++ predictions         
 
-         call simdiscint(prob,maxint,1,npoints+1,evali)                        
+         call simdiscint(prob,maxint,1,npoints+1,evali)
          intcount(evali)=intcount(evali)+1
          intind(nrec+1)=evali
          intpossn(evali,intcount(evali))=nrec+1
@@ -808,11 +808,11 @@ c+++++++ end predictions
             end if
             
             if(ns.gt.0)then
-	       maxu=0.d0
-	       do j=1,ns
-	          uvec(j)=dble(runif())
-	          if(uvec(j).gt.maxu)maxu=uvec(j)
-	       end do
+               maxu=0.d0
+               do j=1,ns
+                  uvec(j)=dble(runif())
+                  if(uvec(j).gt.maxu)maxu=uvec(j)
+               end do
 
                mrand=1
                keepbeta=rbeta(1.d0,mass(i))
@@ -850,12 +850,12 @@ c+++++++ end predictions
 
                do j=1,ns
                   tmp1=0.d0
-	          k=1
-	          do while(uvec(j).gt.tmp1.and.k.lt.mrand)
-	             tmp1=tmp1+wvec(k)
-	             k=k+1  
-	          end do
-	          vnew(intpossn(i,j))=vvec(k)
+                  k=1
+                  do while(uvec(j).gt.tmp1.and.k.lt.mrand)
+                     tmp1=tmp1+wvec(k)
+                     k=k+1  
+                  end do
+                  vnew(intpossn(i,j))=vvec(k)
                end do
 
             end if 

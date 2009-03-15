@@ -1769,7 +1769,8 @@ C
   520     status = 2
           bound = inf
   530     CONTINUE
-  540 END IF
+  540     CONTINUE  
+      END IF
 
       RETURN
 C
@@ -2128,7 +2129,8 @@ C
   540     status = 2
           bound = 1.0D0
   550     CONTINUE
-  560 END IF
+  560     CONTINUE 
+      END IF
 
       RETURN
 
@@ -2406,7 +2408,8 @@ C
   360     status = 2
           bound = inf
   370     CONTINUE
-  380 END IF
+  380     CONTINUE 
+      END IF
 
       RETURN
 
@@ -2666,7 +2669,8 @@ C
   260     status = 2
           bound = tent4
   270     CONTINUE
-  280 END IF
+  280     CONTINUE  
+      END IF
 
       RETURN
 
@@ -2970,7 +2974,8 @@ C
   400     status = 2
           bound = inf
   410     CONTINUE
-  420 END IF
+  420     CONTINUE
+      END IF
 
       RETURN
 
@@ -3275,7 +3280,8 @@ C
   330     status = 2
           bound = tent4
   340     CONTINUE
-  350 END IF
+  350     CONTINUE
+      END IF
 
       RETURN
 
@@ -3941,7 +3947,8 @@ C
   520     status = 2
           bound = 1.0D0
   530     CONTINUE
-  540 END IF
+  540     CONTINUE
+      END IF
 
       RETURN
 
@@ -4414,7 +4421,8 @@ C
   310     status = 2
           bound = inf
   320     CONTINUE
-  330 END IF
+  330     CONTINUE
+      END IF
 
       RETURN
 
@@ -4660,7 +4668,8 @@ C
   290     status = 2
           bound = maxdf
   300     CONTINUE
-  310 END IF
+  310     CONTINUE
+      END IF
 
       RETURN
 
@@ -4943,7 +4952,7 @@ C     .. External Subroutines ..
       EXTERNAL cumchi
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC log,exp,dble,int
+c      INTRINSIC log,exp,dble,int
 C     ..
 C     .. Statement Functions ..
       DOUBLE PRECISION dg
@@ -7093,7 +7102,7 @@ C     .. Local Scalars ..
       LOGICAL first,qrzero
 C     ..
 C     .. Intrinsic Functions ..
-      INTRINSIC abs,max,sign
+c      INTRINSIC abs,max,sign
 C     ..
 C     .. Statement Functions ..
       DOUBLE PRECISION ftol

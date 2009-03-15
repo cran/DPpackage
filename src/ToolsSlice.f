@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR SLICE SAMPLING
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -14,7 +26,7 @@ c=======================================================================
 
 
 c=======================================================================
-      subroutine vertl_sigma2(x0,nsubject,kk,b,z,mu,tau1,tau2,zz)        
+      subroutine vertl_sigma2(x0,nsubject,kk,b,z,mu,tau1,tau2,zz)
 c=======================================================================
 c     picks a value for the auxiliary variable of the salice sampler
 c     for sigma2 in a BDP.

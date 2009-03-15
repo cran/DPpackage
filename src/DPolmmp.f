@@ -1,17 +1,17 @@
 
 c=======================================================================                      
-      subroutine dpolmmp(datastr,maxni,ncateg,nrec,nsubject,nfixed,     #6
-     &                   p,q,subject,x,xtx,y,yr,z,                      #8 
-     &                   a0b0,nu0,prec,psiinv,sb,smu,tinv,              #7
-     &                   mcmc,nsave,                                    #2
-     &                   randsave,thetasave,cpo,                        #3
-     &                   alpha,b,bclus,beta,betar,cutoff,mu,ncluster,   #8
-     &                   sigma,ss,mc,ccluster,cstrt,                    #5
-     &                   iflag,iflag2,iflagb,prob,res,seed,             #6
-     &                   sigmainv,theta,work1,workb1,workb2,            #5
-     &                   workmh1,workmh2,workmh3,workk1,workkv1,        #5
-     &                   workkm1,workkm2,workv1,workvb1,                #4
-     &                   xty,ywork,zty,ztz,betasave,bsave)              #6
+      subroutine dpolmmp(datastr,maxni,ncateg,nrec,nsubject,nfixed,     
+     &                   p,q,subject,x,xtx,y,yr,z,                       
+     &                   a0b0,nu0,prec,psiinv,sb,smu,tinv,              
+     &                   mcmc,nsave,                                    
+     &                   randsave,thetasave,cpo,                        
+     &                   alpha,b,bclus,beta,betar,cutoff,mu,ncluster,   
+     &                   sigma,ss,mc,ccluster,cstrt,                    
+     &                   iflag,iflag2,iflagb,prob,res,seed,             
+     &                   sigmainv,theta,work1,workb1,workb2,            
+     &                   workmh1,workmh2,workmh3,workk1,workkv1,        
+     &                   workkm1,workkm2,workv1,workvb1,                
+     &                   xty,ywork,zty,ztz,betasave,bsave)              
 c=======================================================================                      
 c     # of arguments = 65.
 c
@@ -257,7 +257,7 @@ c=======================================================================
 c+++++Data
       integer maxni,ncateg,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1),yr(nrec)
-      real*8 x(nrec,p),z(nrec,q),xtx(p,p)	
+      real*8 x(nrec,p),z(nrec,q),xtx(p,p)
       
 c+++++Prior 
       integer nu0,murand,sigmarand
@@ -581,7 +581,7 @@ c++++++++++ subject in cluster with more than 1 observations
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -603,7 +603,7 @@ c++++++++++ subject in cluster with more than 1 observations
                         tmp1=0.d0
                         do l=1,ni
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)                           
+     &                          z(datastr(i,l+1),k)
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -660,9 +660,9 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          cstrt,ccluster,ss,bclus,theta)                   
-	       end if
-	              
+     &                          cstrt,ccluster,ss,bclus,theta)
+               end if
+
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
 
@@ -728,7 +728,7 @@ c++++++++++ subject in cluster with only 1 observation
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -751,7 +751,7 @@ c++++++++++ subject in cluster with only 1 observation
                         tmp1=0.d0
                         do l=1,ni
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)                           
+     &                          z(datastr(i,l+1),k)
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -829,7 +829,7 @@ c++++++++++ check if the user has requested an interrupt
                      tmp1=0.d0
                      do l=1,ni
                         tmp1=tmp1+z(datastr(cstrt(ii,i),l+1),j)*
-     &                            z(datastr(cstrt(ii,i),l+1),k)                           
+     &                            z(datastr(cstrt(ii,i),l+1),k)
                      end do
                      ztz(j,k)=ztz(j,k)+tmp1
                   end do
@@ -939,7 +939,7 @@ c+++++++ check if the user has requested an interrupt
                do j=1,q
                   do k=1,q
                      ztz(j,k)=ztz(j,k)+               
-     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))
                   end do
                end do
             end do
@@ -1105,7 +1105,7 @@ c+++++++++++++ regression coefficients
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
-                     betasave(i)=betasave(i)+beta(i)                     
+                     betasave(i)=betasave(i)+beta(i)
                   end do
                end if   
 
@@ -1132,7 +1132,7 @@ c+++++++++++++ cutoff points
                end do
 
                do i=1,ncateg-1
-                  betasave(p+i)=betasave(p+i)+cutoff(i)                              
+                  betasave(p+i)=betasave(p+i)+cutoff(i)
                end do
 
 c+++++++++++++ cluster information
@@ -1152,8 +1152,8 @@ c+++++++++++++ cpo
                         tmp1=tmp1+x(i,j)*beta(j)
                      end do
                   end if   
-		  do j=1,q
-		     tmp1=tmp1+z(i,j)*b(subject(i),j)
+                  do j=1,q
+                     tmp1=tmp1+z(i,j)*b(subject(i),j)
                   end do
                   
                   if(yr(i).eq.1)then
@@ -1171,7 +1171,7 @@ c+++++++++++++ cpo
                         tmp2=cutoff(j)-tmp1
                         tmp3=cutoff(j-1)-tmp1
                         tmp3=cdfnorm(tmp2,0.d0,1.d0,1,0)-
-     &                       cdfnorm(tmp3,0.d0,1.d0,1,0)                  
+     &                       cdfnorm(tmp3,0.d0,1.d0,1,0)
                      end if
                   end do                  
                   
@@ -1200,7 +1200,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
             
       do i=1,p+ncateg-1
@@ -1226,8 +1226,8 @@ c+++++++++++++ print
                tmp1=tmp1+x(i,j)*betasave(j)
             end do
          end if   
-	  do j=1,q
-	     tmp1=tmp1+z(i,j)*bsave(subject(i),j)
+         do j=1,q
+            tmp1=tmp1+z(i,j)*bsave(subject(i),j)
          end do
          
          if(yr(i).eq.1)then

@@ -5,6 +5,8 @@ export(
         BDPdensity.default,
         CSDPbinary,
         CSDPbinary.default,
+        DPbetabinom,
+        DPbetabinom.default,        
         DPbinary,
         DPbinary.default,
         DPcaterpillar,
@@ -51,12 +53,14 @@ export(
         FPTrasch.default,
         FPTraschpoisson,
         FPTraschpoisson.default,
-        HDPdensity,
-        HDPdensity.default,
         LDDPdensity,
         LDDPdensity.default,
+        LDDPsurvival,
+        LDDPsurvival.default,
         Pbinary,
         Pbinary.default,
+        Plm,
+        Plm.default,
         ps,
         PSgam,
         PSgam.default,
@@ -66,6 +70,12 @@ export(
         PTlm.default,
         PTmeta,
         PTmeta.default,
+        PTglmm,
+        PTglmm.default,
+        PTlmm,
+        PTlmm.default,
+        PTolmm,
+        PTolmm.default,
         PTrandom,
         PTrandom.default,
         TDPdensity,
@@ -90,6 +100,11 @@ S3method(summary, CSDPbinary)
 S3method(print, summaryCSDPbinary)
 S3method(predict, CSDPbinary)
 S3method(anova, CSDPbinary)
+
+S3method(print, DPbetabinom)
+S3method(plot, DPbetabinom)
+S3method(summary, DPbetabinom)
+S3method(print, summaryDPbetabinom)
 
 S3method(print, DPbinary)
 S3method(plot, DPbinary)
@@ -209,12 +224,15 @@ S3method(plot, FPTraschpoisson)
 S3method(summary, FPTraschpoisson)
 S3method(print, summaryFPTraschpoisson)
 
-S3method(predict, HDPdensity)
-
 S3method(print, LDDPdensity)
 S3method(plot, LDDPdensity)
 S3method(summary, LDDPdensity)
 S3method(print, summaryLDDPdensity)
+
+S3method(print, LDDPsurvival)
+S3method(plot, LDDPsurvival)
+S3method(summary, LDDPsurvival)
+S3method(print, summaryLDDPsurvival)
 
 S3method(print, Pbinary)
 S3method(plot, Pbinary)
@@ -222,6 +240,12 @@ S3method(summary, Pbinary)
 S3method(print, summaryPbinary)
 S3method(predict, Pbinary)
 S3method(anova, Pbinary)
+
+S3method(print, Plm)
+S3method(plot, Plm)
+S3method(summary, Plm)
+S3method(print, summaryPlm)
+S3method(anova, Plm)
 
 S3method(print, PSgam)
 S3method(plot, PSgam)
@@ -245,6 +269,24 @@ S3method(plot, PTmeta)
 S3method(summary, PTmeta)
 S3method(print, summaryPTmeta)
 S3method(anova, PTmeta)
+
+S3method(print, PTglmm)
+S3method(plot, PTglmm)
+S3method(summary, PTglmm)
+S3method(print, summaryPTglmm)
+S3method(anova, PTglmm)
+
+S3method(print, PTlmm)
+S3method(plot, PTlmm)
+S3method(summary, PTlmm)
+S3method(print, summaryPTlmm)
+S3method(anova, PTlmm)
+
+S3method(print, PTolmm)
+S3method(plot, PTolmm)
+S3method(summary, PTolmm)
+S3method(print, summaryPTolmm)
+S3method(anova, PTolmm)
 
 S3method(print, PTrandom)
 S3method(plot, PTrandom)

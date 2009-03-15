@@ -80,8 +80,8 @@ DPcdensity(y,x,xpred,ngrid,prior,mcmc,state,status,
   predictors in a semiparametric way. Indeed, their method is essentially a locally weighted 
   mixture of normal regression models with weigths predictor-dependent.
 
-  Let \eqn{y} and \eqn(X) be the response vector and the matrix of predictors, respectively.
-  Further, let \eqn{Z=(y,X)}. The model for the joint distribution of the response and predictors is as follows:
+  Let \eqn{y_i}{yi} and \eqn{X_i}{Xi} be the response and the vector of predictors, respectively.
+  Further, let \eqn{Z_i=(y_i,X_i)}{Zi=(yi,Xi)}. The model for the joint distribution of the response and predictors is as follows:
 
   \deqn{Z_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}{Zi | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n}
   \deqn{(\mu_i,\Sigma_i) | G \sim G}{(mui,Sigmai) | G ~ G}
@@ -193,14 +193,14 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Prior information
 
-      prior<-list(a0=1,
-                  b0=1/5,
+      prior<-list(a0=10,
+                  b0=1,
                   nu1=4,
                   nu2=4,
-                  s2=diag(1,2),
+                  s2=diag(10000,2),
                   m2=rep(0,2),
-                  psiinv2=diag(1,2),
-                  tau1=0.01,
+                  psiinv2=diag(10000,2),
+                  tau1=2.01,
                   tau2=0.01)
 
     # Initial state
@@ -208,8 +208,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # MCMC parameters
 
-      mcmc <- list(nburn=2000,
-                   nsave=2000,
+      mcmc <- list(nburn=5000,
+                   nsave=10000,
                    nskip=3,
                    ndisplay=100)
 
@@ -275,7 +275,9 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
+
+Tim Hanson \email{<hanson@biostat.umn.edu>}
 
 }
 

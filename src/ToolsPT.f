@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR MULTIVARIATES POLYA TREES
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -8,8 +20,7 @@ c=======================================================================
       subroutine loglikpt_mucan(m,nrand,nsubject,parti,
      &                          whicho,whichn,b,bzc,cpar,detlogl,
      &                          linf,lsup,muc,sigmainv,
-     &                          vec,workmhr,workmr,workvr,
-     &                          fixed,loglikc)
+     &                          vec,fixed,loglikc)
 c======================================================================= 
 c     This subroutine evaluate the log-likelihood for the candidate 
 c     value of the baseline mean in a marginal Multivariate PT.
@@ -17,8 +28,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -30,8 +41,6 @@ c-----Input
       real*8 linf(nrand),lsup(nrand)
       real*8 muc(nrand),sigmainv(nrand,nrand)
       real*8 vec(nrand)
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workvr(nrand)
 
 c-----Output
       real*8 loglikc
@@ -190,8 +199,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -337,8 +346,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -493,8 +502,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -650,8 +659,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -685,8 +694,7 @@ c-----Routine
             workmr(i,j)=sigmac(i,j)
          end do
       end do
-
-      call invdet(workmr,nrand,sigmainvc,detloglc,iflagr,workvr)
+      call inversedet(workmr,nrand,iflagr,detloglc)
 
       if(typep.eq.1)then
          do i=1,nrand
@@ -899,8 +907,7 @@ c=======================================================================
       subroutine loglikpt_cparcan(m,nrand,nsubject,iflagr,parti,
      &                            whicho,whichn,bz,cparc,detlogl,
      &                            linf,lsup,
-     &                            vec,workmhr,workmr,workvr,
-     &                            fixed,loglikn)
+     &                            vec,fixed,loglikn)
 c======================================================================= 
 c     This subroutine evaluate the log-likelihood for the candidate 
 c     value of the precision parameter in a marginal Multivariate PT.
@@ -908,8 +915,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -921,8 +928,6 @@ c-----Input
       real*8 bz(nsubject,nrand),cparc,detlogl
       real*8 linf(nrand),lsup(nrand)
       real*8 vec(nrand)
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workvr(nrand)
 
 c-----Output
       real*8 loglikn
@@ -1072,8 +1077,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -1094,7 +1099,7 @@ c-----Output
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
-      integer i,ihmssf,j,je2,k,k1,l,nint,ok 
+      integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok 
       real*8 invcdfnorm,prob,quan,tmp1
 
 c-----Routine
@@ -1179,6 +1184,7 @@ c-----Routine
          do k=1,nrand
             
             k1=2*(parti(k)-1)+1
+            k2=2*(parti(k)-1)+2
             quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
 
             limw(k)=quan
@@ -1304,8 +1310,7 @@ c-----Routine
 c=======================================================================                  
       subroutine sampredptun(marea,nrand,nsubject,parti,m,mass,massi,
      &                       pattern,patterns,whichn,whicho,bz,
-     &                       cpar,limw,linf,lsup,workmr,workmhr,
-     &                       workvr,vec,fixed)
+     &                       cpar,limw,linf,lsup,vec,fixed)
 c======================================================================= 
 c     This subroutine generates a sample 'vec' from the predictive
 c     distribution arising in a marginal Multivariate PT.
@@ -1315,8 +1320,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -1328,15 +1333,12 @@ c-----Input
       real*8 limw(nrand),linf(nrand),lsup(nrand) 
       real*8 mass(marea),rtnorm
 
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workvr(nrand)
-      
 c-----Output
       real*8 vec(nrand)
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
-      integer i,j,je2,k,k1,l,nint,ok 
+      integer i,j,je2,k,k1,k2,l,nint,ok 
       real*8 invcdfnorm,prob,quan
 
 c-----Routine
@@ -1421,6 +1423,7 @@ c-----Routine
          do k=1,nrand
             
             k1=2*(parti(k)-1)+1
+            k2=2*(parti(k)-1)+2
             quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
 
             limw(k)=quan
@@ -1519,8 +1522,7 @@ c=======================================================================
       subroutine loglikpt_cur(m,nrand,nsubject,parti,
      &                        whicho,whichn,bz,cpar,detlogl,
      &                        linf,lsup,
-     &                        vec,workmhr,workmr,workvr,
-     &                        fixed,logliko)
+     &                        vec,fixed,logliko)
 c======================================================================= 
 c     This subroutine evaluate the log-likelihood for the current value
 c     of the baseline parameters in a marginal Multivariate PT.
@@ -1530,8 +1532,8 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
-c     Last modification: 24-04-2007.
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
 c======================================================================= 
       implicit none 
 
@@ -1542,8 +1544,6 @@ c-----Input
       real*8 bz(nsubject,nrand),cpar,detlogl
       real*8 linf(nrand),lsup(nrand)
       real*8 vec(nrand)
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workvr(nrand)
 
 c-----Output
       real*8 logliko
@@ -1681,7 +1681,7 @@ c+++++++ following subjects
 
 c=======================================================================
       subroutine predictiveptb(m,nsubject,q,nsave,randsave,mumat,
-     &                         sigmamat,cparvec,typep,
+     &                         sigmamat,cparvec,typepvec,
      &                         ngrid1,ngrid2,grid1,grid2,fs,
      &                         iflagr,parti,whicho,whichn,
      &                         b,bz,linf,lsup,mu,sigma,sigmainv,
@@ -1694,13 +1694,13 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
+c     Alejandro Jara, 2006-2007-2008
 c     Last modification: 24-04-2007.
 c=======================================================================
       implicit none
 
 c++++ input
-      integer fixed,m,ngrid1,ngrid2,nsubject,nsave,q,typep
+      integer fixed,m,ngrid1,ngrid2,nsubject,nsave,q,typepvec(nsave)
       real*8 cparvec(nsave),randsave(nsave,q*(nsubject+1))
       real*8 mumat(nsave,q)
       real*8 sigmamat(nsave,q*(q+1)/2)
@@ -1768,7 +1768,7 @@ c+++++++ check if the user has requested an interrupt
          end do
          call inversedet(workmr,q,iflagr,detlogl)
 
-         if(typep.eq.1)then
+         if(typepvec(ii).eq.1)then
             do i=1,q
                do j=1,q
                   workmr(i,j)=0.d0
@@ -1783,7 +1783,7 @@ c+++++++ check if the user has requested an interrupt
             end do
             call inverse(sigmainv,q,iflagr)      
          
-          else if(typep.eq.2)then
+          else if(typepvec(ii).eq.2)then
             do i=1,q
                do j=1,q
                   workmr(i,j)=0.d0
@@ -2006,7 +2006,7 @@ c
 c     Note that if fixed=1, the first level probabilities are fixed at 
 c     (1/2)**nrand
 c
-c     Alejandro Jara, 2006
+c     Alejandro Jara, 2006-2007-2008
 c     Last modification: 24-04-2007.
 c=======================================================================
       implicit none
@@ -2305,7 +2305,7 @@ c=======================================================================
 c=======================================================================                  
 c     function that return the integer number+1, based on its
 c     binary representation
-c     Alejandro Jara, 2006
+c     Alejandro Jara, 2006-2007-2008
 
       implicit none
       integer i,nvar
@@ -2325,7 +2325,7 @@ c=======================================================================
 c=======================================================================                  
 c     function that return the binary representation of number 
 c     given evali=number+1
-c     Alejandro Jara, 2006
+c     Alejandro Jara, 2006-2007-2008
 
       implicit none
       integer i,nvar,evali,tmp1
@@ -2349,12 +2349,56 @@ c     Alejandro Jara, 2006
 
 
 c=======================================================================
+      subroutine locationptu(x,m,n,loca)
+c=======================================================================
+c     function that return the succesive location of x across the 
+c     finite tree of length m. This is based on a standard normal 
+c     distribution.
+c     Alejandro Jara, 2007-2008
+c=======================================================================
+      implicit none
+      integer m,n,loca(n)
+      integer i,k,k1,k2,nint
+      real*8 invcdfnorm
+      real*8 prob,quan
+      real*8 x
+      
+      if(m.gt.n)then
+        call rexit("Error in 'locationpt'")
+      end if
+
+      quan=0.d0
+      if(x.le.quan)then
+        k=1
+       else
+        k=2
+      end if  
+
+      loca(1)=k
+      
+      do i=2,m
+         nint=2**i
+         prob=1.d0/dble(nint)
+         k1=2*(k-1)+1
+         k2=2*(k-1)+2
+         quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
+         if(x.le.quan)then
+           k=k1
+          else
+           k=k2
+         end if  
+         loca(i)=k
+      end do
+      return
+      end
+
+c=======================================================================
       subroutine locationptm(nvar,x,m,maxm,parti,pattern,loca)
 c=======================================================================
 c     function that return the succesive location of the vector x(nvar) 
 c     across the finite tree of length m. This is based on a standard 
 c     normal distribution.
-c     Alejandro Jara, 2007
+c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer m,maxm,nvar,loca(maxm),parti(nvar),pattern(nvar)
@@ -2364,7 +2408,7 @@ c=======================================================================
       real*8 x(nvar)
       
       if(m.gt.maxm)then
-        call rexit("Error in ´locationptm´")
+        call rexit("Error in 'locationptm'")
       end if
 
       quan=0.d0
@@ -2408,7 +2452,7 @@ c=======================================================================
 c=======================================================================                  
 c     function that return the integer number+1, based on its
 c     binary representation
-c     Alejandro Jara, 2006
+c     Alejandro Jara, 2006-2007-2008
 
       implicit none
       integer i,maxvar,nvar
@@ -2429,7 +2473,7 @@ c=======================================================================
      &                        ia,ja,a)
 c=======================================================================
 c     accumulate the number of subjects.  
-c     Alejandro Jara, 2007
+c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer i,j
@@ -2467,7 +2511,7 @@ c=======================================================================
      &                   tmp2)
 c=======================================================================
 c     generate probabilities for a finite PT.  
-c     Alejandro Jara, 2007
+c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer fixed,i,j,k,l,ista,iend
@@ -2559,7 +2603,7 @@ c=======================================================================
 c=======================================================================
 c     determine the quantile corresponding to the next partition of the
 c     interval (linf,lsup)
-c     Alejandro Jara, 2007 
+c     Alejandro Jara, 2007-2008 
 c=======================================================================
       implicit none
       real*8 linf,lsup
@@ -2580,7 +2624,7 @@ c=======================================================================
      &                  liminf1,liminf2,limsup1,limsup2)
 c=======================================================================
 c     computes the limtis of the sets in a finite multivariate PT
-c     Alejandro Jara, 2007
+c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer maxvar,nvar,m,ntotals
@@ -2616,6 +2660,7 @@ c++++ First level sets
 c++++ Sets for other levels
 
       do i=2,m
+
          ngroup=2**(nvar*(i-1))
          do j=1,ngroup
 
@@ -2658,7 +2703,7 @@ c=======================================================================
      &                 means,covs)
 c=======================================================================
 c     computes the moments of a finite multivariate PT
-c     Alejandro Jara, 2007
+c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer maxvar,nvar,m,ntotals
@@ -2684,7 +2729,7 @@ c++++ Algorithm
       end do
       
       if(nsets.gt.ntotals)then
-         call rexit("Error in ´mompt´: nsets > ntotals")            
+         call rexit("Error in 'mompt': nsets > ntotals")            
       end if
       
       tmass=0.d0
@@ -2755,7 +2800,7 @@ c++++ parameters
       real*8 limsup1(ntotals,maxrand),limsup2(ntotals,maxrand)
       
       if(nrand.gt.maxrand)then
-        call rexit("Error in ´samplefuncpt´: increase maxrand")      
+        call rexit("Error in 'samplefuncpt': increase maxrand")      
       end if
       
       mwork=m
@@ -2764,11 +2809,11 @@ c++++ parameters
       end do
 
       if(mwork.lt.1)then
-        call rexit("Error in ´samplefuncpt´: maxm < 1")      
+        call rexit("Error in 'samplefuncpt': maxm < 1")      
       end if
       
       if(mwork.gt.maxm)then
-        call rexit("Error in ´samplefuncpt´: increase maxm")      
+        call rexit("Error in 'samplefuncpt': increase maxm")      
       end if
 
       nr=0
@@ -2803,6 +2848,479 @@ c++++ computing the means for each set
       return
       end
 
+
+c=======================================================================                  
+      subroutine loglikpt_covarcan2(m,nrand,nsubject,iflagr,parti,
+     &                              whicho,whichn,b,bzc,cpar,detloglc,
+     &                              linf,lsup,mu,sigmac,sigmainvc,
+     &                              ortho,vec,workmhr,workmr,
+     &                              loglikc,fixed)
+c======================================================================= 
+c     This subroutine evaluate the log-likelihood for the candidate 
+c     of the baseline covariance matrix in a marginal Multivariate PT.
+c
+c     Note that if fixed=1, the first level probabilities are fixed at 
+c     (1/2)**nrand
+c
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 22-06-2008.
+c======================================================================= 
+      implicit none 
+
+c-----Input
+      integer fixed,m,nrand,nsubject
+      integer iflagr(nrand)
+      integer parti(nrand)
+      integer whicho(nsubject),whichn(nsubject)
+      real*8 b(nsubject,nrand),bzc(nsubject,nrand),cpar,detloglc
+      real*8 linf(nrand),lsup(nrand)
+      real*8 mu(nrand),sigmac(nrand,nrand),sigmainvc(nrand,nrand)
+      real*8 vec(nrand)
+      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
+      real*8 ortho(nrand,nrand)
+
+c-----Output
+      real*8 loglikc
+
+c-----Working
+      integer countero,countern,final
+      integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok
+      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+
+c-----Routine
+
+      loglikc=0.d0
+
+      do i=1,nrand
+         do j=1,nrand
+            workmr(i,j)=sigmac(i,j)
+         end do
+      end do
+      call inversedet(workmr,nrand,iflagr,detloglc)
+
+      do i=1,nrand
+         do j=1,nrand
+            workmr(i,j)=0.d0
+            sigmainvc(i,j)=0.d0
+         end do
+      end do
+      call cholesky(nrand,sigmac,workmhr)
+      do i=1,nrand
+         do j=1,i
+            workmr(i,j)=workmhr(ihmssf(i,j,nrand))
+         end do
+      end do
+
+      do i=1,nrand
+         do j=1,nrand
+            tmp1=0.d0
+            do k=1,nrand 
+               tmp1=tmp1+workmr(i,k)*ortho(k,j)
+            end do
+            sigmainvc(i,j)=tmp1
+         end do
+      end do
+
+      call inverse(sigmainvc,nrand,iflagr)      
+         
+      do i=1,nsubject
+         do j=1,nrand
+            tmp1=0.d0
+            do k=1,nrand
+               tmp1=tmp1+sigmainvc(j,k)*(b(i,k)-mu(k))
+            end do
+            vec(j)=tmp1
+         end do
+         
+         do j=1,nrand
+            bzc(i,j)=vec(j)
+         end do
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+c+++++++ first subject
+         if(i.eq.1)then
+            loglikc=-0.5d0*detloglc
+            do j=1,nrand
+               loglikc=loglikc+dnrm(bzc(i,j),0.d0, 1.d0, 1)
+            end do   
+
+c+++++++ following subjects
+          else
+
+            nint=2
+            prob=1.d0/dble(nint)
+            quan=invcdfnorm(prob,0.d0,1.d0,1,0)
+
+            countero=0
+            
+            do j=1,nrand
+               if(bzc(i,j).le.quan)then
+                  linf(j)=-999999.d0
+                  lsup(j)=quan
+                  parti(j)=1
+                else
+                  linf(j)=quan
+                  lsup(j)= 999999.d0
+                  parti(j)=2
+               end if
+            end do
+           
+            do l=1,i-1
+               final=1
+               do j=1,nrand
+                  if(bzc(l,j).gt.lsup(j).or.bzc(l,j).lt.linf(j))then
+                    final=0
+                  end if
+               end do
+               
+               if(final.eq.1)then
+                  countero=countero+1
+                  whicho(countero)=l
+               end if   
+            end do
+            
+            if(fixed.ne.1)then
+              loglikc=loglikc+
+     &         log((2.d0**nrand)*cpar+(2.d0**nrand)*dble(countero))-
+     &         log((2.d0**nrand)*cpar+dble(i-1))
+            end if 
+            
+            if(countero.eq.0) go to 1
+
+            ok=1
+            j=2
+            do while(ok.eq.1.and.j.le.m)
+               nint=2**j
+               je2=j**2
+               prob=1.d0/dble(nint)
+
+               do k=1,nrand
+                  k1=2*(parti(k)-1)+1
+                  k2=2*(parti(k)-1)+2
+                  quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
+               
+                  if(bzc(i,k).le.quan)then
+                    parti(k)=k1 
+                    lsup(k)=quan
+                   else 
+                    parti(k)=k2
+                    linf(k)=quan
+                  end if
+               end do                 
+               
+               countern=0
+               do l=1,countero
+                  final=1
+                  do k=1,nrand
+                     if(bzc(whicho(l),k).gt.lsup(k).or.
+     &                  bzc(whicho(l),k).lt.linf(k)    )then
+                        final=0 
+                     end if   
+                  end do
+                  
+                  if(final.eq.1)then
+                    countern=countern+1
+                    whichn(countern)=whicho(l)
+                  end if
+               end do
+
+               loglikc=loglikc+
+     &         log((2.d0**nrand)*cpar*dble(je2)+
+     &             (2.d0**nrand)*dble(countern))-
+     &         log((2.d0**nrand)*cpar*dble(je2)+dble(countero))
+
+               if(countern.eq.0)then
+                  ok=0
+                else  
+                  countero=countern
+                  do l=1,countern
+                     whicho(l)=whichn(l)
+                  end do
+                  j=j+1
+               end if   
+            end do
+
+1           continue
+
+            loglikc=loglikc-0.5d0*detloglc
+            do j=1,nrand
+               loglikc=loglikc+dnrm(bzc(i,j),0.d0, 1.d0, 1)
+            end do   
+         end if
+      end do   
+
+      return
+      end
+
+
+c=======================================================================
+      subroutine predictiveptb2(m,nsubject,q,nsave,randsave,mumat,
+     &                          sigmamat,cparvec,typepmat,
+     &                          ngrid1,ngrid2,grid1,grid2,fs,
+     &                          iflagr,parti,whicho,whichn,
+     &                          b,bz,linf,lsup,mu,sigma,sigmainv,
+     &                          theta,thetaz,workmr,ortho,
+     &                          workmhr,fixed)
+c=======================================================================
+c     computes the bivariate posterior predictive density from the
+c     output of a PTfunction. This is used for random effects models.
+c
+c     Note that if fixed=1, the first level probabilities are fixed at 
+c     (1/2)**nrand
+c
+c     Alejandro Jara, 2006-2007-2008
+c     Last modification: 24-04-2007.
+c=======================================================================
+      implicit none
+
+c++++ input
+      integer fixed,m,ngrid1,ngrid2,nsubject,nsave,q
+      real*8 cparvec(nsave),randsave(nsave,q*(nsubject+1))
+      real*8 mumat(nsave,q)
+      real*8 sigmamat(nsave,q*(q+1)/2)
+      real*8 typepmat(nsave,q*q)
+      real*8 grid1(ngrid1),grid2(ngrid2)
+
+c++++ output
+      real*8 fs(ngrid1,ngrid2)
+
+c++++ external working space
+      integer iflagr(q),parti(q)
+      integer whicho(nsubject),whichn(nsubject)
+      real*8 b(nsubject,q),bz(nsubject,q)
+      real*8 linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
+      real*8 theta(q),thetaz(q)
+      real*8 workmr(q,q),ortho(q,q)
+      real*8 workmhr(q*(q+1)/2)
+
+c++++ internal working space
+      integer count 
+      integer countero,countern
+      integer final,i,ii,ihmssf,j,jj,je2,k,kk,k1,k2,l
+      integer nint,ok
+      real*8 cpar,detlogl,dnrm
+      real*8 invcdfnorm
+      real*8 loglik,prob,quan,tmp1
+
+c++++ algorithm      
+      if(q.gt.2)then
+        call rexit("Only bivariate evaluation supported")
+      end if
+
+      do ii=1,nsave
+
+c+++++++ save elements
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+          
+         cpar=cparvec(ii)
+         
+         count=0
+         do i=1,q
+            mu(i)=mumat(ii,i)
+            do j=1,q
+               count=count+1
+               sigma(i,j)=sigmamat(ii,ihmssf(i,j,q))
+               ortho(i,j)=typepmat(ii,count) 
+            end do
+         end do
+         
+         k=0
+         do i=1,nsubject
+            do j=1,q
+               k=k+1
+               b(i,j)=randsave(ii,k)
+            end do
+         end do
+      
+c+++++++ covariance matrix decomposition
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         do i=1,q
+            do j=1,q
+               workmr(i,j)=sigma(i,j)
+            end do
+         end do
+         call inversedet(workmr,q,iflagr,detlogl)
+
+         do i=1,q
+           do j=1,q
+              workmr(i,j)=0.d0
+              sigmainv(i,j)=0.d0
+           end do
+         end do
+         call cholesky(q,sigma,workmhr)
+         do i=1,q
+            do j=1,i
+               workmr(i,j)=workmhr(ihmssf(i,j,q))
+            end do
+         end do
+
+         do i=1,q
+            do j=1,q
+               tmp1=0.d0
+               do k=1,q
+                  tmp1=tmp1+workmr(i,k)*ortho(k,j) 
+               end do 
+               sigmainv(i,j)=tmp1
+            end do
+         end do
+
+         call inverse(sigmainv,q,iflagr)      
+         
+
+c+++++++ transformation of the random effects
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         do i=1,nsubject
+            do j=1,q
+               tmp1=0.d0
+               do k=1,q
+                  tmp1=tmp1+sigmainv(j,k)*(b(i,k)-mu(k))
+               end do
+               bz(i,j)=tmp1
+            end do
+         end do  
+
+c+++++++ evaluate the grid
+         
+         do jj=1,ngrid1
+            theta(1)=grid1(jj)
+            do kk=1,ngrid2
+               theta(2)=grid2(kk)
+            
+c+++++++++++++ check if the user has requested an interrupt
+               call rchkusr()
+               
+               loglik=0.d0
+               
+               do i=1,q
+                  tmp1=0.d0
+                  do j=1,q
+                     tmp1=tmp1+sigmainv(i,j)*(theta(j)-mu(j))
+                  end do
+                  thetaz(i)=tmp1
+               end do
+
+               nint=2
+               prob=1.d0/dble(nint)
+               quan=invcdfnorm(prob,0.d0,1.d0,1,0)
+
+               countero=0
+            
+               do j=1,q
+                  if(thetaz(j).le.quan)then
+                     linf(j)=-999999.d0
+                     lsup(j)=quan
+                     parti(j)=1
+                   else
+                     linf(j)=quan
+                     lsup(j)= 999999.d0
+                     parti(j)=2
+                  end if
+               end do
+
+               do l=1,nsubject
+                  final=1
+                  do j=1,q
+                     if(bz(l,j).gt.lsup(j).or.bz(l,j).lt.linf(j))then
+                        final=0
+                     end if
+                  end do
+               
+                  if(final.eq.1)then
+                     countero=countero+1
+                     whicho(countero)=l
+                  end if   
+               end do
+               
+               if(fixed.ne.1)then
+                 loglik=loglik+
+     &           log((2.d0**q)*cpar+dble(2.d0**q)*dble(countero))-
+     &           log((2.d0**q)*cpar+dble(nsubject))
+               end if 
+
+               if(countero.eq.0) go to 1
+
+               ok=1
+               j=2
+               do while(ok.eq.1.and.j.le.m)
+                  nint=2**j
+                  je2=j**2
+                  prob=1.d0/dble(nint)
+
+                  do k=1,q
+                     k1=2*(parti(k)-1)+1
+                     k2=2*(parti(k)-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
+               
+                     if(thetaz(k).le.quan)then
+                       parti(k)=k1 
+                       lsup(k)=quan
+                      else 
+                       parti(k)=k2
+                       linf(k)=quan
+                     end if
+                  end do                 
+               
+                  countern=0
+                  do l=1,countero
+                     final=1
+                     do k=1,q
+                        if(bz(whicho(l),k).gt.lsup(k).or.
+     &                     bz(whicho(l),k).lt.linf(k)    )then
+                           final=0 
+                        end if   
+                     end do
+                  
+                     if(final.eq.1)then
+                       countern=countern+1
+                       whichn(countern)=whicho(l)
+                     end if
+                  end do
+
+                  loglik=loglik+
+     &               log((2.d0**q)*cpar*dble(je2)+
+     &                   dble(2.d0**q)*dble(countern))-
+     &               log((2.d0**q)*cpar*dble(je2)+dble(countero))
+
+                  if(countern.eq.0)then
+                     ok=0
+                   else  
+                     countero=countern
+                     do l=1,countern
+                        whicho(l)=whichn(l)
+                     end do
+                     j=j+1
+                  end if   
+               end do
+
+1              continue
+
+               loglik=loglik-0.5d0*detlogl
+               do j=1,q
+                  loglik=loglik+dnrm(thetaz(j),0.d0, 1.d0, 1)
+               end do   
+               fs(jj,kk)=fs(jj,kk)+exp(loglik)            
+            end do
+         end do
+      end do
+
+      do i=1,ngrid1
+         do j=1,ngrid2
+            fs(i,j)=fs(i,j)/dble(nsave)
+         end do
+      end do
+
+      return
+      end
 
 
 c=======================================================================
@@ -3351,6 +3869,7 @@ c++++ check if the user has requested an interrupt
 
       return
       end
+
 
 
 c=======================================================================                  
@@ -4056,7 +4575,7 @@ c++++ Output
          
          tmp3=exp(
      &        log(     alpha*dble(je2)+dble(countern))-
-     &        log(2.d0*alpha*dble(je2)+dble(countero)))                  
+     &        log(2.d0*alpha*dble(je2)+dble(countero)))
 
          if(dble(runif()).le.tmp3)then
              k=k1
@@ -4242,7 +4761,7 @@ c++++ Output
          
          tmp3=exp(
      &        log(     alpha*dble(je2)+dble(countern))-
-     &        log(2.d0*alpha*dble(je2)+dble(countero)))                  
+     &        log(2.d0*alpha*dble(je2)+dble(countero)))
 
          if(dble(runif()).le.tmp3)then
              k=k1

@@ -21,16 +21,24 @@ c     A.J.V., 2007
       implicit none
       integer i,j,ind,since,nsubject,ncluster,ccluster(nsubject)
       integer ss(nsubject),cstrt(nsubject,nsubject)
+
+      integer ns,ii
       
       do i=since+1,ncluster
-         do j=1,nsubject
-            if(ss(j).eq.i)then
-               ss(j)=i-1 
-            end if
+
+         ns=ccluster(i)    
+         
+         do j=1,ns
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+            ii=cstrt(i,j) 
+            ss(ii)=i-1
          end do
-         do j=1,ccluster(i)
+
+         do j=1,ns
             cstrt(i-1,j)=cstrt(i,j) 
          end do
+
          ccluster(i-1)=ccluster(i)
       end do
       
@@ -50,16 +58,25 @@ c     A.J.V., 2007
       implicit none
       integer i,j,ind,since,nsubject,q,ncluster,ccluster(nsubject)
       integer ss(nsubject),cstrt(nsubject,nsubject)
-      
+
+      integer ns,ii
+      ii=q        
+
       do i=since+1,ncluster
-         do j=1,nsubject
-            if(ss(j).eq.i)then
-               ss(j)=i-1 
-            end if
+
+         ns=ccluster(i)    
+         
+         do j=1,ns
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+            ii=cstrt(i,j) 
+            ss(ii)=i-1
          end do
-         do j=1,ccluster(i)
+
+         do j=1,ns
             cstrt(i-1,j)=cstrt(i,j) 
          end do
+
          ccluster(i-1)=ccluster(i)
       end do
       

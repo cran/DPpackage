@@ -1,17 +1,17 @@
 
 c=======================================================================                      
-      subroutine dpglmmpois(datastr,maxni,mpar,nrec,nsubject,nfixed,p,q,#8
-     &                     subject,x,y,z,roffset,                       #5 
-     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tinv,         #8
-     &                     mcmc,nsave,                                  #2
-     &                     acrate,cpo,randsave,thetasave,               #4
-     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,  #8
-     &                     sigmainv,ss,mc,                              #3
-     &                     betac,ccluster,iflagp,iflagb,newtheta,prob,  #6 
-     &                     quadf,seed,theta,thetac,workp1,workp2,workb1,#7
-     &                     workb2,workmh1,workmh2,workmh3,workvp1,      #5 
-     &                     workvb1,workvb2,xtx,xty,                     #4
-     &                     zty,ztz,cstrt,betasave,bsave)                #5
+      subroutine dpglmmpois(datastr,maxni,mpar,nrec,nsubject,nfixed,p,q,
+     &                     subject,x,y,z,roffset,                        
+     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tinv,         
+     &                     mcmc,nsave,                                  
+     &                     acrate,cpo,randsave,thetasave,               
+     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,  
+     &                     sigmainv,ss,mc,                              
+     &                     betac,ccluster,iflagp,iflagb,newtheta,prob,   
+     &                     quadf,seed,theta,thetac,workp1,workp2,workb1,
+     &                     workb2,workmh1,workmh2,workmh3,workvp1,       
+     &                     workvb1,workvb2,xtx,xty,                     
+     &                     zty,ztz,cstrt,betasave,bsave)                
 c=======================================================================                      
 c     # of arguments = 65.
 c
@@ -21,7 +21,7 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009
 c
 c     Version 2.0: 
 c
@@ -51,16 +51,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -249,8 +249,8 @@ c=======================================================================
 c+++++Data
       integer maxni,mpar,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1),y(nrec)
-      real*8 roffset(nrec),x(nrec,p),z(nrec,q)	
-      
+      real*8 roffset(nrec),x(nrec,p),z(nrec,q)
+
 c+++++Prior 
       integer nu0,murand,sigmarand
       real*8 aa0,ab0,a0b0(2),b0(p),prec(p,p),psiinv(q,q)
@@ -575,8 +575,8 @@ c++++++++++ observation in cluster with more than 1 element
                      do l=1,p
                         eta=eta+x(datastr(i,k+1),l)*beta(l)
                      end do
-		     do l=1,q
-		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
 
                      eta=eta+roffset(datastr(i,k+1))
@@ -638,9 +638,9 @@ c++++++++++ observation in cluster with more than 1 element
                   ss(i)=ncluster
                   ccluster(ncluster)=1
                   cstrt(ncluster,ccluster(ncluster))=i
-	          do j=1,q
-	             bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
-	          end do
+                  do j=1,q
+                     bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
+                  end do
                end if               
             end if
 
@@ -652,8 +652,8 @@ c++++++++++ subject in cluster with only 1 observation
 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          cstrt,ccluster,ss,bclus,theta)                   
-	       end if
+     &                          cstrt,ccluster,ss,bclus,theta)
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -667,8 +667,8 @@ c++++++++++ subject in cluster with only 1 observation
                      do l=1,p
                         eta=eta+x(datastr(i,k+1),l)*beta(l)
                      end do
-		     do l=1,q
-		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
                      eta=eta+roffset(datastr(i,k+1))
 
@@ -734,11 +734,11 @@ c++++++++++ subject in cluster with only 1 observation
                   ss(i)=ncluster
                   ccluster(ncluster)=1
                   cstrt(ncluster,ccluster(ncluster))=i
-	          do j=1,q
-	             bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
-	          end do
+                  do j=1,q
+                     bclus(ncluster,j)=newtheta(j,(evali-ncluster+1))
+                  end do
                end if               
-	    end if
+            end if
          end do
 
 c++++++++++++++++++++++++++++++
@@ -802,7 +802,7 @@ c++++++++++ check if the user has requested an interrupt
      &                      ytilde*exp(eta)
                   end do
 
-                  logliko=logliko+dpoiss(dble(yij),mean,1)                  
+                  logliko=logliko+dpoiss(dble(yij),mean,1)
                end do
             end do
     
@@ -888,7 +888,7 @@ c++++++++++ candidate generating kernel contribution
      &                      ytilde*exp(eta)
                   end do
 
-                  loglikn=loglikn+dpoiss(dble(yij),mean,1)                                    
+                  loglikn=loglikn+dpoiss(dble(yij),mean,1)
                end do
             end do
 
@@ -995,7 +995,7 @@ c+++++++ check if the user has requested an interrupt
                do j=1,q
                   do k=1,q
                      quadf(j,k)=quadf(j,k)+               
-     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))
                   end do
                end do
             end do
@@ -1135,7 +1135,7 @@ c+++++++++++++ regression coefficients
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
-                     betasave(i)=betasave(i)+beta(i)                     
+                     betasave(i)=betasave(i)+beta(i)
                   end do
                end if   
 
@@ -1170,8 +1170,8 @@ c+++++++++++++ cpo
                         eta=eta+x(i,j)*beta(j)
                      end do
                   end if   
-		  do j=1,q
-		     eta=eta+z(i,j)*b(subject(i),j)
+                  do j=1,q
+                     eta=eta+z(i,j)*b(subject(i),j)
                   end do
                   eta=eta+roffset(i)               
                   mean=exp(eta)
@@ -1207,7 +1207,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p
@@ -1228,8 +1228,8 @@ c+++++++++++++ print
          do j=1,p
             eta=eta+x(i,j)*betasave(j)
          end do
-	 do j=1,q
-	   eta=eta+z(i,j)*bsave(subject(i),j)
+         do j=1,q
+            eta=eta+z(i,j)*bsave(subject(i),j)
          end do
          eta=eta+roffset(i)             
          

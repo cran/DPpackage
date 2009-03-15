@@ -83,5 +83,11 @@ DPMrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
 
 }
 }
+
+\author{
+
+Alejandro Jara \email{<ajarav@udec.cl>}
+
+}
 \keyword{models}
 \keyword{nonparametric}

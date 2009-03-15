@@ -24,14 +24,14 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
                      prior distribution of the precision parameter of the Finite Polya tree
                      prior, \code{alpha} giving the value of the precision parameter (it 
-                     must be specified if \code{a0} is missing), code{mub} and \code{Sb} 
+                     must be specified if \code{a0} is missing), \code{mub} and \code{Sb} 
                      giving the hyperparameters of the normal prior distribution 
                      for the mean of the normal baseline distribution, \code{mu}
                      giving the mean of the normal baseline distribution
                      (is must be specified if \code{mub} and \code{Sb} are missing),
                      \code{tau1} and \code{tau2} giving the hyperparameters for the 
                      prior distribution of variance of the normal baseline distribution,
-                     code{sigma} giving the standard deviation of the normal baseline distribution
+                     \code{sigma} giving the standard deviation of the normal baseline distribution
                      (is must be specified if \code{tau1} and \code{tau2} are missing),
                      \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the difficulty
@@ -212,7 +212,7 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 }
 

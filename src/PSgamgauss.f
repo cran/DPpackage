@@ -1,26 +1,26 @@
     
 c=======================================================================                      
       subroutine psgamgauss
-     &                (nrec,nfixed,p,nsmooth,q,starts,ends,nsmooths,    #8 
-     &                 maxq,x,z,y,roffset,ngrid,znew,zmean,xreal,possfp,#10
-     &                 bet0,prec,sb,taub,iapm,japm,apm,nznh,pordv,      #9
-     &                 tau,                                             #1 
-     &                 beta,b,sigmab,disp,                              #4
-     &                 mcmc,nsave,                                      #2
-     &                 cpo,randsave,thetasave,pssave,                   #4
-     &                 seed,                                            #1
-     &                 iflagp,betac,workmp1,workmp2,workmhp1,workvp1,   #6       
-     &                 xtx,xty,                                         #2 
-     &                 iflagq,bc,workmq1,workmq2,workmhq1,workvq1,      #6       
-     &                 ztz,zty,ztzinv,theta,                            #4 
-     &                 mc,betasave,bsave,workvps)                       #4
+     &                (nrec,nfixed,p,nsmooth,q,starts,ends,nsmooths,    
+     &                 maxq,x,z,y,roffset,ngrid,znew,xreal,possfp,
+     &                 prec,sb,taub,iapm,japm,apm,nznh,pordv,      
+     &                 tau,                                             
+     &                 beta,b,sigmab,disp,                              
+     &                 mcmc,nsave,                                      
+     &                 cpo,randsave,thetasave,pssave,                   
+     &                 seed,                                            
+     &                 iflagp,workmhp1,workvp1,         
+     &                 xtx,xty,                                         
+     &                 iflagq,bc,workmhq1,workvq1,            
+     &                 ztz,zty,ztzinv,theta,                            
+     &                 mc,betasave,bsave,workvps)                       
 c=======================================================================                      
-c     # of arguments = 61.
+c     # of arguments = 54.
 c
 c     Subroutine `psgamgauss' to run a Markov chain in a semiparametric 
 c     gaussian model, using a B-splines and penalties.
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0:
 c
@@ -42,16 +42,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c
@@ -82,7 +82,6 @@ c        ngrid       :  integer giving the number of grid points
 c                       where the curves are evaluated. 
 c        znew        :  real matrix giving the design for a grid
 c                       of values of the covariates, znew(ngrid,nsmooths). 
-c        zmean       :  real vector used to normalize, zmean(nsmooths). 
 c        xreal       :  real matrix giving the grid
 c                       of values of the covariates, xreal(ngrid,nsmooths). 
 c        possfp      :  integer vector giving the location of the 
@@ -93,8 +92,6 @@ c-----------------------------------------------------------------------
 c
 c---- Prior information ------------------------------------------------
 c 
-c        bet0        :  real vector giving the prior mean for the fixed 
-c                       effects, bet0(p).
 c        prec        :  real matrix giving the prior precision matrix
 c                       for the fixed effects, prec(p,p).
 c        sb          :  real vector giving the product of the prior 
@@ -157,8 +154,6 @@ c---- Working space ----------------------------------------------------
 c
 c        bc          :  real vector giving the candidate value of the 
 c                       smoothers, bc(maxq).
-c        betac       :  real vector giving the candidate value of the 
-c                       fixed effects, betac(p).
 c        betasave    :  real vector used to save the posterior mean
 c                       of fixed effects, betasave(p+1).
 c        bsave       :  real vector used to save the posterior mean
@@ -195,14 +190,6 @@ c        theta       :  real working vector, theta(maxq).
 c        tmp1        :  real used to accumulate quantities. 
 c        tmp2        :  real used to accumulate quantities.
 c        tmp3        :  real used to accumulate quantities.
-c        workmp1     :  real matrix used to update the fixed effects,
-c                       workvmp1(p,p).
-c        workmp2     :  real matrix used to update the fixed effects,
-c                       workvmp2(p,p).
-c        workmq1     :  real matrix used to update the smoothers,
-c                       workvmq1(maxq,maxq).
-c        workmq2     :  real matrix used to update the smoothers,
-c                       workvmq2(maxq,maxq).
 c        workmhp1    :  real vector used to update the fixed effects,
 c                       workmhp1(p*(p+1)/2).
 c        workmhq1    :  real vector used to update the smoothers,
@@ -228,13 +215,12 @@ c+++++Data
       integer starts(nsmooths),ends(nsmooths)
       integer possfp(nsmooths)
       real*8 roffset(nrec),x(nrec,p),z(nrec,q),znew(ngrid,q)
-      real*8 zmean(q)
       real*8 xreal(ngrid,nsmooths)
       real*8 y(nrec)
       
 c+++++Prior 
       integer nznh,iapm(q+1),japm(nznh)
-      real*8 bet0(p),prec(p,p),sb(p)
+      real*8 prec(p,p),sb(p)
       real*8 tau(2),tau1,tau2
       real*8 taub(2),taub1,taub2
       real*8 apm(nznh)
@@ -264,8 +250,6 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++Fixed effects
       integer iflagp(p) 
-      real*8 betac(p)
-      real*8 workmp1(p,p),workmp2(p,p)
       real*8 workmhp1(p*(p+1)/2)
       real*8 workvp1(p)
       real*8 xtx(p,p),xty(p)
@@ -274,7 +258,6 @@ c+++++Smoothers
       integer iflagq(maxq) 
       real*8 bc(maxq)
       real*8 theta(maxq)
-      real*8 workmq1(maxq,maxq),workmq2(maxq,maxq)
       real*8 workmhq1(maxq*(maxq+1)/2)
       real*8 workvq1(maxq)
       real*8 ztz(maxq,maxq),zty(maxq)
@@ -658,7 +641,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                             
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p+1

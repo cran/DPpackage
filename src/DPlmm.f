@@ -1,14 +1,14 @@
 
 c=======================================================================                      
-      subroutine dplmm(datastr,maxni,nrec,nsubject,nfixed,p,q,subject,  #8
-     &                 x,xtx,y,z,a0b0,nu0,prec,psiinv,sb,smu,tau,       #11
-     &                 tinv,mcmc,nsave,randsave,thetasave,cpo,alpha,b,  #8
-     &                 bclus,beta,betar,mu,ncluster,sigma,sigma2e,ss,mc,#9
-     &                 cstrt,ccluster,iflag,iflag2,iflagb,prob,         #6
-     &                 res,seed,sigmainv,theta,work1,workb1,workb2,     #7
-     &                 workmh1,workmh2,workmh3,workk1,workkv1,workkm1,  #6
-     &                 workkm2,workv1,workvb1,xty,ywork,                #5
-     &                 zty,ztz,betasave,bsave)                          #4
+      subroutine dplmm(datastr,maxni,nrec,nsubject,nfixed,p,q,subject,  
+     &                 x,xtx,y,z,a0b0,nu0,prec,psiinv,sb,smu,tau,       
+     &                 tinv,mcmc,nsave,randsave,thetasave,cpo,alpha,b,  
+     &                 bclus,beta,betar,mu,ncluster,sigma,sigma2e,ss,mc,
+     &                 cstrt,ccluster,iflag,iflag2,iflagb,prob,         
+     &                 res,seed,sigmainv,theta,work1,workb1,workb2,     
+     &                 workmh1,workmh2,workmh3,workk1,workkv1,workkm1,  
+     &                 workkm2,workv1,workvb1,xty,ywork,                
+     &                 zty,ztz,betasave,bsave)                          
 c=======================================================================                      
 c     # of arguments = 64.
 c
@@ -17,7 +17,7 @@ c     linear mixed model using a Dirichlet Process prior for the
 c     distributions of the random effecs. In this routine, inference is 
 c     based on the Polya urn representation of Dirichlet process.
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009
 c
 c     Version 2.0: 
 c
@@ -47,16 +47,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -253,8 +253,8 @@ c=======================================================================
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1)
-      real*8 y(nrec),x(nrec,p),z(nrec,q),xtx(p,p)	
-      
+      real*8 y(nrec),x(nrec,p),z(nrec,q),xtx(p,p)
+
 c+++++Prior 
       integer nu0,murand,sigmarand
       real*8 aa0,ab0,a0b0(2),prec(p,p),psiinv(q,q)
@@ -535,7 +535,7 @@ c++++++++++ subject in cluster with more than 1 observations
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -557,7 +557,7 @@ c++++++++++ subject in cluster with more than 1 observations
                         tmp1=0.d0
                         do l=1,ni
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)                           
+     &                          z(datastr(i,l+1),k)
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -614,9 +614,9 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          cstrt,ccluster,ss,bclus,theta)                   
-	       end if
-	              
+     &                          cstrt,ccluster,ss,bclus,theta)
+               end if
+
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
 
@@ -682,7 +682,7 @@ c++++++++++ subject in cluster with only 1 observation
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -705,7 +705,7 @@ c++++++++++ subject in cluster with only 1 observation
                         tmp1=0.d0
                         do l=1,ni
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)                           
+     &                          z(datastr(i,l+1),k)
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -780,7 +780,7 @@ c++++++++++ check if the user has requested an interrupt
                      tmp1=0.d0
                      do l=1,ni
                         tmp1=tmp1+z(datastr(cstrt(ii,i),l+1),j)*
-     &                            z(datastr(cstrt(ii,i),l+1),k)                           
+     &                            z(datastr(cstrt(ii,i),l+1),k)
                      end do
                      ztz(j,k)=ztz(j,k)+tmp1
                   end do
@@ -914,7 +914,7 @@ c+++++++ check if the user has requested an interrupt
                do j=1,q
                   do k=1,q
                      ztz(j,k)=ztz(j,k)+               
-     &                        (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+     &                        (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))
                   end do
                end do
             end do
@@ -1125,7 +1125,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p+1

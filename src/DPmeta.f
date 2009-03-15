@@ -1,14 +1,14 @@
 
 c=======================================================================                      
-      subroutine dpmeta(nrec,nfixed,p,                                  #3
-     &                  x,y,sigma2e,                                    #3
-     &                  a0b0,prec,psiinv,sb,smu,tau,                    #6
-     &                  mcmc,nsave,randsave,thetasave,cpo,alpha,b,      #7
-     &                  bclus,beta,betar,mu,ncluster,sigma,ss,mc,       #8
-     &                  cstrt,ccluster,iflag,prob,                      #4
-     &                  res,seed,work1,workmh1,workv1,xty,              #6
-     &                  betasave,bsave)                                 #2
-c=======================================================================                      
+      subroutine dpmeta(nrec,nfixed,p,                                  
+     &                  x,y,sigma2e,                                    
+     &                  a0b0,prec,psiinv,sb,smu,tau,                    
+     &                  mcmc,nsave,randsave,thetasave,cpo,alpha,b,      
+     &                  bclus,beta,betar,mu,ncluster,sigma,ss,mc,       
+     &                  cstrt,ccluster,iflag,prob,                      
+     &                  res,seed,work1,workmh1,workv1,xty,              
+     &                  betasave,bsave)                                 
+c=======================================================================                   
 c     # of arguments = 39.
 c
 c     Subroutine `dpmeta' to run a Markov chain in the semiparametric 
@@ -17,7 +17,7 @@ c     for the distributions of the random effecs.
 c     In this routine, inference is 
 c     based on the Polya urn representation of Dirichlet process.
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0: 
 c
@@ -39,16 +39,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -187,8 +187,8 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nfixed,p
-      real*8 y(nrec),x(nrec,p),sigma2e(nrec)	
-      
+      real*8 y(nrec),x(nrec,p),sigma2e(nrec)
+     
 c+++++Prior 
       integer murand,sigmarand
       real*8 aa0,ab0,a0b0(2),prec(p,p),psiinv
@@ -427,8 +427,8 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabelmeta(i,since,nrec,ncluster,
-     &                             cstrt,ccluster,ss,bclus)                   
-	       end if
+     &                             cstrt,ccluster,ss,bclus)
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -677,7 +677,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p

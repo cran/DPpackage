@@ -1,8 +1,9 @@
-### LDDPdensity.R                   
-### Fit a Linear Dependent Dirichlet Process Mixture of Normals Model
+### LDDPdensity.R                    
+### Fit a linear dependent DP model for conditional density estimation.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary L. Rosner, 2008
-### Last modification: 02-06-2008.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2009.
+###
+### Last modification: 21-10-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -18,16 +19,18 @@
 ### along with this program; if not, write to the Free Software
 ### Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 ###
-### The author's contact information:
+### The authors' contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-RafaÃ«l
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 ###      Peter Mueller
 ###      Department of Biostatistics
@@ -46,24 +49,27 @@
 ###      Fax  : (713) 563-4243  Email: glrosner@mdanderson.org
 ###
 
+
 "LDDPdensity"<-
-function(formula,prior,mcmc,state,status,grid=seq(-10,10,length=1000),xpred,data=sys.frame(sys.parent()),na.action=na.fail)
+function(formula,zpred,prior,mcmc,state,status,ngrid=100,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
 UseMethod("LDDPdensity")
 
 "LDDPdensity.default"<-
-function(formula, 
+function(formula,
+         zpred,
          prior,
          mcmc,
          state,
          status, 
-         grid=seq(-10,10,length=1000),
-         xpred,
+         ngrid=100,
          data=sys.frame(sys.parent()),
-         na.action=na.fail)
+         na.action=na.fail,
+         work.dir=NULL)
 {
        #########################################################################################
        # call parameters
        #########################################################################################
+
 	 cl <- match.call()
 	 mf <- match.call(expand.dots = FALSE)
 	 m <- match(c("formula", "data","na.action"), names(mf), 0)
@@ -75,99 +81,99 @@ function(formula,
        #########################################################################################
        # data structure
        #########################################################################################
+ 	 y <- model.response(mf,"numeric")
+  	 nrec <- length(y)
+  	 z <- model.matrix(formula)
+  	 p <- ncol(z)
 
-  	 y <- model.response(mf,"numeric")
-	 nrec <- length(y)
-	 x <- as.matrix(model.matrix(formula))
-	 p <- dim(x)[2]
+       #########################################################################################
+       # change working directory (if requested..)
+       #########################################################################################
+         if(!is.null(work.dir))
+         {
+            cat("\n Changing working directory to ",work.dir,"\n")
+            old.dir <- getwd()  # by default work in current working directory
+            setwd(work.dir)
+         }
 
        #########################################################################################
        # prediction
        #########################################################################################
-         if(dim(xpred)[2] != p) stop("the dimension of xpred must be npred*p")
-         npred <- dim(xpred)[1]
-	 ngrid <- length(grid)
 
+         npred <- nrow(zpred)
+
+         miny <- min(y)
+         maxy <- max(y)
+         sdy <- sqrt(var(y))
+         grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
+       
+       #########################################################################################
+       # Elements for Pseudo Countour Probabilities' computation
+       #########################################################################################
 
        #########################################################################################
-       # prior information
+       # Prior information
        #########################################################################################
 
-  	 if(is.null(prior$a0))
-  	 {
-  	    a0 <--1
-  	    b0 <--1 
-  	    alpha <- prior$alpha
-  	    alpharand <- 0
-  	 }
-         else
-         {
-            a0 <- prior$a0
-  	    b0 <- prior$b0
-  	    alpha <-rgamma(1,shape=a0,rate=b0)
-  	    alpharand<-1
-  	 }
-  	 a0b0 <- c(a0,b0)
-  	 
-  	 if(is.null(prior$tau1))
-  	 {
-              tau1 <--1
-              tau2 <--1
-              sigma2k <- prior$sigma2k
-              s2krand <- 0
-  	 }
-  	 else
-  	 {
-              tau1 <- prior$tau1
-              tau2 <- prior$tau2
-              sigma2k <- var(y)
-              s2krand <-1
-  	 }
-  	 tau <- c(tau1,tau2)
-  	 
+	 if(is.null(prior$a0))
+	 {
+		a0b0 <- c(-1,-1)
+		alpha <- prior$alpha
+	 }
+	 else
+	 {
+	 	a0b0 <- c(prior$a0,prior$b0)
+	 	alpha <- 1
+	 }
 
-  	 if(is.null(prior$nu))
-  	 {
-              nu <--1
-              psiinv <- diag(1,p)
-              sigmab <- prior$sigmab
-              sigmabrand <- 0
-  	 }
-  	 else
-  	 {
-              nu <- prior$nu
-              psiinv <- prior$psiinv
-              sigmab <- diag(1,p)
-              sigmabrand <- 1
-  	 }
-  	   	 
-  	 if(is.null(prior$m))
-  	 {
-              sm <- rep(0,p)
-              sinv <- matrix(0,nrow=p,ncol=p) 
-              mub <- prior$mub
-  	      murand <- 0
-  	 }
-  	 else
-  	 {
-              m <- prior$m
-              sinv <-solve(prior$s)
-              sm <- sinv%*%m
-              mub <- rep(0,p)
-              murand <- 1
-         }     
+         sbeta0i <- solve(prior$Sbeta0)
+         m0 <- prior$m0
 
+         tau1 <- prior$tau1
+         taus1 <- prior$taus1
+         taus2 <- prior$taus2
+         
+         nu <- prior$nu
+         psiinv <- prior$psiinv 
+ 
        #########################################################################################
        # mcmc specification
        #########################################################################################
-         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-         nsave<-mcmc$nsave
 
+         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+         nsave <- mcmc$nsave
+
+       #########################################################################################
+       # Starting values
+       #########################################################################################
+         ncluster <- 1
+         ss <- rep(1,nrec)
+         
+         betas <- solve(t(z)%*%z)%*%t(z)%*%y
+         e <- y - z%*%betas
+         sigma2s <- sum(e*e)/(nrec-p)
+         
+         betaclus <- matrix(0,nrow=nrec+100,ncol=p)
+         sigmaclus <- rep(0,nrec+100)
+         
+         betaclus[1,] <- betas
+         sigmaclus[1] <- sigma2s
+
+         sb <- 100*solve(t(z)%*%z)
+         mub <- solve(t(z)%*%z)%*%t(z)%*%y
+         tau2 <- 2.01
+         
        #########################################################################################
        # output
        #########################################################################################
          cpo <- matrix(0,nrow=nrec,ncol=2)
-         densr <- matrix(0,nrow=npred,ncol=ngrid)
+         denspm <- matrix(0,nrow=npred,ncol=ngrid)
+         denspl <- matrix(0,nrow=npred,ncol=ngrid)
+         densph <- matrix(0,nrow=npred,ncol=ngrid)
+         meanfpm <- rep(0,npred)
+         meanfpl <- rep(0,npred)
+         meanfph <- rep(0,npred)
+
          thetasave <- matrix(0,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
          randsave <- matrix(0,nrow=nsave,ncol=nrec*p)
 
@@ -175,116 +181,135 @@ function(formula,
        # parameters depending on status
        #########################################################################################
 
-	 if(status==TRUE)
-	 {
-                b <- matrix(0,nrow=nrec,ncol=p)
-                ncluster <- 1
-                ss <- rep(1,nrec)
-   	 }
 
-      	 if(status==FALSE)
-	 {
-                ncluster <- state$ncluster	        
-                ss <- state$ss
-	        alpha <- state$alpha
-	        b <- state$b
-	        mub <- state$mub
-	        sigmab <- state$sigmab
-	        sigma2k <- state$sigma2k
-	 }
+         if(status==FALSE) 
+         {
+            alpha <- state$alpha
+            ncluster <- state$ncluster
+            ss <- state$ss
+            betaclus <- foo$betaclus
+            sigmaclus <- foo$sigmaclus
+            tau2 <- foo$tau2
+            mub <- foo$mub
+            sb <- foo$sb
+         }    
 
        #########################################################################################
        # working space
        #########################################################################################
-
-         iflagc <- rep(0,p)
-         seed <- c(sample(1:29000,1),sample(1:29000,1))
-         sigmabinv <- matrix(0,nrow=p,ncol=p)
-         theta <- rep(0,p)
-         workmc <- matrix(0,nrow=p,ncol=p)
-         workmc2 <- matrix(0,nrow=p,ncol=p)
-         workvc <- rep(0,p)
-         workmhc <- rep(0,p*(p+1)/2)
-         workmhc2 <- rep(0,p*(p+1)/2)
-         ztz <- matrix(0,nrow=p,ncol=p)
-         zty <- rep(0,p)
-
-         prob <- rep(0,nrec)
+         
+         cstrt <- matrix(0,nrow=nrec,ncol=nrec)
          ccluster <- rep(0,nrec)
-         cstrt <- matrix(0,nrow=nrec,ncol=nrec) 
-          
+         iflagp <- rep(0,p)
+         betam <- rep(0,p)
+         betawork <- rep(0,p)
+         prob <- rep(0,(nrec+100))
+         workmh1 <- rep(0,p*(p+1)/2)
+         workmh2 <- rep(0,p*(p+1)/2)
+         workv1 <- rep(0,p)
+         xtx <- matrix(0,nrow=p,ncol=p)
+         xtx2 <- matrix(0,nrow=p,ncol=p)
+         xty <- rep(0,p)
+         xty2 <- rep(0,p)
+	 seed <- c(sample(1:29000,1),sample(1:29000,1))
+
+         fs <- rep(0,ngrid) 
+         fm <- rep(0,npred)
+
+         worksam <- rep(0,nsave)
+         
+         workcpo <- rep(0,nrec)
+
        #########################################################################################
        # calling the fortran code
        #########################################################################################
 
-         foo <- .Fortran("lddpmnormals",
- 	 	nrec       =as.integer(nrec),
- 	 	p          =as.integer(p),
-  	 	y          =as.double(y),
-  	 	x          =as.double(x),
-                npred      =as.integer(npred),
-                xpred      =as.double(xpred),
-                ngrid      =as.integer(ngrid),
-                grid       =as.double(grid),
-                a0b0       =as.double(a0b0),
-                tau        =as.double(tau),
-                murand     =as.integer(murand),
-                sm         =as.double(sm),
-                sinv       =as.double(sinv),
-                nu         =as.integer(nu),
-                psiinv     =as.double(psiinv),
-                mcmc       =as.integer(mcmcvec),
-                nsave      =as.integer(nsave),
-                cpo        =as.double(cpo),
-                densr      =as.double(densr),
-                randsave   =as.double(randsave),
-                thetasave  =as.double(thetasave),
-                alpha      =as.double(alpha),
-                b          =as.double(b),
-                mub        =as.double(mub),
-                sigmab     =as.double(sigmab),
-                sigma2k    =as.double(sigma2k),
-                ncluster   =as.integer(ncluster),
-                ss         =as.integer(ss),
-                ccluster   =as.integer(ccluster),
-                cstrt      =as.integer(cstrt),
-                iflagc     =as.integer(iflagc),
- 		prob       =as.double(prob),
- 		seed       =as.integer(seed),
-                theta      =as.double(theta),
-                ztz        =as.double(ztz),
-                zty        =as.double(zty),
-                sigmabinv  =as.double(sigmabinv),
- 		workmc     =as.double(workmc),
- 		workmc2    =as.double(workmc2),
- 		workvc     =as.double(workvc),
- 		workmhc    =as.double(workmhc),
- 		workmhc2   =as.double(workmhc2),
-		PACKAGE    ="DPpackage")
-
+         foo <- .Fortran("lddpcdensity",
+                          nrec      = as.integer(nrec),
+                          p         = as.integer(p),
+                          y         = as.double(y),
+                          z         = as.double(z),
+                          ngrid     = as.integer(ngrid),
+                          npred     = as.integer(npred),
+                          grid      = as.double(grid),
+                          zpred     = as.double(zpred),
+                          a0b0      = as.double(a0b0), 
+                          tau1      = as.double(tau1),
+                          taus1     = as.double(taus1),
+                          taus2     = as.double(taus2),
+                          m0        = as.double(m0),
+                          sbeta0i   = as.double(sbeta0i),
+                          nu        = as.integer(nu),
+                          psiinv    = as.double(psiinv),
+                          ncluster  = as.integer(ncluster), 
+                          ss        = as.integer(ss),
+                          alpha     = as.double(alpha),
+                          betaclus  = as.double(betaclus),
+                          sigmaclus = as.double(sigmaclus),
+                          mub       = as.double(mub),
+                          sb        = as.double(sb), 
+                          tau2      = as.double(tau2),
+                          cpo       = as.double(cpo),
+                          thetasave = as.double(thetasave),
+                          randsave  = as.double(randsave),
+                          denspm    = as.double(denspm),
+                          denspl    = as.double(denspl),
+                          densph    = as.double(densph),
+                          meanfpm   = as.double(meanfpm),
+                          meanfpl   = as.double(meanfpl),
+                          meanfph   = as.double(meanfph),
+                          mcmc      = as.integer(mcmcvec),
+                          nsave     = as.integer(nsave),
+                          seed      = as.integer(seed),
+                          cstrt     = as.integer(cstrt),
+                          ccluster  = as.integer(ccluster),
+                          iflagp    = as.integer(iflagp),
+                          betam     = as.double(betam),
+                          betawork  = as.double(betawork),
+                          prob      = as.double(prob),
+                          workmh1   = as.double(workmh1),
+                          workmh2   = as.double(workmh2),
+                          workv1    = as.double(workv1),
+                          xtx       = as.double(xtx),
+                          xtx2      = as.double(xtx2),
+                          xty       = as.double(xty),
+                          xty2      = as.double(xty2),
+                          fs        = as.double(fs),
+                          fm        = as.double(fm),
+                          worksam   = as.double(worksam),
+                          workcpo   = as.double(workcpo),
+                          PACKAGE="DPpackage")	
+         
        #########################################################################################
        # save state
        #########################################################################################
 
-         model.name <- "Linear Dependent Dirichlet Process Mixture Model"		
-                
-         state <- list(ncluster=foo$ncluster,
-                       ss=foo$ss,
-                       alpha=foo$alpha,
-                       b=matrix(foo$b,nrow=nrec,ncol=p),
-	               mub=foo$mub,
-	               sigmab=matrix(foo$sigmab,nrow=p,ncol=p),
-	               sigma2k=foo$sigma2k
-                       )
+         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)         
+         cpo<-cpom[,1]         
+         fso<-cpom[,2]
 
-         densr <- matrix(foo$densr,nrow=npred,ncol=ngrid)
-         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)
-         cpo <- cpom[,1]         
-         fso <- cpom[,2]
+         model.name<-"Bayesian Semiparametric Conditional Density Estimation using LDDP"
+         
+	 state <- list(alpha=foo$alpha,
+	               betaclus=matrix(foo$betaclus,nrow=nrec+100,ncol=p),
+	               sigmaclus=foo$sigmaclus,
+	               ss=foo$ss,
+	               ncluster=foo$ncluster,
+	               mub=foo$mub,
+	               sb=matrix(foo$sb,nrow=p,ncol=p),
+	               tau2=tau2)
+
+         denspm <- matrix(foo$denspm,nrow=npred,ncol=ngrid)
+         denspl <- matrix(foo$denspl,nrow=npred,ncol=ngrid)
+         densph <- matrix(foo$densph,nrow=npred,ncol=ngrid)
+         meanfpm <- foo$meanfpm
+         meanfpl <- foo$meanfpl
+         meanfph <- foo$meanfph
+
          randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*p)
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
 
-         coeffname <- dimnames(x)[[2]]
+         coeffname <- dimnames(z)[[2]]
 
          pnames1 <- NULL
          for(i in 1:p)
@@ -297,13 +322,13 @@ function(formula,
          {
             for(j in i:p)
             {
-                tmp <- paste("sigmab",coeffname[i],sep="")
+                tmp <- paste("sb",coeffname[i],sep="")
                 tmp <- paste(tmp,coeffname[j],sep=":")
                 pnames2 <- c(pnames2,tmp)
             }    
          }
 
-         pnames <- c(pnames1,pnames2,"sigma2k","ncluster","alpha")
+         pnames <- c(pnames1,pnames2,"tau2","ncluster","alpha")
          colnames(thetasave) <- pnames
 
 
@@ -316,32 +341,38 @@ function(formula,
              renames <- c(renames,tmp)
          }
          colnames(randsave) <- renames
-
          
-         save.state <- list(densr=densr,
-                            thetasave=thetasave,
+         save.state <- list(thetasave=thetasave,
                             randsave=randsave)
 
-	 z<-list(call=cl,
-	         y=y,
-	         modelname=model.name,
+	 z<-list(modelname=model.name,
+	         call=cl,
 	         cpo=cpo,
-                 fso=fso, 
+	         coefficients=coeff,
+	         fso=fso,
                  prior=prior,
                  mcmc=mcmc,
+                 nrec=foo$nrec,
+                 p=foo$p,
+                 z=z,
+                 ngrid=ngrid,
+		 npred=npred,
+		 zpred=zpred,
+		 grid=grid,
+		 densp.m=denspm,
+                 densp.l=denspl,
+                 densp.h=densph,
+                 meanfp.m=meanfpm,
+                 meanfp.l=meanfpl,
+                 meanfp.h=meanfph,
                  state=state,
-                 save.state=save.state,
-                 nrec=nrec,
-                 npred=npred,
-                 p=p,
-                 grid=grid,
-                 dens=densr,
-                 coefficients=coeff)
-                 
-         cat("\n\n")
- 	 class(z)<-c("LDDPdensity")
-  	 return(z)
+                 save.state=save.state)
+
+	 cat("\n\n")
+	 class(z)<-c("LDDPdensity")
+	 z 
 }
+
 
 
 ###                    
@@ -505,7 +536,7 @@ function(formula,
 
     ans$prec<-coef.table
     ans$nrec<-object$nrec
-    ans$nvar<-object$p
+    ans$p<-object$p
 
     class(ans) <- "summaryLDDPdensity"
     return(ans)
@@ -643,8 +674,10 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
            for(i in 1:x$npred)
            {
-               title1<-c("Predictive Density")           
-               plot(x$grid,x$save.state$densr[i,],main=title1,lty=1,type='l',lwd=2,xlab="y",ylab="density")
+               title1 <- paste("Density Prediction #",i,sep=" ")           
+               plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
+               lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
+               lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
            }
            
         }
@@ -686,8 +719,10 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
             {
                for(i in 1:x$npred)
                {
-                   title1<-c("Predictive Density")           
-                   plot(x$grid,x$save.state$densr[i,],main=title1,lty=1,type='l',lwd=2,xlab="y",ylab="density")
+                   title1 <- paste("Density Prediction #",i,sep=" ")           
+                   plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
+                   lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
+                   lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
                }
             }                
         }
@@ -695,7 +730,6 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
 }
 
-
 
 
 

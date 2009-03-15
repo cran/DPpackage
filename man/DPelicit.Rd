@@ -96,7 +96,7 @@ Liu, J.S. (1996) Nonparametric Hierarchical Bayes via Sequential Imputations, Th
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 }
 

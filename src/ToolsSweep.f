@@ -10,7 +10,16 @@ c     The output is:
 c                   (xtx)^(-1)     : (xtx)^(-1) xty
 c                  -ytx (xtx)^(-1) : yty-ytx (xtx)^(-1) xty
 c
-c     A.J.V. 2007 
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c=======================================================================
       implicit none
       integer dim,i,ier,j,k,k1,k2,m

@@ -147,7 +147,8 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 \seealso{
 \code{\link{DPrandom}},
 \code{\link{DPglmm}} , \code{\link{DPolmm}} ,
-\code{\link{DPMlmm}} , \code{\link{DPMglmm}}, \code{\link{DPMolmm}}
+\code{\link{DPMlmm}} , \code{\link{DPMglmm}}, \code{\link{DPMolmm}},
+\code{\link{PTlmm}}  , \code{\link{PTglmm}}, \code{\link{PTolmm}}
 }
 
 \references{
@@ -223,7 +224,7 @@ Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal dat
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 }
 

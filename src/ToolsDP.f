@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR DP Models
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -23,19 +35,26 @@ c     A.J.V., 2005
       integer ss(nsubject),cstrt(nsubject,nsubject)
       real*8 bclus(nsubject,q),theta(q)
 
+      integer ns,ii
+
       do i=1,q
          theta(i)=bclus(since,i)
       end do
       
       do i=since+1,ncluster
-         do j=1,nsubject
-            if(ss(j).eq.i)then
-               ss(j)=i-1 
-            end if
+
+         ns=ccluster(i)    
+         
+         do j=1,ns
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+            ii=cstrt(i,j) 
+            ss(ii)=i-1
          end do
-         do j=1,ccluster(i)
+         do j=1,ns
             cstrt(i-1,j)=cstrt(i,j) 
          end do
+
          do j=1,q
             bclus(i-1,j)=bclus(i,j)
          end do
@@ -64,17 +83,25 @@ c     A.J.V., 2005
       integer ss(nrec),cstrt(nrec,nrec)
       real*8 bclus(nrec),theta
 
+      integer ns,ii
+
       theta=bclus(since)
       
       do i=since+1,ncluster
-         do j=1,nrec
-            if(ss(j).eq.i)then
-               ss(j)=i-1 
-            end if
+
+         ns=ccluster(i)    
+         
+         do j=1,ns
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+            ii=cstrt(i,j) 
+            ss(ii)=i-1
          end do
-         do j=1,ccluster(i)
+
+         do j=1,ns
             cstrt(i-1,j)=cstrt(i,j) 
          end do
+
          bclus(i-1)=bclus(i)
          ccluster(i-1)=ccluster(i)
       end do

@@ -1,17 +1,17 @@
 c=======================================================================                      
-      subroutine ptmeta(nrec,nfixed,p,                                  #3
-     &                  x,y,sigma2e,                                    #3
-     &                  a0b0,prec,sb,tau,m0,s0,                         #6
-     &                  maxm,mdzero,                                    #2
-     &                  mcmc,nsave,mcmcad,                              #3
-     &                  acrate,randsave,thetasave,cpo,                  #4
-     &                  alpha,b,                                        #2 
-     &                  beta,mu,sigma,                                  #3
-     &                  mc,                                             #1
-     &                  iflagp,workmp,workmhp,workvp,xty,               #5
-     &                  seed,                                           #1
-     &                  whicho,whichn,                                  #2                       
-     &                  betasave,bsave)                                 #2
+      subroutine ptmeta(nrec,nfixed,p,                                  
+     &                  x,y,sigma2e,                                    
+     &                  a0b0,prec,sb,tau,m0,s0,                         
+     &                  maxm,mdzero,                                    
+     &                  mcmc,nsave,mcmcad,                              
+     &                  acrate,randsave,thetasave,cpo,                  
+     &                  alpha,b,                                         
+     &                  beta,mu,sigma,                                  
+     &                  mc,                                             
+     &                  iflagp,workmp,workmhp,workvp,xty,               
+     &                  seed,                                           
+     &                  whicho,whichn,                                                         
+     &                  betasave,bsave)                                 
 c=======================================================================                      
 c     # of arguments = 37.
 c
@@ -19,7 +19,7 @@ c     Subroutine `ptmeta' to run a Markov chain in the semiparametric
 c     meta-analytic linear mixed model using a Polya tree prior 
 c     for the distributions of the random effecs. 
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0: 
 c
@@ -41,16 +41,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -168,7 +168,7 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nfixed,p
-      real*8 y(nrec),x(nrec,p),sigma2e(nrec)	
+      real*8 y(nrec),x(nrec,p),sigma2e(nrec)
 
 c+++++Prior 
       integer maxm,mdzero
@@ -601,7 +601,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-	
+
          if(tau1.gt.0.d0)then 
 
 c++++++++++ candidate
@@ -735,7 +735,7 @@ c+++++++ check if the user has requested an interrupt
          call rchkusr()
          
          if(aa0.gt.0.d0)then
-	
+
 c++++++++++ candidate
 
             theta=log(alpha)  
@@ -954,7 +954,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p

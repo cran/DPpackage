@@ -2,7 +2,8 @@
 ### Fit a linear Dirichlet Process mixture of normal model for
 ### density estimation
 ###
-### Copyright: Alejandro Jara, 2006-2007-2008
+### Copyright: Alejandro Jara, 2006-2009.
+###
 ### Last modification: 02-06-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -21,16 +22,17 @@
 ###
 ### The author's contact information:
 ###
-###      Alejandro Jara Vallejos
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Alejandro Jara
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
-
 
 DPdensity<-function(y,ngrid=1000,prior,mcmc,state,status,method="neal",data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("DPdensity")
@@ -633,31 +635,63 @@ DPdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,method="neal",d
           
           if(nvar==1)
           {
-             x1<-foo$grid1
-             dens<-foo$fun1
-             f<-matrix(foo$f,nrow=ngrid,ncol=ngrid)
-             grid1<-foo$grid1
-             grid2<-foo$grid2
-             fun1<-foo$fun1
-             fun2<-foo$fun2
+             x1 <- foo$grid1
+             dens <- foo$fun1
+             f <- matrix(foo$f,nrow=ngrid,ncol=ngrid)
+             grid1 <- foo$grid1
+             grid2 <- foo$grid2
+             fun1 <- foo$fun1
+             fun2 <- foo$fun2
           }
           if(nvar==2)
           {
-             x1<-foo$grid1
-             x2<-foo$grid2
-             dens<-matrix(foo$f,nrow=ngrid,ncol=ngrid)
-             f<-matrix(foo$f,nrow=ngrid,ncol=ngrid)
-             grid1<-foo$grid1
-             grid2<-foo$grid2
-             fun1<-foo$fun1
-             fun2<-foo$fun2
+             x1 <- foo$grid1
+             x2 <- foo$grid2
+             dens <- matrix(foo$f,nrow=ngrid,ncol=ngrid)
+             f <- matrix(foo$f,nrow=ngrid,ncol=ngrid)
+             grid1 <- foo$grid1
+             grid2 <- foo$grid2
+             fun1 <- foo$fun1
+             fun2 <- foo$fun2
           }   
 
-	  z<-list(call=cl,y=y,varnames=varnames,modelname=model.name,cpo=foo$cpo,
-                 prior=prior,mcmc=mcmc,state=state,save.state=save.state,nrec=foo$nrec,
-                 nvar=foo$nvar,alpharand=alpharand,psi1rand=psi1rand,m1rand=m1rand,
-                 k0rand=k0rand,coefficients=coeff,indip=indip,f=f,grid1=grid1,
-                 grid2=grid2,fun1=fun1,fun2=fun2,x1=x1,x2=x2,dens=dens)
+          if(nvar>2)
+          {
+             x1 <- NULL
+             x2 <- NULL
+             dens <- NULL
+             f <- NULL
+             grid1 <- NULL
+             grid2 <- NULL
+             fun1 <- NULL
+             fun2 <- NULL
+          }   
+
+	  z <- list(call=cl,
+	            y=y,
+	            varnames=varnames,
+	            modelname=model.name,
+	            cpo=foo$cpo,
+                    prior=prior,
+                    mcmc=mcmc,
+                    state=state,
+                    save.state=save.state,
+                    nrec=foo$nrec,
+                    nvar=foo$nvar,
+                    alpharand=alpharand,
+                    psi1rand=psi1rand,
+                    m1rand=m1rand,
+                    k0rand=k0rand,
+                    coefficients=coeff,
+                    indip=indip,
+                    f=f,
+                    grid1=grid1,
+                    grid2=grid2,
+                    fun1=fun1,
+                    fun2=fun2,
+                    x1=x1,
+                    x2=x2,
+                    dens=dens)
                  
           cat("\n\n")
  	  class(z)<-"DPdensity"

@@ -72,5 +72,10 @@ DPrandom(object,centered=FALSE,predictive=FALSE)
       plot(DPrandom(fit1,centered=TRUE,predictive=TRUE))
 }
 }
+\author{
+
+Alejandro Jara \email{<ajarav@udec.cl>}
+
+}
 \keyword{models}
 \keyword{nonparametric}

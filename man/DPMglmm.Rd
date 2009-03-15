@@ -180,7 +180,8 @@ DPMglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
 \seealso{
 \code{\link{DPMrandom}},
 \code{\link{DPMlmm}}   , \code{\link{DPMolmm}},
-\code{\link{DPlmm}}    , \code{\link{DPglmm}} , \code{\link{DPolmm}}
+\code{\link{DPlmm}}    , \code{\link{DPglmm}} , \code{\link{DPolmm}},
+\code{\link{PTlmm}}  , \code{\link{PTglmm}}, \code{\link{PTolmm}}
 }
 
 \references{
@@ -276,7 +277,7 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 }
 

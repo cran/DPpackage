@@ -4,7 +4,7 @@
 
 \title{Extracts Random Effects}
 \description{
-    Extracts random effects from DPpackage objects: PTlmm, PTolmm, and PTglmm.
+    Extracts random effects from PTglmm objects: PTlmm, PTolmm, and PTglmm.
 }
 
 \usage{
@@ -70,10 +70,8 @@ PTrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
     # Extract random effects
     
       PTrandom(fit1)
-      PTrandom(fit1,centered=TRUE)
       
       plot(PTrandom(fit1))
-      plot(PTrandom(fit1,centered=TRUE))
 
     # Extract predictive information of random effects
     
@@ -81,5 +79,11 @@ PTrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
       plot(PTrandom(fit1,predictive=TRUE,gridl=c(75,89,3.8,7.5)))
 }
 }
+\author{
+Alejandro Jara \email{<ajarav@udec.cl>}
+
+Tim Hanson \email{<hanson@biostat.umn.edu>}
+}
+
 \keyword{models}
 \keyword{nonparametric}

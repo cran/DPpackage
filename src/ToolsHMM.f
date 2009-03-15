@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR HIDDEN MARKOV MODELS
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -41,8 +53,8 @@ c+++++Internal working space
 
       maxu=0.d0
       do i=1,n
-	 u(i)=dble(runif())
-	 if(u(i).gt.maxu)maxu=u(i)
+         u(i)=dble(runif())
+         if(u(i).gt.maxu)maxu=u(i)
       end do
 
       tmp1=0.d0
@@ -120,8 +132,8 @@ c+++++Internal working space
 
       maxu=0.d0
       do i=1,n
-	 u(i)=dble(runif())
-	 if(u(i).gt.maxu)maxu=u(i)
+         u(i)=dble(runif())
+         if(u(i).gt.maxu)maxu=u(i)
       end do
 
       tmp1=0.d0
@@ -243,6 +255,7 @@ c+++++Internal working space
 
 c+++++Body
 
+      l=0 
       do i=1,nrec
          zindi(i)=0
          if(kk.gt.kkc)then
@@ -335,7 +348,7 @@ c+++++Output
 
 c+++++Internal working space
       integer count,count1,count2,countc
-      integer i,ii,ifloor,j,k,ns,ok,okc
+      integer i,j,ok,okc
       integer iceil
       real*8 tmp1,tmp2
 

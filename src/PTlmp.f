@@ -1,12 +1,12 @@
 c=======================================================================                      
-      subroutine ptlmp(maxm,mdzero,ngrid,nrec,p,x,y,                    #7
-     &                 a0b0,betapm,betapv,tau,m0,s0,                    #6
-     &                 mcmc,nsave,propv,mcmcad,                         #4
-     &                 seed,                                            #1
-     &                 acrate,randsave,thetasave,cpo,f,                 #5
-     &                 alpha,beta,mu,sigma2,v,                          #5
-     &                 betac,iflag,vc,workm1,workm2,                    #5
-     &                 workmh1,workv1,workv2,grid,whicho,whichn,xtx)    #7
+      subroutine ptlmp(maxm,mdzero,ngrid,nrec,p,x,y,                    
+     &                 a0b0,betapm,betapv,tau,m0,s0,                    
+     &                 mcmc,nsave,propv,mcmcad,                         
+     &                 seed,                                            
+     &                 acrate,randsave,thetasave,cpo,f,                 
+     &                 alpha,beta,mu,sigma2,v,                          
+     &                 betac,iflag,vc,workm1,workm2,                    
+     &                 workmh1,workv1,workv2,grid,whicho,whichn,xtx)    
 c=======================================================================                      
 c     # arguments = 40.
 c
@@ -14,7 +14,7 @@ c     Subroutine `ptlmp' to run a Markov chain in the
 c     semiparametric linear regression model using a partially 
 c     specified Mixture of Polya trees. 
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009.
 c
 c     Version 3.0: 
 c
@@ -44,16 +44,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c
@@ -399,7 +399,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-	
+
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ MH to update the regression coefficients                   +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -630,7 +630,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++++ check if the user has requested an interrupt
          call rchkusr()
-	
+
          if(tau1.gt.0.d0)then 
 
 c++++++++++ candidate
@@ -764,7 +764,7 @@ c+++++++ check if the user has requested an interrupt
          call rchkusr()
          
          if(aa0.gt.0.d0)then
-	
+
 c++++++++++ sample candidates
 
             theta=log(alpha)  

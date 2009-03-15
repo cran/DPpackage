@@ -2,6 +2,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES AND FUNCTIONS TO EVALUATE THE DENSITY AND CDF OF RVs
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -24,7 +36,7 @@ c     return the log of a gamma distribution
 c     A.J.V., 2006
       real*8 y,alpha,beta,eval
       real*8 dgamlog
-      eval=alpha*log(beta)+(alpha-1.d0)*log(y) - beta*y - dgamlog(alpha) 
+      eval=alpha*log(beta)+(alpha-1.d0)*log(y) - beta*y - dgamlog(alpha)
       return
       end
 
@@ -36,7 +48,7 @@ c     return the log of a inverted gamma distribution
 c     A.J.V., 2006
       real*8 y,alpha,beta,eval
       real*8 dgamlog
-      eval=alpha*log(beta)-(alpha+1.d0)*log(y) - beta/y - dgamlog(alpha) 
+      eval=alpha*log(beta)-(alpha+1.d0)*log(y) - beta/y - dgamlog(alpha)
       return
       end
 
@@ -127,18 +139,18 @@ c     A.J.V., 2005
       if (abs(q).gt.split) go to 101
       r=q*q
       ppnda=q*(((a3*r+a2)*r+a1)*r+a0)/
-     +	  ((((b4*r+b3)*r+b2)*r+b1)*r+one)
+     +      ((((b4*r+b3)*r+b2)*r+b1)*r+one)
       return
 101   r=p
-	  if (q.gt.zero) r=one-p
-	  if (r.le.zero) go to 102
-	  r=sqrt(-alog(r))
-	  ppnda=(((c3*r+c2)*r+c1)*r+c0)/
-     +	  ((d2*r+d1)*r+one)
-	  if (q.lt.zero) ppnda=-ppnda
+      if (q.gt.zero) r=one-p
+      if (r.le.zero) go to 102
+      r=sqrt(-alog(r))
+      ppnda=(((c3*r+c2)*r+c1)*r+c0)/
+     +      ((d2*r+d1)*r+one)
+      if (q.lt.zero) ppnda=-ppnda
       return
-102	  ifault=1
-	  ppnda=99.9
+102   ifault=1
+      ppnda=99.9
       return
       end        
 
@@ -159,7 +171,7 @@ c     A.J.V., 2005
       work3=0.d0
       det=0.d0
       sse=0.d0
-	  
+
       det=0.d0
       
       tpi=6.283185307179586476925286766559d0
@@ -211,7 +223,7 @@ c     A.J.V., 2005
       work3=0.d0
       det=0.d0
       sse=0.d0
-	  
+
       det=0.d0
       
       tpi=6.283185307179586476925286766559d0
@@ -263,7 +275,7 @@ c     A.J.V., 2005
       work3=0.d0
       det=0.d0
       sse=0.d0
-	  
+
       det=0.d0
       
       tpi=6.283185307179586476925286766559d0
@@ -387,7 +399,7 @@ c     A.J.V., 2007
       work3=0.d0
       det=0.d0
       sse=0.d0
-	  
+
       det=0.d0
       
       tpi=6.283185307179586476925286766559d0

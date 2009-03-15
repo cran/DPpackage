@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR MATRIX OPERATIONS
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -131,11 +143,11 @@ c     A.J.V., 2006
       real*8 vec1(n),vec2(n),vwork(10000000)
 
       if(n.gt.10000000)then
-	call rexit("increase dimension subroutine sortvecind")
+         call rexit("increase dimension subroutine sortvecind")
       end if
       
       if(i1.ge.i2)then
-	call rexit("i1 >= i2 in subroutine sortvecind")
+         call rexit("i1 >= i2 in subroutine sortvecind")
       end if
       
       do i=i1,i2
@@ -163,7 +175,7 @@ c     A.J.V., 2005
       real*8 vec(n)
       
       if(i1.ge.i2)then
-	call rexit("i1 >= i2 in subroutine sortvec")
+         call rexit("i1 >= i2 in subroutine sortvec")
       end if
       
       call qsort3(vec,i1,i2)
@@ -195,11 +207,11 @@ c
 c  set up identity matrix
 c
       do 6 i=1,n
-	  do 5 j=1,n
-	    ainv(i,j) = 0.0d0
- 5	    continue
-	  ainv(i,i) = 1.0d0
- 6	  continue
+         do 5 j=1,n
+            ainv(i,j) = 0.0d0
+ 5       continue
+         ainv(i,i) = 1.0d0
+ 6    continue
 
 c
 c  decompose the matrix
@@ -211,14 +223,14 @@ c  calculate the determinate
 c
       detlog = 0.d0
       do 11 j=1,n
-	    detlog = detlog + dlog(dabs(a(j,j)))
- 11	    continue
+         detlog = detlog + dlog(dabs(a(j,j)))
+ 11   continue
 c
 c  find inverse by columns
 c
       do 13 j=1,n
-	    call dlubksb2(a,n,np,indx,ainv(1,j))
- 13	    continue
+         call dlubksb2(a,n,np,indx,ainv(1,j))
+ 13   continue
       return
       end
 
@@ -242,11 +254,11 @@ c
 c  set up identity matrix
 c
       do 6 i=1,n
-	  do 5 j=1,n
-	    ainv(i,j) = 0.0d0
- 5	    continue
-	  ainv(i,i) = 1.0d0
- 6	  continue
+         do 5 j=1,n
+            ainv(i,j) = 0.0d0
+ 5       continue
+         ainv(i,i) = 1.0d0
+ 6    continue
 c
 c  decompose the matrix
 c
@@ -256,14 +268,14 @@ c  calculate the determinate
 c
       detlog = 0.d0
       do 11 j=1,n
-	    detlog = detlog + dlog(dabs(a(j,j)))
- 11	    continue
+         detlog = detlog + dlog(dabs(a(j,j)))
+ 11   continue
 c
 c  find inverse by columns
 c
       do 13 j=1,n
-	    call dlubksb(a,n,indx,ainv(1,j))
- 13	    continue
+         call dlubksb(a,n,indx,ainv(1,j))
+ 13   continue
       return
       end
 
@@ -297,56 +309,56 @@ c     A.J.V., 2005
       iimax=1
       d=1.d0
       do 12 i=1,n
-	    aamax=0.d0
-	    do 11 j=1,n
-	       if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
- 11	       continue
-	       if (aamax.eq.0.d0) then
-	          call rexit("matrix is not pd in dludcmp2 subroutine")
-               end if
-	    vv(i)=1.d0/aamax
- 12	    continue
-	  do 19 j=1,n
-	     do 14 i=1,j-1
-	        sum=a(i,j)
-	        do 13 k=1,i-1
-		       sum=sum-a(i,k)*a(k,j)
- 13		       continue
-	         a(i,j)=sum
- 14	         continue
-	     aamax = 0.d0
-	     do 16 i=j,n
-	        sum=a(i,j)
-	        do 15 k=1,j-1
-		       sum = sum - a(i,k)*a(k,j)
- 15		       continue
-	        a(i,j)=sum
-	        dum=vv(i)*dabs(sum)
-	        if(dum.ge.aamax)then
-		       iimax=i
-		       aamax=dum
-		       endif
- 16	        continue
-	    if(j.ne.iimax)then
-	       do 17 k=1,n
-		      dum=a(iimax,k)
-		      a(iimax,k)=a(j,k)
-		      a(j,k)=dum
- 17		      continue
-	       d=(-1.d0)*d
-	       vv(iimax)=vv(j)
-	       endif
-	    indx(j)=iimax
-	    if(a(j,j).eq.0.d0)a(j,j)=tiny
-	    if(j.ne.n)then
-	       dum=1.d0/a(j,j)
-	       do 18 i=j+1,n
-		      a(i,j)=a(i,j)*dum
- 18		      continue
-	       endif
- 19	    continue
-	  return
-	  end
+         aamax=0.d0
+         do 11 j=1,n
+            if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
+ 11      continue
+         if(aamax.eq.0.d0) then
+            call rexit("matrix is not pd in dludcmp2 subroutine")
+         end if
+         vv(i)=1.d0/aamax
+ 12   continue
+      do 19 j=1,n
+         do 14 i=1,j-1
+            sum=a(i,j)
+            do 13 k=1,i-1
+               sum=sum-a(i,k)*a(k,j)
+ 13         continue
+            a(i,j)=sum
+ 14      continue
+         aamax = 0.d0
+         do 16 i=j,n
+            sum=a(i,j)
+            do 15 k=1,j-1
+               sum = sum - a(i,k)*a(k,j)
+ 15         continue
+            a(i,j)=sum
+            dum=vv(i)*dabs(sum)
+            if(dum.ge.aamax)then
+               iimax=i
+               aamax=dum
+            endif
+ 16      continue
+         if(j.ne.iimax)then
+            do 17 k=1,n
+               dum=a(iimax,k)
+               a(iimax,k)=a(j,k)
+               a(j,k)=dum
+ 17         continue
+            d=(-1.d0)*d
+            vv(iimax)=vv(j)
+         endif
+         indx(j)=iimax
+         if(a(j,j).eq.0.d0)a(j,j)=tiny
+            if(j.ne.n)then
+               dum=1.d0/a(j,j)
+               do 18 i=j+1,n
+                  a(i,j)=a(i,j)*dum
+ 18            continue
+            endif
+ 19    continue
+       return
+       end
 
 c=======================================================================
       subroutine dludcmp(a,n,indx,d,vv)
@@ -373,60 +385,60 @@ c     A.J.V., 2005
       iimax=1
       d=1.d0
       do 12 i=1,n
-	    aamax=0.d0
-	    do 11 j=1,n
-	       if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
- 11	       continue
-	       if (aamax.eq.0.d0) then
-	          call rexit("matrix is not pd in dludcmp subroutine")
-               end if
-	    vv(i)=1.d0/aamax
- 12	    continue
-            do 19 j=1,n
-               do 14 i=1,j-1
-                  sum=a(i,j)
-                  do 13 k=1,i-1
-                        sum=sum-a(i,k)*a(k,j)
- 13               continue
-                  a(i,j)=sum
- 14            continue
-               aamax = 0.d0
-               do 16 i=j,n
-                  sum=a(i,j)
-                  do 15 k=1,j-1
-                     sum = sum - a(i,k)*a(k,j)
- 15               continue
-                  a(i,j)=sum
-                  dum=vv(i)*dabs(sum)
-                  if(dum.ge.aamax)then
-                     iimax=i
-                     aamax=dum
-                  endif
- 16            continue
-               if(j.ne.iimax)then
-                  do 17 k=1,n
-                     dum=a(iimax,k)
-                     a(iimax,k)=a(j,k)
-                     a(j,k)=dum
- 17               continue
-                  d=(-1.d0)*d
-                  vv(iimax)=vv(j)
-	       end if
-               indx(j)=iimax
-               if(a(j,j).eq.0.d0)a(j,j)=tiny
-               if(j.ne.n)then
-                  dum=1.d0/a(j,j)
-                  do 18 i=j+1,n
-                     a(i,j)=a(i,j)*dum
- 18               continue
-	       end if
- 19       continue
-          return
-          end
+         aamax=0.d0
+         do 11 j=1,n
+            if(dabs(a(i,j)).gt.aamax) aamax=dabs(a(i,j))
+ 11      continue
+         if(aamax.eq.0.d0) then
+            call rexit("matrix is not pd in dludcmp subroutine")
+         end if
+         vv(i)=1.d0/aamax
+ 12      continue
+         do 19 j=1,n
+            do 14 i=1,j-1
+               sum=a(i,j)
+               do 13 k=1,i-1
+                  sum=sum-a(i,k)*a(k,j)
+ 13            continue
+               a(i,j)=sum
+ 14         continue
+            aamax = 0.d0
+            do 16 i=j,n
+               sum=a(i,j)
+               do 15 k=1,j-1
+                  sum = sum - a(i,k)*a(k,j)
+ 15            continue
+               a(i,j)=sum
+               dum=vv(i)*dabs(sum)
+               if(dum.ge.aamax)then
+                  iimax=i
+                  aamax=dum
+               endif
+ 16         continue
+            if(j.ne.iimax)then
+               do 17 k=1,n
+                  dum=a(iimax,k)
+                  a(iimax,k)=a(j,k)
+                  a(j,k)=dum
+ 17            continue
+               d=(-1.d0)*d
+               vv(iimax)=vv(j)
+            end if
+            indx(j)=iimax
+            if(a(j,j).eq.0.d0)a(j,j)=tiny
+            if(j.ne.n)then
+               dum=1.d0/a(j,j)
+               do 18 i=j+1,n
+                  a(i,j)=a(i,j)*dum
+ 18            continue
+            end if
+ 19   continue
+      return
+      end
 
 
 c=======================================================================
-       subroutine dlubksb2(a,n,np,indx,b)
+      subroutine dlubksb2(a,n,np,indx,b)
 c=======================================================================
 c      This is copied from Press, et. al. {\em Numerical Recipes:
 c      Fortran version} pg 35-36
@@ -452,26 +464,26 @@ c      A.J.V., 2005
        integer indx(np)
 
        ii=0
-        do 12 i=1,n
-	    ll = indx(i)
-	    sum=b(ll)
-	    b(ll)=b(i)
-	    if(ii.ne.0) then
-	       do 11 j=ii,i-1
-		  sum=sum-a(i,j)*b(j)
- 11		  continue
-	    else if (sum.ne.0.d0)then
-	       ii=i
-	    endif
-	    b(i)=sum
- 12	    continue
-	  do 14 i=n,1,-1
-	    sum=b(i)
-	    do 13 j=i+1,n
-	       sum=sum-a(i,j)*b(j)
- 13	       continue
-	    b(i)=sum/a(i,i)
- 14	    continue
+       do 12 i=1,n
+          ll = indx(i)
+          sum=b(ll)
+          b(ll)=b(i)
+          if(ii.ne.0) then
+             do 11 j=ii,i-1
+                 sum=sum-a(i,j)*b(j)
+ 11          continue
+          else if (sum.ne.0.d0)then
+             ii=i
+          endif
+          b(i)=sum
+ 12    continue
+       do 14 i=n,1,-1
+          sum=b(i)
+          do 13 j=i+1,n
+             sum=sum-a(i,j)*b(j)
+ 13       continue
+       b(i)=sum/a(i,i)
+ 14    continue
        return
        end
 
@@ -499,26 +511,26 @@ c      A.J.V., 2005
        integer indx(n)
 
        ii=0
-        do 12 i=1,n
-	    ll = indx(i)
-	    sum=b(ll)
-	    b(ll)=b(i)
-	    if(ii.ne.0) then
-	       do 11 j=ii,i-1
-		  sum=sum-a(i,j)*b(j)
- 11		  continue
-	    else if (sum.ne.0.d0)then
-	       ii=i
-	    endif
-	    b(i)=sum
- 12	    continue
-	  do 14 i=n,1,-1
-	    sum=b(i)
-	    do 13 j=i+1,n
-	       sum=sum-a(i,j)*b(j)
- 13	       continue
-	    b(i)=sum/a(i,i)
- 14	    continue
+       do 12 i=1,n
+          ll = indx(i)
+          sum=b(ll)
+          b(ll)=b(i)
+          if(ii.ne.0) then
+             do 11 j=ii,i-1
+                sum=sum-a(i,j)*b(j)
+ 11          continue
+           else if (sum.ne.0.d0)then
+             ii=i
+          endif
+          b(i)=sum
+ 12    continue
+       do 14 i=n,1,-1
+          sum=b(i)
+          do 13 j=i+1,n
+             sum=sum-a(i,j)*b(j)
+ 13       continue
+          b(i)=sum/a(i,i)
+ 14    continue
        return
        end
 
@@ -627,7 +639,7 @@ c     A.J.V., 2007
       
       detlog = 0.d0
       do i=1,n
-	 detlog = detlog + dlog(dabs(ainv(i,i)))
+         detlog = detlog + dlog(dabs(ainv(i,i)))
       end do
       
       call dgetri(n,ainv,n,ipiv,work,lwork,info)      

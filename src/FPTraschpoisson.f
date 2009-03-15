@@ -1,24 +1,24 @@
 
 c=======================================================================                      
-      subroutine fptraschpoi(datastr,imiss,ngrid,nmissing,nsubject,p,y, #7
-     &                       roffset,                                   #1
-     &                       ninter,nlevel,                             #2
-     &                       a0b0,b0,prec,sb,tau1,tau2,m,s,             #8
-     &                       mcmc,nsave,tune3,tune4,tune5,              #5
-     &                       acrate,cpo,f,faccum,randsave,thetasave,    #6
-     &                       alpha,b,beta,mu,sigma,                     #5
-     &                       accums,assignb,betac,counter,endp,         #5
-     &                       iflag,intpn,intpo,prob,rvecs,seed,         #6
-     &                       work1,work2,work3,                         #3 
-     &                       workmh1,workv1,workv2,workv3,              #4
-     &                       xtx,xty,grid)                              #3   
-c=======================================================================                      
+      subroutine fptraschpoi(datastr,imiss,ngrid,nmissing,nsubject,p,y, 
+     &                       roffset,                                   
+     &                       ninter,nlevel,                             
+     &                       a0b0,b0,prec,sb,tau1,tau2,m,s,             
+     &                       mcmc,nsave,tune3,tune4,tune5,              
+     &                       acrate,cpo,f,faccum,randsave,thetasave,    
+     &                       alpha,b,beta,mu,sigma,                     
+     &                       accums,assignb,betac,counter,endp,         
+     &                       iflag,intpn,intpo,prob,rvecs,seed,         
+     &                       work1,work2,work3,                          
+     &                       workmh1,workv1,workv2,workv3,              
+     &                       xtx,xty,grid)
+c=======================================================================                    
 c
 c     Subroutine `fptraschpoi' to run a Markov chain in the  
 c     semiparametric Rasch Poisson Count model using a Polya tree prior
 c     for the random effect distribution. 
 c
-c     Copyright: Alejandro Jara Vallejos, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009.
 c
 c     Version 2.0: 
 c     Last modification: 01-02-2007.
@@ -45,16 +45,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -900,11 +900,11 @@ c++++++++++++++++++++++++++++++++++++++
 
 c+++++++ evaluate log-prior for candidate value of the parameters
 
-         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorn)  
+         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorn)
 
 c+++++++ evaluate log-prior for current value of parameters
 
-         call dgamma2(1.d0/(sigma**2),0.5d0*tau1,0.5d0*tau2,logprioro)  
+         call dgamma2(1.d0/(sigma**2),0.5d0*tau1,0.5d0*tau2,logprioro)
 
 
 c+++++++ evaluate log-likelihood for current and candidate value 

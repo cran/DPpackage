@@ -2,7 +2,8 @@
 ### Fit a generalized linear mixed model with a Dirichlet Process prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara, 2006-2007-2008
+### Copyright: Alejandro Jara, 2006-2009.
+###
 ### Last modification: 30-04-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -22,13 +23,15 @@
 ### The author's contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 
 "DPglmm"<-
@@ -659,7 +662,6 @@ function(fixed,
                    xty <- rep(0,p) 
                    zty <- rep(0,q) 
                    ztz <- matrix(0,nrow=q,ncol=q) 
-                   ztzinv <- matrix(0,nrow=q,ncol=q) 
 
                    betasave<-rep(0,p)
                    bsave<-matrix(0,nrow=nsubject,ncol=q)
@@ -725,7 +727,6 @@ function(fixed,
                         xty       =as.double(xty),
                         zty       =as.double(zty), 		
                         ztz       =as.double(ztz), 		
-                        ztzinv    =as.double(ztzinv), 	
                         betasave   =as.double(betasave),
                         bsave      =as.double(bsave),
                         PACKAGE   ="DPpackage")	            
@@ -976,7 +977,6 @@ function(fixed,
                   xty <- rep(0,p) 
                   zty <- rep(0,q) 
                   ztz <- matrix(0,nrow=q,ncol=q) 
-                  ztzinv <- matrix(0,nrow=q,ncol=q) 
 
                   betasave<-rep(0,(p+1))
                   bsave<-matrix(0,nrow=nsubject,ncol=q)
@@ -1044,7 +1044,6 @@ function(fixed,
                         xty       =as.double(xty),
                         zty       =as.double(zty), 		
                         ztz       =as.double(ztz), 		
-                        ztzinv    =as.double(ztzinv), 	
                         betasave  =as.double(betasave),
                         bsave     =as.double(bsave),
                         PACKAGE   ="DPpackage")	  

@@ -19,7 +19,7 @@ DPsurvint(formula,prior,mcmc,state,status,
    \item{formula}{   a two-sided linear formula object describing the
                      model fit, with the response on the
                      left of a \code{~} operator and the terms, separated by \code{+}
-                     operators, on the right. In the response vector, the unknown limits
+                     operators, on the right. In the response matrix, the unknown limits
                      should be -999.}
 
    \item{prior}{     a list giving the prior information. The list includes the following
@@ -266,7 +266,7 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
 
 \author{
 
-Alejandro Jara Vallejos \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 }
 
 \keyword{models}

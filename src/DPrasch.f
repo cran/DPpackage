@@ -17,7 +17,7 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations. 
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009
 c
 c     Version 1.0: 
 c     Last modification: 09-04-2007.
@@ -38,16 +38,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -454,7 +454,7 @@ c++++++++++ subject in cluster with only 1 observation
                if(since.lt.ncluster)then
                    call relabelrasch(i,since,nsubject,ncluster,
      &                          ccluster,ss,bclus)                   
-	       end if
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -518,8 +518,8 @@ c++++++++++ subject in cluster with only 1 observation
                   ccluster(ncluster)=1
                   bclus(ncluster)=theta
                end if      
-	    
-	    end if
+
+            end if
 
          end do
 
@@ -629,8 +629,6 @@ c++++++++++++++++++++++++++++++++++
          if(aa0.gt.0.d0)then
             call samalph(alpha,aa0,ab0,ncluster,nsubject)
          end if 
-
-100      continue 
 
 c++++++++++++++++++++++++++++++++++         
 c+++++++ save samples

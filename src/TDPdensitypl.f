@@ -1,11 +1,11 @@
 c=======================================================================                      
-      subroutine tdpdensitypl(nrec,resp,                                #2
-     &                       a0b0,a0,b0,kmax,typet,mu,sigma2,           #7
-     &                       k,ncluster,ss,alpha,yclus,                 #5
-     &                       mcmc,nsave,                                #2
-     &                       cpo,randsave,thetasave,ngrid,grid,fun,     #6 
-     &                       seed,                                      #1
-     &                       cstrt,ccluster,prob,probk,x,y)             #6
+      subroutine tdpdensitypl(nrec,resp,                                
+     &                       a0b0,a0,b0,kmax,typet,mu,sigma2,           
+     &                       k,ncluster,ss,alpha,yclus,                 
+     &                       mcmc,nsave,                                
+     &                       cpo,randsave,thetasave,ngrid,grid,fun,      
+     &                       seed,                                      
+     &                       cstrt,ccluster,prob,probk,x,y)             
 c=======================================================================                      
 c     # of arguments = 29
 c
@@ -13,7 +13,7 @@ c     Subroutine `tdpdensitypl' to run a Markov chain for a
 c     Triangular-Dirichlet model with parametric link to transform the 
 c     data to lie in [0,1].
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0:
 c
@@ -35,16 +35,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -332,8 +332,8 @@ c++++++++++ subject in cluster with only 1 observation
                if(since.lt.ncluster)then
                    call  relabelmeta(i,since,nrec,ncluster,cstrt,
      &                               ccluster,ss,yclus)
-	       end if
-	              
+               end if
+
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
 
@@ -595,7 +595,7 @@ c+++++++++++++ print
 
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                             
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,ngrid

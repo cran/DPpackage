@@ -1,20 +1,20 @@
 c=======================================================================                      
       subroutine ptsurv
-     &                (nrec,nsubject,nvar,p,maxni,datastr,              #6 
-     &                 type,left,right,                                 #3 
-     &                 x,subject,options,                               #3
-     &                 priorv,prec,sb,tinvb,tauv,                       #5
-     &                 mcmc,nsave,                                      #2
-     &                 acrate,randsave,thetasave,                       #3
-     &                 cpar,beta,b,sigmab,sigmav,y,                     #6
-     &                 iflagp,iflagr,parti,poss,typeint,whicho,whichn,  #7
-     &                 betac,linf,lsup,linf2,lsup2,                     #5
-     &                 sigmainvb,sigmainvv,sigmainvvc,                  #3
-     &                 sigmabc,sigmavc,ssb,ssbc,theta,thetac,vz,vzc,    #8
-     &                 workmr,workmr2,workmhp,                          #3
-     &                 workmhr,workmhr2,workvp,workvr,                  #4
-     &                 xtx,xty,yvec,yvecc,ztz,zty,                      #6
-     &                 seed)                                            #1
+     &                (nrec,nsubject,nvar,p,maxni,datastr,              
+     &                 type,left,right,                                 
+     &                 x,subject,options,                               
+     &                 priorv,prec,sb,tinvb,tauv,                       
+     &                 mcmc,nsave,                                      
+     &                 acrate,randsave,thetasave,                       
+     &                 cpar,beta,b,sigmab,sigmav,y,                     
+     &                 iflagp,iflagr,parti,poss,typeint,whicho,whichn,  
+     &                 betac,linf,lsup,linf2,lsup2,                     
+     &                 sigmainvb,sigmainvv,sigmainvvc,                  
+     &                 sigmabc,sigmavc,ssb,ssbc,theta,thetac,vz,vzc,    
+     &                 workmr,workmr2,workmhp,                          
+     &                 workmhr,workmhr2,workvp,workvr,                  
+     &                 xtx,xty,yvec,yvecc,ztz,zty,                      
+     &                 seed)                                            
      
 c=======================================================================                      
 c     # 65 arguments
@@ -24,13 +24,25 @@ c     AFT effect model, using a Mixture of Multivariate Polya
 c     trees prior for the distribution of the errors and the frailty 
 c     terms.
 c
-c     Copyright: Alejandro Jara and Tim Hanson, 2007
+c     Copyright: Alejandro Jara and Tim Hanson, 2009
 c
 c     Version 1.0:
 c
 c     Last modification: 20-06-2007.
 c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
+c
+c=======================================================================                      
       implicit none
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -165,11 +177,11 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++checking dimensions
       narea=2**nvar  
       if(narea.gt.marea)then
-	call rexit("increase dimension marea in subroutine ptsurv")
+         call rexit("increase dimension marea in subroutine ptsurv")
       end if
 
       if(nvar*p.gt.maxp)then
-	call rexit("increase dimension maxp in subroutine ptsurv")
+         call rexit("increase dimension maxp in subroutine ptsurv")
       end if
       
       do i=1,marea
@@ -321,14 +333,12 @@ c++++++++++ evaluating likelihood
             call loglikpt_ycan_mz(i,m1,nvar,nrec,nsubject,subject,
      &                            p,parti,whicho,whichn,yvec,zty,
      &                            vz,cparv,detlogv,linf,lsup,theta,
-     &                            sigmainvv,x,beta,poss,b,logliko,
-     &                            linf2,lsup2,y)   
+     &                            sigmainvv,x,beta,poss,b,logliko)   
 
             call loglikpt_ycan_mz(i,m1,nvar,nrec,nsubject,subject,
      &                            p,parti,whicho,whichn,yvecc,zty,
      &                            vz,cparv,detlogv,linf,lsup,theta,
-     &                            sigmainvv,x,beta,poss,b,loglikn,
-     &                            linf2,lsup2,y)   
+     &                            sigmainvv,x,beta,poss,b,loglikn)   
 
 c++++++++++ mh step
   
@@ -895,7 +905,7 @@ c=======================================================================
      &                            p,parti,
      &                            whicho,whichn,yc,tvec,vz,cpar,detlogl,
      &                            linf,lsup,theta,sigmainv,
-     &                            x,beta,poss,b,loglikc,linf2,lsup2,y)   
+     &                            x,beta,poss,b,loglikc)
 c======================================================================= 
 c     This subroutine evaluate the log-likelihood for the candidate 
 c     value of the survival time in a marginal Multivariate PT.
@@ -912,8 +922,6 @@ c-----Input
       real*8 beta(nvar*p),b(nsubject,nvar),x(nrec,p)
       real*8 yc(nvar),tvec(nvar),vz(nrec,nvar),cpar,detlogl
       real*8 linf(nvar),lsup(nvar)
-      real*8 linf2(nvar),lsup2(nvar)
-      real*8 y(nrec,nvar)
       real*8 theta(nvar),sigmainv(nvar,nvar)
 
 c-----Output

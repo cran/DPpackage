@@ -186,7 +186,7 @@ C     JJV altered this
       IF (v.GT.expmax) GO TO 55
 C     JJV added checker to see if a*exp(v) will overflow
 C     JJV 50 _was_ w = a*exp(v); also note here a > 1.0
-   50 w = exp(v)
+      w = exp(v)
       IF (w.GT.infnty/a) GO TO 55
       w = a*w
       GO TO 60
@@ -1653,7 +1653,7 @@ C     JJV changed argumnet checker to abort if N <= 0
 C     Generate Y, a random gamma (n,(1-p)/p) variable
 C     JJV Note: the above parametrization is consistent with Devroye,
 C     JJV       but gamma (p/(1-p),n) is the equivalent in our code
- 10   r = real(n)
+      r = real(n)
       a = p/ (1.0-p)
 C      y = gengam(a,r)
       y = sgamma(r)/a
@@ -2046,7 +2046,7 @@ C     TO ABORT-PROGRAM
 
   110 STOP ' ( HIGH - LOW ) > 2,147,483,561 in IGNUIN'
 
-  120 END
+      END
       SUBROUTINE initgn(isdtyp)
 C**********************************************************************
 C
@@ -2962,7 +2962,7 @@ C     .. Data statements ..
      +     .9999986,.9999999/
 C     ..
 C
-   10 a = 0.0
+      a = 0.0
       u = ranf()
       GO TO 30
 
@@ -2972,9 +2972,9 @@ C     JJV changed the following to reflect the true algorithm and
 C     JJV prevent unpredictable behavior if U is initially 0.5.
 C      IF (u.LE.1.0) GO TO 20
       IF (u.LT.1.0) GO TO 20
-   40 u = u - 1.0
+      u = u - 1.0
       IF (u.GT.q1) GO TO 60
-   50 sexpo = a + u
+      sexpo = a + u
       RETURN
 
    60 i = 1
@@ -2982,9 +2982,9 @@ C      IF (u.LE.1.0) GO TO 20
       umin = ustar
    70 ustar = ranf()
       IF (ustar.LT.umin) umin = ustar
-   80 i = i + 1
+      i = i + 1
       IF (u.GT.q(i)) GO TO 70
-   90 sexpo = a + umin*q1
+      sexpo = a + umin*q1
       RETURN
 
       END
@@ -3159,7 +3159,7 @@ C
 C
 C     STEP  9:  REJECTION IF T .LT. TAU(1) = -.71874483771719
 C
-   80 IF (t.LT. (-.7187449)) GO TO 70
+      IF (t.LT. (-.7187449)) GO TO 70
 C
 C     STEP 10:  CALCULATION OF V AND QUOTIENT Q
 C
@@ -3299,18 +3299,18 @@ C     .. Data statements ..
 C     ..
 C     .. Executable Statements ..
 C
-   10 u = ranf()
+      u = ranf()
       s = 0.0
       IF (u.GT.0.5) s = 1.0
       u = u + u - s
-   20 u = 32.0*u
+      u = 32.0*u
       i = int(u)
       IF (i.EQ.32) i = 31
       IF (i.EQ.0) GO TO 100
 C
 C                                START CENTER
 C
-   30 ustar = u - float(i)
+      ustar = u - float(i)
       aa = a(i)
    40 IF (ustar.LE.t(i)) GO TO 60
       w = (ustar-t(i))*h(i)
@@ -3332,7 +3332,7 @@ C
    70 tt = u
       ustar = ranf()
    80 IF (ustar.GT.tt) GO TO 50
-   90 u = ranf()
+      u = ranf()
       IF (ustar.GE.u) GO TO 70
       ustar = ranf()
       GO TO 40
@@ -3347,7 +3347,7 @@ C
       i = i + 1
   120 u = u + u
       IF (u.LT.1.0) GO TO 110
-  130 u = u - 1.0
+      u = u - 1.0
   140 w = u*d(i)
       tt = (0.5*w+aa)*w
       GO TO 160
@@ -3355,7 +3355,7 @@ C
   150 tt = u
   160 ustar = ranf()
       IF (ustar.GT.tt) GO TO 50
-  170 u = ranf()
+      u = ranf()
       IF (ustar.GE.u) GO TO 150
       u = ranf()
       GO TO 140

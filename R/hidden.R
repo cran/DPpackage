@@ -1,15 +1,13 @@
 
 .onAttach <- function(...) {
      cat("##\n## Dirichlet Process Package (DPpackage)\n")
-     cat("## Copyright (C) 2006-2007-2008, Alejandro Jara\n")
-     cat("## Biostatistical Centre \n")
-     cat("## Catholic University of Leuven \n")
+     cat("## Copyright (C) 2006 - 2009, Alejandro Jara\n")
+     cat("## Department of Statistics \n")
+     cat("## Universidad de Concepcion\n")
      cat("##\n## Support provided by the KUL-PUC bilateral\n")
-     cat("## (Belgium-Chile) grant BIL05/03 and the NIH/NCI\n")
-     cat("## R01CA75981 grant \n##\n")
+     cat("## (Belgium-Chile) grant BIL05/03, NIH/NCI\n")
+     cat("## R01CA75981 grant, and Fondecyt 3095003 grant.\n##\n")
 }
-
-
 
 
 .onUnload <- function(libpath) {

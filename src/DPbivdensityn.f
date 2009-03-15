@@ -17,7 +17,7 @@ c     `spdenn` is that this includes a grid of points where the density
 c     estimate is evaluated. This fucntion can be used only for dimension
 c     <=2.
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009
 c
 c     Version 1.0: 
 c
@@ -39,16 +39,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -363,7 +363,7 @@ c++++++++++ observation in cluster with more than 1 element
                   end do                
                    
                   call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
-     &                      workv1,workm1,workm2,workv2,iflag)                 
+     &                      workv1,workm1,workm2,workv2,iflag)
 
                   prob(j)=exp(log(dble(ccluster(j)))+
      &                        tmp1)
@@ -398,7 +398,7 @@ c++++++++++ observation in cluster with more than 1 element
                end do      
 
                call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
-     &                      workv1,workm1,workm2,workv2,iflag)                 
+     &                      workv1,workm1,workm2,workv2,iflag)
                    
                prob(ncluster+1)=exp(log(alpha)+
      &                             tmp1)
@@ -416,13 +416,13 @@ c++++++++++ observation in cluster with more than 1 element
                   ss(i)=ncluster
                   ccluster(ncluster)=1
 
-	          do j=1,nvar
-	             muclus(ncluster,j)=muclus(evali,j)
-	             do k=j,nvar
+                  do j=1,nvar
+                     muclus(ncluster,j)=muclus(evali,j)
+                     do k=j,nvar
                         sigmaclus(ncluster,ihmssf(j,k,nvar))=
      &                            sigmaclus(evali,ihmssf(j,k,nvar))
-	             end do
-	          end do
+                     end do
+                  end do
                end if               
             end if
 
@@ -436,7 +436,7 @@ c++++++++++ observation in cluster with only 1 element
                    call relabeld(i,since,nrec,nvar,ncluster,
      &                           ccluster,ss,muclus,sigmaclus,
      &                           muwork,sigmawork)                   
-	       end if
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -454,7 +454,7 @@ c++++++++++ observation in cluster with only 1 element
                   end do                
                    
                   call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
-     &                      workv1,workm1,workm2,workv2,iflag)                 
+     &                      workv1,workm1,workm2,workv2,iflag)
 
 
                   prob(j)=exp(log(dble(ccluster(j)))+
@@ -470,7 +470,7 @@ c++++++++++ observation in cluster with only 1 element
                end do      
 
                call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
-     &                      workv1,workm1,workm2,workv2,iflag)                 
+     &                      workv1,workm1,workm2,workv2,iflag)
                    
                prob(ncluster+1)=exp(log(alpha)+
      &                             tmp1)
@@ -489,13 +489,13 @@ c++++++++++ observation in cluster with only 1 element
                   ss(i)=ncluster
                   ccluster(ncluster)=1
 
-	          do j=1,nvar
-	             muclus(ncluster,j)=muclus(evali,j)
-	             do k=j,nvar
+                  do j=1,nvar
+                     muclus(ncluster,j)=muclus(evali,j)
+                     do k=j,nvar
                         sigmaclus(ncluster,ihmssf(j,k,nvar))=
      &                            sigmaclus(evali,ihmssf(j,k,nvar))
-	             end do
-	          end do
+                     end do
+                  end do
                end if          
             end if
 
@@ -735,7 +735,7 @@ c+++++++ k0
 
             do j=1,nvar
                do k=1,nvar
-                  tmp1=tmp1+ywork(j)*sigworkinv(j,k)*ywork(k)                
+                  tmp1=tmp1+ywork(j)*sigworkinv(j,k)*ywork(k)
                end do
             end do
          end do   
@@ -889,13 +889,13 @@ c+++++++++++++ predictive information
                           end do                
                    
                           call dmvn(nvar,ywork,muwork2,sigmawork2,
-     &                      tmp2,workv1,workm1,workm2,workv2,iflag)                 
+     &                      tmp2,workv1,workm1,workm2,workv2,iflag)
 
                           tmp1=tmp1+exp(tmp2)*prob(k)
                        end do
                       
                        call dmvn(nvar,ywork,muwork,sigmawork,
-     &                      tmp2,workv1,workm1,workm2,workv2,iflag)                 
+     &                      tmp2,workv1,workm1,workm2,workv2,iflag)
                        
                        tmp1=tmp1+exp(tmp2)*prob(ncluster+1)
                        
@@ -945,7 +945,7 @@ c+++++++++++++ cpo and save samples
                   end do
 
                   call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
-     &                      workv1,workm1,workm2,workv2,iflag)                 
+     &                      workv1,workm1,workm2,workv2,iflag)
  
                   tmp1=exp(tmp1)
                   cpo(i)=cpo(i)+1.0d0/tmp1  

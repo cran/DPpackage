@@ -10,7 +10,7 @@ c=======================================================================
      &                       parti,pattern,patterns,
      &                       s,sigmainv,sigmainvc,
      &                       ybar,z,zc,zwork,vv,
-     &                       workmh,workh1,workh2,workm1,workm2,
+     &                       workmh,workh1,workh2,workm2,
      &                       muc,sigmac,propv,propv1,propv2,
      &                       seed)
 c=======================================================================                  
@@ -20,7 +20,7 @@ c     estimation using a Multivariate Mixture of Finite Polya Trees prior.
 c     The Multivariate Finite Polya Tree is centered in a multivariate 
 c     N(mu,sigma) distribution. The Jeffery's prior is used for mu and sigma.
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2009.
 c
 c     Version 1.0: 
 c
@@ -42,16 +42,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c
@@ -232,7 +232,6 @@ c        whichn      :  integer vector giving the observation in each
 c                       partition, whichn(nrec).
 c        workh1      :  real working vector, workh1(nvar*(nvar+1)/2)
 c        workh2      :  real working vector, workh2(nvar*(nvar+1)/2)
-c        workm1      :  real working matrix, workm1(nvar,nvar)
 c        workm2      :  real working matrix, workm2(nvar,nvar)
 c        workmh      :  real working vector, workmh(nvar*(nvar+1)/2)
 c        ybar        :  real vector giving the sample mean, ybar(nvar).
@@ -305,7 +304,7 @@ c+++++Working space - General
       real*8 vv(nvar)
       real*8 workmh(nvar*(nvar+1)/2)
       real*8 workh1(nvar*(nvar+1)/2),workh2(nvar*(nvar+1)/2)
-      real*8 workm1(nvar,nvar),workm2(nvar,nvar)
+      real*8 workm2(nvar,nvar)
       
 c+++++Working space - MCMC scans
       integer dispcount,isave,iscan,nscan,skipcount
@@ -994,7 +993,7 @@ c+++++++ acceptance step
                   propv(i,j)=workmh(ihmssf(i,j,nvar))
                end do
             end do
-            call invdet(propv,nvar,sigmainv,detlog1,iflag,vv)            
+            call invdet(propv,nvar,sigmainv,detlog1,iflag,vv)
          end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++

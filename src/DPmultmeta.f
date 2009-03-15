@@ -1,18 +1,28 @@
 c=======================================================================                      
-      subroutine dpmultmeta(nrec,nvar,y,sigma2e,                        #4
-     &                      a0b0,m1rand,s2inv,s2invm2,                  #4
-     &                      nu,s1ra nd,psiinv,                          #3
-     &                      mcmc,nsave,                                 #2
-     &                      cpo,randsave,thetasave,                     #3
-     &                      alpha,m1,s1,                                #3
-     &                      ncluster,muclus,ss,ccluster,cstrt,          #5
-     &                      iflag,prob,sigma2ei,seed,                   #4
-     &                      s1inv,s1invm1,                              #2 
-     &                      theta,workm1,workm2,workm3,                 #4
-     &                      workmh1,workmh2,                            #2
-     &                      workv1,workv2,ywork)                        #3
+      subroutine dpmultmeta(nrec,nvar,y,sigma2e,                        
+     &                      a0b0,m1rand,s2inv,s2invm2,                  
+     &                      nu,s1ra nd,psiinv,                          
+     &                      mcmc,nsave,                                 
+     &                      cpo,randsave,thetasave,                     
+     &                      alpha,m1,s1,                                
+     &                      ncluster,muclus,ss,ccluster,cstrt,          
+     &                      iflag,prob,sigma2ei,seed,                   
+     &                      s1inv,s1invm1,                              
+     &                      theta,workm1,workm2,workm3,                 
+     &                      workmh1,workmh2,                            
+     &                      workv1,workv2,ywork)                        
 c=======================================================================                      
 c 
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c=======================================================================
 
@@ -71,9 +81,8 @@ c+++++General
       integer count,dispcount,evali
       integer i,ii,ihmssf,isave,iscan
       integer j,k,l,j1,j2
-      integer ns,nscan,nuniqs,nuwork,ok,sprint
+      integer ns,nscan,nuniqs,ok,sprint
       integer seed1,seed2,since,skipcount
-      real*8 detlog
       real*8 tmp1,tmp2
 
 c+++++CPU time
@@ -210,7 +219,7 @@ c++++++++++ subject in cluster with more than 1 observations
                      workv2(j1)=tmp1
                   end do
 
-                  call dmvnd(nvar,ywork,workv2,workm2,tmp2,iflag)        
+                  call dmvnd(nvar,ywork,workv2,workm2,tmp2,iflag)
                   prob(j)=exp(log(dble(ccluster(j)))+tmp2)
                end do
                
@@ -247,7 +256,7 @@ c++++++++++ subject in cluster with only 1 observation
                if(since.lt.ncluster)then
                    call relabeldpm(i,since,nrec,1,ncluster,
      &                             ccluster,ss,cstrt)                   
-	       end if
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -285,7 +294,7 @@ c++++++++++ subject in cluster with only 1 observation
                      workv2(j1)=tmp1
                   end do
 
-                  call dmvnd(nvar,ywork,workv2,workm2,tmp2,iflag)        
+                  call dmvnd(nvar,ywork,workv2,workm2,tmp2,iflag)
                   prob(j)=exp(log(dble(ccluster(j)))+tmp2)
                end do
                
@@ -531,7 +540,7 @@ c+++++++++++++ cpo and save samples
                      end do
                   end do
 
-                  call dmvnd(nvar,ywork,workv1,workm1,tmp1,iflag)        
+                  call dmvnd(nvar,ywork,workv1,workm1,tmp1,iflag)
 
                   tmp1=exp(tmp1)
                   cpo(i,1)=cpo(i,1)+1.0d0/tmp1 
@@ -554,7 +563,7 @@ c+++++++++++++ print
 
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       return

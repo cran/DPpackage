@@ -1,20 +1,30 @@
 c=======================================================================                      
-      subroutine dpmlm(nfixed,nrec,p,x,y,                               #5
-     &                 a0b0,sb,prec,smu,psiinv,                         #5
-     &                 tau,murand,sigmarand,                            #3
-     &                 ncluster,ss,alpha,beta,mu,mub,sigmab,sigma,      #8
-     &                 mcmc,nsave,                                      #2
-     &                 cpo,musave,                                      #2
-     &                 randsave,thetasave,clustsave,                    #3 
-     &                 ngrid,grid,fun,                                  #3 
-     &                 seed,                                            #1
-     &                 iflagp,xtx,xty,workmhp1,workvp1,                 #5
-     &                 res,                                             #1
-     &                 cstrt,ccluster,prob,                             #3
-     &                 betasave,bsave,mc)                               #3 
+      subroutine dpmlm(nfixed,nrec,p,x,y,                               
+     &                 a0b0,sb,prec,smu,psiinv,                         
+     &                 tau,murand,sigmarand,                            
+     &                 ncluster,ss,alpha,beta,mu,mub,sigmab,sigma,      
+     &                 mcmc,nsave,                                      
+     &                 cpo,musave,                                      
+     &                 randsave,thetasave,clustsave,                     
+     &                 ngrid,grid,fun,                                   
+     &                 seed,                                            
+     &                 iflagp,xtx,xty,workmhp1,workvp1,                 
+     &                 res,                                             
+     &                 cstrt,ccluster,prob,                             
+     &                 betasave,bsave,mc)
 c=======================================================================                      
 c     # of arguments = 44.
 c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c=======================================================================                  
 
       implicit none 
@@ -261,7 +271,7 @@ c++++++++++ subject in cluster with only 1 observation
                if(since.lt.ncluster)then
                    call relabeldpm(i,since,nrec,1,ncluster,
      &                             ccluster,ss,cstrt)                   
-	       end if
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -406,7 +416,7 @@ c+++++++++++++ random effects
                end do
 
                do i=1,nrec
-                  bsave(i)=bsave(i)+mu(ss(i))                                 
+                  bsave(i)=bsave(i)+mu(ss(i))
                   randsave(isave,i)=res(i)
                end do
 
@@ -489,7 +499,7 @@ c+++++++++++++ regression coefficients
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,1+i)=beta(i)
-                     betasave(i)=betasave(i)+beta(i)                     
+                     betasave(i)=betasave(i)+beta(i)
                   end do
                end if
                betasave(p+1)=betasave(p+1)+sigma
@@ -547,7 +557,7 @@ c+++++++++++++ print
 
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,p+1

@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR ARS
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -507,7 +519,7 @@ c++++ algorithm
       end
 
 c=======================================================================
-      subroutine arsSampleHD(x,n,maxn,maxu,uHm,uHl,uHr,uHpr)
+      subroutine arsSampleHD(x,n,maxu,uHm,uHl,uHr,uHpr)
 c=======================================================================
 c     generates a sample x from the Upper Hull in an ARS scheme
 c     for a log-concave distrtribution using derivatives
@@ -516,7 +528,7 @@ c     A.J.V., 2007
 
 c++++ dimensions
       integer n 
-      integer maxn,maxu
+      integer maxu
       
 c++++ upper Hull
       real*8 uHm(maxu)
@@ -575,7 +587,7 @@ c++++ randomly choose a line segment
           call dblepr("Slopes",-1,uHm,totalu)
           call dblepr("left",-1,uHl,totalu)
           call dblepr("right",-1,uHr,totalu)
-          call rexit("Error in ARS generation: line outside range")      
+          call rexit("Error in ARS generation: line outside range")
       end if
 
 c++++ sample along that (ind) line segment
@@ -650,7 +662,7 @@ c++++ sample along that (ind) line segment
 c=======================================================================
       subroutine arsEvalHD(x,n,hlower,hupper,maxn,maxl,maxu,
      &                     lHb,lHm,lHl,lHr,
-     &                     uHb,uHm,uHl,uHr,uHpr,grid,fs)
+     &                     uHb,uHm,uHl,uHr)
 c=======================================================================
 c     Eval the Hull at x in an ARS scheme.
 c     A.J.V., 2007
@@ -668,10 +680,6 @@ c++++ lower Hull
 c++++ upper Hull
       real*8 uHb(maxu),uHm(maxu)
       real*8 uHl(maxu),uHr(maxu)
-      real*8 uHpr(maxu)
-
-c++++ evaluations
-      real*8 grid(maxn),fs(maxn)
 
 c++++ input/output
       real*8 x,hlower,hupper
@@ -736,15 +744,15 @@ c++++ upper bound
 
 c=======================================================================
 c=======================================================================
-      subroutine testarsD(nsamp,nstart,start,x,evali,seed1,seed2,seed3,
-     $                    yy,mu,sd)
+      subroutine testarsD(nsamp,nstart,start,x,evali,seed1,seed2,
+     $                    mu,sd)
 c=======================================================================
 c=======================================================================
 c     Test for the ARS sampling algorithm using derivatives
 c     A.J.V., 2007
       implicit none
-      integer nsamp,nstart,seed1,seed2,seed3,evali(nsamp)
-      real*8 x(nsamp),start(nstart),yy(nsamp),mu,sd
+      integer nsamp,nstart,seed1,seed2,evali(nsamp)
+      real*8 x(nsamp),start(nstart),mu,sd
       
       integer i
       real*8 tmp1
@@ -1189,7 +1197,7 @@ c++++ standardizing the areas
       end
 
 c=======================================================================
-      subroutine arsSampleHDF(x,n,maxn,maxu,uHm,uHl,uHr,uHpr)
+      subroutine arsSampleHDF(x,n,maxu,uHm,uHl,uHr,uHpr)
 c=======================================================================
 c     generates a sample x from the Upper Hull in a derivative free 
 c     ARS scheme for a log-concave distrtribution (DON'T USE IT)
@@ -1198,7 +1206,7 @@ c     A.J.V., 2007
 
 c++++ dimensions
       integer n 
-      integer maxn,maxu
+      integer maxu
       
 c++++ upper Hull
       real*8 uHm(maxu)
@@ -1261,7 +1269,7 @@ c++++ randomly choose a line segment
           call dblepr("Slopes",-1,uHm,totalu)
           call dblepr("left",-1,uHl,totalu)
           call dblepr("right",-1,uHr,totalu)
-          call rexit("Error in ARS generation: line outside range")      
+          call rexit("Error in ARS generation: line outside range")
       end if
 
 c++++ sample along that (ind) line segment
@@ -1303,7 +1311,7 @@ c++++ sample along that (ind) line segment
          call dblepr("Slopes",-1,uHm,totalu)
          call dblepr("left",-1,uHl,totalu)
          call dblepr("right",-1,uHr,totalu)
-         call rexit("Error in ARS generation: outside limits")      
+         call rexit("Error in ARS generation: outside limits")
       end if
       return
       end
@@ -1448,7 +1456,7 @@ c++++ algorithm
       end
 
 c=======================================================================
-      subroutine arsQuanH(n,quan,maxn,maxu,uHm,uHl,uHr,uHpr)
+      subroutine arsQuanH(n,quan,maxu,uHm,uHl,uHr,uHpr)
 c=======================================================================
 c     compute quantiles from the Upper Hull in a derivative free 
 c     ARS scheme for a log-concave distrtribution
@@ -1457,7 +1465,7 @@ c     A.J.V., 2007
 
 c++++ dimensions
       integer n 
-      integer maxn,maxu
+      integer maxu
       
 c++++ upper Hull
       real*8 uHm(maxu)
@@ -1612,7 +1620,7 @@ c++++ look for q3 along that (i3) line segment
 c=======================================================================
       subroutine arsEvalHDF(x,n,hlower,hupper,maxn,maxl,maxu,
      &                      lHb,lHm,lHl,lHr,
-     &                      uHb,uHm,uHl,uHr,uHpr,grid,fs)
+     &                      uHb,uHm,uHl,uHr)
 c=======================================================================
 c     Eval the Hull at x in an ARS scheme.
 c     A.J.V., 2007
@@ -1630,10 +1638,6 @@ c++++ lower Hull
 c++++ upper Hull
       real*8 uHb(maxu),uHm(maxu)
       real*8 uHl(maxu),uHr(maxu)
-      real*8 uHpr(maxu)
-
-c++++ evaluations
-      real*8 grid(maxn),fs(maxn)
 
 c++++ input/output
       real*8 x,hlower,hupper
@@ -1702,15 +1706,15 @@ c++++ upper bound
 
 c=======================================================================
 c=======================================================================
-      subroutine testarsDF(nsamp,nstart,start,x,evali,seed1,seed2,seed3,
-     $                   yy,mu,sd)
+      subroutine testarsDF(nsamp,nstart,start,x,evali,seed1,seed2,
+     $                     mu,sd)
 c=======================================================================
 c=======================================================================
 c     Test for the derivative free ARS sampling algorithm
 c     A.J.V., 2007
       implicit none
-      integer nsamp,nstart,seed1,seed2,seed3,evali(nsamp)
-      real*8 x(nsamp),start(nstart),yy(nsamp),mu,sd
+      integer nsamp,nstart,seed1,seed2,evali(nsamp)
+      real*8 x(nsamp),start(nstart),mu,sd
       
       integer i
       real*8 tmp1

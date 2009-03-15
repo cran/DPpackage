@@ -143,7 +143,8 @@ DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 \seealso{
 \code{\link{DPrandom}},
 \code{\link{DPlmm}}  , \code{\link{DPglmm}}, 
-\code{\link{DPMglmm}}, \code{\link{DPMlmm}}, \code{\link{DPMolmm}}
+\code{\link{DPMglmm}}, \code{\link{DPMlmm}}, \code{\link{DPMolmm}},
+\code{\link{PTlmm}}  , \code{\link{PTglmm}}, \code{\link{PTolmm}}
 }
 
 \references{
@@ -230,7 +231,7 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 }
 

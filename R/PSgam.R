@@ -1,7 +1,8 @@
 ### PSgam.R                   
 ### Fit generalized additive linear mixed model with B splines 
 ###
-### Copyright: Alejandro Jara, 2007-2008
+### Copyright: Alejandro Jara, 2007-2009.
+###
 ### Last modification: 26-07-2007.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -21,13 +22,15 @@
 ### The author' contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 
 "PSgam"<-
@@ -741,8 +744,6 @@ function(formula,
 
                   iflagp<-rep(0,p) 
                   betac<-rep(0,p)
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
                   workmhp1<-rep(0,p*(p+1)/2) 
                   workvp1<-rep(0,p) 
                   xtx<-matrix(0,nrow=p,ncol=p)
@@ -753,8 +754,6 @@ function(formula,
                   iflagq<-rep(0,maxq) 
                   bc<-rep(0,maxq)
                   theta<-rep(0,maxq)
-                  workmq1<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmq2<-matrix(0,nrow=maxq,ncol=maxq)
                   workmhq1<-rep(0,maxq*(maxq+1)/2) 
                   workvq1<-rep(0,maxq) 
                   ztz<-matrix(0,nrow=maxq,ncol=maxq)
@@ -790,10 +789,8 @@ function(formula,
  	 		roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
-                        zmean      =as.double(zmean),
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
- 	 		bet0       =as.double(bet0),
  	 		prec       =as.double(prec),	 
  	 		sb         =as.double(sb),	  		
  	 		taub       =as.double(taub),
@@ -814,17 +811,12 @@ function(formula,
  	 		pssave     =as.double(pssave),
  	 		seed       =as.integer(seed),
  	 		iflagp     =as.integer(iflagp),
- 	 		betac      =as.double(betac),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
                         workmhp1   =as.double(workmhp1),
  	 		workvp1    =as.double(workvp1),
  	 		xtx        =as.double(xtx),
  	 		xty        =as.double(xty),
  	 		iflagq     =as.integer(iflagq),
  	 		bc         =as.double(bc),
- 	 		workmq1    =as.double(workmq1),
- 	 		workmq2    =as.double(workmq2),
                         workmhq1   =as.double(workmhq1),
  	 		workvq1    =as.double(workvq1),
  	 		ztz        =as.double(ztz),
@@ -897,7 +889,6 @@ function(formula,
  	 		roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
-                        zmean      =as.double(zmean),                        
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
  	 		bet0       =as.double(bet0),
@@ -1005,7 +996,6 @@ function(formula,
  	 		roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
-                        zmean      =as.double(zmean),                        
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
  	 		bet0       =as.double(bet0),
@@ -1112,7 +1102,6 @@ function(formula,
  	 		roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
-                        zmean      =as.double(zmean),                        
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
  	 		bet0       =as.double(bet0),
@@ -1171,8 +1160,6 @@ function(formula,
 
               iflagp<-rep(0,p) 
               betac<-rep(0,p)
-              workmp1<-matrix(0,nrow=p,ncol=p)
-              workmp2<-matrix(0,nrow=p,ncol=p)
               workmhp1<-rep(0,p*(p+1)/2) 
               workvp1<-rep(0,p) 
               xtx<-matrix(0,nrow=p,ncol=p)
@@ -1183,8 +1170,6 @@ function(formula,
               iflagq<-rep(0,maxq) 
               bc<-rep(0,maxq)
               theta<-rep(0,maxq)
-              workmq1<-matrix(0,nrow=maxq,ncol=maxq)
-              workmq2<-matrix(0,nrow=maxq,ncol=maxq)
               workmhq1<-rep(0,maxq*(maxq+1)/2) 
               workvq1<-rep(0,maxq) 
               ztz<-matrix(0,nrow=maxq,ncol=maxq)
@@ -1219,10 +1204,8 @@ function(formula,
  	 	roffset    =as.double(roffset),
                 ngrid      =as.integer(ngrid),
                 znew       =as.double(znew),
-                zmean      =as.double(zmean),
                 xreal      =as.double(xreal),
                 possfp     =as.integer(possfp),
- 	 	bet0       =as.double(bet0),
  	 	prec       =as.double(prec),	 
  	 	sb         =as.double(sb),	  		
  	 	taub       =as.double(taub),
@@ -1244,17 +1227,12 @@ function(formula,
  	 	pssave     =as.double(pssave),
  	 	seed       =as.integer(seed),
  	 	iflagp     =as.integer(iflagp),
- 	 	betac      =as.double(betac),
- 	 	workmp1    =as.double(workmp1),
- 	 	workmp2    =as.double(workmp2),
                 workmhp1   =as.double(workmhp1),
  	 	workvp1    =as.double(workvp1),
  	 	xtx        =as.double(xtx),
  	 	xty        =as.double(xty),
  	 	iflagq     =as.integer(iflagq),
  	 	bc         =as.double(bc),
- 	 	workmq1    =as.double(workmq1),
- 	 	workmq2    =as.double(workmq2),
                 workmhq1   =as.double(workmhq1),
  	 	workvq1    =as.double(workvq1),
  	 	ztz        =as.double(ztz),

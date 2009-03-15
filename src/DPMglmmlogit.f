@@ -1,16 +1,16 @@
 c=======================================================================                      
       subroutine dpmglmmlogit(
-     &                  maxni,nrec,nsubject,nfixed,p,q,subject,datastr, #8
-     &                  y,x,z,                                          #3
-     &                  a0b0,prec,sb,nu,tinv1,smu,psiinv,tinv2,         #8
-     &                  mcmc,nsave,                                     #2  
-     &                  ncluster,ss,alpha,beta,b,betar,mu,              #7
-     &                  sigma,sigmainv,mub,sigmab,sigmabinv,mc,         #6
-     &                  acrate,cpo,randsave,thetasave,musave,clustsave, #6
-     &                  iflagp,betac,workmhp,workvp,xtx,xty,xsweep,     #7
-     &                  iflagr,theta,thetac,workmhr,workmhr2,workmr,    #6
-     &                  workvr,ztz,zty,cstrt,ccluster,prob,quadf,       #7
-     &                  seed,betasave,bsave)                            #3 
+     &                  maxni,nrec,nsubject,nfixed,p,q,subject,datastr, 
+     &                  y,x,z,                                          
+     &                  a0b0,prec,sb,nu,tinv1,smu,psiinv,tinv2,         
+     &                  mcmc,nsave,                                       
+     &                  ncluster,ss,alpha,beta,b,betar,mu,              
+     &                  sigma,sigmainv,mub,sigmab,sigmabinv,mc,         
+     &                  acrate,cpo,randsave,thetasave,musave,clustsave, 
+     &                  iflagp,betac,workmhp,workvp,xtx,xty,xsweep,     
+     &                  iflagr,theta,thetac,workmhr,workmhr2,workmr,    
+     &                  workvr,ztz,zty,cstrt,ccluster,prob,quadf,       
+     &                  seed,betasave,bsave)
 c=======================================================================                      
 c     # of arguments = 63.
 c
@@ -18,7 +18,7 @@ c     Subroutine `dpmglmmlogit' to run a Markov chain in a semiparametric
 c     logit mixed effect model, using a Dirichlet process mixture of 
 c     normals prior for the distribution of the random effects.
 c
-c     Copyright: Alejandro Jara, 2007-2008
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0:
 c
@@ -40,16 +40,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -245,7 +245,7 @@ c=======================================================================
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1),y(nrec,2)
-      real*8 x(nrec,p),z(nrec,q)	
+      real*8 x(nrec,p),z(nrec,q)
       
 c+++++Prior 
       integer nu01,nu02,nu(2) 
@@ -897,7 +897,7 @@ c++++++++++ subject in cluster with only 1 observation
                if(since.lt.ncluster)then
                    call relabeldpm(i,since,nsubject,q,ncluster,
      &                             ccluster,ss,cstrt)                   
-	       end if
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -1301,8 +1301,8 @@ c+++++++++++++ cpo
                         eta=eta+x(i,j)*beta(j)
                      end do
                   end if   
-		  do j=1,q
-		     eta=eta+z(i,j)*b(subject(i),j)
+                  do j=1,q
+                     eta=eta+z(i,j)*b(subject(i),j)
                   end do
                   mean=exp(eta)/(1.d0+exp(eta))
 
@@ -1338,7 +1338,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
             
       do i=1,p
@@ -1360,8 +1360,8 @@ c+++++++++++++ print
          do j=1,p
             eta=eta+x(i,j)*betasave(j)
          end do
-	 do j=1,q
-	   eta=eta+z(i,j)*bsave(subject(i),j)
+         do j=1,q
+            eta=eta+z(i,j)*bsave(subject(i),j)
          end do
          mean=exp(eta)/(1.d0+exp(eta))
          dhat=dhat+dbin(dble(yij),dble(nij),mean,1)

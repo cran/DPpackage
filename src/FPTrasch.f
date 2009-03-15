@@ -2,7 +2,7 @@
 c=======================================================================                      
       subroutine fptrasch(datastrm,imiss,ngrid,nmissing,nsubject,p,y,
      &                    ninter,nlevel,  
-     &                    a0b0,b0,m,prec,s,sb,tau1,tau2,
+     &                    a0b0,b0,m,prec,s,tau1,tau2,
      &                    mcmc,nsave,tune3,tune4,tune5,
      &                    acrate,cpo,f,faccum,randsave,thetasave,
      &                    alpha,b,beta,mu,sigma,
@@ -19,7 +19,8 @@ c     Subroutine `fptrasch' to run a Markov chain in the
 c     semiparametric Rasch model using a Polya tree prior
 c     for the random effect distribution. 
 c
-c     Copyright: Alejandro Jara Vallejos, 2006
+c     Copyright: Alejandro Jara, 2006-2009.
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -36,16 +37,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -82,9 +83,6 @@ c        prec        :  real matrix giving the prior precision matrix
 c                       for the difficulty parameters, prec(p-1,p-1).
 c        s           :  real vector giving the prior variance for the 
 c                       baseline mean, s.
-c        sb          :  real vector giving the product of the prior 
-c                       precision and prior mean for the difficulty
-c                       parameters, sb(p-1).
 c        tau1, tau2  :  reals giving the hyperparameters of the prior 
 c                       distribution for the inverse of the random
 c                       variance, 1/sigma2 ~ Gamma(tau1/2,tau2/2).
@@ -236,7 +234,7 @@ c+++++Data
 c+++++Prior 
       integer ninter,nlevel
       real*8 aa0,ab0,a0b0(2),b0(p-1),m,prec(p-1,p-1)
-      real*8 sb(p-1),s
+      real*8 s
       real*8 tau1,tau2
 
 c+++++MCMC parameters
@@ -636,11 +634,11 @@ c++++++++++++++++++++++++++++++++++++++
 
 c+++++++ evaluate log-prior for candidate value of the parameters
 
-         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorc)  
+         call dgamma2(1.d0/(sigmac**2),0.5d0*tau1,0.5d0*tau2,logpriorc)
 
 c+++++++ evaluate log-prior for current value of parameters
 
-         call dgamma2(1.d0/(sigma**2),0.5d0*tau1,0.5d0*tau2,logprioro)  
+         call dgamma2(1.d0/(sigma**2),0.5d0*tau1,0.5d0*tau2,logprioro)
 
 
 c+++++++ evaluate log-likelihood for current and candidate value 
@@ -949,7 +947,7 @@ c+++++++++++++ print
 
 
 c=======================================================================
-      double precision function targetd(y,nsubject,p,beta,b,b0,prec)        
+      double precision function targetd(y,nsubject,p,beta,b,b0,prec)
 c=======================================================================
 c     calculates the logarithm of the full conditional distribution
 c     of the difficulty parameters in a Rasch model.

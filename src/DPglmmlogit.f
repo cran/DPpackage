@@ -1,15 +1,15 @@
 
 c=======================================================================                      
       subroutine dpglmmlogit(
-     &             datastr,maxni,nrec,nsubject,nfixed,p,q,              #7
-     &             subject,x,xtx,y,yr,z,a0b0,nu0,prec,psiinv,sb,smu,    #12
-     &             tinv,mcmc,nsave,randsave,thetasave,cpo,alpha,b,bclus,#9
-     &             beta,betar,mu,ncluster,sigma,ss,mc,cstrt,ccluster,   #9
-     &             iflag,iflag2,iflagb,prob,quadf,res,seed,             #7
-     &             sigmainv,theta,workb1,workb2,                        #4
-     &             workmh1,workmh2,workmh3,workk1,workkv1,workkm1,      #6
-     &             workkm2,workv1,workvb1,workvb2,xty,ywork,zty,        #7
-     &             ztz,lambda,betasave,bsave)                           #4
+     &             datastr,maxni,nrec,nsubject,nfixed,p,q,              
+     &             subject,x,xtx,y,yr,z,a0b0,nu0,prec,psiinv,sb,smu,    
+     &             tinv,mcmc,nsave,randsave,thetasave,cpo,alpha,b,bclus,
+     &             beta,betar,mu,ncluster,sigma,ss,mc,cstrt,ccluster,   
+     &             iflag,iflag2,iflagb,prob,quadf,res,seed,             
+     &             sigmainv,theta,workb1,workb2,                        
+     &             workmh1,workmh2,workmh3,workk1,workkv1,workkm1,      
+     &             workkm2,workv1,workvb1,workvb2,xty,ywork,zty,        
+     &             ztz,lambda,betasave,bsave)                           
 c=======================================================================                      
 c     # of arguments = 65.
 c
@@ -19,7 +19,7 @@ c     for the distributions of the random effecs. In this routine,
 c     inference is based on the Polya urn representation of Dirichlet 
 c     process.
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009.
 c
 c     Version 2.0: 
 c
@@ -49,16 +49,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -572,7 +572,7 @@ c++++++++++ subject in cluster with more than 1 observations
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -596,7 +596,7 @@ c++++++++++ subject in cluster with more than 1 observations
                            sigma2e=lambda(datastr(i,l+1))
                         
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)/sigma2e                           
+     &                          z(datastr(i,l+1),k)/sigma2e
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -608,7 +608,7 @@ c++++++++++ subject in cluster with more than 1 observations
                      end do
                   end do   
 
-                  call inverse(ztz,q,iflagb)                                     
+                  call inverse(ztz,q,iflagb)
                   
                   do j=1,q
                      tmp1=0.d0
@@ -655,8 +655,8 @@ c++++++++++ subject in cluster with only 1 observation
 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          cstrt,ccluster,ss,bclus,theta)                   
-	       end if
+     &                          cstrt,ccluster,ss,bclus,theta)
+               end if
                 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -728,7 +728,7 @@ c++++++++++ subject in cluster with only 1 observation
                tmp3=0.d0
                do j=1,ni
                   do k=1,ni
-                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)                  
+                     tmp3=tmp3+ywork(j)*workkm2(j,k)*ywork(k)
                   end do
                end do
                
@@ -752,7 +752,7 @@ c++++++++++ subject in cluster with only 1 observation
                         do l=1,ni
                            sigma2e=lambda(datastr(i,l+1))
                            tmp1=tmp1+z(datastr(i,l+1),j)*
-     &                          z(datastr(i,l+1),k)/sigma2e                           
+     &                          z(datastr(i,l+1),k)/sigma2e
                         end do
                         ztz(j,k)=tmp1
                      end do
@@ -831,7 +831,7 @@ c++++++++++ check if the user has requested an interrupt
                      tmp1=0.d0
                      do l=1,ni
                         tmp1=tmp1+z(datastr(cstrt(ii,i),l+1),j)*
-     &                            z(datastr(cstrt(ii,i),l+1),k)                           
+     &                            z(datastr(cstrt(ii,i),l+1),k)
                      end do
                      ztz(j,k)=ztz(j,k)+tmp1
                   end do
@@ -968,7 +968,7 @@ c+++++++ check if the user has requested an interrupt
                do j=1,q
                   do k=1,q
                      quadf(j,k)=quadf(j,k)+               
-     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))
                    end do
                end do
             end do
@@ -1109,7 +1109,7 @@ c+++++++++++++ regression coefficients
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
-                     betasave(i)=betasave(i)+beta(i)                     
+                     betasave(i)=betasave(i)+beta(i)
                   end do
                end if   
 
@@ -1143,8 +1143,8 @@ c+++++++++++++ cpo
                         tmp1=tmp1+x(i,j)*beta(j)
                      end do
                   end if   
-		  do j=1,q
-		     tmp1=tmp1+z(i,j)*b(subject(i),j)
+                  do j=1,q
+                     tmp1=tmp1+z(i,j)*b(subject(i),j)
                   end do
                   tmp2=exp(tmp1)/(1.d0+exp(tmp1))
                   tmp3=dbin(dble(yr(i)),1.d0,tmp2,0) 
@@ -1175,7 +1175,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
             
       do i=1,p
@@ -1197,8 +1197,8 @@ c+++++++++++++ print
                tmp1=tmp1+x(i,j)*betasave(j)
             end do
          end if   
-	 do j=1,q
-	   tmp1=tmp1+z(i,j)*bsave(subject(i),j)
+         do j=1,q
+            tmp1=tmp1+z(i,j)*bsave(subject(i),j)
          end do
          tmp2=exp(tmp1)/(1.d0+exp(tmp1))
          

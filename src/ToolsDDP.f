@@ -37,13 +37,20 @@ c+++++Working external
       real*8 zty(p)
 
 c+++++Working internal
-      integer evali,i,ii,j,jj,k,l,m,ok
+      integer evali,i,j,k,l,m,ok
       integer ns
       integer since
       real*8 tmp1,tmp2,tmp3
       real*8 dnrm
 
 c+++++Algorithm
+
+      do i=1,p
+         do j=1,p
+            sigmabinv(i,j)=sigmab(i,j)
+         end do
+      end do 
+      call inverse(sigmabinv,p,iflagc)      
 
       do i=1,nsubject
 
@@ -59,7 +66,7 @@ c+++++++ subject in cluster with only 1 observation
             if(since.lt.ncluster)then
                call relabel_dpm(i,since,nsubject,ncluster,
      &                          ccluster,ss,cstrt)                   
-	    end if
+            end if
 
             ccluster(ncluster)=ccluster(ncluster)-1 
             ncluster=ncluster-1
@@ -213,7 +220,7 @@ c+++++Working external
       real*8 zty(p)
 
 c+++++Working internal
-      integer ii,j,jj,k,l,m
+      integer j,k,l,m
       integer ns
       real*8 tmp1
 
@@ -368,7 +375,7 @@ c+++++++ subject in cluster with only 1 observation
             if(since.lt.ncluster)then
                call relabel_dpm(i,since,nsubject,ncluster,
      &                          ccluster,ss,cstrt)                   
-	    end if
+            end if
 
             ccluster(ncluster)=ccluster(ncluster)-1 
             ncluster=ncluster-1

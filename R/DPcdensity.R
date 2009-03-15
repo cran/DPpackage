@@ -2,7 +2,8 @@
 ### Fit a Dirichlet Process Mixture of Normals model for conditional density
 ### estimation.
 ###
-### Copyright: Alejandro Jara, 2008
+### Copyright: Alejandro Jara, 2008-2009.
+###
 ### Last modification: 23-06-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -22,13 +23,15 @@
 ### The author's contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-RafaÃ«l
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 
 
@@ -201,7 +204,6 @@ function(y,
        #########################################################################################
          cpo <- matrix(0,nrow=nrec,ncol=2) 
          thetasave <- matrix(0,nrow=nsave,ncol=nvar+nvar*(nvar+1)/2+3)
-         meansave <- matrix(0,nrow=nsave,ncol=npred)
          denspm <- matrix(0,nrow=npred,ncol=ngrid)
          denspl <- matrix(0,nrow=npred,ncol=ngrid)
          densph <- matrix(0,nrow=npred,ncol=ngrid)
@@ -217,8 +219,8 @@ function(y,
 
          if(status==TRUE)
 	 {
-            muclus <- matrix(0,nrow=nrec+2,ncol=nvar)
-            sigmaclus <- matrix(0,nrow=nrec+2,ncol=nuniq)
+            muclus <- matrix(0,nrow=nrec+100,ncol=nvar)
+            sigmaclus <- matrix(0,nrow=nrec+100,ncol=nuniq)
             for(i in 1:1)
             {
                 counter <- 0
@@ -260,7 +262,7 @@ function(y,
          iflag <- rep(0,nvar) 
          muwork <- rep(0,nvar) 
          muwork2 <- rep(0,nvar) 
-         prob <- rep(0,(nrec+2))
+         prob <- rep(0,(nrec+100))
          s1 <- matrix(0,nvar,nvar)
          seed1 <- sample(1:29000,1)
          seed2 <- sample(1:29000,1)
@@ -287,10 +289,16 @@ function(y,
          fm <- rep(0,npred) 
 
          worksam <- rep(0,nsave) 
+         
+         numcpo <- rep(0,nrec)
+         denomcpo <- rep(0,nrec)
+         
+         nuvec <- c(nuvec,m1rand)
 
        #########################################################################################
        # calling the fortran code
        #########################################################################################
+
 
          foo <- .Fortran("dpdenregr",
   	 	nrec       =as.integer(nrec),
@@ -307,7 +315,6 @@ function(y,
   	 	a0b0       =as.double(a0b0),
   	 	k0         =as.double(k0),
   	 	nuvec      =as.integer(nuvec),
-  	 	m1rand     =as.integer(m1rand),
   	 	s2inv      =as.double(s2inv),
   	 	s2invm2    =as.double(s2invm2),
   	 	psiinv2    =as.double(psiinv2),
@@ -316,7 +323,6 @@ function(y,
  		nsave      =as.integer(nsave),
  		cpo        =as.double(cpo),
  		thetasave  =as.double(thetasave),
-                meansave   =as.double(meansave),
  		denspm     =as.double(denspm),
  		denspl     =as.double(denspl),
  		densph     =as.double(densph),
@@ -358,7 +364,10 @@ function(y,
  		workvx     =as.double(workvx),
  		workmx     =as.double(workmx),
  		worksam    =as.double(worksam),
+ 		numcpo     =as.double(numcpo),
+ 		denomcpo   =as.double(denomcpo),
 		PACKAGE    ="DPpackage")
+
 
        #########################################################################################
        # save state
@@ -380,11 +389,11 @@ function(y,
          state <- list(
                   alpha=foo$alpha,
                   m1=matrix(foo$m1,nrow=nvar,ncol=1),
-                  muclus=matrix(foo$muclus,nrow=nrec+2,ncol=nvar),
+                  muclus=matrix(foo$muclus,nrow=nrec+100,ncol=nvar),
                   ncluster=foo$ncluster,
                   psi1=matrix(foo$psi1,nrow=nvar,ncol=nvar),
                   k0=foo$k0,
-                  sigmaclus=matrix(foo$sigmaclus,nrow=nrec+2,ncol=nuniq),
+                  sigmaclus=matrix(foo$sigmaclus,nrow=nrec+100,ncol=nuniq),
                   ss=foo$ss,
                   z=matrix(foo$z,nrow=nrec,ncol=nvar) 
                   )
@@ -417,7 +426,6 @@ function(y,
          pnames <- c(pnames1,pnames2,pnames3,pnames4)
 
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=nvar+nvar*(nvar+1)/2+3)
-         meansave <- matrix(foo$meansave,nrow=nsave,ncol=npred)
 
          densp.m <- matrix(foo$denspm,nrow=npred,ncol=ngrid)
          densp.l <- matrix(foo$denspl,nrow=npred,ncol=ngrid)
@@ -431,8 +439,7 @@ function(y,
 
          coeff <- apply(thetasave,2,mean)
  
-         save.state <- list(thetasave=thetasave,
-                            meansave=meansave) 
+         save.state <- list(thetasave=thetasave) 
  
          z <- list(call=cl,
                    y=y,

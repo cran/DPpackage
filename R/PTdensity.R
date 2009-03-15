@@ -1,7 +1,7 @@
 ### PTdensity.R                   
 ### Fit a Mixture of Polya trees for density estimation
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2006-2007-2008
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2009.
 ###
 ### Last modification: 28-11-2006.
 ###
@@ -22,13 +22,15 @@
 ### The authors's contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 ###      Tim Hanson
 ###      Division of Biostatistics
@@ -352,7 +354,6 @@ PTdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,data,na.action=
 		   workmh     =as.double(workmh),
 		   workh1     =as.double(workh1),
 		   workh2     =as.double(workh2),
-		   workm1     =as.double(workm1),
 		   workm2     =as.double(workm2),
 		   muc        =as.double(muc),
 		   sigmac     =as.double(sigmac),
@@ -409,7 +410,6 @@ PTdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,data,na.action=
 		   workmh     =as.double(workmh),
 		   workh1     =as.double(workh1),
 		   workh2     =as.double(workh2),
-		   workm1     =as.double(workm1),
 		   workm2     =as.double(workm2),
 		   muc        =as.double(muc),
 		   sigmac     =as.double(sigmac),

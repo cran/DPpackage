@@ -165,7 +165,7 @@ Petrone, S. and Waserman, L. (2002) Consistency of Bernstein polynomial posterio
 
 \author{
 
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 
 Fernando Quintana \email{<quintana@mat.puc.cl>}
 

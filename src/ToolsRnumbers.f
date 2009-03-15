@@ -2,6 +2,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES AND FUNCTIONS FOR RN GENERATION
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -91,7 +103,7 @@ c     A.J.V., 2005
       aa=a
       if(aa.eq.1.d0)then
          gamdv = -log(dble(runif()))
-	 return
+         return
       endif
       if(aa.lt.1.d0)then
          ea=2.7182818d0/(aa+2.7182818d0)
@@ -112,7 +124,7 @@ c     A.J.V., 2005
                return
               end if
             end if
-	   else
+           else
             c1=aa-1.d0
             c2=(aa-1.d0/(6.d0*aa))/c1
             c3=2.d0/c1
@@ -127,26 +139,10 @@ c     A.J.V., 2005
                go to 12
               else
                gamdv=c1*w
-	     end if
+            end if
         end if
         return
         end
-
-c=======================================================================                        
-      double precision function rbeta2(a0,b0)
-c=======================================================================                  
-c     This function generates a beta random variable  
-c     A.J.V., 2006
-      implicit none
-      real*8 a0,b0,tmp,rgamma,tmp1,tmp2
-
-      tmp1=rgamma(a0,1.d0) 
-      tmp2=rgamma(b0,1.d0) 
-      tmp=tmp1/(tmp1+tmp2) 
-      rbeta2=tmp
-      return
-      end         
-
 
 c=======================================================================                        
       double precision function rbeta(a0,b0)
@@ -496,7 +492,7 @@ c -- Transform to both positive
       if(f2.lt.eps)go to 60
       if((f1/f2).gt.t2)go to 60
 c  -- F(A)/F(B) not large: uniform importance sampling
-   50 cdel=c2-c1
+      cdel=c2-c1
    55 x=c1+cdel*runif()
       if(dble(runif()).gt.(dexpone(x)/f1))go to 55
       go to 140
@@ -819,8 +815,8 @@ c             is halfstored (upper triangle)
       real*8 l,s,z,v,b,acc,chi(1)
       dimension l(maxn*(maxn+1)/2),s(maxn*(maxn+1)/2)
       dimension z(maxvar,maxvar),v(maxvar),b(maxvar,maxvar)
-      real*8 rnorm,rchisq	
-	  
+      real*8 rnorm,rchisq
+
       if(nv.gt.maxvar)then
            call rexit("wishrt: routine dimension exceeded")
       end if
@@ -831,9 +827,9 @@ c     -----------------------------------------------------------------
 c     set up vectors (z-alpha in paper) of normal deviates
 c     -----------------------------------------------------------------
       do j=2,nv
-	     do k=1,nv
-		    v(k)=rnorm(0.d0,1.d0)
-		 end do
+         do k=1,nv
+            v(k)=rnorm(0.d0,1.d0)
+         end do
          do i=1,j-1
             z(i,j)=v(i)
          end do
@@ -1154,7 +1150,7 @@ c+++++Working
 
 c+++++Check dimenions
       if(n.gt.maxn)then
-	call rexit("increase dimension maxn in subroutine rtmvn2")
+         call rexit("increase dimension maxn in subroutine rtmvn2")
       end if
 
 c+++++Algorithm 
@@ -1433,68 +1429,290 @@ c     A.J.V., 2006
       end   
 
 
+
+c======================================================================            
+      subroutine ginoe(n,variance,rmat)
 c======================================================================      
-      subroutine rtpoiss(lambda,a,b,alim,blim,out)
-c=======================================================================            
-c     generate truncated(a,b) Poisson(lambda)
-c     a,b  = end points of interval (alim = blim = 0)   
-c     alim = 1, if left endpoint is 0; otherwise = 0
-c     blim = 1, if right endpoint is +Infty; otherwise = 0      
-c     A.J.V., 2008
-      implicit none
-      real*8 lambda,aa,bb
-      integer rpois,out,a,b,alim,blim
-      real*8 cdfpoiss,invcdfpoiss
-      real*8 uni,tmp,tmp1,tmp2
-      real runif
+c     Author: Valerio Cappellini                          March 2007
+c     Version:: 1.0.0
+c     Modified: Alejandro Jara (to use RNG) 
+c
+c     Generator of REAL N x N non symmetric matrices drawn according 
+c     to the Ginibre ensemble called <GinOE> \subset GL(N,R). 
+c     The distribution of matrix Z and its matrix 
+c     elements are given by
+c                                        z_{ij}^2
+c                        1            - ----------
+c     P(z_{ij}) = ----------------  e     2 s^2
+c                  SQRT(2\pi s^2) 
+c
+c      and
+c
+c                       1 
+c     P(Z) = -----------------------  exp[ - Tr Z^2 / (2 s^2) ]
+c             (2\pi)^(N^2/2) s^(N^2)
+c
+c     where s denotes the input variable <VARIANCE> and Z the output 
+c     variable <RMAT>.
+c
+c======================================================================      
+      SAVE  S, T, A, B, R1, R2
+      INTEGER N, emme, mu
+      REAL U(2), S, T, A, B, R1, R2
+      real*8 RMAT(N,N)
+      REAL V, X, Y, Q, DEVIAT, VARIANCE
+      real ranf
+      DATA  S, T, A, B / 0.449871, -0.386595, 0.19600, 0.25472/
+      DATA  R1, R2 / 0.27597, 0.27846/
+C         generate pair of uniform deviates
 
-      tmp=0.d0
-      tmp1=0.d0
-      tmp2=0.d0 
-      uni=dble(runif())
-      out=0
-      aa=dble(a)
-      bb=dble(b)
+      DO 200 emme = 1, N
+          DO 200 mu = 1, N
+   50 u(1)=ranf()
+      u(2)=ranf()
+     
+      V = 1.7156 * (U(2) - 0.5)
+      X = U(1) - S
+      Y = ABS(V) - T
+      Q = X**2 + Y*(A*Y - B*X)
 
-      if(alim.eq.1.and.blim.eq.1) go to 110
-      if(alim.eq.1.or.blim.eq.1) go to 100
+C           accept P if inside inner ellipse
+      IF (Q .LT. R1)  GO TO 100
+C           reject P if outside outer ellipse
+      IF (Q .GT. R2)  GO TO 50
+C           reject P if outside acceptance region
+      IF (V**2 .GT. -4.0 *ALOG(U(1)) *U(1)**2)  GO TO 50
+C           ratio of P's coordinates is normal deviate
+  100 DEVIAT = V/U(1)*VARIANCE
+  200 RMAT(emme,mu) = DEVIAT
+
+      RETURN
+      END
+
+
+c======================================================================            
+      subroutine rhaar(n,a,q)
+c======================================================================      
+c     Original: SUBROUTINE Haar_O_N(n,Q,ROUTIN)
+c     Author: Valerio Cappellini                          March 2007
+c     Version:: 1.0.0
+c     Modified: Alejandro Jara (to use RNG) 
+c
+c     This Program produce N x N REAL Random Orthogonal Matrices 
+c     distributed according
+c     to the Haar measure, making use of the QR decomposition of N x N 
+c     REAL Random (non symmetric) Matrices from the Ginibre Ensemble. 
+c     The QR decomposition is performed
+c     by means of (N-1) Householder reflections. 
+c
+c     Algorithm:
+c     ^^^^^^^^^
+c      + we start producing an N x N matrix A(0) = a(0)_{ij} from the 
+c        Ginibre Ensemble.
+c      + we fix Q(0) = I_N ( the N x N identity )
+c
+c         + we perform an iterated procedure on the index <k> running 
+c           from 1 to N-1
+c     
+c             at each step a matrix H_k is produced and the running 
+c             matrices A(k-1) 
+c             and Q(k-1) are upgrated to A(k-1) -> A(k) = H_k * A(k-1) 
+c             and Q(k-1) -> Q(k) = Q(k-1) * H_k
+c
+c         + end of iterated procedures
+c
+c      + If A(N-1)_{NN} is negative we change sign to the last 
+c        column of Q(N-1)
+c
+c     Finally Q := Q(N-1) is the REAL Random Orthogonal Matrix 
+c     distributed according to the Haar measure and 
+c
+c          t
+c     R = Q  * A(0) (here and in the following the superscript t 
+c     denotes the usual transposition) is an upper triangular matrix 
+c     with positive diagonal entries so that this upper positive 
+c     triangularity could be used as a test for the subroutine,
+c     toghether with the orthogonality of Q.
+c     
+c     At each step the algorithm make use of the N-k+1 dimensional 
+c     basis vector 
+c
+c                                    t
+c     e_k : (1 , 0 , 0 , ... , 0 , 0)         , of the N-k+1 
+c     dimensional vector
+c
+c                                                           t
+c     v := (a_{k,k} , a_{k+1,k} , ... , a_{N-1,k} , a_{N,k})   ,
+c
+c     its Euclidean norm || v ||  ,  its first entry v_1 = a_{kk}   ,
+c
+c     the sign of the latter sgn(v_1).
+c     
+c     Then we construct the vector   u := v + sgn(v_1) * || v || * e_k 
+c     and its 
+c
+c     positive rescaled-squared-norm c_k := || u ||^2 / 2  =
+c     || v ||*(|| v || + | v_1 |)
+c     so that finally
+c
+c
+c                /                   |                   \
+c               |       I_{k-1}      |         0          |
+c               |                    |                    |
+c      H_k :=   | ___________________|___________________ |
+c               |                    |                    |
+c               |                    |                    |
+c               |          0         |        M_k         |           
+c                \                   |                   /
+c     
+c     with I_{k-1} being the (k-1) x (k-1) identity , and M_k the 
+c     (N-k+1) x (N-k+1)
+c
+c                                             /             u * u   \
+c     dimensional matrix  M_k := -sgn(v_1) * | I_{N-k+1} - --------  |
+c                                             \              c_k    /
+c
+c======================================================================      
+      INTEGER n
+      REAL dk,ck
+      real*8 a(n,n),Q(n,n),sum
+      REAL VARIANCE,sigma,tau
+      INTEGER i,j,k
+
+      VARIANCE=1./SQRT(2.)
+      call ginoe(n,VARIANCE,a)
+
+      Do i=1,n
+          Do j=1,n
+              Q(i,j)=0.d0
+          Enddo
+          Q(i,i)=1.d0
+      Enddo  
+
+      sum=0.
+      do 17 k=1,n-1
+        do 11 i=k,n
+          sum=max(sum,abs(a(i,k)))
+11      continue
+        if(sum.ne.0.)then         
+          sum=0.
+          do 13 i=k,n
+            sum=sum+a(i,k)**2
+13        continue                      
+          sigma=sign(sqrt(sum),a(k,k))  
+          a(k,k)=a(k,k)+sigma           
+          ck=sigma*a(k,k)               
+                                        
+          dk=-sign(1.,sigma)            
+
+          do 16 j=k+1,n                 
+            sum=0.                      
+            do 14 i=k,n                 
+              sum=sum+a(i,k)*a(i,j)     
+14          continue                    
+            tau=sum/ck                  
+            do 15 i=k,n                     
+              a(i,j)=dk*(a(i,j)-tau*a(i,k)) 
+15          continue                        
+16        continue                           
+
+          do 26 i=1,n                   
+            sum=0.                      
+            do 24 j=k,n                 
+              sum=sum+Q(i,j)*a(j,k)     
+24          continue                    
+            tau=sum/ck                  
+            do 25 j=k,n                     
+              Q(i,j)=dk*(Q(i,j)-tau*a(j,k)) 
+25          continue                        
+26        continue
+
+        endif
+17    continue
+      if(a(n,n).lt.0.) then  
+          Do i=1,n           
+              Q(i,n)=-Q(i,n) 
+          Enddo              
+      Endif                  
       
-      if(a.gt.b)then
-        call rexit("error in limits rtpoiss")
-        out=a
-        return
+      return
+      END
+
+
+c======================================================================            
+      subroutine rhaar2(xwork,x,n,q)
+c======================================================================      
+c     subroutine to generate a orthogonal random matrix with
+c     haar distribution given a matrix of normally distributed
+c     elements. This can be used for random walks in x.
+c
+c     A.J.V., 2008
+c======================================================================      
+      implicit none
+      integer n
+      real*8 x(n,n),q(n,n)
+      real*8 xwork(n,n)
+  
+      integer i,j,k
+      real*8 ck,dk,scale,sigma,sums,tau   
+
+      do i=1,n
+         do j=1,n
+            xwork(i,j)=x(i,j)
+            q(i,j)=0.d0
+         end do
+         q(i,i)=1.d0
+      end do
+
+      do k=1,n-1
+         scale=0.d0
+         do i=1,k
+            scale=max(scale,abs(xwork(i,k)))
+         end do
+         if(scale.ne.0.d0)then
+            sums=0.d0  
+            do i=k,n
+               sums=sums+xwork(i,k)**2
+            end do  
+            sigma=sign(sqrt(sums),xwork(k,k)) 
+            xwork(k,k)=xwork(k,k)+sigma
+            ck=sigma*xwork(k,k) 
+
+            dk=-sign(1.d0,sigma)
+
+            do j=k+1,n
+               sums=0.d0
+               do i=k,n
+                  sums=sums+xwork(i,k)*xwork(i,j) 
+               end do
+               tau=sums/ck
+               do i=k,n
+                  xwork(i,j)=dk*(xwork(i,j)-tau*xwork(i,k))
+               end do
+            end do
+
+            do i=1,n
+               sums=0.d0
+               do j=k,n
+                  sums=sums+q(i,j)*xwork(j,k)
+               end do
+               tau=sums/ck
+               do j=k,n
+                  q(i,j)=dk*(q(i,j)-tau*xwork(j,k)) 
+               end do
+            end do 
+
+         end if  
+      end do
+
+      if(xwork(n,n).lt.0.d0)then
+         do i=1,n
+            q(i,n)=-q(i,n)
+         end do
       end if  
 
-      tmp1=cdfpoiss(aa,lambda,1,0)
-      tmp2=cdfpoiss(bb,lambda,1,0)
-      tmp=tmp1+uni*(tmp2-tmp1)
-
-c      call dblepr("tmp1",-1,tmp1,1)     
-c      call dblepr("tmp2",-1,tmp2,1)     
-c      call dblepr("tmp",-1,tmp,1)
-
-      out=invcdfpoiss(tmp,lambda,1,0)
-      if(out.gt.b)out=b
-      if(out.lt.a)out=a
-      go to 120
-
-100   if(alim.eq.1)then
-         tmp2=cdfpoiss(bb,lambda,1,0)
-         tmp=uni*tmp2
-         out=invcdfpoiss(tmp,lambda,1,0)
-         go to 120
-      end if
-      if(blim.eq.1)then
-         tmp1=cdfpoiss(aa,lambda,1,0)      
-         tmp=uni+(1.d0-uni)*tmp1
-         out=invcdfpoiss(tmp,lambda,1,0)
-         go to 120
-      end if
-
-110   out=rpois(lambda)
-
-120   continue
-
       return
-      end      
+      end 
+
+
 

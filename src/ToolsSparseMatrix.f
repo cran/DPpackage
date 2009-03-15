@@ -1,6 +1,18 @@
 c=======================================================================                  
 c=======================================================================                  
 c     SUBROUTINES FOR SPARSE MATRIX OPERATIONS
+c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c=======================================================================                  
 c=======================================================================                  
 
@@ -289,7 +301,7 @@ c=======================================================================
             call dblepr("x(i,j)",-1,x(i,j),1) 
          end do  
       end do
-30    continue
+ 
       return
       end      
             
@@ -303,7 +315,7 @@ c     A.J.V. 2007
 c=======================================================================
       integer nh,isize
       real*8 x(12,12),h(nh,3)
-      integer i,j
+      integer i,j,ii,jj
       
       if(isize.gt.12)then
          call rexit("matrix too large to print")
@@ -312,7 +324,9 @@ c=======================================================================
         do 10 j=1,isize
 10        x(i,j)=0
       do 20 i=1,isize
-        do 20 j=h(i,1),h(i+1,1)-1
+         ii=int(h(i,1))
+         jj=int(h(i+1,1))   
+         do 20 j=ii,jj-1
           if(h(j,2).gt.isize) then
              call intpr("element outside bound",-1,i,1) 
              call dblepr("element outside bound",-1,h(j,2),1) 
@@ -327,7 +341,6 @@ c=======================================================================
             call dblepr("x(i,j)",-1,x(i,j),1) 
          end do  
       end do
-30    continue
       return
       end      
 
@@ -390,9 +403,9 @@ c=======================================================================
       do 20 i=1,isize
         do 20 j=ia(i),ia(i+1)-1
            if(ju(iju(i)-ia(i)+j).gt.isize) then
-             call intpr("element outside bound",-1,i,1) 
-             call intpr("element outside bound",-1,ju(iju(i)-ia(i)+j),1) 
-             call dblepr("element outside bound",-1,a(j),1) 
+             call intpr("element outside bound",-1,i,1)
+             call intpr("element outside bound",-1,ju(iju(i)-ia(i)+j),1)
+             call dblepr("element outside bound",-1,a(j),1)
             else
               if (ju(iju(i)-ia(i)+j).ne.0) x(i,ju(iju(i)-ia(i)+j))=a(j)
           endif
@@ -403,7 +416,6 @@ c=======================================================================
             call dblepr("x(i,j)",-1,x(i,j),1) 
          end do  
       end do
-30    continue
 
       return
       end
@@ -440,12 +452,12 @@ c=======================================================================
             call intpr("x(i,j)",-1,x(i,j),1) 
          end do  
       end do
-30    continue
+
       return
       end
 
 c=======================================================================      
-      subroutine checkdiag(n,text,ia,ja,a)
+      subroutine checkdiag(n,ia,ja,a)
 c=======================================================================      
 c     quits if sparse matrix ia-ja-a of rank n has missing or <=0 
 c     diagonals
@@ -454,7 +466,6 @@ c     A.J.V. 2007
 c=======================================================================
       integer n,ia(1),ja(1),i,j,inddiag
       real*8 a(1)
-      character text*(*)
 
       do i=1,n
          inddiag=0
@@ -467,7 +478,7 @@ c=======================================================================
          if(inddiag.eq.0) then
             call rexit("missing diagonal element")                  
          else if(a(inddiag).le.0) then
-            call rexit("<=0 diagonal element")                           
+            call rexit("<=0 diagonal element")
          end if
       end do
       end
@@ -486,7 +497,7 @@ c=======================================================================
 
       tracediag=0
       if(l1.le.0 .or. l2.gt.n) then
-         call rexit("l1 or l2 out of range")                                 
+         call rexit("l1 or l2 out of range")
       end if
       do i=l1,l2
          do j=ia(i),ia(i+1)-1
@@ -495,7 +506,7 @@ c=======================================================================
                goto 10
             end if
          end do
-         call rexit("tracediag: missing diagonal element")                                 
+         call rexit("tracediag: missing diagonal element")
 
 10       continue
       end do
@@ -533,6 +544,7 @@ c=======================================================================
       tl=0
       td=0
       tu=0
+      tracematrix=0.d0
 
 c scatter row i of b
       do i=1,n1

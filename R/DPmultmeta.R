@@ -3,7 +3,8 @@
 ### using a Dirichlet Process prior for the distribution of 
 ### the random effects.
 ###
-### Copyright: Alejandro Jara and Peter Mueller, 2008
+### Copyright: Alejandro Jara and Peter Mueller, 2008-2009.
+###
 ### Last modification: 02-06-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -23,13 +24,15 @@
 ### The author's contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Físicas y Matemáticas
+###      Universidad de Concepción
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepción
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 ###      Peter Mueller
 ###      Department of Biostatistics

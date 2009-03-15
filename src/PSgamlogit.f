@@ -1,25 +1,25 @@
     
 c=======================================================================                      
       subroutine psgamlogit
-     &                (nrec,nfixed,p,nsmooth,q,starts,ends,nsmooths,    #8 
-     &                 maxq,x,z,y,roffset,ngrid,znew,zmean,xreal,possfp,#10
-     &                 bet0,prec,sb,taub,iapm,japm,apm,nznh,pordv,      #9
-     &                 beta,b,sigmab,                                   #3
-     &                 mcmc,nsave,                                      #2
-     &                 acrate,cpo,randsave,thetasave,pssave,            #5
-     &                 seed,                                            #1
-     &                 iflagp,betac,workmp1,workmp2,workmhp1,workvp1,   #6       
-     &                 xtx,xty,                                         #2 
-     &                 iflagq,bc,workmq1,workmq2,workmhq1,workvq1,      #6       
-     &                 ztz,zty,ztzinv,theta,                            #4 
-     &                 mc,betasave,bsave,workvps)                       #4
+     &                (nrec,nfixed,p,nsmooth,q,starts,ends,nsmooths,    
+     &                 maxq,x,z,y,roffset,ngrid,znew,xreal,possfp,
+     &                 bet0,prec,sb,taub,iapm,japm,apm,nznh,pordv,      
+     &                 beta,b,sigmab,                                   
+     &                 mcmc,nsave,                                      
+     &                 acrate,cpo,randsave,thetasave,pssave,            
+     &                 seed,                                            
+     &                 iflagp,betac,workmp1,workmp2,workmhp1,workvp1,         
+     &                 xtx,xty,                                         
+     &                 iflagq,bc,workmq1,workmq2,workmhq1,workvq1,            
+     &                 ztz,zty,ztzinv,theta,                            
+     &                 mc,betasave,bsave,workvps)                       
 c=======================================================================                      
-c     # of arguments = 59.
+c     # of arguments = 58.
 c
 c     Subroutine `psgamlogit' to run a Markov chain in a semiparametric 
 c     binomial model, using a B-splines and penalties.
 c
-c     Copyright: Alejandro Jara, 2007
+c     Copyright: Alejandro Jara, 2007-2009.
 c
 c     Version 1.0:
 c
@@ -41,16 +41,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c
@@ -81,7 +81,6 @@ c        ngrid       :  integer giving the number of grid points
 c                       where the curves are evaluated. 
 c        znew        :  real matrix giving the design for a grid
 c                       of values of the covariates, znew(ngrid,nsmooths). 
-c        zmean       :  real vector used to normalize, zmean(nsmooths). 
 c        xreal       :  real matrix giving the grid
 c                       of values of the covariates, xreal(ngrid,nsmooths). 
 c        possfp      :  integer vector giving the location of the 
@@ -225,7 +224,6 @@ c+++++Data
       integer starts(nsmooths),ends(nsmooths)
       integer possfp(nsmooths)
       real*8 roffset(nrec),x(nrec,p),z(nrec,q),znew(ngrid,q)
-      real*8 zmean(q)      
       real*8 xreal(ngrid,nsmooths)
 
 c+++++Prior 
@@ -695,7 +693,7 @@ c              end do
                  end do
               end do
 
-              call invdet2(ztz,maxq,jj,ztzinv,detlog,iflagq,workvq1)      
+              call invdet2(ztz,maxq,jj,ztzinv,detlog,iflagq,workvq1)
 
               do i=1,jj
                  tmp1=0.d0
@@ -923,7 +921,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                             
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
 
       do i=1,1+nsmooth

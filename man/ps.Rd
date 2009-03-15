@@ -32,7 +32,7 @@ Eilers, P.H.C. and Marx, B.D. (1996) Flexible Smoothing with B-splines and
 }
 
 \author{
-  Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+  Alejandro Jara \email{<ajarav@udec.cl>}
  }
 
 \examples{
@@ -41,6 +41,7 @@ Eilers, P.H.C. and Marx, B.D. (1996) Flexible Smoothing with B-splines and
    # fit log(Start) using a smoothing spline with 5 df.
      y ~ Age + s(log(Start), degree=5)
 }
+
 \keyword{models}
 \keyword{regression}
 \keyword{nonparametric}

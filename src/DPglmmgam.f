@@ -1,22 +1,22 @@
 
 c=======================================================================                      
       subroutine dpglmmgam(
-     &                     datastr,maxni,nrec,nsubject,nfixed,p,q,      #7
-     &                     subject,x,y,z,roffset,                       #5
-     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tau,tinv,     #9
-     &                     mcmc,nsave,                                  #2
-     &                     acrate,cpo,randsave,thetasave,               #4 
-     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,  #8
-     &                     sigmainv,ss,mc,                              #3
-     &                     betac,cstrt,ccluster,iflag,iflagb,prob,      #6
-     &                     quadf,seed,                                  #2
-     &                     theta,thetac,workb1,                         #3
-     &                     workb2,workmh1,workmh2,workmh3,workv1,       #5
-     &                     workvb1,workvb2,xtx,xty,                     #4 
-     &                     zty,ztz,                                     #2
-     &                     ztzinv,betasave,bsave)                       #3
+     &                     datastr,maxni,nrec,nsubject,nfixed,p,q,      
+     &                     subject,x,y,z,roffset,                       
+     &                     a0b0,b0,nu0,prec,psiinv,sb,smu,tau,tinv,     
+     &                     mcmc,nsave,                                  
+     &                     acrate,cpo,randsave,thetasave,                
+     &                     alpha,b,bclus,beta,betar,mu,ncluster,sigma,  
+     &                     sigmainv,ss,mc,                              
+     &                     betac,cstrt,ccluster,iflag,iflagb,prob,      
+     &                     quadf,seed,                                  
+     &                     theta,thetac,workb1,                         
+     &                     workb2,workmh1,workmh2,workmh3,workv1,       
+     &                     workvb1,workvb2,xtx,xty,                      
+     &                     zty,ztz,                                     
+     &                     betasave,bsave)                       
 c=======================================================================                      
-c     # of arguments = 62.
+c     # of arguments = 61.
 c
 c     Subroutine `dpglmmgam' to run a Markov chain in the  
 c     semiparametric gamma mixed model using a Dirichlet Process prior 
@@ -25,7 +25,7 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Copyright: Alejandro Jara, 2006-2007
+c     Copyright: Alejandro Jara, 2006-2009
 c
 c     The parametrization considered here is:
 c     log p(Y)= v* ((-1/mu)*Y - log(mu)) + c(Y,v),
@@ -67,16 +67,16 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
 c---- Data -------------------------------------------------------------
 c 
@@ -268,15 +268,13 @@ c        zty         :  real vector used to save the product
 c                       Zt(Y-Xbeta), zty(q).
 c        ztz         :  real matrix used to save the product 
 c                       ZtSigma^1Z, ztz(q,q).
-c        ztzinv      :  real matrix used to save the inverted 
-c                       ztz, ztzinv(q,q).
 c=======================================================================                  
       implicit none 
 
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1)
-      real*8 y(nrec),roffset(nrec),x(nrec,p),z(nrec,q)	
+      real*8 y(nrec),roffset(nrec),x(nrec,p),z(nrec,q)
       
 c+++++Prior 
       integer nu0,murand,sigmarand
@@ -319,7 +317,7 @@ c+++++random effects
       integer iflagb(q)
       real*8 theta(q)      
       real*8 thetac(q)
-      real*8 zty(q),ztz(q,q),ztzinv(q,q)
+      real*8 zty(q),ztz(q,q)
       real*8 workb1(q,q),workb2(q,q)
       real*8 workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
       real*8 workvb1(q),workvb2(q)
@@ -629,8 +627,8 @@ c++++++++++ observation in cluster with more than 1 element
                      do l=1,p
                         eta=eta+x(datastr(i,k+1),l)*beta(l)
                      end do
-		     do l=1,q
-		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
                      
                      eta=eta+roffset(datastr(i,k+1))
@@ -663,8 +661,8 @@ c++++++++++ observation in cluster with more than 1 element
                   do l=1,p
                      eta=eta+x(datastr(i,k+1),l)*beta(l)
                   end do
- 		  do l=1,q
- 		     eta=eta+z(datastr(i,k+1),l)*theta(l)
+                  do l=1,q
+                     eta=eta+z(datastr(i,k+1),l)*theta(l)
                   end do
                   eta=eta+roffset(datastr(i,k+1))
 
@@ -686,9 +684,9 @@ c++++++++++ observation in cluster with more than 1 element
                   ss(i)=ncluster
                   ccluster(ncluster)=1
                   cstrt(ncluster,ccluster(ncluster))=i                  
-	          do j=1,q
-	             bclus(ncluster,j)=theta(j)
-	          end do
+                  do j=1,q
+                     bclus(ncluster,j)=theta(j)
+                  end do
                end if               
             end if
 
@@ -700,8 +698,8 @@ c++++++++++ subject in cluster with only 1 observation
                 
                if(since.lt.ncluster)then
                    call relabel(i,since,nsubject,q,ncluster,
-     &                          cstrt,ccluster,ss,bclus,theta)                   
-	       end if
+     &                          cstrt,ccluster,ss,bclus,theta)
+               end if
 
                ccluster(ncluster)=ccluster(ncluster)-1 
                ncluster=ncluster-1
@@ -715,8 +713,8 @@ c++++++++++ subject in cluster with only 1 observation
                      do l=1,p
                         eta=eta+x(datastr(i,k+1),l)*beta(l)
                      end do
-		     do l=1,q
-		        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
+                     do l=1,q
+                        eta=eta+z(datastr(i,k+1),l)*bclus(j,l)
                      end do
                      
                      eta=eta+roffset(datastr(i,k+1))
@@ -742,8 +740,8 @@ c++++++++++ subject in cluster with only 1 observation
                   do l=1,p
                      eta=eta+x(datastr(i,k+1),l)*beta(l)
                   end do
- 		  do l=1,q
- 		     eta=eta+z(datastr(i,k+1),l)*theta(l)
+                  do l=1,q
+                     eta=eta+z(datastr(i,k+1),l)*theta(l)
                   end do
                   
                   eta=eta+roffset(datastr(i,k+1))
@@ -760,19 +758,19 @@ c++++++++++ subject in cluster with only 1 observation
                if(evali.le.ncluster)then
                   ss(i)=evali
                   ccluster(evali)=ccluster(evali)+1
-                  cstrt(evali,ccluster(evali))=i                                    
+                  cstrt(evali,ccluster(evali))=i
                end if   
                if(evali.gt.ncluster)then
                   ncluster=ncluster+1
                   ss(i)=ncluster
                   ccluster(ncluster)=1
                   cstrt(ncluster,ccluster(ncluster))=i                  
-	          do j=1,q
-	             bclus(ncluster,j)=theta(j)
-	          end do
+                  do j=1,q
+                     bclus(ncluster,j)=theta(j)
+                  end do
                end if      
-	    
-	    end if
+
+            end if
 
          end do
 
@@ -1089,7 +1087,7 @@ c+++++++ check if the user has requested an interrupt
                do j=1,q
                   do k=1,q
                      quadf(j,k)=quadf(j,k)+               
-     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))                   
+     &                          (bclus(i,j)-mu(j))*(bclus(i,k)-mu(k))
                   end do
                end do
             end do
@@ -1230,7 +1228,7 @@ c+++++++++++++ regression coefficients
                if(nfixed.gt.0)then
                   do i=1,p
                      thetasave(isave,q+i)=beta(i)
-                     betasave(i)=betasave(i)+beta(i)                     
+                     betasave(i)=betasave(i)+beta(i)
                   end do
                end if   
 
@@ -1269,8 +1267,8 @@ c+++++++++++++ cpo
                         eta=eta+x(i,j)*beta(j)
                      end do
                   end if   
-		  do j=1,q
-		     eta=eta+z(i,j)*b(subject(i),j)
+                  do j=1,q
+                     eta=eta+z(i,j)*b(subject(i),j)
                   end do
                   eta=eta+roffset(i)
                   call dgamma(y(i),exp(eta),v,tmp1) 
@@ -1304,7 +1302,7 @@ c+++++++++++++ print
       
       do i=1,nrec
          cpo(i,1)=dble(nsave)/cpo(i,1)
-         cpo(i,2)=cpo(i,2)/dble(nsave)                                    
+         cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
       
       tau(3)=v
@@ -1327,8 +1325,8 @@ c+++++++++++++ print
          do j=1,p
             eta=eta+x(i,j)*betasave(j)
          end do
-	 do j=1,q
-	   eta=eta+z(i,j)*bsave(subject(i),j)
+         do j=1,q
+            eta=eta+z(i,j)*bsave(subject(i),j)
          end do
          eta=eta+roffset(i)               
          

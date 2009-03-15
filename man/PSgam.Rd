@@ -52,7 +52,7 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
                      the following integers: \code{nburn} giving the number of burn-in 
                      scans, \code{nskip} giving the thinning interval, \code{nsave} giving
-                     the total number of scans to be saved, and code{ndisplay} giving
+                     the total number of scans to be saved, and \code{ndisplay} giving
                      the number of saved scans to be displayed on screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
                      out).}   
@@ -82,7 +82,7 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
   \deqn{\eta_i = X_i \beta + f_1(x_{1i})+...+f_p(x_{pi}), i=1,\ldots,n}{etai = Xi beta + f1(x1i)+...+fp(xpi), i=1,\ldots,n}
   where the effect \eqn{f} of the a covariate \eqn{x} is approximated by a polinomial
   spline with equally spaced knots, written in terms of a linear combination of B-spline basis functions.
-  Specifically, the function eqn{f} is aproximated by a spline of degree \eqn{l} with \eqn{r}
+  Specifically, the function \eqn{f} is aproximated by a spline of degree \eqn{l} with \eqn{r}
   equally spaced knots within the domain of \eqn{x}. Is is well known that
   this spline can be written in terms of a linear combination of \eqn{q=l+r} B-spline
   basis,
@@ -211,7 +211,7 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 }
 
 \author{
-Alejandro Jara \email{<Alejandro.JaraVallejos@med.kuleuven.be>}
+Alejandro Jara \email{<ajarav@udec.cl>}
 }
 
 \keyword{models}

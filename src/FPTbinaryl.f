@@ -17,7 +17,7 @@ c     Subroutine `fptbinaryl' to run a Markov chain in the
 c     binary regression model using a Finite Polya Tree prior 
 c     for the link, centered in a logistic distribution.
 c
-c     Copyright: Alejandro Jara and Tim Hanson, 2006
+c     Copyright: Alejandro Jara and Tim Hanson, 2006-2009
 c
 c     Version 1.0: 
 c
@@ -39,29 +39,29 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The authors's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Físicas y Matemáticas
+c      Universidad de Concepción
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepción
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 c
-c     Tim Hanson
-c     Division of Biostatistics
-c     University of Minnesota
-c     School of Public Health
-c     A460 Mayo Building, 
-c     MMC 303
-c     420 Delaware St SE
-c     Minneapolis, MN 55455
-c     Voice: 612-626-7075  URL  : http://www.biostat.umn.edu/~hanson/
-c     Fax  : 612-626-0660  Email: hanson@biostat.umn.edu
+c      Tim Hanson
+c      Division of Biostatistics
+c      University of Minnesota
+c      School of Public Health
+c      A460 Mayo Building, 
+c      MMC 303
+c      420 Delaware St SE
+c      Minneapolis, MN 55455
+c      Voice: 612-626-7075  URL  : http://www.biostat.umn.edu/~hanson/
+c      Fax  : 612-626-0660  Email: hanson@biostat.umn.edu
 c
-c---- Data -------------------------------------------------------------
+c----- Data ------------------------------------------------------------
 c
 c        model       :  integer indicating if the model correct for
 c                       missclasification (1) or not (0).
