@@ -112,7 +112,7 @@ DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{betaR}, \code{betaF}, \code{sigma2e}, 
-  \code{mu}, the elements of \code{Sigma}, \code{\alpha}, and the 
+  \code{mu}, the elements of \code{Sigma}, \code{alpha}, and the 
   number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 

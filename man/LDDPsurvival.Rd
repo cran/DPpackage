@@ -85,7 +85,7 @@ LDDPsurvival(formula,zpred,prior,mcmc,state,status,grid,
    where, \eqn{G_0 = N(\beta| \mu_b, s_b)\Gamma(\sigma^2|\tau_1/2,\tau_2/2)}{G0 = N(beta| mub, sb)Gamma(sigma2|tau1/2,tau2/2)}. To
    complete the model specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
-  \deqn{\mu_b | m_0, S_{\beta_0} \sim N(m_0,S_{\beta_0})}{mub | m0, Sbeta0 ~ N(m0,Sbeta0)}
+  \deqn{\mu_b | m_0, S_0 \sim N(m_0,S_0)}{mub | m0, S0 ~ N(m0,S0)}
   \deqn{s_b | \nu, \Psi \sim IW(\nu,\Psi)}{sb | nu, psi ~ IW(nu,psi)}
   \deqn{\tau_2 | \tau_{s1}, \tau_{s2} \sim Gamma(\tau_{s1}/2,\tau_{s2}/2)}{tau2 ~ Gamma(tau2 | taus1, taus2 ~ Gamma(taus1/2,taus2/2)}
   
@@ -149,6 +149,7 @@ LDDPsurvival(formula,zpred,prior,mcmc,state,status,grid,
 }
 
 \references{
+De Iorio, M., Muller, P., Rosner, G., and MacEachern, S. (2004) An ANOVA model for dependent  random measures. Journal of the American Statistical Association, 99(465): 205-215.
 
 De Iorio, M., Johnson, W., Muller, P., and Rosner, G.L. (2009) Bayesian Nonparametric Nonproportional
   Hazards Survival Modeling. Biometrics, To Appear.
@@ -182,7 +183,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Prior information
 
-      Sbeta0 <- diag(100,2)
+      S0 <- diag(100,2)
       m0 <- rep(0,2)
       psiinv <- diag(1,2)
      
@@ -190,7 +191,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
                     b0=1,
                     nu=4,
                     m0=m0,
-                    Sbeta0=Sbeta0,
+                    S0=S0,
                     psiinv=psiinv,
                     tau1=6.01,
                     taus1=6.01,

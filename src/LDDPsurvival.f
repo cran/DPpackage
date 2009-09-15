@@ -6,7 +6,7 @@ c=======================================================================
      &                        psiinv,
      &                        ncluster,ss,alpha,betaclus,sigmaclus,
      &                        mub,sb,tau2,y,
-     &                        cpo,thetasave,randsave,
+     &                        cpo,thetasave,randsave,survsave,
      &                        denspm,denspl,densph,
      &                        hazpm,hazpl,hazph,
      &                        meanfpm,meanfpl,meanfph,
@@ -46,11 +46,11 @@ c     The author's contact information:
 c
 c     Alejandro Jara
 c     Department of Statistics
-c     Facultad de Ciencias Físicas y Matemáticas
-c     Universidad de Concepción
+c     Facultad de Ciencias Fisicas y Matematicas
+c     Universidad de Concepcion
 c     Avenida Esteban Iturra S/N
 c     Barrio Universitario
-c     Concepción
+c     Concepcion
 c     Chile
 c     Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c     Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -130,6 +130,8 @@ c
 c        cpo         :  real giving the cpos and fsos, cpo(nrec,2). 
 c        randsave    :  real matrix containing the mcmc samples for
 c                       the regression coeff, randsave(nsave,nrec*p).
+c        survsave    :  real matrix containing the mcmc samples for
+c                       the survival curves, randsave(nsave,npred*ngrid).
 c        thetasave   :  real matrix containing the mcmc samples for
 c                       the parameters, thetasave(nsave,p+p*(p+1)/2+3)
 c        denspm      :  real matrix giving the posterior mean of the 
@@ -253,6 +255,7 @@ c++++ output
       real*8 cpo(nrec,2)
       real*8 thetasave(nsave,p+p*(p+1)/2+3)
       real*8 randsave(nsave,p*nrec)
+      real*8 survsave(nsave,npred*ngrid)
       real*8 denspm(npred,ngrid)
       real*8 denspl(npred,ngrid)
       real*8 densph(npred,ngrid)
@@ -824,6 +827,45 @@ c+++++++++++++ Partially sampling the DP.
                   tmp2=tmp2+tmp1
                end do
 
+
+               call simdisc(prob,nrec+100,ncluster+1,evali)
+
+               if(evali.le.ncluster)then
+                  sigmawork=sigmaclus(evali)
+                  do k=1,p
+                     betawork(k)=betaclus(evali,k)
+                  end do
+               end if
+               if(evali.eq.ncluster+1)then 
+                  sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
+                  sigmaclus(ncluster+1)=sigmawork
+        
+                  call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
+                  do k=1,p
+                     betaclus(ncluster+1,k)=betawork(k)
+                  end do               
+               end if
+
+               tmp1=weight
+               do i=1,npred  
+                  call rchkusr()
+     
+                  muwork=0.0
+                  do j=1,p
+                     muwork=muwork+zpred(i,j)*betawork(j)
+                  end do
+           
+                  fm(i)=fm(i)+muwork*tmp1
+                  do j=1,ngrid  
+                     denspl(i,j)=denspl(i,j)+tmp1*dlnrm(grid(j),
+     &                           muwork,sqrt(sigmawork),0)
+ 
+                     survpl(i,j)=survpl(i,j)+tmp1*cdflnorm(grid(j),
+     &                           muwork,sqrt(sigmawork),0,0)                
+                  end do 
+               end do
+
+               ii=0
                do i=1,npred
                   call rchkusr()
                   meanfpm(i)=meanfpm(i)+fm(i)
@@ -832,6 +874,8 @@ c+++++++++++++ Partially sampling the DP.
                      survpm(i,j)=survpm(i,j)+survpl(i,j)
                      hazpl(i,j)=denspl(i,j)/survpl(i,j)
                      hazpm(i,j)=hazpm(i,j)+hazpl(i,j)
+                     ii=ii+1
+                     survsave(isave,ii)=survpl(i,j)
                   end do
                   write(1) (denspl(i,j),j=1,ngrid)
                   write(3) (survpl(i,j),j=1,ngrid)
@@ -840,15 +884,6 @@ c+++++++++++++ Partially sampling the DP.
                write(2) (fm(i),i=1,npred)
 
 c+++++++++++++ cpo
-
-
-               do i=1,ncluster
-                  prob(i)=dble(ccluster(i))/(alpha+dble(nrec))
-               end do
-               do i=ncluster+1,ncluster+100
-                  prob(i)=alpha/(100.d0*(alpha+dble(nrec)))
-               end do   
-               call simdisc(prob,nrec+100,ncluster+100,evali)
 
                do i=ncluster+1,ncluster+100
 
@@ -868,6 +903,15 @@ c+++++++++++++ cpo
                do ii=1,ncluster+100
    
                   do i=1,nrec
+
+                     ns=ccluster(ii)
+                     if(ss(i).eq.ii)ns=ns-1
+                     if(ii.le.ncluster)then
+                        prob(ii)=dble(ns)/(alpha+dble(nrec-1))
+                      else
+                        prob(ii)=alpha/(100.d0*(alpha+dble(nrec-1)))
+                     end if   
+
                      muwork=0.0
                      do k=1,p
                         muwork=muwork+z(i,k)*betaclus(ii,k)

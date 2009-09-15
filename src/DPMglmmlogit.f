@@ -42,11 +42,11 @@ c     The author's contact information:
 c
 c      Alejandro Jara
 c      Department of Statistics
-c      Facultad de Ciencias Físicas y Matemáticas
-c      Universidad de Concepción
+c      Facultad de Ciencias Fisicas y Matematicas
+c      Universidad de Concepcion
 c      Avenida Esteban Iturra S/N
 c      Barrio Universitario
-c      Concepción
+c      Concepcion
 c      Chile
 c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -428,10 +428,6 @@ c++++++++++++++++++++++++++++++++
                logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -445,33 +441,33 @@ c++++++++++++++++++++++++++++++++
                end do
             end do
 
-            do i=1,p
-               do j=1,p
-                  xsweep(i,j)=xtx(i,j)
-               end do
-               xsweep(i,p+1)=xty(i)
-               xsweep(p+1,i)=xty(i)
-            end do
-            xsweep(p+1,p+1)=tmp1
-            
-            call sweep(xsweep,p+1,p+1,1,p,ii)
-            if(ii.eq.1)call rexit("matrix not pd in sweep subroutine")
-            
-            do i=1,p
-               do j=1,p
-                  xtx(i,j)=xsweep(i,j)
-               end do
-               workvp(i)=xsweep(i,p+1)
-            end do
-
-c            call inverse(xtx,p,iflagp)      
 c            do i=1,p
-c               tmp1=0.d0
 c               do j=1,p
-c                  tmp1=tmp1+xtx(i,j)*xty(j) 
+c                  xsweep(i,j)=xtx(i,j)
 c               end do
-c               workvp(i)=tmp1
+c               xsweep(i,p+1)=xty(i)
+c               xsweep(p+1,i)=xty(i)
 c            end do
+c            xsweep(p+1,p+1)=tmp1
+c           
+c            call sweep(xsweep,p+1,p+1,1,p,ii)
+c            if(ii.eq.1)call rexit("matrix not pd in sweep subroutine")
+c            
+c            do i=1,p
+c               do j=1,p
+c                  xtx(i,j)=xsweep(i,j)
+c               end do
+c               workvp(i)=xsweep(i,p+1)
+c            end do
+
+            call inverse(xtx,p,iflagp)      
+            do i=1,p
+               tmp1=0.d0
+               do j=1,p
+                  tmp1=tmp1+xtx(i,j)*xty(j) 
+               end do
+               workvp(i)=tmp1
+            end do
 
             call rmvnorm(p,workvp,xtx,workmhp,xty,betac)
 
@@ -513,10 +509,6 @@ c++++++++++ evaluating the likelihood
                loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -530,33 +522,33 @@ c++++++++++ evaluating the likelihood
                end do
             end do
 
-            do i=1,p
-               do j=1,p
-                  xsweep(i,j)=xtx(i,j)
-               end do
-               xsweep(i,p+1)=xty(i)
-               xsweep(p+1,i)=xty(i)
-            end do
-            xsweep(p+1,p+1)=tmp1
-            
-            call sweep(xsweep,p+1,p+1,1,p,ii)
-            if(ii.eq.1)call rexit("matrix not pd in sweep subroutine")
-
-            do i=1,p
-               do j=1,p
-                  xtx(i,j)=xsweep(i,j)
-               end do
-               workvp(i)=xsweep(i,p+1)
-            end do
-
-c            call inverse(xtx,p,iflagp)      
 c            do i=1,p
-c               tmp1=0.d0
 c               do j=1,p
-c                  tmp1=tmp1+xtx(i,j)*xty(j) 
+c                  xsweep(i,j)=xtx(i,j)
 c               end do
-c               workvp(i)=tmp1
+c               xsweep(i,p+1)=xty(i)
+c               xsweep(p+1,i)=xty(i)
 c            end do
+c            xsweep(p+1,p+1)=tmp1
+c            
+c            call sweep(xsweep,p+1,p+1,1,p,ii)
+c            if(ii.eq.1)call rexit("matrix not pd in sweep subroutine")
+c
+c            do i=1,p
+c               do j=1,p
+c                  xtx(i,j)=xsweep(i,j)
+c               end do
+c               workvp(i)=xsweep(i,p+1)
+c            end do
+
+            call inverse(xtx,p,iflagp)      
+            do i=1,p
+               tmp1=0.d0
+               do j=1,p
+                  tmp1=tmp1+xtx(i,j)*xty(j) 
+               end do
+               workvp(i)=tmp1
+            end do
 
 c++++++++++ evaluating the candidate generating kernel
 
@@ -647,10 +639,6 @@ c++++++++++ generating a candidate
                logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -720,10 +708,6 @@ c++++++++++ evaluating the likelihood
                loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))

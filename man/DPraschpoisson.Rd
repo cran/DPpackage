@@ -12,7 +12,8 @@
 \usage{
 
 DPraschpoisson(y,prior,mcmc,offset,state,status,
-               grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()))
+               grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()),
+               compute.band=FALSE)
      
 }
 
@@ -31,7 +32,7 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
                      (is must be specified if \code{mub} and \code{Sb} are missing),
                      \code{tau1} and \code{tau2} giving the hyperparameters for the 
                      prior distribution of variance of the normal baseline distribution,
-                     \code{sigma} giving the standard deviation of the normal baseline distribution
+                     \code{sigma2} giving the variance of the normal baseline distribution
                      (is must be specified if \code{tau1} and \code{tau2} are missing),
                      and \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the difficulty
@@ -61,6 +62,7 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
 
     \item{data}{     data frame.}       
     
+    \item{compute.band}{  logical variable indicating whether the confidence band for the CDF must be computed.}       
 }
 
 \details{
@@ -83,10 +85,10 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
   Escobar and West (1995) is used. To let \eqn{\alpha}{alpha} to be fixed at a particular
   value, set \eqn{a_0}{a0} to NULL in the prior specification.
 
-  Each of the parameters of the baseline distribution, \eqn{\mu}{mu} and \eqn{\sigma}{sigma} 
+  Each of the parameters of the baseline distribution, \eqn{\mu}{mu} and \eqn{\sigma^2}{sigma2} 
   can be considered as random or fixed at some particular value. In the 
   first case, a Mixture of Dirichlet Process is considered as a prior
-  for the distribution of the random effects. To let \eqn{\sigma}{sigma} to be fixed at a particular
+  for the distribution of the random effects. To let \eqn{\sigma^2}{sigma2} to be fixed at a particular
   value, set \eqn{\tau_1}{tau1} to NULL in the prior specification. 
   To let \eqn{\mu}{mu} to be fixed at a particular
   value, set \eqn{\mu_b}{mub} to NULL in the prior specification.
@@ -98,14 +100,19 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
   the \code{DPraschpoisson} function. In this case, the fully conditional 
   distributions for the difficulty parameters and in the resampling 
   step of random effects are generated through the Metropolis-Hastings algorithm 
-  with a IWLS proposal (see, West, 1985 and Gamerman, 1997). 
+  with a IWLS proposal (see, West, 1985 and Gamerman, 1997).
+
+  The functionals parameters are sampled using
+  the \eqn{\epsilon}{epsilon}-DP approximation proposed by Muliere and Tardella (1998), with
+  \eqn{\epsilon}{epsilon}=0.01.  
+ 
 }
 
 \value{
   An object of class \code{DPraschpoisson} representing the Rasch Poisson
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. The results include 
-  \code{beta}, \code{mu}, \code{sigma}, the precision parameter 
+  \code{beta}, \code{mu}, \code{sigma2}, the precision parameter 
   \code{alpha}, and the number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -132,7 +139,7 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
   
   \item{mu}{ giving the mean of the normal baseline distributions.}
   
-  \item{sigma}{ giving the std of the normal baseline distributions.}
+  \item{sigma2}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{
@@ -149,6 +156,9 @@ Gamerman, D. (1997) Sampling from the posterior distribution in generalized line
 
 MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
   Models. Journal of Computational and Graphical Statistics, 7 (2): 223-338.
+
+Muliere, P. and Tardella, L. (1998) Approximating distributions of random functionals
+  of Ferguson-Dirichlet priors. The Canadian Journal of Statistics, 26(2): 283-297.
 
 Neal, R. M. (2000) Markov Chain sampling methods for Dirichlet process mixture models.
   Journal of Computational and Graphical Statistics, 9:249-265.
@@ -167,48 +177,66 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
     ####################################
     # A simulated Data Set
     ####################################
-      nsubject<-200
-      nitem<-5
+      nsubject <- 200
+      nitem <- 5
       
-      y<-matrix(0,nrow=nsubject,ncol=nitem)
+      y <- matrix(0,nrow=nsubject,ncol=nitem)
       
-      ind<-rbinom(nsubject,1,0.5)
-      theta<-ind*rnorm(nsubject,-3,0.25)+(1-ind)*rnorm(nsubject,3,0.25)
-      beta<-c(0,seq(-1,1,length=nitem-1))
+      ind <- rbinom(nsubject,1,0.5)
+      theta <- ind*rnorm(nsubject,1,0.25)+(1-ind)*rnorm(nsubject,3,0.25)
+      beta <- c(0,seq(-1,1,length=nitem-1))
+      true.cdf <- function(grid)
+      {
+         0.5*pnorm(grid,1,0.25)+0.5*pnorm(grid,3,0.25) 
+      }  
 
       for(i in 1:nsubject)
       {
          for(j in 1:nitem)
          {
-            eta<-theta[i]-beta[j]         
-            mean<-exp(eta)
-            y[i,j]<-rpois(1,mean)
+            eta <- theta[i]-beta[j]         
+            means <- exp(eta)
+            y[i,j] <- rpois(1,means)
          }
       }
  
     # Prior information
 
-      beta0<-rep(0,nitem-1)
-      Sbeta0<-diag(1000,nitem-1)
+      beta0 <- rep(0,nitem-1)
+      Sbeta0 <- diag(1000,nitem-1)
 
-      prior<-list(alpha=1,sigma=1,mu=0,beta0=beta0,
-                  Sbeta0=Sbeta0)
+      prior <- list(alpha=1,
+                    tau1=6.02,
+                    tau2=2.02,
+                    mub=0,
+                    Sb=100,
+                    beta0=beta0,
+                    Sbeta0=Sbeta0)
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
 
-      nburn<-5000
-      nsave<-25000
-      nskip<-20
-      ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+      nburn <- 5000
+      nsave <- 5000
+      nskip <- 0
+      ndisplay<- 1000
+      mcmc <- list(nburn=nburn,
+                   nsave=nsave,
+                   nskip=nskip,
                    ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-DPraschpoisson(y=y,prior=prior,mcmc=mcmc, 
-                           state=state,status=TRUE)
+      fit1 <- DPraschpoisson(y=y,prior=prior,mcmc=mcmc, 
+                             state=state,status=TRUE,grid=seq(-1,5,0.01),
+                             compute.band=TRUE)
+
+    # CDF estimate and true
+      plot(fit1$grid,true.cdf(fit1$grid),type="l",lwd=2,col="red",xlab=expression(theta),ylab="CDF")
+      lines(fit1$grid,fit1$cdf,lwd=2,col="blue")
+      lines(fit1$grid,fit1$cdf.l,lwd=2,col="blue",lty=2)
+      lines(fit1$grid,fit1$cdf.u,lwd=2,col="blue",lty=2)
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
@@ -224,6 +252,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       DPrandom(fit1)
       plot(DPrandom(fit1))
       DPcaterpillar(DPrandom(fit1))
+
+
 }
 }
 

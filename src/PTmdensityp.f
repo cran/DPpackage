@@ -18,7 +18,8 @@ c
 c     Subroutine `ptmdensityp' to run a Markov chain for Density
 c     estimation using a Multivariate Mixture of Finite Polya Trees prior. 
 c     The Multivariate Finite Polya Tree is centered in a multivariate 
-c     N(mu,sigma) distribution. The Jeffery's prior is used for mu and sigma.
+c     N(mu,sigma) distribution. The Jeffery's prior is used for mu and 
+c     sigma.
 c
 c     Copyright: Alejandro Jara, 2006-2009.
 c
@@ -44,11 +45,11 @@ c     The author's contact information:
 c
 c      Alejandro Jara
 c      Department of Statistics
-c      Facultad de Ciencias Físicas y Matemáticas
-c      Universidad de Concepción
+c      Facultad de Ciencias Fisicas y Matematicas
+c      Universidad de Concepcion
 c      Avenida Esteban Iturra S/N
 c      Barrio Universitario
-c      Concepción
+c      Concepcion
 c      Chile
 c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c      Fax  : +56-41-2251529  Email: ajarav@udec.cl

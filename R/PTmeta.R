@@ -24,11 +24,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -256,11 +256,11 @@ function(formula,
   	 if(is.null(prior$tau1))
   	 {
             sigmarand<-0
-            if(is.null(prior$sigma))
+            if(is.null(prior$sigma2))
             { 
                stop("*sigma* must be specified in the prior object when it is not considered as random.\n")     
             }
-            sigma<-prior$sigma
+            sigma<-prior$sigma2
             tau1 <- -1
             tau2 <- -1
             tau<-c(tau1,tau2)
@@ -324,7 +324,7 @@ function(formula,
                 }
                 else
                 {
-                   wsigma <- prior$sigma
+                   wsigma <- prior$sigma2
                 }
                 bzs<-rnorm(nrec,mean=0,sd=sqrt(wsigma))
 
@@ -359,7 +359,7 @@ function(formula,
   	           }
   	           else
   	           {
-  	               sigma<-prior$sigma
+  	               sigma<-prior$sigma2
   	           }
 	        }
 
@@ -397,7 +397,7 @@ function(formula,
   	           }
   	           else
   	           {
-  	               sigma<-prior$sigma
+  	               sigma<-prior$sigma2
   	           }
 	        }
                 mcmcad<-c(-3.0,1.0,0.0,0.0,0.0,
@@ -427,7 +427,7 @@ function(formula,
    	        sigma <- 1
                 if(sigmarand==0)
                 {
-   	            sigma<-state$sigma
+   	            sigma<-state$sigma2
    	        }    
 
 	        if(is.null(state$mcmcad))
@@ -543,7 +543,7 @@ function(formula,
          }
 
          pnames2 <- "mu"   
-         pnames3 <- "sigma"
+         pnames3 <- "sigma2"
          pnames4 <- "alpha"
 
          qnames <- NULL
@@ -564,7 +564,7 @@ function(formula,
 	               b=foo$b,
 	               beta=foo$beta,
 	               mu=foo$mu,
-	               sigma=foo$sigma,
+	               sigma2=foo$sigma,
 	               mcmcad=foo$mcmcad	               
 	               )
 

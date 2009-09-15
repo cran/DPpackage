@@ -51,16 +51,17 @@ c     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 c
 c     The author's contact information:
 c
-c     Alejandro Jara Vallejos
-c     Biostatistical Centre
-c     Katholieke Universiteit Leuven
-c     U.Z. Sint-Rafaël
-c     Kapucijnenvoer 35
-c     B-3000 Leuven
-c     Voice: +32 (0)16 336892 
-c     Fax  : +32 (0)16 337015 
-c     URL  : http://student.kuleuven.be/~s0166452/
-c     Email: Alejandro.JaraVallejos@med.kuleuven.be
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Ciencias Fisicas y Matematicas
+c      Universidad de Concepcion
+c      Avenida Esteban Iturra S/N
+c      Barrio Universitario
+c      Concepcion
+c      Chile
+c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+c
 c
 c---- Data -------------------------------------------------------------
 c 

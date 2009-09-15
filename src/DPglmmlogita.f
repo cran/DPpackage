@@ -57,11 +57,11 @@ c     The author's contact information:
 c
 c      Alejandro Jara
 c      Department of Statistics
-c      Facultad de Ciencias Físicas y Matemáticas
-c      Universidad de Concepción
+c      Facultad de Ciencias Fisicas y Matematicas
+c      Universidad de Concepcion
 c      Avenida Esteban Iturra S/N
 c      Barrio Universitario
-c      Concepción
+c      Concepcion
 c      Chile
 c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -418,10 +418,6 @@ c++++++++++++++++++++++++++++++++++
                logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -485,10 +481,6 @@ c++++++++++ evaluating the likelihood
                loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
 
                tmp1=mean*(1.0d0-mean)
-               if(tmp1.le.0.0001d0)then
-                  tmp1=0.0001d0
-               end if   
-               
                gprime=1.d0/(dble(nij)*tmp1)
 
                mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -785,10 +777,6 @@ c++++++++++ check if the user has requested an interrupt
                   logliko=logliko+dbin(dble(yij),dble(nij),mean,1)
 
                   tmp1=mean*(1.0d0-mean)
-                  if(tmp1.le.0.0001d0)then
-                     tmp1=0.0001d0
-                  end if   
-               
                   gprime=1.d0/(dble(nij)*tmp1)
 
                   mean=dble(nij)*exp(eta)/(1.d0+exp(eta))
@@ -880,10 +868,6 @@ c++++++++++ candidate generating kernel contribution
                   loglikn=loglikn+dbin(dble(yij),dble(nij),mean,1)
 
                   tmp1=mean*(1.0d0-mean)
-                  if(tmp1.le.0.0001d0)then
-                     tmp1=0.0001d0
-                  end if   
-               
                   gprime=1.d0/(dble(nij)*tmp1)
 
                   mean=dble(nij)*exp(eta)/(1.d0+exp(eta))

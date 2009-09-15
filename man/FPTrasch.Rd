@@ -11,8 +11,8 @@
    
 \usage{
 
-FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
-         delete=FALSE,data=sys.frame(sys.parent()))
+FPTrasch(y,prior,mcmc,offset,state,status,grid=seq(-10,10,length=1000),
+         data=sys.frame(sys.parent()),compute.band=FALSE)
      
 }
 
@@ -42,10 +42,9 @@ FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
                      the total number of scans to be saved, \code{ndisplay} giving
                      the number of saved scans to be displayed on screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out), and \code{tune1}, \code{tune2}, \code{tune3}, \code{tune4}, and \code{tune5} 
-                     giving the  positive Metropolis tuning parameter for the difficulty, ability parameters,
-                     the baseline mean, the baseline variance, and the precision parameter, respectively
-                     (the default value is 1.1).}   
+                     out).}   
+
+    \item{offset}{   this can be used to specify an a priori known component to the linear predictor.}
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -58,14 +57,10 @@ FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
     \item{grid}{     grid points where the density estimate is 
                      evaluated. The default is seq(-10,10,length=1000).}
                      
-    \item{delete}{   a logical variable indicating whether all items that no one gets 
-                     right or no one gets wrong and all persons with no items right or no 
-                     items wrong should be deleted from the dataset (the default value is 
-                     \code{FALSE}). Note that in this case, subject with missing values 
-                     are also deleted.}
-                     
-
     \item{data}{     data frame.}       
+
+    \item{compute.band}{  logical variable indicating whether the confidence band for the density 
+                          and CDF must be computed.}       
     
 }
 
@@ -96,16 +91,17 @@ FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
   To let \eqn{\mu}{mu} to be fixed at a particular
   value, set \eqn{\mu_b}{mub} to NULL in the prior specification.
 
-  In the computational implementation of the model, Metropolis-Hastings steps are used to 
-  sample the posterior distribution of the regression coefficients and 
-  hyperparameters.
+  In the computational implementation of the model, a Metropolis-Hastings step is used to sample
+  the full conditional of the difficulty parameters. The full conditionals for abilities and PT
+  parameters are sampled using slice sampling. We refer to Jara, Hanson and Lesaffre (2009) for more details and for 
+  the description regarding sampling functionals of PTs. 
 }
 
 \value{
   An object of class \code{FPTrasch} representing the Rasch 
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. The results include 
-  \code{beta}, \code{mu}, \code{sigma}, and the precision parameter 
+  \code{beta}, \code{mu}, \code{sigma2}, and the precision parameter 
   \code{alpha}.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -125,7 +121,7 @@ FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
 
   \item{mu}{ giving the mean of the normal baseline distributions.}
   
-  \item{sigma}{ giving the std of the normal baseline distributions.}
+  \item{sigma2}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{
@@ -136,6 +132,10 @@ FPTrasch(y,prior,mcmc,state,status,grid=seq(-10,10,length=1000),
 Hanson, T., and Johnson, W. (2002) Modeling regression error with a Mixture
   of Polya Trees. Journal of the American Statistical Association, 
   97: 1020 - 1033.
+
+Jara, A.,   Hanson, T.,  Lesaffre, E. (2009) Robustifying Generalized Linear 
+   Mixed Models using a New Mixture of Multivariate Polya Trees. Journal of
+   Computational and Graphical Statistics (To appear).
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.
@@ -152,17 +152,21 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
     ####################################
     # A simulated Data Set
     ####################################
-      nsubject<-200
-      nitem<-5
+      nsubject <- 200
+      nitem <- 40
       
-      y<-matrix(0,nrow=nsubject,ncol=nitem)
-      dimnames(y)<-list(paste("id",seq(1:nsubject)), 
-                        paste("item",seq(1,nitem)))
+      y <- matrix(0,nrow=nsubject,ncol=nitem)
+      dimnames(y) <- list(paste("id",seq(1:nsubject)), 
+                          paste("item",seq(1,nitem)))
 
       
-      ind<-rbinom(nsubject,1,0.5)
-      theta<-ind*rnorm(nsubject,-1,0.5)+(1-ind)*rnorm(nsubject,2,0.5)
-      beta<-c(0,seq(-3,3,length=nitem-1))
+      ind <- rbinom(nsubject,1,0.5)
+      theta <- ind*rnorm(nsubject,1,0.25)+(1-ind)*rnorm(nsubject,3,0.25)
+      beta <- c(0,seq(-1,3,length=nitem-1))
+      true.density <- function(grid)
+      {
+         0.5*dnorm(grid,1,0.25)+0.5*dnorm(grid,3,0.25) 
+      }  
 
       for(i in 1:nsubject)
       {
@@ -176,27 +180,41 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
 
     # Prior information
 
-      beta0<-rep(0,nitem-1)
-      Sbeta0<-diag(100,nitem-1)
+      beta0 <- rep(0,nitem-1)
+      Sbeta0 <- diag(1000,nitem-1)
 
-      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,
-                  beta0=beta0,Sbeta0=Sbeta0,M=8)
+      prior <- list(alpha=1,
+                    tau1=6.01,
+                    tau2=2.01,
+                    mub=0,
+                    Sb=100,
+                    beta0=beta0,
+                    Sbeta0=Sbeta0,
+                    M=5)
 
     # Initial state
       state <- NULL      
 
     # MCMC parameters
 
-      nburn<-5000
-      nsave<-25000
-      nskip<-20
-      ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+      nburn <- 5000
+      nsave <- 5000
+      nskip <- 0
+      ndisplay <- 100
+      mcmc <- list(nburn=nburn,
+                   nsave=nsave,
+                   nskip=nskip,
                    ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-FPTrasch(y=y,prior=prior,mcmc=mcmc,
-                     state=state,status=TRUE)
+      fit1 <- FPTrasch(y=y,prior=prior,mcmc=mcmc,
+                     state=state,status=TRUE,grid=seq(-1,5,0.01),compute.band=TRUE)
+
+    # Density estimate (along with HPD band) and truth
+plot(fit1$grid,fit1$dens.u,lwd=2,col="blue",type="l",lty=2,xlab=expression(theta),ylab="density")
+      lines(fit1$grid,fit1$dens,lwd=2,col="blue")
+      lines(fit1$grid,fit1$dens.l,lwd=2,col="blue",lty=2)
+      lines(fit1$grid,true.density(fit1$grid),col="red")
 
     # Summary with HPD and Credibility intervals
       summary(fit1)

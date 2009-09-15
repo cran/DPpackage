@@ -107,7 +107,7 @@ DPMolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{betaR}, \code{betaF}, \code{mu}, the elements of 
   \code{Sigma}, \code{mub}, the elements of \code{Sigmab}, 
-  the cutoff points, \code{\alpha}, and the number of clusters.
+  the cutoff points, \code{alpha}, and the number of clusters.
 
   The function \code{DPMrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -192,7 +192,9 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
                   nub=4.01,
                   tbinv=diag(10,1),
                   mb=rep(0,1),
-                  Sb=diag(1000,1))
+                  Sb=diag(1000,1),
+                  beta0=rep(0,3), 
+                  Sbeta0=diag(1000,3))
 
     # Fitting the model
 

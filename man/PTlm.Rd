@@ -82,7 +82,7 @@ PTlm(formula,ngrid=200,grid=NULL,prior,mcmc,state,status,
   with the \eqn{k/2^m, k=0,\ldots,2^m} quantile of the \eqn{N(0,\sigma^2)}{N(0,sigma2)} distribution.
   The family \eqn{\textit{A}=\{\alpha_e: e \in E^{*}\}}{\textit{A}=\{alphae: e \in E^{*}\}}, where \eqn{E^{*}=\bigcup_{m=1}^{\infty} E^m}{E^{*}=\bigcup_{m=1}^{+infty} E^m} 
   and \eqn{E^m} is the \eqn{m}-fold product of \eqn{E=\{0,1\}},
-  was specified as \eqn{\alpha_{e_1 \ldots e_m}=\alpha m^2}{alpha{e1 \ldots em}=\alpha m^2}. 
+  was specified as \eqn{\alpha_{e_1 \ldots e_m}=\alpha m^2}{alpha{e1 \ldots em}=alpha m^2}. 
   To complete the model specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   \deqn{\sigma^{-2} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-2 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
@@ -112,7 +112,7 @@ PTlm(formula,ngrid=200,grid=NULL,prior,mcmc,state,status,
   model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
   The results include \code{beta}, \code{mu}, \code{sigma2}, and the precision
-  parameter \code{\alpha}.
+  parameter \code{alpha}.
   
   The list \code{state} in the output object contains the current value of the parameters 
   necessary to restart the analysis. If you want to specify different starting values 

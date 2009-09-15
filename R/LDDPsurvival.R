@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009.
 ###
-### Last modification: 14-03-2009.
+### Last modification: 18-08-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -70,28 +70,28 @@ function(formula,
        # call parameters
        #########################################################################################
 
-	 cl <- match.call()
-	 mf <- match.call(expand.dots = FALSE)
-	 m <- match(c("formula", "data","na.action"), names(mf), 0)
-	 mf <- mf[c(1, m)]
-	 mf$drop.unused.levels <- TRUE
-	 mf[[1]] <- as.name("model.frame")
-	 mf <- eval(mf, parent.frame())
+         cl <- match.call()
+         mf <- match.call(expand.dots = FALSE)
+         m <- match(c("formula", "data","na.action"), names(mf), 0)
+         mf <- mf[c(1, m)]
+         mf$drop.unused.levels <- TRUE
+		 mf[[1]] <- as.name("model.frame")
+         mf <- eval(mf, parent.frame())
 
        #########################################################################################
        # data structure
        #########################################################################################
- 	 ymat <- model.response(mf,"numeric")
-  	 nrec <- nrow(ymat)
-  	 z <- model.matrix(formula)
-  	 p <- ncol(z)
+		 ymat <- model.response(mf,"numeric")
+         nrec <- nrow(ymat)
+		 z <- model.matrix(formula)
+         p <- ncol(z)
 
          typed <- rep(2,nrec)
          for(i in 1:nrec)
          {
-	    typed[ymat[,1]==-999] <- 1
-	    typed[ymat[,2]==-999] <- 3
-	    typed[ymat[,1]==ymat[,2]] <- 4
+             typed[ymat[,1]==-999] <- 1
+             typed[ymat[,2]==-999] <- 3
+             typed[ymat[,1]==ymat[,2]] <- 4
          }
 
        #########################################################################################
@@ -107,7 +107,6 @@ function(formula,
        #########################################################################################
        # prediction
        #########################################################################################
-
          npred <- nrow(zpred)
          ngrid <- length(grid)
 
@@ -115,18 +114,18 @@ function(formula,
        # Prior information
        #########################################################################################
 
-	 if(is.null(prior$a0))
-	 {
-		a0b0 <- c(-1,-1)
-		alpha <- prior$alpha
-	 }
-	 else
-	 {
-	 	a0b0 <- c(prior$a0,prior$b0)
-	 	alpha <- 1
-	 }
+         if(is.null(prior$a0))
+	     {
+            a0b0 <- c(-1,-1)
+            alpha <- prior$alpha
+         }
+         else
+         {
+            a0b0 <- c(prior$a0,prior$b0)
+            alpha <- 1
+         }
 
-         sbeta0i <- solve(prior$Sbeta0)
+         sbeta0i <- solve(prior$S0)
          m0 <- prior$m0
 
          tau1 <- prior$tau1
@@ -149,14 +148,15 @@ function(formula,
          ncluster <- 1
          ss <- rep(1,nrec)
 
-         tmpy <- ymat[typed==2,]
-         mid  <- matrix(log((tmpy[,1]+tmpy[,2])/2),ncol=1)
-         nmid <- dim(mid)[1]
-         tmpx <- z[typed==2,]
-         
-         betas <- solve(t(tmpx)%*%tmpx)%*%t(tmpx)%*%mid
-         e <- mid - tmpx%*%betas
-         sigma2s <- sum(e*e)/(nmid-p)
+         y <- rep(0,nrec)
+         y[typed==2] <- log((ymat[typed==2,1]+ymat[typed==2,2])/2)
+         y[typed==1] <- log(ymat[typed==1,2]/2)
+		 y[typed==3] <- log(ymat[typed==3,1]+1)
+         y[typed==4] <- log(ymat[typed==4,1])
+
+         betas <- solve(t(z)%*%z)%*%t(z)%*%y
+         e <- y - z%*%betas
+         sigma2s <- sum(e*e)/(nrec-p)
          
          betaclus <- matrix(0,nrow=nrec+100,ncol=p)
          sigmaclus <- rep(0,nrec+100)
@@ -164,24 +164,12 @@ function(formula,
          betaclus[1,] <- betas
          sigmaclus[1] <- sigma2s
 
-         sb <- 100*solve(t(tmpx)%*%tmpx)
-         mub <- solve(t(tmpx)%*%tmpx)%*%t(tmpx)%*%mid
+         sb <- 100*solve(t(z)%*%z)
+         mub <- solve(t(z)%*%z)%*%t(z)%*%y
          tau2 <- 2.01
 
-         eta <- z%*%betas
-	 v <- rep(0,nrec)
-
-         censor <- 0		
-	 for(i in 1:nrec)
-	 {
-	     if(typed[i]!=4) censor <- censor +1
-	     if(typed[i]==1)v[i] <- ymat[i,2]*exp(eta[i])/2
-	     if(typed[i]==2)v[i] <- (ymat[i,1]*exp(eta[i])+ymat[i,2]*exp(eta[i]))/2
-	     if(typed[i]==3)v[i] <- ymat[i,1]*exp(eta[i])+1
-	     if(typed[i]==4)v[i] <- ymat[i,1]*exp(eta[i])
-	 }
-	 y <- eta + log(v)
-	 if(censor>0)censor <- 1
+		 censor <- sum(typed!=4)		
+		 if(censor>0)censor <- 1
          
        #########################################################################################
        # output
@@ -206,6 +194,7 @@ function(formula,
 
          thetasave <- matrix(0,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
          randsave <- matrix(0,nrow=nsave,ncol=nrec*p)
+         survsave <- matrix(0,nrow=nsave,ncol=npred*ngrid)
 
        #########################################################################################
        # parameters depending on status
@@ -242,7 +231,7 @@ function(formula,
          xtx2 <- matrix(0,nrow=p,ncol=p)
          xty <- rep(0,p)
          xty2 <- rep(0,p)
-	 seed <- c(sample(1:29000,1),sample(1:29000,1))
+         seed <- c(sample(1:29000,1),sample(1:29000,1))
 
          fs <- rep(0,ngrid) 
          fm <- rep(0,npred)
@@ -287,6 +276,7 @@ function(formula,
                           cpo       = as.double(cpo),
                           thetasave = as.double(thetasave),
                           randsave  = as.double(randsave),
+                          survsave  = as.double(survsave),
                           denspm    = as.double(denspm),
                           denspl    = as.double(denspl),
                           densph    = as.double(densph),
@@ -332,7 +322,7 @@ function(formula,
 
          model.name<-"Bayesian Semiparametric Conditional Density Estimation using LDDP"
          
-	 state <- list(alpha=foo$alpha,
+         state <- list(alpha=foo$alpha,
 	               betaclus=matrix(foo$betaclus,nrow=nrec+100,ncol=p),
 	               sigmaclus=foo$sigmaclus,
 	               ss=foo$ss,
@@ -359,6 +349,9 @@ function(formula,
 
          randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*p)
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
+         survsave <- matrix(foo$survsave,nrow=nsave,ncol=(npred*ngrid))
+
+         survpmed <- matrix(apply(survsave,2,median),nrow=npred,ncol=ngrid,byrow=TRUE)
 
          coeffname <- dimnames(z)[[2]]
 
@@ -396,30 +389,31 @@ function(formula,
          save.state <- list(thetasave=thetasave,
                             randsave=randsave)
 
-	 z<-list(modelname=model.name,
-	         call=cl,
-	         cpo=cpo,
-	         coefficients=coeff,
-	         fso=fso,
+         z<-list(modelname=model.name,
+	             call=cl,
+	             cpo=cpo,
+	             coefficients=coeff,
+	             fso=fso,
                  prior=prior,
                  mcmc=mcmc,
                  nrec=foo$nrec,
                  p=foo$p,
                  z=z,
                  ngrid=ngrid,
-		 npred=npred,
-		 zpred=zpred,
-		 grid=grid,
-		 densp.m=denspm,
+		         npred=npred,
+		         zpred=zpred,
+		         grid=grid,
+		         densp.m=denspm,
                  densp.l=denspl,
                  densp.h=densph,
-		 hazp.m=hazpm,
+				 hazp.m=hazpm,
                  hazp.l=hazpl,
                  hazp.h=hazph,
                  meanfp.m=meanfpm,
                  meanfp.l=meanfpl,
                  meanfp.h=meanfph,
-		 survp.m=survpm,
+		         survp.m=survpm,
+                 survp.med=survpmed,
                  survp.l=survpl,
                  survp.h=survph,
                  state=state,

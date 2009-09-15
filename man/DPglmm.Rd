@@ -121,28 +121,21 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   The computational implementation of the model is based on the marginalization of
   the \code{DP} and the MCMC is model-specific. 
   
-  For the \code{poisson}, \code{Gamma}, and \code{binomial} (when the total number of cases, \code{n}, is 
-  specified) MCMC methods for nonconjugate priors (see, MacEachern and Muller, 1998; Neal, 2000) 
+  For the  \code{binomial(logit)}, \code{poisson}, and \code{Gamma}, MCMC methods for nonconjugate 
+  priors (see, MacEachern and Muller, 1998; Neal, 2000) 
   are used. Specifically, the algorithm 8 with \code{m=1} of Neal (2000), is considered in 
   the \code{DPglmm} function. In this case, the fully conditional distributions for fixed and 
   in the resampling step of random effects are generated through the Metropolis-Hastings algorithm 
   with a IWLS proposal (see, West, 1985 and Gamerman, 1997).
   
-  For conditonal bernoulli models, \code{binomial(probit)} and \code{binomial(logit)}, (i.e., the
-  total number of cases is not specified) the following latent variable representation is used:
+  For conditonal bernoulli model \code{binomial(probit)} the following latent variable representation is used:
   \deqn{y_{ij} = I(w_{ij} > 0), j=1,\ldots,n_i}{yij = I(wij > 0), j=1,\ldots,ni}
-  \deqn{w_{ij} | \beta, \theta_i, \lambda_i \sim N(X_{ij} \beta + Z_{ij} \theta_i, \lambda_{ij})}{wij | beta, thetai, lambdai ~ N(Xij beta + Zij thetai, lambdaij)}
+  \deqn{w_{ij} | \beta, \theta_i, \lambda_i \sim N(X_{ij} \beta + Z_{ij} \theta_i,1)}{wij | beta, thetai, lambdai ~ N(Xij beta + Zij thetai,1)}
 
-  In the probit case, \eqn{\lambda_{ij}=1}{lambdaij=1}  while in the logit case (see, Andrews and Mallows, 1974),
-  \deqn{\lambda_{ij} = (2 \phi_{ij})^2}{lambdaij = (2 phiij)^2}
-  \deqn{\phi_{ij} \sim KS}{phiij ~ KS}
-
-  where \eqn{KS} refers to the Kolmogorov Smirnov distribution. In this case, the computational 
+  In this case, the computational 
   implementation of the model is based on the marginalization of
   the \code{DP} and on the use of MCMC methods for conjugate priors (Escobar, 1994;
-  Escobar and West, 1998). For the logistic model, the full conditional distribution of the scale 
-  parameters, \eqn{\lambda_{ij}}{lambdaij} are sampled via the rejection sampling algorithm as proposed by Holmes and
-  Held (2006).
+  Escobar and West, 1998). 
 
   The \eqn{\beta_R}{betaR} parameters are sampled using
   the \eqn{\epsilon}{epsilon}-DP approximation proposed by Muliere and Tardella (1998), with
@@ -154,7 +147,7 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. The results include 
   \code{betaR}, \code{betaF}, \code{mu}, the elements of \code{Sigma}, the precision parameter 
-  \code{\alpha}, the number of clusters, and the dispersion parameter of the Gamma model.
+  \code{alpha}, the number of clusters, and the dispersion parameter of the Gamma model.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -193,10 +186,6 @@ DPglmm(fixed,random,family,offset,n,prior,mcmc,state,status,
 }
 
 \references{
-
-Andrews, D. and Mallows, C. (1974) Scale mixture of normal distributions. Journal of the
-  Royal Statistical Society, B, 36: 99-102.
-
 Escobar, M.D. and West, M. (1995) Bayesian Density Estimation and Inference 
   Using Mixtures. Journal of the American Statistical Association, 90: 577-588.
 
@@ -206,9 +195,6 @@ Escobar, M.D. and West, M. (1998) Computing Bayesian Nonparametric Hierarchical 
 
 Gamerman, D. (1997) Sampling from the posterior distribution in generalized linear
   mixed models. Statistics and Computing, 7: 57-68. 
-
-Holmes, C.C. and Held, L. (2006) Bayesian auxiliary variable models for binary
-  and multinomial regression. Bayesian Analysis, 1: 145-168.
 
 MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
   Models. Journal of Computational and Graphical Statistics, 7 (2): 223-338.
@@ -249,10 +235,10 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
     # MCMC parameters
 
-      nburn<-5000
-      nsave<-25000
-      nskip<-20
-      ndisplay<-1000
+      nburn <- 5000
+      nsave <- 5000
+      nskip <-0
+      ndisplay <- 1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Fit the Probit model

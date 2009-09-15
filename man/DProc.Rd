@@ -92,7 +92,7 @@ DProc(x,y,fitx=NULL,fity=NULL,ngrid=1000,priorx,priory,
   \deqn{(\mu_{x_i},\Sigma_{x_i}) | G_x \sim G_x}{(muxi,Sigmaxi) | Gx ~ Gx}
   \deqn{G_x | \alpha_x, G_{x_0} \sim DP(\alpha_x G_{x_0})}{G_x | alphax, Gx0 ~ DP(alphax Gx0)}
 
-  \deqn{y_j | \mu_{y_j}, \Sigma_{y_j} \sim N(\mu_{y_j},\Sigma_{y_j}), j=1,\ldots,m}{xj | muxj, Sigmaxj ~ N(muxj,Sigmaxj), j=1,\ldots,m}
+  \deqn{y_j | \mu_{y_j}, \Sigma_{y_j} \sim N(\mu_{y_j},\Sigma_{y_j}), j=1,\ldots,m}{yj | muyj, Sigmayj ~ N(muyj,Sigmayj), j=1,\ldots,m}
   \deqn{(\mu_{y_j},\Sigma_{y_j}) | G_y \sim G_y}{(muyj,Sigmayj) | Gy ~ Gy}
   \deqn{G_y | \alpha_y, G_{y_0} \sim DP(\alpha_y G_{y_0})}{G_y | alphay, Gy0 ~ DP(alphay Gy0)}
 

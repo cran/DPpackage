@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara, 2006-2009.
 ###
-### Last modification: 30-04-2007.
+### Last modification: 25-09-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -80,7 +80,7 @@ function(fixed,
          crandom <- all.vars(random)
          namesre <- (names(mf)==crandom[length(crandom)])
          oldid <- mf[,namesre]
-         freqsub<-table(oldid)
+         freqsub <- table(oldid)
          namesre <- names(freqsub)         
          nsubject <- length(namesre)
          newid <- seq(1,nrec)
@@ -105,7 +105,7 @@ function(fixed,
        # model structure
        #########################################################################################
          q <- length(crandom)
-         z<-matrix(1,nrow=nrec,ncol=1)
+         z <- matrix(1,nrow=nrec,ncol=1)
          colnames(z) <- "(Intercept)"
          nvarrand <- "(Intercept)"
 
@@ -172,7 +172,7 @@ function(fixed,
                    nlevel[i]<-1
                 }
             }
-            startp<-1+q
+            startp <- 1+q
             for(i in 1:nfact)
             {
                 tmp1<-1
@@ -217,20 +217,20 @@ function(fixed,
 
          }
 
-         tau1<-prior$tau1
-         tau2<-prior$tau2
-         tau<-c(tau1,tau2)
+         tau1 <- prior$tau1
+         tau2 <- prior$tau2
+         tau <- c(tau1,tau2)
          if(tau1<0 || tau2<0)
          { 
                    stop("The parameters of the Gamma prior for the error variance must be possitive.\n")     
          }
 
-         nu0<-prior$nu0
+         nu0 <- prior$nu0
          if(nu0<=0)
          { 
                 stop("The parameter of the IW prior distribution for the normal kernel must be positive")     
          }
-         tinv<-prior$tinv
+         tinv <- prior$tinv
          if(dim(tinv)[1]!=q || dim(tinv)[2]!=q)
          { 
                 stop("Error in the dimension of the matrix of the IW prior for the covariance of the normal kernel.\n")     
@@ -238,23 +238,23 @@ function(fixed,
 
          if(is.null(prior$a0))
          {
-            a0b0<-c(-10,-10)
-            alpha<-prior$alpha
-            alphapr<-0
+            a0b0 <- c(-10,-10)
+            alpha <- prior$alpha
+            alphapr <- 0
          }
          else
          {
-            a0b0<-c(prior$a0,prior$b0)
-            alpha<-rgamma(1,shape=prior$a0,scale=prior$b0)
-            alphapr<-1
+            a0b0 <- c(prior$a0,prior$b0)
+            alpha <- rgamma(1,shape=prior$a0,scale=prior$b0)
+            alphapr <- 1
             if(prior$a0<0 || prior$b0<0)
             { 
                    stop("The parameters of the Gamma prior for the precision parameter must be possitive.\n")     
             }
          }
 
-         psiinv<-solve(prior$Sb)
-         smu<-psiinv%*%prior$mb
+         psiinv <- solve(prior$Sb)
+         smu <- psiinv%*%prior$mb
          if(length(prior$mb) != q)
          { 
                 stop("Error in the dimension of the mean of the normal prior for the mean of the centering distribution.\n")     
@@ -270,18 +270,18 @@ function(fixed,
                 stop("Error in the dimension of the covariance of the normal prior for the mean of the centering distribution.\n")     
          }
 
-         nub<-prior$nub
+         nub <- prior$nub
          if(nub<=0)
          { 
                 stop("The parameter of the IW prior for the covariance of the centering distribution must be positive")     
          }
 
-         tbinv<-prior$tbinv
+         tbinv <- prior$tbinv
          if(dim(tbinv)[1]!=q || dim(tbinv)[2]!=q)
          { 
                 stop("Error in the dimension of the matrix of the IW prior for the covariance of the centering distribution.\n")     
          }
-         nu<-c(prior$nu0,prior$nub)
+         nu <- c(prior$nu0,prior$nub)
 
        #########################################################################################
        # mcmc specification
@@ -292,126 +292,133 @@ function(fixed,
             nsave <- 1000
             nskip <- 0
             ndisplay <- 100
-            mcmcvec<-c(nburn,nskip,ndisplay)
+            mcmcvec <- c(nburn,nskip,ndisplay)
          }
          else
          {
-            mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-            nsave<-mcmc$nsave
+            mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+            nsave <- mcmc$nsave
          }
 
        #########################################################################################
        # output
        #########################################################################################
-         nuniq<-q*(q+1)
-         mc<-rep(0,5)         
-         musave<-matrix(0,nrow=nsave,ncol=q*nsubject)
-         clustsave<-matrix(0,nrow=nsave,ncol=nsubject)
-         randsave<-matrix(0,nrow=nsave,ncol=q*(nsubject+1))
-         thetasave<-matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+2)
-         cpo<-matrix(0,nrow=nrec,ncol=2)
+         nuniq <- q*(q+1)
+         mc <- rep(0,5)         
+         musave <- matrix(0,nrow=nsave,ncol=q*nsubject)
+         clustsave <- matrix(0,nrow=nsave,ncol=nsubject)
+         randsave <- matrix(0,nrow=nsave,ncol=q*(nsubject+1))
+         thetasave <- matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+2)
+         cpo <- matrix(0,nrow=nrec,ncol=2)
 
        #########################################################################################
        # parameters depending on status
        #########################################################################################
+		 startlmm <- function(fixed,random,family,q)
+         {
+			 library(nlme)
+			 library(MASS)
+			 fit0 <- glmmPQL(fixed=fixed, random=random, family=family, verbose = FALSE) 
+			 beta <- fit0$coeff$fixed
+			 b <- fit0$coeff$random$newid
+			 sigma <- getVarCov(fit0)[1:q,1:q]
+			 sigma2e <- fit0$sigma^2
+			 out <- list(beta=beta,b=b,sigma=sigma,sigma2e=sigma2e)
+			 return(out)
+         }
+
     	 if(status==TRUE)
-	 {
+		 {
+            if(nfixed==0)
+            {
 
-                wsigma <- prior$tinv/(prior$nu0-q-1)
-                wsigma2 <- prior$tbinv/(prior$nub-q-1)
-                
-                bzs<-NULL
-                bzsb<-NULL
-                for(i in 1:q)
-                {
-                   work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma[i,i]))
-                   bzs<-cbind(bzs,work)
-                   work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma2[i,i]))
-                   bzsb<-cbind(bzsb,work)
-                }
-
-	        if(nfixed==0){
-	           beta<-matrix(0,nrow=1,ncol=1)
-	           fit0<- glm.fit(z, resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-		   mu<-bzsb
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)+bzs[i,]
-	           }
-                   sigma <- prior$tinv/(prior$nu0-q-1)
-                   sigmainv <- solve(sigma)
-                   sigmab <- prior$tbinv/(prior$nub-q-1)
-                   sigmabinv <- solve(sigmab)
-	        }
-
-	        if(nfixed>0){
-	           fit0<- glm.fit(cbind(x,z), resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-                   beta<-coefficients(fit0)[1:p]
-		   mu<-bzsb
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)[(p+1):(p+q)]+bzs[i,]
-	           }
-                   sigma <- prior$tinv/(prior$nu0-q-1)
-                   sigmainv <- solve(sigma)
-                   sigmab <- prior$tbinv/(prior$nub-q-1)
-                   sigmabinv <- solve(sigmab)
-	        }
-                betar<-rep(0,q)
-                mub<-rep(0,q)
-                ncluster<-nsubject
-                ss<-seq(1,nsubject)
-	 }	
+				fit0 <- startlmm(fixed=resp~z-1, random = ~ z - 1 | newid, family=gaussian, q=q) 
+				beta <- matrix(0,nrow=1,ncol=1)
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+                sigma <- fit0$sigma
+                sigmainv <- solve(sigma)
+                sigmab <- fit0$sigma
+                sigmabinv <- solve(sigmab)
+				betar <- fit0$beta[1:q]
+				mub <- fit0$beta[1:q]
+				mu <- matrix(0,nrow=nsubject,ncol=q)
+				mu[1,1:q] <- fit0$beta[1:q]
+				sigma2e <- fit0$sigma2e
+			}
+			else
+			{
+				fit0 <- startlmm(fixed=resp~z+x-1+offset(roffset), random = ~ z - 1 | newid, family=gaussian, q=q) 
+				beta <- fit0$beta[(q+1):(p+q)]
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+                sigma <- fit0$sigma
+                sigmainv <- solve(sigma)
+                sigmab <- fit0$sigma
+                sigmabinv <- solve(sigmab)
+				betar <- fit0$beta[1:q]
+				mub <- fit0$beta[1:q]
+				mu <- matrix(0,nrow=nsubject,ncol=q)
+				mu[1,1:q] <- fit0$beta[1:q]
+				sigma2e <- fit0$sigma2e 
+			}
+             ncluster <- 1
+             ss <- rep(1,nsubject)
+		 }	
       	 if(status==FALSE)
-	 {
-	        alpha<-state$alpha
-                b<-state$b 
-                if(nfixed>0)
-                {
-	           beta<-state$beta
+		 { 
+	        alpha <- state$alpha
+			b <- state$b 
+			if(nfixed>0)
+			{
+	           beta <- state$beta
 	        }
 	        else
 	        {
-	           beta<-rep(0,p)
+	           beta <- rep(0,p)
 	        }
-	        mu<-state$mu
-	        mub<-state$mub
-	        ncluster<-state$ncluster
-	        sigma<-state$sigma
-	        sigmab<-state$sigmab
-	        sigmainv<-solve(sigma)
-	        sigmabinv<-solve(sigmab)
-	        sigma2e<-state$sigma2e         
-	        ss<-state$ss
-	        betar<-rep(0,q)
-	 }
+	        mu <- state$mu
+	        mub <- state$mub
+	        ncluster <- state$ncluster
+	        sigma <- state$sigma
+	        sigmab <- state$sigmab
+	        sigmainv <- solve(sigma)
+	        sigmabinv <- solve(sigmab)
+	        sigma2e <- state$sigma2e         
+	        ss <- state$ss
+	        betar <- rep(0,q)
+		 }
          
        #########################################################################################
        # working space
        #########################################################################################
-         iflagp<-rep(0,p) 
-         iflagr<-rep(0,q) 
-         prob<-rep(0,nsubject+1)
-         quadf<-matrix(0,nrow=q,ncol=q)
-         seed1<-sample(1:29000,1)
-         seed2<-sample(1:29000,1)
-         seed<-c(seed1,seed2)
-         theta<-rep(0,q)
-         workmhp<-rep(0,p*(p+1)/2) 
-         workmp<-matrix(0,nrow=p,ncol=p) 
-         workvp<-rep(0,p) 
-         xty<-rep(0,p) 
+         iflagp <- rep(0,p) 
+         iflagr <- rep(0,q) 
+         prob <- rep(0,nsubject+1)
+         quadf <- matrix(0,nrow=q,ncol=q)
+         seed1 <- sample(1:29000,1)
+         seed2 <- sample(1:29000,1)
+         seed <- c(seed1,seed2)
+         theta <- rep(0,q)
+         workmhp <- rep(0,p*(p+1)/2) 
+         workmp <- matrix(0,nrow=p,ncol=p) 
+         workvp <- rep(0,p) 
+         xty <- rep(0,p) 
          
-         workmhr<-rep(0,q*(q+1)/2) 
-         workmhr2<-rep(0,q*(q+1)/2) 
-         workmr<-matrix(0,nrow=q,ncol=q) 
-         workvr<-rep(0,q) 
-         zty<-rep(0,q) 
-         ztz<-matrix(0,nrow=q,ncol=q) 
-         cstrt<-matrix(0,nrow=nsubject,ncol=nsubject) 
-         ccluster<-rep(0,nsubject) 
+         workmhr <- rep(0,q*(q+1)/2) 
+         workmhr2 <- rep(0,q*(q+1)/2) 
+         workmr <- matrix(0,nrow=q,ncol=q) 
+         workvr <- rep(0,q) 
+         zty <- rep(0,q) 
+         ztz <- matrix(0,nrow=q,ncol=q) 
+         cstrt <- matrix(0,nrow=nsubject,ncol=nsubject) 
+         ccluster <- rep(0,nsubject) 
 
          betasave<-rep(0,(p+1))
          bsave<-matrix(0,nrow=nsubject,ncol=q)
@@ -422,86 +429,85 @@ function(fixed,
        #########################################################################################
 
          foo <- .Fortran("dpmlmm",
- 	 	maxni      =as.integer(maxni),         
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
-         	datastr    =as.integer(datastr), 	 	
- 		y          =as.double(resp),
- 		x          =as.double(x),	 	
- 		z          =as.double(z),	 
- 		xtx        =as.double(xtx),	 	
- 		a0b0       =as.double(a0b0),
- 		prec       =as.double(prec),	  		
- 		sb         =as.double(sb),	  		
- 		tau        =as.double(tau),	  		
- 		nu         =as.integer(nu),
- 		tinv1      =as.double(tinv),	  		 		
- 		smu        =as.double(smu),	  		
- 		psiinv     =as.double(psiinv),	  		
- 		tinv2      =as.double(tbinv),	  		 		
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),		
- 		beta       =as.double(beta),
- 		b          =as.double(b),		
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma2e    =as.double(sigma2e),
- 		sigma      =as.double(sigma),
- 		sigmainv   =as.double(sigmainv),
- 		mub        =as.double(mub),
- 		sigmab     =as.double(sigmab),
- 		sigmabinv  =as.double(sigmabinv),
- 		mc         =as.double(mc), 		
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		musave     =as.double(musave),
- 		clustsave  =as.integer(clustsave),
- 		iflagp     =as.integer(iflagp),
- 		workmhp    =as.double(workmhp),
- 		workmp     =as.double(workmp),
- 		workvp     =as.double(workvp),
- 		xty        =as.double(xty),
- 		iflagr     =as.integer(iflagr),
- 		theta      =as.double(theta),
+				maxni      =as.integer(maxni),         
+				nrec       =as.integer(nrec),
+				nsubject   =as.integer(nsubject),
+				nfixed     =as.integer(nfixed),
+				p          =as.integer(p),
+				q          =as.integer(q),
+				subject    =as.integer(newid),
+				datastr    =as.integer(datastr), 	 	
+				y          =as.double(resp),
+				x          =as.double(x),	 	
+				z          =as.double(z),	 
+				xtx        =as.double(xtx),	 	
+				a0b0       =as.double(a0b0),
+				prec       =as.double(prec),	  		
+				sb         =as.double(sb),	  		
+				tau        =as.double(tau),	  		
+				nu         =as.integer(nu),
+				tinv1      =as.double(tinv),	  		 		
+				smu        =as.double(smu),	  		
+				psiinv     =as.double(psiinv),	  		
+				tinv2      =as.double(tbinv),	  		 		
+				mcmc       =as.integer(mcmcvec),
+				nsave      =as.integer(nsave),
+				ncluster   =as.integer(ncluster),
+				ss         =as.integer(ss),
+				alpha      =as.double(alpha),		
+				beta       =as.double(beta),
+				b          =as.double(b),			
+				betar      =as.double(betar),
+				mu         =as.double(mu),
+				sigma2e    =as.double(sigma2e),
+				sigma      =as.double(sigma),
+				sigmainv   =as.double(sigmainv),
+				mub        =as.double(mub),
+				sigmab     =as.double(sigmab),
+				sigmabinv  =as.double(sigmabinv),
+				mc         =as.double(mc), 		
+				cpo        =as.double(cpo),
+				randsave   =as.double(randsave),
+				thetasave  =as.double(thetasave),
+				musave     =as.double(musave),
+				clustsave  =as.integer(clustsave),
+				iflagp     =as.integer(iflagp),
+				workmhp    =as.double(workmhp),
+				workmp     =as.double(workmp),
+				workvp     =as.double(workvp),
+				xty        =as.double(xty),
+				iflagr     =as.integer(iflagr),
+				theta      =as.double(theta),
                 workmhr    =as.double(workmhr),
                 workmhr2   =as.double(workmhr2),
                 workmr     =as.double(workmr),
                 workvr     =as.double(workvr),
- 		ztz        =as.double(ztz), 		
- 		zty        =as.double(zty), 		
- 		cstrt      =as.integer(cstrt),
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
- 		seed       =as.integer(seed),
+				ztz        =as.double(ztz), 		
+				zty        =as.double(zty), 		
+				cstrt      =as.integer(cstrt),
+				ccluster   =as.integer(ccluster),
+				prob       =as.double(prob),
+				quadf      =as.double(quadf),
+				seed       =as.integer(seed),
                 betasave   =as.double(betasave),
                 bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
-
+				PACKAGE    ="DPpackage")	
 
        #########################################################################################
        # save state
        #########################################################################################
 
-         dimen<-q+nfixed+1+q+nuniq+2
-         mc<-foo$mc
-         names(mc)<-c("Dbar", "Dhat", "pD", "DIC","LPML")
-         thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=dimen)
-         randsave<-matrix(foo$randsave,nrow=nsave, ncol=q*(nsubject+1))
-         musave<-matrix(foo$musave,nrow=nsave,ncol=q*nsubject)
-         clustsave<-matrix(foo$clustsave,nrow=nsave,ncol=nsubject)
+         dimen <- q+nfixed+1+q+nuniq+2
+         mc <- foo$mc
+         names(mc) <- c("Dbar", "Dhat", "pD", "DIC","LPML")
+         thetasave <- matrix(foo$thetasave,nrow=nsave, ncol=dimen)
+         randsave <- matrix(foo$randsave,nrow=nsave, ncol=q*(nsubject+1))
+         musave <- matrix(foo$musave,nrow=nsave,ncol=q*nsubject)
+         clustsave <- matrix(foo$clustsave,nrow=nsave,ncol=nsubject)
          
-         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)
-         cpo<-cpom[,1]         
-         fso<-cpom[,2]
+         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)
+         cpo <- cpom[,1]         
+         fso <- cpom[,2]
 
          if(nfixed==0)
          {
@@ -516,7 +522,7 @@ function(fixed,
             pnames1 <- c(colnames(z),colnames(x))
          }   
 
- 	 pnames2<-"residual"
+    	 pnames2<-"residual"
 
          pnames3 <- NULL
          for(i in 1:q)
@@ -561,14 +567,14 @@ function(fixed,
              qnames <- c(qnames,qnamestemp)
          }
          colnames(randsave) <- qnames
-         
-	 model.name<-"Bayesian semiparametric linear mixed effect model"		
+          
+	     model.name<-"Bayesian semiparametric linear mixed effect model"		
 
          colnames(thetasave)<-c(pnames1,pnames2,pnames3,pnames4,pnames5,pnames6)
 
          coeff<-apply(thetasave,2,mean)		
 
-	 state <- list(alpha=foo$alpha,
+		 state <- list(alpha=foo$alpha,
 	               b=matrix(foo$b,nrow=nsubject,ncol=q),
 	               beta=foo$beta,
 	               mu=matrix(foo$mu,nrow=nsubject,ncol=q),
@@ -579,35 +585,35 @@ function(fixed,
 	               sigma2e=foo$sigma2e,
 	               ss=foo$ss)
 
-	 save.state <- list(thetasave=thetasave,
-	                    randsave=randsave,
-	                    musave=musave,
-	                    clustsave=clustsave)
+		save.state <- list(thetasave=thetasave,
+	                       randsave=randsave,
+	                       musave=musave,
+						   clustsave=clustsave)
 
-	 z<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nsubject=foo$nsubject,
-                 nfixed=foo$nfixed,
-                 nrandom=foo$q,
-                 cpo=cpo,
-                 fso=fso,                                  
-                 alphapr=alphapr,
-                 namesre1=namesre,
-                 namesre2=colnames(z),
-                 z=z,
-                 x=x,
-                 mf=mf,
-                 dimen=dimen,
-                 y=resp,
-                 possiP=possiP,
-                 fixed=fixed,
-                 mc=mc)
+		z <- list(	modelname=model.name,
+					coefficients=coeff,
+					call=cl,
+					prior=prior,
+					mcmc=mcmc,
+					state=state,
+					save.state=save.state,
+					nrec=foo$nrec,
+					nsubject=foo$nsubject,
+					nfixed=foo$nfixed,
+					nrandom=foo$q,
+					cpo=cpo,
+					fso=fso,                                  
+					alphapr=alphapr,
+					namesre1=namesre,
+					namesre2=colnames(z),
+					z=z,
+					x=x,
+					mf=mf,
+					dimen=dimen,
+					y=resp,
+					possiP=possiP,
+					fixed=fixed,
+					mc=mc)
                  
          cat("\n\n")        
 
@@ -619,7 +625,7 @@ function(fixed,
 ###                    
 ### Tools: anova, print, summary, plot
 ###
-### Copyright: Alejandro Jara, 2006-2007
+### Copyright: Alejandro Jara, 2006-2009
 ### Last modification: 24-04-2007.
 
 
@@ -1297,23 +1303,23 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
    
         else
         {
-            coef.p<-x$coefficients
-	    n<-length(coef.p)
-	    pnames<-names(coef.p)
-	    poss<-0 
-            for(i in 1:n)
-            {
-               if(pnames[i]==param)poss=i
-            }
-            if (poss==0) 
-	    {
-	      stop("This parameter is not present in the original model.\n")
-	    }
+			coef.p <- x$coefficients
+			n <- length(coef.p)
+			pnames <- names(coef.p)
+			poss <- 0 
+			for(i in 1:n)
+			{
+				if(pnames[i]==param)poss=i
+			}
+			if(poss==0) 
+			{
+				stop("This parameter is not present in the original model.\n")
+			}
 	    
-	    par(ask = ask)
-	    layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
-            title1<-paste("Trace of",pnames[poss],sep=" ")
-            title2<-paste("Density of",pnames[poss],sep=" ")       
+			par(ask = ask)
+			layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
+			title1<-paste("Trace of",pnames[poss],sep=" ")
+			title2<-paste("Density of",pnames[poss],sep=" ")       
             plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
             if(param=="ncluster")
             {

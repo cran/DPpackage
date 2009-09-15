@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara and Tim Hanson, 2007-2009.
 ###
-### Last modification: 17-06-2008.
+### Last modification: 25-09-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -254,9 +254,9 @@ function(fixed,
             }
          }
 
-  	 if(is.null(prior$mub))
-  	 {
-  	    murand<-0 
+		 if(is.null(prior$mub))
+		 {
+			murand <- 0 
             if(is.null(prior$mu))
             { 
                stop("The vector *mu* must be specified in the prior object when it is not considered as random.\n")     
@@ -268,12 +268,12 @@ function(fixed,
             mu <- prior$mu
             prec2<-diag(1,q)
             mu0<-rep(0,q)
-         }
-         else
-         {
-            murand<-1
-  	    prec2<-solve(prior$Sb)
-	    mu0<-prec2%*%prior$mub
+          }
+          else
+          {
+            murand <- 1
+			prec2 <- solve(prior$Sb)
+			mu0 <- prec2%*%prior$mub
 
             if(length(prior$mub) != q)
             { 
@@ -289,10 +289,10 @@ function(fixed,
             { 
                stop("Error in the dimension of the covariance of the normal prior for the mean of the centering distribution.\n")     
             }
-         }
+		 }
 
-  	 if(is.null(prior$nu0))
-  	 {
+		 if(is.null(prior$nu0))
+		 {
             sigmarand<-0
             if(is.null(prior$sigma))
             { 
@@ -302,33 +302,33 @@ function(fixed,
             nu0 <- -1
             tinv<-diag(1,q)
             a0b0<-c(a0b0,nu0,tau1,tau2)
-  	 }
-  	 else
-  	 {
-  	   sigmarand<-1
-           nu0<-prior$nu0
-           if(nu0<=0)
-           { 
+		 }
+		 else
+		 {
+			sigmarand<-1
+			nu0<-prior$nu0
+			if(nu0<=0)
+			{ 
                 stop("The parameter of the IW prior distribution must be positive")     
-           }
+			}
 
-           tinv<-prior$tinv
-           if(dim(tinv)[1]!=q || dim(tinv)[2]!=q)
-           { 
+			tinv<-prior$tinv
+			if(dim(tinv)[1]!=q || dim(tinv)[2]!=q)
+			{ 
                 stop("Error in the dimension of the matrix of the IW prior for the covariance of the centering distribution.\n")     
-           }
-           a0b0<-c(a0b0,nu0,tau1,tau2)
-         }
+			}
+			a0b0<-c(a0b0,nu0,tau1,tau2)
+		 }
          
-         if(is.null(prior$frstlprob))
-         {
+		 if(is.null(prior$frstlprob))
+		 {
             frstlprob<-0
-         }
-         else
-         {
+		 }
+		 else
+		 {
             frstlprob<-0
             if(prior$frstlprob)frstlprob<-1
-         }
+		 }
 
          if(is.null(prior$typepr))
          {
@@ -349,75 +349,75 @@ function(fixed,
        #########################################################################################
          if(missing(mcmc))
          {
-            tune1<- -1.1
-            tune2<- 1.1
-            tune3<- 1.1
-            tune4<-- 1.1
-            M<-log(nsubject,2^q)
+            tune1 <- -1.1
+            tune2 <- 1.1
+            tune3 <- 1.1
+            tune4 <- -1.1
+            M <- log(nsubject,2^q)
             nburn <- 1000
             nsave <- 1000
             nskip <- 0
             ndisplay <- 100
             nbase <- 1
             samplef <- 1 
-            mcmcvec<-c(nburn,nskip,ndisplay,nbase,M)
-            a0b0<-c(a0b0,tune1,tune2,tune3,tune4)
+            mcmcvec <- c(nburn,nskip,ndisplay,nbase,M)
+            a0b0 <- c(a0b0,tune1,tune2,tune3,tune4)
          }
          else
          {
             if(is.null(mcmc$tune1))
             {  
-               tune1<--1.1
+               tune1 <- -1.1
             }
             else
             {
-               tune1<-mcmc$tune1
+               tune1 <- mcmc$tune1
             }
 
             if(is.null(mcmc$tune2))
             {
-               tune2<--1.1
+               tune2 <- -1.1
             }
             else
             {
-               tune2<-mcmc$tune2
+               tune2 <- mcmc$tune2
             }
 
             if(is.null(mcmc$tune3))
             {
-               tune3<--1.1
+               tune3 <- -1.1
             }
             else
             {
-               tune3<-mcmc$tune3
+               tune3 <- mcmc$tune3
             }
 
             if(is.null(mcmc$tune4))
             {
-               tune4<--1.1
+               tune4 <- -1.1
             }
             else
             {
-               tune4<-mcmc$tune4
+               tune4 <- mcmc$tune4
             }
 
 
             if(is.null(mcmc$nbase))
             {
-               nbase<-1
+               nbase <- 1
             }
             else
             {
-               nbase<-mcmc$nbase
+               nbase <- mcmc$nbase
             }
 
             if(is.null(prior$M))
             {
-               M<-log(nsubject,q)
+               M <- log(nsubject,q)
             } 
             else
             {
-               M<-prior$M
+               M <- prior$M
             }
 
             if(is.null(mcmc$samplef))
@@ -429,248 +429,229 @@ function(fixed,
                samplef <- mcmc$samplef
             }
 
-            mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,nbase,M)
-            nsave<-mcmc$nsave
-            a0b0<-c(a0b0,tune1,tune2,tune3,tune4)
+            mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,nbase,M)
+            nsave <- mcmc$nsave
+            a0b0 <- c(a0b0,tune1,tune2,tune3,tune4)
          }
 
        #########################################################################################
        # output
        #########################################################################################
-         acrate<-rep(0,5)
-         nuniq<-q*(q+1)
-         cpo<-matrix(0,nrow=nrec,ncol=2)
-         mc<-rep(0,5)
-         randsave<-matrix(0,nrow=nsave,ncol=q*(nsubject+1))
-         thetasave<-matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+1+q*q)
+         acrate <- rep(0,5)
+         nuniq <- q*(q+1)
+         cpo <- matrix(0,nrow=nrec,ncol=2)
+         mc <- rep(0,5)
+         randsave <- matrix(0,nrow=nsave,ncol=q*(nsubject+1))
+         thetasave <- matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+1+q*q)
 
 
        #########################################################################################
        # parameters depending on status
        #########################################################################################
+		 startlmm <- function(fixed,random,family,q)
+         {
+			 library(nlme)
+			 library(MASS)
+			 fit0 <- glmmPQL(fixed=fixed, random=random, family=family, verbose = FALSE) 
+			 beta <- fit0$coeff$fixed
+			 b <- fit0$coeff$random$newid
+			 sigma <- getVarCov(fit0)[1:q,1:q]
+			 sigma2e <- fit0$sigma^2
+			 out <- list(beta=beta,b=b,sigma=sigma,sigma2e=sigma2e)
+			 return(out)
+         }
+
     	 if(status==TRUE)
-	 {
-	        if(sigmarand==1)
-	        {
-                   wsigma <- prior$tinv/(prior$nu0-q-1)
-                }
-                else
-                {
-                   wsigma <- prior$sigma
-                }
-                bzs<-NULL
-                for(i in 1:q)
-                {
-                   work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma[i,i]))
-                   bzs<-cbind(bzs,work)
-                }
-	        
-	        if(nfixed==0){
-	           beta<-matrix(0,nrow=1,ncol=1)
-	           fit0<- glm.fit(z, resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-		   
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)+bzs[i,]
-	           }
-	           
-	           if(murand==1)
-	           {
-  	               mu<-coefficients(fit0)
-  	           }
-  	           else
-  	           {
-  	               mu<-prior$mu
-  	           }
-  	           
-	           if(sigmarand==1)
-	           {
-  	               sigma<-prior$tinv/(prior$nu0-q-1)
-  	           }
-  	           else
-  	           {
-  	               sigma<-prior$sigma
-  	           }
-	        }
+   	     {
+            if(nfixed==0)
+            {
+				fit0 <- startlmm(fixed=resp~z-1, random = ~ z - 1 | newid, family=gaussian,q=q) 
+				beta <- matrix(0,nrow=1,ncol=1)
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+			}
+			else
+			{
 
-	        if(nfixed>0){
-	           fit0<- glm.fit(cbind(x,z), resp, family= gaussian(link = "identity"))   
-	           sigma2e<-mean(fit0$residuals**2)
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-                   beta<-coefficients(fit0)[1:p]
+				fit0 <- startlmm(fixed=resp~z+x-1, random = ~ z - 1 | newid, family=gaussian,q=q) 
+				beta <- fit0$beta[(q+1):(p+q)]
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+			}
 
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)[(p+1):(p+q)]+bzs[i,]
-	           }
+			if(sigmarand==1)
+			{
+				sigma <- fit0$sigma
+			}
+			else
+			{
+				sigma <- prior$sigma
+			}
+		 
+		    if(murand==1)
+			{
+				mu <- fit0$beta[1:q]
+			}
+			else
+			{
+				mu <- prior$mu
+			}
+			betar<-rep(0,q)
+			ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
+			sigma2e <- fit0$sigma2e
 
-	           if(murand==1)
-	           {
-  	               mu<-coefficients(fit0)[(p+1):(p+q)]
-  	           }
-  	           else
-  	           {
-  	               mu<-prior$mu
-  	           }
-  	           
-	           if(sigmarand==1)
-	           {
-  	               sigma<-prior$tinv/(prior$nu0-q-1)
-  	           }
-  	           else
-  	           {
-  	               sigma<-prior$sigma
-  	           }
-	        }
-                betar<-rep(0,q)
-                ortho<-matrix(rnorm(q*q),nrow=q,ncol=q)
-
-	 }	
+		 }	
       	 if(status==FALSE)
-	 {
+		 {
 	        alpha <- state$alpha
-                b <- state$b 
-                if(nfixed>0)
-                {
+			b <- state$b 
+			if(nfixed>0)
+			{
 	           beta <- state$beta
 	        }
 	        else
 	        {
 	           beta <- rep(0,p)
 	        }
-                if(murand==1)
-                {
+			if(murand==1)
+			{
    	            mu <- state$mu
    	        }    
-                if(sigmarand==1)
-                {
+			if(sigmarand==1)
+			{
    	            sigma <- state$sigma
    	        }    
 	        sigma2e <- state$sigma2e    
-                if(typepr==1)
-                {
-                   ortho <- state$ortho 
-                }
-                else
-                {
-                   ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
-                }                 
+			if(typepr==1)
+			{
+				ortho <- state$ortho 
+			}
+			else
+			{
+				ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
+			}                 
 	        betar <-rep(0,q)	        
-	 }
+		 }
          
        #########################################################################################
        # working space
        #########################################################################################
-         narea<-2^q
-         curr<-c(alpha,sigma2e)
-         bz<-matrix(0,nrow=nsubject,ncol=q)
-         bzc<-matrix(0,nrow=nsubject,ncol=q)
-         iflagp<-rep(0,p) 
-         iflagr<-rep(0,q) 
-         limw<-rep(0,q)
-         linf<-rep(0,q)
-         lsup<-rep(0,q)
-         massi<-rep(0,narea)
-         parti<-rep(0,q)
-         pattern<-rep(0,q)
-         propvr<-matrix(0,nrow=q,ncol=q)
-         res<-rep(0,nrec)
-         seed1<-sample(1:29000,1)
-         seed2<-sample(1:29000,1)
-         sigmac<-matrix(0,nrow=q,ncol=q)
-         sigmainv<-matrix(0,nrow=q,ncol=q)
-         sigmainvc<-matrix(0,nrow=q,ncol=q)
-         theta<-rep(0,q)
-         thetac<-rep(0,q)
-         whicho<-rep(0,nsubject)
-         whichn<-rep(0,nsubject)      
-         workmhp1<-rep(0,p*(p+1)/2) 
-         workmhr<-rep(0,q*(q+1)/2) 
-         workmhr2<-rep(0,q*(q+1)/2) 
-         workmp1<-matrix(0,nrow=p,ncol=p)
-         workmr<-matrix(0,nrow=q,ncol=q) 
-         workmr1<-matrix(0,nrow=q,ncol=q) 
-         workmr2<-matrix(0,nrow=q,ncol=q) 
-         workvp1<-rep(0,p) 
-         workvr<-rep(0,q)
-         xty<-rep(0,p) 
-         ybar<-rep(0,narea)
+         narea <- 2^q
+         curr <- c(alpha,sigma2e)
+         bz <- matrix(0,nrow=nsubject,ncol=q)
+         bzc <- matrix(0,nrow=nsubject,ncol=q)
+         iflagp <- rep(0,p) 
+         iflagr <- rep(0,q) 
+         limw <- rep(0,q)
+         linf <- rep(0,q)
+         lsup <- rep(0,q)
+         massi <- rep(0,narea)
+         parti <- rep(0,q)
+         pattern <- rep(0,q)
+         propvr <- matrix(0,nrow=q,ncol=q)
+         res <- rep(0,nrec)
+         seed1 <- sample(1:29000,1)
+         seed2 <- sample(1:29000,1)
+         sigmac <- matrix(0,nrow=q,ncol=q)
+         sigmainv <- matrix(0,nrow=q,ncol=q)
+         sigmainvc <- matrix(0,nrow=q,ncol=q)
+         theta <- rep(0,q)
+         thetac <- rep(0,q)
+         whicho <- rep(0,nsubject)
+         whichn <- rep(0,nsubject)      
+         workmhp1 <- rep(0,p*(p+1)/2) 
+         workmhr <- rep(0,q*(q+1)/2) 
+         workmhr2 <- rep(0,q*(q+1)/2) 
+         workmp1 <- matrix(0,nrow=p,ncol=p)
+         workmr <- matrix(0,nrow=q,ncol=q) 
+         workmr1 <- matrix(0,nrow=q,ncol=q) 
+         workmr2 <- matrix(0,nrow=q,ncol=q) 
+         workvp1 <- rep(0,p) 
+         workvr <- rep(0,q)
+         xty <- rep(0,p) 
+         ybar <- rep(0,narea)
          
-         betasave<-rep(0,(p+1))
-         bsave<-matrix(0,nrow=nsubject,ncol=q)
+         betasave <- rep(0,(p+1))
+         bsave <- matrix(0,nrow=nsubject,ncol=q)
 
-         mcmcvec<-c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
+         mcmcvec <- c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
 
        #########################################################################################
        # calling the fortran code
        #########################################################################################
 
          foo <- .Fortran("ptlmm",
-         	datastr    =as.integer(datastr),
- 	 	maxni      =as.integer(maxni),
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
- 		x          =as.double(x),
- 		xtx        =as.double(xtx),	 	
- 		y          =as.double(resp),
- 		z          =as.double(z),
- 		a0b0       =as.double(a0b0),
- 		mu0        =as.integer(mu0),
- 		prec1      =as.double(prec1),	 
- 		prec2      =as.double(prec2),	 
- 		sb         =as.double(sb),	  		
- 		tinv       =as.double(tinv),	  		 		
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
+				datastr    =as.integer(datastr),
+				maxni      =as.integer(maxni),
+				nrec       =as.integer(nrec),
+				nsubject   =as.integer(nsubject),
+				nfixed     =as.integer(nfixed),
+				p          =as.integer(p),
+				q          =as.integer(q),
+				subject    =as.integer(newid),
+				x          =as.double(x),
+				xtx        =as.double(xtx),	 	
+				y          =as.double(resp),
+				z          =as.double(z),
+				a0b0       =as.double(a0b0),
+				mu0        =as.integer(mu0),
+				prec1      =as.double(prec1),	 
+				prec2      =as.double(prec2),	 
+				sb         =as.double(sb),	  		
+				tinv       =as.double(tinv),	  		 		
+				mcmc       =as.integer(mcmcvec),
+				nsave      =as.integer(nsave),
                 acrate     =as.double(acrate),   
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		curr       =as.double(curr),
- 		b          =as.double(b),		
- 		beta       =as.double(beta),
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma      =as.double(sigma),
+				cpo        =as.double(cpo),
+				randsave   =as.double(randsave),
+				thetasave  =as.double(thetasave),
+				curr       =as.double(curr),
+				b          =as.double(b),		
+				beta       =as.double(beta),
+				betar      =as.double(betar),
+				mu         =as.double(mu),
+				sigma      =as.double(sigma),
                 ortho      =as.double(ortho),
- 		mc         =as.double(mc),
- 		iflagp     =as.integer(iflagp),
- 		res        =as.double(res),
- 		workmp1    =as.double(workmp1),
+				mc         =as.double(mc),
+				iflagp     =as.integer(iflagp),
+				res        =as.double(res),
+				workmp1    =as.double(workmp1),
                 workmhp1   =as.double(workmhp1),
- 		workvp1    =as.double(workvp1),
- 		xty        =as.double(xty),
- 		iflagr     =as.integer(iflagr),
- 		parti      =as.integer(parti),
- 		whicho     =as.integer(whicho),
- 		whichn     =as.integer(whichn),
- 		bz         =as.double(bz),
- 		bzc        =as.double(bzc),
- 		limw       =as.double(limw),
- 		linf       =as.double(linf),
- 		lsup       =as.double(lsup),
- 		propvr     =as.double(propvr),
- 		sigmainv   =as.double(sigmainv),
- 		theta      =as.double(theta),
- 		thetac     =as.double(thetac),
- 		workmhr    =as.double(workmhr),
- 		workmr     =as.double(workmr),
- 		workmr1    =as.double(workmr1),
- 		workmr2    =as.double(workmr2),
- 		workvr     =as.double(workvr),
- 		ybar       =as.double(ybar),
- 		sigmac     =as.double(sigmac),
- 		sigmainvc  =as.double(sigmainvc),
- 		workmhr2   =as.double(workmhr2),
- 		massi      =as.integer(massi),
- 		pattern    =as.integer(pattern),
+				workvp1    =as.double(workvp1),
+				xty        =as.double(xty),
+				iflagr     =as.integer(iflagr),
+				parti      =as.integer(parti),
+				whicho     =as.integer(whicho),
+				whichn     =as.integer(whichn),
+				bz         =as.double(bz),
+				bzc        =as.double(bzc),
+				limw       =as.double(limw),
+				linf       =as.double(linf),
+				lsup       =as.double(lsup),
+				propvr     =as.double(propvr),
+				sigmainv   =as.double(sigmainv),
+				theta      =as.double(theta),
+				thetac     =as.double(thetac),
+				workmhr    =as.double(workmhr),
+				workmr     =as.double(workmr),
+				workmr1    =as.double(workmr1),
+				workmr2    =as.double(workmr2),
+				workvr     =as.double(workvr),
+				ybar       =as.double(ybar),
+				sigmac     =as.double(sigmac),
+				sigmainvc  =as.double(sigmainvc),
+				workmhr2   =as.double(workmhr2),
+				massi      =as.integer(massi),
+				pattern    =as.integer(pattern),
                 betasave   =as.double(betasave),
                 bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
+				PACKAGE    ="DPpackage")	
 		
 
        #########################################################################################
@@ -700,7 +681,7 @@ function(fixed,
             pnames1 <- c(colnames(z),colnames(x))
          }   
  	 
- 	 pnames2<-"residual"
+		 pnames2<-"residual"
  	 
          pnames3 <- paste("mu",colnames(z),sep="-") 	    
 
@@ -749,54 +730,54 @@ function(fixed,
          colnames(randsave) <- qnames
          
          
-	 model.name<-"Bayesian semiparametric linear mixed effect model"		
+		 model.name<-"Bayesian semiparametric linear mixed effect model"		
 
          coeff<-apply(thetasave,2,mean)
-	 names(coeff)<-c(pnames1,pnames2,pnames3,pnames4,pnames5,pnames6)
+		 names(coeff)<-c(pnames1,pnames2,pnames3,pnames4,pnames5,pnames6)
 
-	 state <- list(alpha=foo$curr[1],
-	               b=matrix(foo$b,nrow=nsubject,ncol=q),
-	               beta=foo$beta,
-	               mu=foo$mu,
-	               sigma=matrix(foo$sigma,nrow=q,ncol=q),
-	               sigma2e=foo$curr[2],
-                       ortho=matrix(foo$ortho,nrow=q,ncol=q))
+		 state <- list(	alpha=foo$curr[1],
+						b=matrix(foo$b,nrow=nsubject,ncol=q),
+						beta=foo$beta,
+						mu=foo$mu,
+						sigma=matrix(foo$sigma,nrow=q,ncol=q),
+						sigma2e=foo$curr[2],
+						ortho=matrix(foo$ortho,nrow=q,ncol=q))
 
-	 save.state <- list(thetasave=thetasave,
-                            randsave=randsave)
+		 save.state <- list(	thetasave=thetasave,
+							randsave=randsave)
 
          acrate<-foo$acrate
 
-	 z<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nsubject=foo$nsubject,
-                 nfixed=foo$nfixed,
-                 nrandom=foo$q,
-                 cpo=cpo,
-                 fso=fso,
-                 alphapr=alphapr,
-                 namesre1=namesre,
-                 namesre2=colnames(z),
-                 z=z,
-                 x=x,
-                 mf=mf,
-                 dimen=dimen,
-                 acrate=acrate,
-                 possiP=possiP,
-                 fixed=fixed,
-                 m=M,
-                 murand=murand,
-                 sigmarand=sigmarand,
-                 frstlprob=frstlprob,
-                 mc=mc,
-                 typepr=typepr,
-                 samplef=samplef)
+		z<-list(	modelname=model.name,
+					coefficients=coeff,
+					call=cl,
+					prior=prior,
+					mcmc=mcmc,
+					state=state,
+					save.state=save.state,
+					nrec=foo$nrec,
+					nsubject=foo$nsubject,
+					nfixed=foo$nfixed,
+					nrandom=foo$q,
+					cpo=cpo,
+					fso=fso,
+					alphapr=alphapr,
+					namesre1=namesre,
+					namesre2=colnames(z),
+					z=z,
+					x=x,
+					mf=mf,
+					dimen=dimen,
+					acrate=acrate,
+					possiP=possiP,
+					fixed=fixed,
+					m=M,
+					murand=murand,
+					sigmarand=sigmarand,
+					frstlprob=frstlprob,
+					mc=mc,
+					typepr=typepr,
+					samplef=samplef)
                  
          cat("\n\n")        
 

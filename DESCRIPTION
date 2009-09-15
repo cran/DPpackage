@@ -1,6 +1,7 @@
 Package: DPpackage
-Version: 1.0-7
-Date: 2009-03-15
+Version: 1.0-8
+Depends: MASS, nlme
+Date: 2009-09-15
 Title: Bayesian Nonparametric and Semiparametric Analysis
 Author: Alejandro Jara <ajarav@udec.cl> with contributions from Timothy
         Hanson <hanson@biostat.umn.edu>, Fernando A. Quintana
@@ -13,11 +14,12 @@ Description: This package contains functions to perform inference via
         the package was motivated by the Dirichlet Process prior, the
         package considers and will consider other priors on functional
         spaces. So far, DPpackage includes models considering Dirichlet
-        Processes, Dependent Dirichlet Processes, Polya Trees, Mixtures
-        of Triangular distributions, and Random Bernstein polynomials
-        priors. The package also includes models considering Penalized
-        B-Splines. Currently the package includes semiparametric models
-        for marginal and conditional density estimation, ROC curve
+        Processes, Dependent Dirichlet Processes, Hierarchical
+        Dirichlet Processes, Polya Trees, Mixtures of Triangular
+        distributions, and Random Bernstein polynomials priors. The
+        package also includes models considering Penalized B-Splines.
+        Currently the package includes semiparametric models for
+        marginal and conditional density estimation, ROC curve
         analysis, interval censored data, binary regression models,
         generalized linear mixed models, IRT type models, and
         generalized additive models. The package also contains
@@ -27,8 +29,8 @@ Description: This package contains functions to perform inference via
         sampling for each model is done in compiled FORTRAN. The
         functions return objects which can be subsequently analyzed
         with functions provided in the coda package.
-License: GPL version 2 or newer
+License: GPL (>= 2)
 URL: http://www2.udec.cl/~ajarav/software.html
-Packaged: Mon Mar 16 11:59:45 2009; alejandro
+Packaged: 2009-10-20 07:43:16 UTC; root
 Repository: CRAN
-Date/Publication: 2009-03-16 18:37:06
+Date/Publication: 2009-10-20 09:46:48

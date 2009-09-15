@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara and Tim Hanson, 2006-2009.
 ###
-### Last modification: 28-11-2006.
+### Last modification: 05-10-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -45,47 +45,47 @@
 ###
 
 
-PTdensity<-function(y,ngrid=1000,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
+PTdensity<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("PTdensity")
 
-PTdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,data,na.action=na.fail)
+PTdensity.default<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,na.action=na.fail)
 {
          #########################################################################################
          # call parameters
          #########################################################################################
-         cl <- match.call()
-	 y<-na.action(as.matrix(y))	
+           cl <- match.call()
+	       y <- na.action(as.matrix(y))	
 	  
          #########################################################################################
          # data structure
          #########################################################################################
-         nrec<-dim(y)[1]
-         nvar<-dim(y)[2]
+           nrec <- nrow(y)
+           nvar <- ncol(y)
           
-         if(nvar>1)
-         {
-             left<-rep(0,2)
-	     right<-rep(0,2)
+           if(nvar>1)
+           {
+              left <- rep(0,2)
+	          right <- rep(0,2)
 	    
-	     left[1]<-min(y[,1])-0.5*sqrt(var(y[,1]))
-	     right[1]<-max(y[,1])+0.5*sqrt(var(y[,1]))
+			  left[1] <- min(y[,1])-0.5*sqrt(var(y[,1]))
+	          right[1] <- max(y[,1])+0.5*sqrt(var(y[,1]))
 	    
-	     left[2]<-min(y[,2])-0.5*sqrt(var(y[,2]))
-	     right[2]<-max(y[,2])+0.5*sqrt(var(y[,2]))
-         } 
-         else
-         {
-             left<-min(y)-0.5*sqrt(var(y))
-             right<-max(y)+0.5*sqrt(var(y))
-         }    
+	          left[2] <- min(y[,2])-0.5*sqrt(var(y[,2]))
+	          right[2] <- max(y[,2])+0.5*sqrt(var(y[,2]))
+           } 
+           else
+           {
+              left <- min(y)-0.5*sqrt(var(y))
+              right <- max(y)+0.5*sqrt(var(y))
+           }    
 
          #########################################################################################
          # prior information
          #########################################################################################
 
-  	 if(is.null(prior$a0))
-  	 {
-  	    ca<--1
+  	       if(is.null(prior$a0))
+  	       {
+  	          ca <- -1
   	    cb<--1 
   	    cpar<-prior$alpha
   	    crand<-0
@@ -184,18 +184,38 @@ PTdensity.default<-function(y,ngrid=1000,prior,mcmc,state,status,data,na.action=
          # working space
          #########################################################################################
 
-         acrate<-rep(0,3)
-	 cpo<-rep(0,nrec)
-	 if(nvar==1)
-	 {
-	    grid<-seq(left,right,length=ngrid) 
-	 }
-	 else
-	 {	 
-            grid1<-seq(left[1],right[1],length=ngrid)  
-            grid2<-seq(left[2],right[2],length=ngrid)  
-         }   
-	 seed<-c(sample(1:29000,1),sample(1:29000,1))
+           acrate <- rep(0,3)
+	       cpo <- rep(0,nrec)
+	       if(nvar==1)
+		   {
+              if(is.null(grid))
+              {
+	             grid <- seq(left,right,length=ngrid)
+              }
+              else
+              {
+                 grid <- as.matrix(grid)
+                 ngrid <- nrow(grid)
+                 grid <- as.vector(grid)
+			  }
+	       }        
+	       else
+	       {	
+              if(is.null(grid))
+              {
+				 grid1<-seq(left[1],right[1],length=ngrid)  
+                 grid2<-seq(left[2],right[2],length=ngrid)  
+              }
+              else
+              {
+                 grid <- as.matrix(grid)
+                 ngrid <- nrow(grid)
+                 grid1 <- grid[,1]
+                 grid2 <- grid[,2]
+			  }
+           }
+
+	       seed <- c(sample(1:29000,1),sample(1:29000,1))
 
          #########################################################################################
          # calling the fortran code

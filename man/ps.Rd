@@ -37,9 +37,9 @@ Eilers, P.H.C. and Marx, B.D. (1996) Flexible Smoothing with B-splines and
 
 \examples{
    # fit Start using a smoothing spline with 4 df.
-     y ~ Age + s(Start, degree=4)
+     y ~ Age + ps(Start, degree=4)
    # fit log(Start) using a smoothing spline with 5 df.
-     y ~ Age + s(log(Start), degree=5)
+     y ~ Age + ps(log(Start), degree=5)
 }
 
 \keyword{models}

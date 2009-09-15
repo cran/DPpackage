@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara and Tim Hanson, 2007-2009.
 ###
-### Last modification: 22-06-2008.
+### Last modification: 25-09-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -248,15 +248,15 @@ function(fixed,
        #########################################################################################
          if(nfixed==0)
          {
-            prec1<-matrix(0,nrow=1,ncol=1)
-            sb<-matrix(0,nrow=1,ncol=1)
-            b0<-rep(0,1)
+            prec1 <- matrix(0,nrow=1,ncol=1)
+            sb <- matrix(0,nrow=1,ncol=1)
+            b0 <- rep(0,1)
          }
          else
          {
-            b0<-prior$beta0
-            prec1<-solve(prior$Sbeta0)
-            sb<-prec1%*%b0
+            b0 <- prior$beta0
+            prec1 <- solve(prior$Sbeta0)
+            sb <- prec1%*%b0
 
             if(length(b0)!=p)
             { 
@@ -298,9 +298,9 @@ function(fixed,
             }
          }
 
-  	 if(is.null(prior$mub))
-  	 {
-  	    murand<-0 
+		if(is.null(prior$mub))
+		{
+			murand<-0 
             if(is.null(prior$mu))
             { 
                stop("The vector *mu* must be specified in the prior object when it is not considered as random.\n")     
@@ -311,13 +311,13 @@ function(fixed,
             }
             mu <- prior$mu
             prec2<-diag(1,q)
-            mu0<-rep(0,q)
+			mu0<-rep(0,q)
          }
          else
          {
-            murand<-1
-  	    prec2<-solve(prior$Sb)
-	    mu0<-prec2%*%prior$mub
+			murand<-1
+			prec2<-solve(prior$Sb)
+			mu0<-prec2%*%prior$mub
 
             if(length(prior$mub) != q)
             { 
@@ -335,8 +335,8 @@ function(fixed,
             }
          }
 
-  	 if(is.null(prior$nu0))
-  	 {
+		if(is.null(prior$nu0))
+		{
             sigmarand<-0
             if(is.null(prior$sigma))
             { 
@@ -345,12 +345,12 @@ function(fixed,
             sigma <- prior$sigma
             nu0 <- -1
             tinv<-diag(1,q)
-  	 }
-  	 else
-  	 {
-  	   sigmarand<-1
-           nu0<-prior$nu0
-           if(nu0<=0)
+		}
+		else
+		{
+			sigmarand<-1
+			nu0<-prior$nu0
+			if(nu0<=0)
            { 
                 stop("The parameter of the IW prior distribution must be positive")     
            }
@@ -500,119 +500,98 @@ function(fixed,
        #########################################################################################
        # parameters depending on status
        #########################################################################################
+		 startglmm <- function(fixed,random,family,q)
+         {
+			 library(nlme)
+			 library(MASS)
+			 fit0 <- glmmPQL(fixed=fixed, random=random, family=family, verbose = FALSE) 
+			 beta <- fit0$coeff$fixed
+			 b <- fit0$coeff$random$newid
+			 sigma <- getVarCov(fit0)[1:q,1:q]
+			 out <- list(beta=beta,b=b,sigma=sigma)
+			 return(out)
+         }
+
     	 if(status==TRUE)
-	 {
+		 {
            
-                resp2 <- resp
-                if(family$family=="binomial")
-                {
-                    if(family$link=="logit")
-                    {
-                        if(!is.null(n)) resp2<-cbind(resp,ntrials-resp)
-                    }
-                }   
+			resp2 <- resp
+			if(family$family=="binomial")
+			{
+				if(family$link=="logit")
+				{
+					if(!is.null(n)) resp2 <- cbind(resp,ntrials-resp)
+				}
+			}   
+			 
+            if(nfixed==0)
+            {
+				fit0 <- startglmm(fixed=resp2~z-1+offset(roffset), random = ~ z - 1 | newid, family=family,q=q) 
+				beta <- matrix(0,nrow=1,ncol=1)
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+			}
+			else
+			{
 
-	        if(sigmarand==1)
-	        {
-                   wsigma <- prior$tinv/(prior$nu0-q-1)
-                }
-                else
-                {
-                   wsigma <- prior$sigma
-                }
+				fit0 <- startglmm(fixed=resp2~z+x-1+offset(roffset), random = ~ z - 1 | newid, family=family,q=q) 
+				beta <- fit0$beta[(q+1):(p+q)]
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+			}
 
-                bzs<-NULL
-                for(i in 1:q)
-                {
-                   work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma[i,i]))
-                   bzs<-cbind(bzs,work)
-                }
-                
-	        if(nfixed==0){
-	           beta<-matrix(0,nrow=1,ncol=1)
-
-	           fit0<- glm.fit(z, resp2, family= family,offset=roffset)   
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-
-	           if(murand==1)
-	           {
-  	               mu<-coefficients(fit0)
-  	           }
-  	           else
-  	           {
-  	               mu<-prior$mu
-  	           }
-  	           
-	           if(sigmarand==1)
-	           {
-  	               sigma<-prior$tinv/(prior$nu0-q-1)
-  	           }
-  	           else
-  	           {
-  	               sigma<-prior$sigma
-  	           }
-
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)+bzs[i,]
-	           }
-	        }
-
-	        if(nfixed>0){
-	           fit0<- glm.fit(cbind(x,z), resp2, family= family,offset=roffset)   
-	           b<-matrix(0,nrow=nsubject,ncol=q)
-                   beta<-coefficients(fit0)[1:p]
-                   
-	           if(murand==1)
-	           {
-  	               mu<-coefficients(fit0)[(p+1):(p+q)]
-  	           }
-  	           else
-  	           {
-  	               mu<-prior$mu
-  	           }
-  	           
-	           if(sigmarand==1)
-	           {
-  	               sigma<-prior$tinv/(prior$nu0-q-1)
-  	           }
-  	           else
-  	           {
-  	               sigma<-prior$sigma
-  	           }
-
-	           for(i in 1:nsubject){
-	               b[i,]<-coefficients(fit0)[(p+1):(p+q)]+bzs[i,]
-	           }
-	        }
-                betar<-rep(0,q)
-                ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
-                if(family$family=="Gamma")disp<-1.1
-	 }	
+			if(sigmarand==1)
+			{
+				sigma <- fit0$sigma
+			}
+			else
+			{
+				sigma <- prior$sigma
+			}
+		 
+		    if(murand==1)
+			{
+				mu <- fit0$beta[1:q]
+			}
+			else
+			{
+				mu <- prior$mu
+			}
+			betar<-rep(0,q)
+			ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
+			if(family$family=="Gamma")disp<-1.1
+		 }	
       	 if(status==FALSE)
-	 {
-	        alpha<-state$alpha
-                b<-state$b
-                if(nfixed>0)
-                {
-	           beta<-state$beta
+		 {
+	        alpha <- state$alpha
+			b <- state$b
+			if(nfixed>0)
+			{
+	           beta <- state$beta
 	        }
 	        else
 	        {
-	           beta<-rep(0,p)
+	           beta <- rep(0,p)
 	        }
-	        mu<-state$mu
-	        sigma<-state$sigma
+	        mu <- state$mu
+	        sigma <- state$sigma
 	        if(family$family=="Gamma")disp<-1/state$phi
-                if(typepr==1)
-                {
-                   ortho <- state$ortho 
-                }
-                else
-                {
-                   ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
-                }                 
+			if(typepr==1)
+			{
+				ortho <- state$ortho 
+			}
+			else
+			{
+				ortho <- matrix(rnorm(q*q),nrow=q,ncol=q)
+			}                 
 	        betar<-rep(0,q)
-	 }
+		 }
 
 
        #########################################################################################
@@ -626,121 +605,121 @@ function(fixed,
             {
 
                 # specific saved space
-                  acrate<-rep(0,5)
+                  acrate <- rep(0,5)
 
                 # specific working space
 
-                  narea<-2^q
-                  bz<-matrix(0,nrow=nsubject,ncol=q)
-                  bzc<-matrix(0,nrow=nsubject,ncol=q)
-                  iflagp<-rep(0,p) 
-                  iflagr<-rep(0,q) 
-                  limw<-rep(0,q)
-                  linf<-rep(0,q)
-                  lsup<-rep(0,q)
-                  massi<-rep(0,narea)
-                  parti<-rep(0,q)
-                  pattern<-rep(0,q)
-                  propvr<-matrix(0,nrow=q,ncol=q)
-                  res<-rep(0,nrec)
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  sigmac<-matrix(0,nrow=q,ncol=q)
-                  sigmainv<-matrix(0,nrow=q,ncol=q)
-                  sigmainvc<-matrix(0,nrow=q,ncol=q)
-                  theta<-rep(0,q)
-                  thetac<-rep(0,q)
-                  whicho<-rep(0,nsubject)
-                  whichn<-rep(0,nsubject)      
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workmhr<-rep(0,q*(q+1)/2) 
-                  workmhr2<-rep(0,q*(q+1)/2) 
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmr<-matrix(0,nrow=q,ncol=q) 
-                  workmr1<-matrix(0,nrow=q,ncol=q) 
-                  workmr2<-matrix(0,nrow=q,ncol=q) 
-                  workvp1<-rep(0,p) 
-                  workvr<-rep(0,q)
-                  xtx<-t(x)%*%x
-                  xty<-rep(0,p) 
-                  ybar<-rep(0,narea)
-                  y<-rep(0,nrec)
+                  narea <- 2^q
+                  bz <- matrix(0,nrow=nsubject,ncol=q)
+                  bzc <- matrix(0,nrow=nsubject,ncol=q)
+                  iflagp <- rep(0,p) 
+                  iflagr <- rep(0,q) 
+                  limw <- rep(0,q)
+                  linf <- rep(0,q)
+                  lsup <- rep(0,q)
+                  massi <- rep(0,narea)
+                  parti <- rep(0,q)
+                  pattern <- rep(0,q)
+                  propvr <- matrix(0,nrow=q,ncol=q)
+                  res <- rep(0,nrec)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  sigmac <- matrix(0,nrow=q,ncol=q)
+                  sigmainv <- matrix(0,nrow=q,ncol=q)
+                  sigmainvc <- matrix(0,nrow=q,ncol=q)
+                  theta <- rep(0,q)
+                  thetac <- rep(0,q)
+                  whicho <- rep(0,nsubject)
+                  whichn <- rep(0,nsubject)      
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workmhr <- rep(0,q*(q+1)/2) 
+                  workmhr2 <- rep(0,q*(q+1)/2) 
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmr <- matrix(0,nrow=q,ncol=q) 
+                  workmr1 <- matrix(0,nrow=q,ncol=q) 
+                  workmr2 <- matrix(0,nrow=q,ncol=q) 
+                  workvp1 <- rep(0,p) 
+                  workvr <- rep(0,q)
+                  xtx <- t(x)%*%x
+                  xty <- rep(0,p) 
+                  ybar <- rep(0,narea)
+                  y <- rep(0,nrec)
 
-                  betasave<-rep(0,p)
-                  bsave<-matrix(0,nrow=nsubject,ncol=q)
+                  betasave <- rep(0,p)
+                  bsave <- matrix(0,nrow=nsubject,ncol=q)
 
-                  mcmcvec<-c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
+                  mcmcvec <- c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
 
-                  curr<-c(alpha,mc)                  
+                  curr <- c(alpha,mc)                  
                 
                 # fit the model
                 
                   foo <- .Fortran("ptglmmprob",
-                 	datastr    =as.integer(datastr),
- 	  		maxni      =as.integer(maxni),
- 	  		nrec       =as.integer(nrec),
- 	  		nsubject   =as.integer(nsubject),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		q          =as.integer(q),
- 	  		subject    =as.integer(newid),
- 	 		x          =as.double(x),
- 	 		xtx        =as.double(xtx),	 	
- 	 		yr         =as.integer(resp),
- 	 		y          =as.double(y),
- 	 		z          =as.double(z),
- 	 		a0b0       =as.double(a0b0),
- 	 		mu0        =as.double(mu0),
- 	 		prec1      =as.double(prec1),	 
- 	 		prec2      =as.double(prec2),	 
- 	 		sb         =as.double(sb),	  		
- 	 		tinv       =as.double(tinv),	  		 		
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
-                        acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		curr       =as.double(curr),
- 	 		b          =as.double(b),		
- 	 		beta       =as.double(beta),
- 	 		betar      =as.double(betar),
- 	 		mu         =as.double(mu),
- 	 		sigma      =as.double(sigma),
- 	 		ortho      =as.double(ortho),
- 	 		iflagp     =as.integer(iflagp),
- 	 		res        =as.double(res),
- 	 		workmp1    =as.double(workmp1),
-                        workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xty        =as.double(xty),
- 	 		iflagr     =as.integer(iflagr),
- 	 		parti      =as.integer(parti),
- 	 		whicho     =as.integer(whicho),
- 	 		whichn     =as.integer(whichn),
- 	 		bz         =as.double(bz),
- 	 		bzc        =as.double(bzc),
- 	 		limw       =as.double(limw),
- 	 		linf       =as.double(linf),
- 	 		lsup       =as.double(lsup),
- 	 		propvr     =as.double(propvr),
- 	 		sigmainv   =as.double(sigmainv),
- 	 		theta      =as.double(theta),
- 	 		thetac     =as.double(thetac),
- 	 		workmhr    =as.double(workmhr),
- 	 		workmr     =as.double(workmr),
- 	 		workmr1    =as.double(workmr1),
- 	 		workmr2    =as.double(workmr2),
- 	 		workvr     =as.double(workvr),
- 	 		ybar       =as.double(ybar),
- 	 		sigmac     =as.double(sigmac),
- 	 		sigmainvc  =as.double(sigmainvc),
- 	 		workmhr2   =as.double(workmhr2),
- 	 		massi      =as.integer(massi),
- 	 		pattern    =as.integer(pattern),
-                        betasave   =as.double(betasave),
-                        bsave      =as.double(bsave),
-			PACKAGE    ="DPpackage")	
+								  datastr    =as.integer(datastr),
+								  maxni      =as.integer(maxni),
+								  nrec       =as.integer(nrec),
+								  nsubject   =as.integer(nsubject),
+								  nfixed     =as.integer(nfixed),
+								  p          =as.integer(p),
+								  q          =as.integer(q),
+								  subject    =as.integer(newid),
+								  x          =as.double(x),
+								  xtx        =as.double(xtx),	 	
+								  yr         =as.integer(resp),
+								  y          =as.double(y),
+								  z          =as.double(z),
+								  a0b0       =as.double(a0b0),
+								  mu0        =as.double(mu0),
+								  prec1      =as.double(prec1),	 
+								  prec2      =as.double(prec2),	 
+								  sb         =as.double(sb),	  		
+								  tinv       =as.double(tinv),	  		 		
+								  mcmc       =as.integer(mcmcvec),
+								  nsave      =as.integer(nsave),
+								  acrate     =as.double(acrate),   
+								  cpo        =as.double(cpo),
+								  randsave   =as.double(randsave),
+								  thetasave  =as.double(thetasave),
+								  curr       =as.double(curr),
+								  b          =as.double(b),		
+								  beta       =as.double(beta),
+								  betar      =as.double(betar),
+								  mu         =as.double(mu),
+								  sigma      =as.double(sigma),
+								  ortho      =as.double(ortho),
+								  iflagp     =as.integer(iflagp),
+								  res        =as.double(res),
+								  workmp1    =as.double(workmp1),
+								  workmhp1   =as.double(workmhp1),
+								  workvp1    =as.double(workvp1),
+								  xty        =as.double(xty),
+								  iflagr     =as.integer(iflagr),
+								  parti      =as.integer(parti),
+								  whicho     =as.integer(whicho),
+								  whichn     =as.integer(whichn),
+								  bz         =as.double(bz),
+								  bzc        =as.double(bzc),
+								  limw       =as.double(limw),
+								  linf       =as.double(linf),
+								  lsup       =as.double(lsup),
+								  propvr     =as.double(propvr),
+								  sigmainv   =as.double(sigmainv),
+								  theta      =as.double(theta),
+								  thetac     =as.double(thetac),
+								  workmhr    =as.double(workmhr),
+								  workmr     =as.double(workmr),
+								  workmr1    =as.double(workmr1),
+								  workmr2    =as.double(workmr2),
+								  workvr     =as.double(workvr),
+								  ybar       =as.double(ybar),
+								  sigmac     =as.double(sigmac),
+								  sigmainvc  =as.double(sigmainvc),
+								  workmhr2   =as.double(workmhr2),
+								  massi      =as.integer(massi),
+								  pattern    =as.integer(pattern),
+								  betasave   =as.double(betasave),
+								  bsave      =as.double(bsave),
+								  PACKAGE    ="DPpackage")	
             }
 
 
@@ -748,46 +727,46 @@ function(fixed,
             {
 
                 # specific saved space
-                  acrate<-rep(0,6)
+                  acrate <- rep(0,6)
  
                 # specific working space
 
-                  narea<-2^q
-                  betac<-rep(0,p)
-                  bz<-matrix(0,nrow=nsubject,ncol=q)
-                  bzc<-matrix(0,nrow=nsubject,ncol=q)
-                  iflagp<-rep(0,p) 
-                  iflagr<-rep(0,q) 
-                  limw<-rep(0,q)
-                  linf<-rep(0,q)
-                  lsup<-rep(0,q)
-                  massi<-rep(0,narea)
-                  parti<-rep(0,q)
-                  pattern<-rep(0,q)
-                  propvr<-matrix(0,nrow=q,ncol=q)
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  sigmac<-matrix(0,nrow=q,ncol=q)
-                  sigmainv<-matrix(0,nrow=q,ncol=q)
-                  sigmainvc<-matrix(0,nrow=q,ncol=q)
-                  theta<-rep(0,q)
-                  thetac<-rep(0,q)
-                  whicho<-rep(0,nsubject)
-                  whichn<-rep(0,nsubject)      
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workmhr<-rep(0,q*(q+1)/2) 
-                  workmhr2<-rep(0,q*(q+1)/2) 
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmr<-matrix(0,nrow=q,ncol=q) 
-                  workmr1<-matrix(0,nrow=q,ncol=q) 
-                  workmr2<-matrix(0,nrow=q,ncol=q) 
-                  workvp1<-rep(0,p) 
-                  workvr<-rep(0,q)
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
-                  ybar<-rep(0,narea)
-                  y<-rep(0,nrec)
+                  narea <- 2^q
+                  betac <- rep(0,p)
+                  bz <- matrix(0,nrow=nsubject,ncol=q)
+                  bzc <- matrix(0,nrow=nsubject,ncol=q)
+                  iflagp <- rep(0,p) 
+                  iflagr <- rep(0,q) 
+                  limw <- rep(0,q)
+                  linf <- rep(0,q)
+                  lsup <- rep(0,q)
+                  massi <- rep(0,narea)
+                  parti <- rep(0,q)
+                  pattern <- rep(0,q)
+                  propvr <- matrix(0,nrow=q,ncol=q)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  sigmac <- matrix(0,nrow=q,ncol=q)
+                  sigmainv <- matrix(0,nrow=q,ncol=q)
+                  sigmainvc <- matrix(0,nrow=q,ncol=q)
+                  theta <- rep(0,q)
+                  thetac <- rep(0,q)
+                  whicho <- rep(0,nsubject)
+                  whichn <- rep(0,nsubject)      
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workmhr <- rep(0,q*(q+1)/2) 
+                  workmhr2 <- rep(0,q*(q+1)/2) 
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmr <- matrix(0,nrow=q,ncol=q) 
+                  workmr1 <- matrix(0,nrow=q,ncol=q) 
+                  workmr2 <- matrix(0,nrow=q,ncol=q) 
+                  workvp1 <- rep(0,p) 
+                  workvr <- rep(0,q)
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
+                  ybar <- rep(0,narea)
+                  y <- rep(0,nrec)
 
                   mcmcvec <- c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
                   resp <- cbind(resp,ntrials)
@@ -796,77 +775,77 @@ function(fixed,
                   betasave <- rep(0,p)
                   bsave <- matrix(0,nrow=nsubject,ncol=q)
 
-                  curr<-c(alpha,mc)
+                  curr <- c(alpha,mc)
                   
                 # fit the model
                 
                   foo <- .Fortran("ptglmmlogit",
-                 	datastr    =as.integer(datastr),
- 	  		maxni      =as.integer(maxni),
- 	  		nrec       =as.integer(nrec),
- 	  		nsubject   =as.integer(nsubject),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		q          =as.integer(q),
- 	  		subject    =as.integer(newid),
- 	 		x          =as.double(x),
- 	 		y          =as.integer(resp),
- 	 		z          =as.double(z),
- 	 		a0b0       =as.double(a0b0),
- 	 		mu0        =as.double(mu0),
- 	 		prec1      =as.double(prec1),	 
- 	 		prec2      =as.double(prec2),	 
- 	 		sb         =as.double(sb),	  		
- 	 		tinv       =as.double(tinv),	 
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
-                        acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		curr       =as.double(curr),
- 	 		b          =as.double(b),		
- 	 		beta       =as.double(beta),
- 	 		betar      =as.double(betar),
- 	 		mu         =as.double(mu),
- 	 		sigma      =as.double(sigma),
- 	 		ortho      =as.double(ortho),
- 	 		betac      =as.double(betac),
- 	 		iflagp     =as.integer(iflagp),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
-                        workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagr     =as.integer(iflagr),
- 	 		parti      =as.integer(parti),
- 	 		whicho     =as.integer(whicho),
- 	 		whichn     =as.integer(whichn),
- 	 		bz         =as.double(bz),
- 	 		bzc        =as.double(bzc),
- 	 		limw       =as.double(limw),
- 	 		linf       =as.double(linf),
- 	 		lsup       =as.double(lsup),
- 	 		propvr     =as.double(propvr),
- 	 		sigmainv   =as.double(sigmainv),
- 	 		theta      =as.double(theta),
- 	 		thetac     =as.double(thetac),
- 	 		workmhr    =as.double(workmhr),
- 	 		workmr     =as.double(workmr),
- 	 		workmr1    =as.double(workmr1),
- 	 		workmr2    =as.double(workmr2),
- 	 		workvr     =as.double(workvr),
- 	 		ybar       =as.double(ybar),
- 	 		sigmac     =as.double(sigmac),
- 	 		sigmainvc  =as.double(sigmainvc),
- 	 		workmhr2   =as.double(workmhr2),
- 	 		massi      =as.integer(massi),
- 	 		pattern    =as.integer(pattern),
-                        betasave   =as.double(betasave),
-                        bsave      =as.double(bsave),
-			PACKAGE    ="DPpackage")	
-            }
+								  datastr    =as.integer(datastr),
+								  maxni      =as.integer(maxni),
+								  nrec       =as.integer(nrec),
+								  nsubject   =as.integer(nsubject),
+								  nfixed     =as.integer(nfixed),
+								  p          =as.integer(p),
+								  q          =as.integer(q),
+								  subject    =as.integer(newid),
+								  x          =as.double(x),
+								  y          =as.integer(resp),
+								  z          =as.double(z),
+								  a0b0       =as.double(a0b0),
+								  mu0        =as.double(mu0),
+								  prec1      =as.double(prec1),	 
+								  prec2      =as.double(prec2),	 
+								  sb         =as.double(sb),	  		
+								  tinv       =as.double(tinv),	 
+								  mcmc       =as.integer(mcmcvec),
+								  nsave      =as.integer(nsave),
+								  acrate     =as.double(acrate),   
+								  cpo        =as.double(cpo),
+								  randsave   =as.double(randsave),
+								  thetasave  =as.double(thetasave),
+								  curr       =as.double(curr),
+								  b          =as.double(b),		
+								  beta       =as.double(beta),
+								  betar      =as.double(betar),
+								  mu         =as.double(mu),
+								  sigma      =as.double(sigma),
+								  ortho      =as.double(ortho),
+								  betac      =as.double(betac),
+								  iflagp     =as.integer(iflagp),
+								  workmp1    =as.double(workmp1),
+								  workmp2    =as.double(workmp2),
+								  workmhp1   =as.double(workmhp1),
+								  workvp1    =as.double(workvp1),
+								  xtx        =as.double(xtx),
+								  xty        =as.double(xty),
+								  iflagr     =as.integer(iflagr),
+								  parti      =as.integer(parti),
+								  whicho     =as.integer(whicho),
+								  whichn     =as.integer(whichn),
+								  bz         =as.double(bz),
+								  bzc        =as.double(bzc),
+								  limw       =as.double(limw),
+								  linf       =as.double(linf),
+								  lsup       =as.double(lsup),
+								  propvr     =as.double(propvr),
+								  sigmainv   =as.double(sigmainv),
+								  theta      =as.double(theta),
+								  thetac     =as.double(thetac),
+								  workmhr    =as.double(workmhr),
+								  workmr     =as.double(workmr),
+								  workmr1    =as.double(workmr1),
+								  workmr2    =as.double(workmr2),
+								  workvr     =as.double(workvr),
+								  ybar       =as.double(ybar),
+								  sigmac     =as.double(sigmac),
+								  sigmainvc  =as.double(sigmainvc),
+								  workmhr2   =as.double(workmhr2),
+								  massi      =as.integer(massi),
+								  pattern    =as.integer(pattern),
+								  betasave   =as.double(betasave),
+								  bsave      =as.double(bsave),
+								  PACKAGE    ="DPpackage")	
+				}
          }
 
 
@@ -875,126 +854,126 @@ function(fixed,
             if(family$link=="log")
             {
                 # specific saved space
-                  acrate<-rep(0,6)
+                  acrate <- rep(0,6)
                   mc <- rep(0,5)
  
                 # specific working space
 
-                  narea<-2^q
-                  betac<-rep(0,p)
-                  bz<-matrix(0,nrow=nsubject,ncol=q)
-                  bzc<-matrix(0,nrow=nsubject,ncol=q)
-                  iflagp<-rep(0,p) 
-                  iflagr<-rep(0,q) 
-                  limw<-rep(0,q)
-                  linf<-rep(0,q)
-                  lsup<-rep(0,q)
-                  massi<-rep(0,narea)
-                  parti<-rep(0,q)
-                  pattern<-rep(0,q)
-                  propvr<-matrix(0,nrow=q,ncol=q)
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  sigmac<-matrix(0,nrow=q,ncol=q)
-                  sigmainv<-matrix(0,nrow=q,ncol=q)
-                  sigmainvc<-matrix(0,nrow=q,ncol=q)
-                  theta<-rep(0,q)
-                  thetac<-rep(0,q)
-                  whicho<-rep(0,nsubject)
-                  whichn<-rep(0,nsubject)      
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workmhr<-rep(0,q*(q+1)/2) 
-                  workmhr2<-rep(0,q*(q+1)/2) 
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmr<-matrix(0,nrow=q,ncol=q) 
-                  workmr1<-matrix(0,nrow=q,ncol=q) 
-                  workmr2<-matrix(0,nrow=q,ncol=q) 
-                  workvp1<-rep(0,p) 
-                  workvr<-rep(0,q)
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
-                  ybar<-rep(0,narea)
+                  narea <- 2^q
+                  betac <- rep(0,p)
+                  bz <- matrix(0,nrow=nsubject,ncol=q)
+                  bzc <- matrix(0,nrow=nsubject,ncol=q)
+                  iflagp <- rep(0,p) 
+                  iflagr <- rep(0,q) 
+                  limw <- rep(0,q)
+                  linf <- rep(0,q)
+                  lsup <- rep(0,q)
+                  massi <- rep(0,narea)
+                  parti <- rep(0,q)
+                  pattern <- rep(0,q)
+                  propvr <- matrix(0,nrow=q,ncol=q)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  sigmac <- matrix(0,nrow=q,ncol=q)
+                  sigmainv <- matrix(0,nrow=q,ncol=q)
+                  sigmainvc <- matrix(0,nrow=q,ncol=q)
+                  theta <- rep(0,q)
+                  thetac <- rep(0,q)
+                  whicho <- rep(0,nsubject)
+                  whichn <- rep(0,nsubject)      
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workmhr <- rep(0,q*(q+1)/2) 
+                  workmhr2 <- rep(0,q*(q+1)/2) 
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmr <- matrix(0,nrow=q,ncol=q) 
+                  workmr1 <- matrix(0,nrow=q,ncol=q) 
+                  workmr2 <- matrix(0,nrow=q,ncol=q) 
+                  workvp1 <- rep(0,p) 
+                  workvr <- rep(0,q)
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
+                  ybar <- rep(0,narea)
 
-                  mcmcvec<-c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
-                  sb<-cbind(sb,prior$beta0)
-                  x1<-cbind(x,roffset)
+                  mcmcvec <- c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
+                  sb <- cbind(sb,prior$beta0)
+                  x1 <- cbind(x,roffset)
 
-                  betasave<-rep(0,p)
-                  bsave<-matrix(0,nrow=nsubject,ncol=q)
+                  betasave <- rep(0,p)
+                  bsave <- matrix(0,nrow=nsubject,ncol=q)
 
-                  curr<-c(alpha,mc)
+                  curr <- c(alpha,mc)
                   
                 # fit the model
 
                   foo <- .Fortran("ptglmmpois",
-                 	datastr    =as.integer(datastr),
- 	  		maxni      =as.integer(maxni),
- 	  		nrec       =as.integer(nrec),
- 	  		nsubject   =as.integer(nsubject),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		q          =as.integer(q),
- 	  		subject    =as.integer(newid),
- 	 		x          =as.double(x1),
- 	 		y          =as.integer(resp),
- 	 		z          =as.double(z),
- 	 		a0b0       =as.double(a0b0),
- 	 		mu0        =as.double(mu0),
- 	 		prec1      =as.double(prec1),	 
- 	 		prec2      =as.double(prec2),	 
- 	 		sb         =as.double(sb),	  		
- 	 		tinv       =as.double(tinv),	 
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
-                        acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		curr       =as.double(curr),
- 	 		b          =as.double(b),		
- 	 		beta       =as.double(beta),
- 	 		betar      =as.double(betar),
- 	 		mu         =as.double(mu),
- 	 		sigma      =as.double(sigma),
- 	 		ortho      =as.double(ortho),
- 	 		betac      =as.double(betac),
- 	 		iflagp     =as.integer(iflagp),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
-                        workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagr     =as.integer(iflagr),
- 	 		parti      =as.integer(parti),
- 	 		whicho     =as.integer(whicho),
- 	 		whichn     =as.integer(whichn),
- 	 		bz         =as.double(bz),
- 	 		bzc        =as.double(bzc),
- 	 		limw       =as.double(limw),
- 	 		linf       =as.double(linf),
- 	 		lsup       =as.double(lsup),
- 	 		propvr     =as.double(propvr),
- 	 		sigmainv   =as.double(sigmainv),
- 	 		theta      =as.double(theta),
- 	 		thetac     =as.double(thetac),
- 	 		workmhr    =as.double(workmhr),
- 	 		workmr     =as.double(workmr),
- 	 		workmr1    =as.double(workmr1),
- 	 		workmr2    =as.double(workmr2),
- 	 		workvr     =as.double(workvr),
- 	 		ybar       =as.double(ybar),
- 	 		sigmac     =as.double(sigmac),
- 	 		sigmainvc  =as.double(sigmainvc),
- 	 		workmhr2   =as.double(workmhr2),
- 	 		massi      =as.integer(massi),
- 	 		pattern    =as.integer(pattern),
-                        betasave   =as.double(betasave),
-                        bsave      =as.double(bsave),
-			PACKAGE    ="DPpackage")  	        
+								  datastr    =as.integer(datastr),
+								  maxni      =as.integer(maxni),
+								  nrec       =as.integer(nrec),
+								  nsubject   =as.integer(nsubject),
+								  nfixed     =as.integer(nfixed),
+								  p          =as.integer(p),
+								  q          =as.integer(q),
+								  subject    =as.integer(newid),
+								  x          =as.double(x1),
+								  y          =as.integer(resp),
+								  z          =as.double(z),
+								  a0b0       =as.double(a0b0),
+								  mu0        =as.double(mu0),
+								  prec1      =as.double(prec1),	 
+								  prec2      =as.double(prec2),	 
+								  sb         =as.double(sb),	  		
+								  tinv       =as.double(tinv),	 
+								  mcmc       =as.integer(mcmcvec),
+								  nsave      =as.integer(nsave),
+								  acrate     =as.double(acrate),   
+								  cpo        =as.double(cpo),
+								  randsave   =as.double(randsave),
+								  thetasave  =as.double(thetasave),
+								  curr       =as.double(curr),
+								  b          =as.double(b),		
+								  beta       =as.double(beta),
+								  betar      =as.double(betar),
+								  mu         =as.double(mu),
+								  sigma      =as.double(sigma),
+								  ortho      =as.double(ortho),
+								  betac      =as.double(betac),
+								  iflagp     =as.integer(iflagp),
+								  workmp1    =as.double(workmp1),
+								  workmp2    =as.double(workmp2),
+								  workmhp1   =as.double(workmhp1),
+								  workvp1    =as.double(workvp1),
+								  xtx        =as.double(xtx),
+								  xty        =as.double(xty),
+								  iflagr     =as.integer(iflagr),
+								  parti      =as.integer(parti),
+								  whicho     =as.integer(whicho),
+								  whichn     =as.integer(whichn),
+								  bz         =as.double(bz),
+								  bzc        =as.double(bzc),
+								  limw       =as.double(limw),
+								  linf       =as.double(linf),
+								  lsup       =as.double(lsup),
+								  propvr     =as.double(propvr),
+								  sigmainv   =as.double(sigmainv),
+								  theta      =as.double(theta),
+								  thetac     =as.double(thetac),
+								  workmhr    =as.double(workmhr),
+								  workmr     =as.double(workmr),
+								  workmr1    =as.double(workmr1),
+								  workmr2    =as.double(workmr2),
+								  workvr     =as.double(workvr),
+								  ybar       =as.double(ybar),
+								  sigmac     =as.double(sigmac),
+								  sigmainvc  =as.double(sigmainvc),
+								  workmhr2   =as.double(workmhr2),
+								  massi      =as.integer(massi),
+								  pattern    =as.integer(pattern),
+								  betasave   =as.double(betasave),
+								  bsave      =as.double(bsave),
+								  PACKAGE    ="DPpackage")  	        
 
-            }
+				}
          }   
          
          
@@ -1003,126 +982,126 @@ function(fixed,
             if(family$link=="log")
             {
                 # specific saved space
-                  acrate<-rep(0,7)
+                  acrate <- rep(0,7)
  
                 # specific working space
 
-                  narea<-2^q
-                  betac<-rep(0,p)
-                  bz<-matrix(0,nrow=nsubject,ncol=q)
-                  bzc<-matrix(0,nrow=nsubject,ncol=q)
-                  iflagp<-rep(0,p) 
-                  iflagr<-rep(0,q) 
-                  limw<-rep(0,q)
-                  linf<-rep(0,q)
-                  lsup<-rep(0,q)
-                  massi<-rep(0,narea)
-                  parti<-rep(0,q)
-                  pattern<-rep(0,q)
-                  propvr<-matrix(0,nrow=q,ncol=q)
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  sigmac<-matrix(0,nrow=q,ncol=q)
-                  sigmainv<-matrix(0,nrow=q,ncol=q)
-                  sigmainvc<-matrix(0,nrow=q,ncol=q)
-                  theta<-rep(0,q)
-                  thetac<-rep(0,q)
-                  whicho<-rep(0,nsubject)
-                  whichn<-rep(0,nsubject)      
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workmhr<-rep(0,q*(q+1)/2) 
-                  workmhr2<-rep(0,q*(q+1)/2) 
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmr<-matrix(0,nrow=q,ncol=q) 
-                  workmr1<-matrix(0,nrow=q,ncol=q) 
-                  workmr2<-matrix(0,nrow=q,ncol=q) 
-                  workvp1<-rep(0,p) 
-                  workvr<-rep(0,q)
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
-                  ybar<-rep(0,narea)
-                  y<-rep(0,nrec)
+                  narea <- 2^q
+                  betac <- rep(0,p)
+                  bz <- matrix(0,nrow=nsubject,ncol=q)
+                  bzc <- matrix(0,nrow=nsubject,ncol=q)
+                  iflagp <- rep(0,p) 
+                  iflagr <- rep(0,q) 
+                  limw <- rep(0,q)
+                  linf <- rep(0,q)
+                  lsup <- rep(0,q)
+                  massi <- rep(0,narea)
+                  parti <- rep(0,q)
+                  pattern <- rep(0,q)
+                  propvr <- matrix(0,nrow=q,ncol=q)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  sigmac <- matrix(0,nrow=q,ncol=q)
+                  sigmainv <- matrix(0,nrow=q,ncol=q)
+                  sigmainvc <- matrix(0,nrow=q,ncol=q)
+                  theta <- rep(0,q)
+                  thetac <- rep(0,q)
+                  whicho <- rep(0,nsubject)
+                  whichn <- rep(0,nsubject)      
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workmhr <- rep(0,q*(q+1)/2) 
+                  workmhr2 <- rep(0,q*(q+1)/2) 
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmr <- matrix(0,nrow=q,ncol=q) 
+                  workmr1 <- matrix(0,nrow=q,ncol=q) 
+                  workmr2 <- matrix(0,nrow=q,ncol=q) 
+                  workvp1 <- rep(0,p) 
+                  workvr <- rep(0,q)
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
+                  ybar <- rep(0,narea)
+                  y <- rep(0,nrec)
 
-    	          a0b0<-c(a0b0,tune5,prior$tau1,prior$tau2)
-                  mcmcvec<-c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
-                  sb<-cbind(sb,prior$beta0)
-                  x1<-cbind(x,roffset)
+    	          a0b0 <- c(a0b0,tune5,prior$tau1,prior$tau2)
+                  mcmcvec <- c(mcmcvec,seed1,seed2,typepr,murand,sigmarand,frstlprob,samplef)
+                  sb <- cbind(sb,prior$beta0)
+                  x1 <- cbind(x,roffset)
                 
-                  betasave<-rep(0,(p+1))
-                  bsave<-matrix(0,nrow=nsubject,ncol=q)
+                  betasave <- rep(0,(p+1))
+                  bsave <- matrix(0,nrow=nsubject,ncol=q)
 
-                  curr<-c(alpha,disp,mc)
+                  curr <- c(alpha,disp,mc)
                 
                 # fit the model
                 
                   foo <- .Fortran("ptglmmgam",
-                 	datastr    =as.integer(datastr),
- 	  		maxni      =as.integer(maxni),
- 	  		nrec       =as.integer(nrec),
- 	  		nsubject   =as.integer(nsubject),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		q          =as.integer(q),
- 	  		subject    =as.integer(newid),
- 	 		x          =as.double(x1),
- 	 		y          =as.double(resp),
- 	 		z          =as.double(z),
- 	 		a0b0       =as.double(a0b0),
- 	 		mu0        =as.double(mu0),
- 	 		prec1      =as.double(prec1),	 
- 	 		prec2      =as.double(prec2),	 
- 	 		sb         =as.double(sb),	  		
- 	 		tinv       =as.double(tinv),	 
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
-                        acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		curr       =as.double(curr),
- 	 		b          =as.double(b),		
- 	 		beta       =as.double(beta),
- 	 		betar      =as.double(betar),
- 	 		mu         =as.double(mu),
- 	 		sigma      =as.double(sigma),
- 	 		ortho      =as.double(ortho),
- 	 		betac      =as.double(betac),
- 	 		iflagp     =as.integer(iflagp),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
-                        workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagr     =as.integer(iflagr),
- 	 		parti      =as.integer(parti),
- 	 		whicho     =as.integer(whicho),
- 	 		whichn     =as.integer(whichn),
- 	 		bz         =as.double(bz),
- 	 		bzc        =as.double(bzc),
- 	 		limw       =as.double(limw),
- 	 		linf       =as.double(linf),
- 	 		lsup       =as.double(lsup),
- 	 		propvr     =as.double(propvr),
- 	 		sigmainv   =as.double(sigmainv),
- 	 		theta      =as.double(theta),
- 	 		thetac     =as.double(thetac),
- 	 		workmhr    =as.double(workmhr),
- 	 		workmr     =as.double(workmr),
- 	 		workmr1    =as.double(workmr1),
- 	 		workmr2    =as.double(workmr2),
- 	 		workvr     =as.double(workvr),
- 	 		ybar       =as.double(ybar),
- 	 		sigmac     =as.double(sigmac),
- 	 		sigmainvc  =as.double(sigmainvc),
- 	 		workmhr2   =as.double(workmhr2),
- 	 		massi      =as.integer(massi),
- 	 		pattern    =as.integer(pattern),
-                        betasave   =as.double(betasave),
-                        bsave      =as.double(bsave),
-			PACKAGE    ="DPpackage")  	        
-            }
+								  datastr    =as.integer(datastr),
+								  maxni      =as.integer(maxni),
+								  nrec       =as.integer(nrec),
+								  nsubject   =as.integer(nsubject),
+								  nfixed     =as.integer(nfixed),
+								  p          =as.integer(p),
+								  q          =as.integer(q),
+								  subject    =as.integer(newid),
+								  x          =as.double(x1),
+								  y          =as.double(resp),
+								  z          =as.double(z),
+								  a0b0       =as.double(a0b0),
+								  mu0        =as.double(mu0),
+								  prec1      =as.double(prec1),	 
+								  prec2      =as.double(prec2),	 
+								  sb         =as.double(sb),	  		
+								  tinv       =as.double(tinv),	 
+								  mcmc       =as.integer(mcmcvec),
+								  nsave      =as.integer(nsave),
+								  acrate     =as.double(acrate),   
+								  cpo        =as.double(cpo),
+								  randsave   =as.double(randsave),
+								  thetasave  =as.double(thetasave),
+								  curr       =as.double(curr),
+								  b          =as.double(b),		
+								  beta       =as.double(beta),
+								  betar      =as.double(betar),
+								  mu         =as.double(mu),
+								  sigma      =as.double(sigma),
+								  ortho      =as.double(ortho),
+								  betac      =as.double(betac),
+								  iflagp     =as.integer(iflagp),
+								  workmp1    =as.double(workmp1),
+								  workmp2    =as.double(workmp2),
+								  workmhp1   =as.double(workmhp1),
+								  workvp1    =as.double(workvp1),
+								  xtx        =as.double(xtx),
+								  xty        =as.double(xty),
+								  iflagr     =as.integer(iflagr),
+								  parti      =as.integer(parti),
+								  whicho     =as.integer(whicho),
+								  whichn     =as.integer(whichn),
+								  bz         =as.double(bz),
+								  bzc        =as.double(bzc),
+								  limw       =as.double(limw),
+								  linf       =as.double(linf),
+								  lsup       =as.double(lsup),
+								  propvr     =as.double(propvr),
+								  sigmainv   =as.double(sigmainv),
+								  theta      =as.double(theta),
+								  thetac     =as.double(thetac),
+								  workmhr    =as.double(workmhr),
+								  workmr     =as.double(workmr),
+								  workmr1    =as.double(workmr1),
+								  workmr2    =as.double(workmr2),
+								  workvr     =as.double(workvr),
+								  ybar       =as.double(ybar),
+								  sigmac     =as.double(sigmac),
+								  sigmainvc  =as.double(sigmainvc),
+								  workmhr2   =as.double(workmhr2),
+								  massi      =as.integer(massi),
+								  pattern    =as.integer(pattern),
+								  betasave   =as.double(betasave),
+								  bsave      =as.double(bsave),
+								  PACKAGE    ="DPpackage")  	        
+				}
          }   
 
        #########################################################################################
@@ -1218,54 +1197,54 @@ function(fixed,
          colnames(randsave) <- qnames         
          
 
-	 model.name<-"Bayesian semiparametric generalized linear mixed effect model"		
+		 model.name<-"Bayesian semiparametric generalized linear mixed effect model"		
 
          coeff<-apply(thetasave,2,mean)		
 
-	 state <- list(alpha=alpha,
-	               b=matrix(foo$b,nrow=nsubject,ncol=q),
-	               beta=foo$beta,
-	               mu=foo$mu,
-	               sigma=matrix(foo$sigma,nrow=q,ncol=q),
-	               phi=phi,
+		 state <- list(	alpha=alpha,
+						b=matrix(foo$b,nrow=nsubject,ncol=q),
+						beta=foo$beta,
+						mu=foo$mu,
+						sigma=matrix(foo$sigma,nrow=q,ncol=q),
+						phi=phi,
                        ortho=matrix(foo$ortho,nrow=q,ncol=q))
 
-	 save.state <- list(thetasave=thetasave,randsave=randsave)
+		 save.state <- list(thetasave=thetasave,randsave=randsave)
 
-         acrate<-foo$acrate
+         acrate <- foo$acrate
 
-	 z<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nsubject=foo$nsubject,
-                 nfixed=foo$nfixed,
-                 nrandom=foo$q,
-                 dispp=dispp,
-                 cpo=cpo,
-                 fso=fso,
-                 alphapr=alphapr,
-                 prior=prior,
-                 namesre1=namesre,
-                 namesre2=colnames(z),
-                 z=z,
-                 x=x,
-                 mf=mf,
-                 dimen=dimen,
-                 acrate=acrate,
-                 possiP=possiP,
-                 fixed=fixed,
-                 m=M,
-                 murand=murand,
-                 sigmarand=sigmarand,
-                 frstlprob=frstlprob,
-                 mc=mc,
-                 typepr=typepr,
-                 samplef=samplef)
+		z <- list(	modelname=model.name,
+					coefficients=coeff,
+					call=cl,
+					prior=prior,
+					mcmc=mcmc,
+					state=state,
+					save.state=save.state,
+					nrec=foo$nrec,
+					nsubject=foo$nsubject,
+					nfixed=foo$nfixed,
+					nrandom=foo$q,
+					dispp=dispp,
+					cpo=cpo,
+					fso=fso,
+					alphapr=alphapr,
+					prior=prior,
+					namesre1=namesre,
+					namesre2=colnames(z),
+					z=z,
+					x=x,
+					mf=mf,
+					dimen=dimen,
+					acrate=acrate,
+					possiP=possiP,
+					fixed=fixed,
+					m=M,
+					murand=murand,
+					sigmarand=sigmarand,
+					frstlprob=frstlprob,
+					mc=mc,
+					typepr=typepr,
+					samplef=samplef)
                  
          cat("\n\n")        
 

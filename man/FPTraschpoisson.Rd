@@ -12,7 +12,8 @@
 \usage{
 
 FPTraschpoisson(y,prior,mcmc,offset,state,status,
-                grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()))
+                grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()),
+                compute.band=FALSE)
      
 }
 
@@ -44,9 +45,7 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
                      the total number of scans to be saved, and \code{ndisplay} giving
                      the number of saved scans to be displayed on screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
-                     out), \code{tune1}, \code{tune2}, and \code{tune3} giving the  positive 
-                     Metropolis tuning baseline mean, baseline variance, and precision parameter, 
-                     respectively (the default value is 1.1).}   
+                     out).}   
 
     \item{offset}{   this can be used to specify an a priori known component to
                      be included in the linear predictor during the fitting.}
@@ -63,6 +62,9 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
                      evaluated. The default is seq(-10,10,length=1000).}
 
     \item{data}{     data frame.}       
+
+    \item{compute.band}{  logical variable indicating whether the confidence band for the density 
+                          and CDF must be computed.}       
     
 }
 
@@ -88,21 +90,23 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
   Each of the parameters of the baseline distribution, \eqn{\mu}{mu} and \eqn{\sigma}{sigma} 
   can be considered as random or fixed at some particular value. In the 
   first case, a Mixture of Polya Trees Process is considered as a prior
-  for the distribution of the random effects. To let \eqn{\sigma}{sigma} to be fixed at a particular
+  for the distribution of the random effects. To let \eqn{\sigma^2}{sigma2} to be fixed at a particular
   value, set \eqn{\tau_1}{tau1} to NULL in the prior specification. 
   To let \eqn{\mu}{mu} to be fixed at a particular
   value, set \eqn{\mu_b}{mub} to NULL in the prior specification.
 
-  In the computational implementation of the model, Metropolis-Hastings steps are used to 
-  sample the posterior distribution of the regression coefficients and 
-  hyperparameters.
+  In the computational implementation of the model, a Metropolis-Hastings step is used to sample
+  the full conditional of the difficulty parameters. The full conditionals for abilities and PT
+  parameters are sampled using slice sampling. We refer to Jara, Hanson and Lesaffre (2009) for more details and for 
+  the description regarding sampling functionals of PTs. 
+
 }
 
 \value{
   An object of class \code{FPTraschpoisson} representing the Rasch Poisson
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. The results include 
-  \code{beta}, \code{mu}, \code{sigma}, and the precision parameter 
+  \code{beta}, \code{mu}, \code{sigma2}, and the precision parameter 
   \code{alpha}.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -122,7 +126,7 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
   
   \item{mu}{ giving the mean of the normal baseline distributions.}
   
-  \item{sigma}{ giving the std of the normal baseline distributions.}
+  \item{sigma2}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{
@@ -133,6 +137,10 @@ FPTraschpoisson(y,prior,mcmc,offset,state,status,
 Hanson, T., and Johnson, W. (2002) Modeling regression error with a Mixture
   of Polya Trees. Journal of the American Statistical Association, 
   97: 1020 - 1033.
+
+Jara, A.,   Hanson, T.,  Lesaffre, E. (2009) Robustifying Generalized Linear 
+   Mixed Models using a New Mixture of Multivariate Polya Trees. Journal of
+   Computational and Graphical Statistics (To appear).
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.
@@ -150,14 +158,18 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
     ####################################
     # A simulated Data Set
     ####################################
-      nsubject<-200
-      nitem<-10
+      nsubject <- 200
+      nitem <- 10
       
-      y<-matrix(0,nrow=nsubject,ncol=nitem)
+      y <- matrix(0,nrow=nsubject,ncol=nitem)
       
-      ind<-rbinom(nsubject,1,0.5)
-      theta<-ind*rnorm(nsubject,1,0.25)+(1-ind)*rnorm(nsubject,3,0.25)
-      beta<-c(0,seq(-1,1,length=nitem-1))
+      ind <- rbinom(nsubject,1,0.5)
+      theta <- ind*rnorm(nsubject,1,0.25)+(1-ind)*rnorm(nsubject,3,0.25)
+      beta <- c(0,seq(-1,1,length=nitem-1))
+      true.density <- function(grid)
+      {
+         0.5*dnorm(grid,1,0.25)+0.5*dnorm(grid,3,0.25) 
+      }  
 
       for(i in 1:nsubject)
       {
@@ -171,27 +183,41 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
  
     # Prior information
 
-      beta0<-rep(0,nitem-1)
-      Sbeta0<-diag(1000,nitem-1)
+      beta0 <- rep(0,nitem-1)
+      Sbeta0 <- diag(1000,nitem-1)
 
-      prior<-list(alpha=1,tau1=0.01,tau2=0.01,mub=0,Sb=1,
-                  beta0=beta0,Sbeta0=Sbeta0,M=5)
+      prior <- list(alpha=1,
+                    tau1=6.01,
+                    tau2=2.01,
+                    mub=0,
+                    Sb=100,
+                    beta0=beta0,
+                    Sbeta0=Sbeta0,
+                    M=5)
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
 
-      nburn<-5000
-      nsave<-5000
-      nskip<-50
-      ndisplay<-100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+      nburn <- 5000
+      nsave <- 5000
+      nskip <- 0
+      ndisplay <- 100
+      mcmc <- list(nburn=nburn,
+                   nsave=nsave,
+                   nskip=nskip,
                    ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-FPTraschpoisson(y=y,prior=prior,mcmc=mcmc,
-                            state=state,status=TRUE)
+      fit1 <- FPTraschpoisson(y=y,prior=prior,mcmc=mcmc,
+                              state=state,status=TRUE,grid=seq(-1,5,0.01),compute.band=TRUE)
+
+    # Density estimate (along with HPD band) and truth
+      plot(fit1$grid,fit1$dens.u,lwd=2,col="blue",type="l",lty=2,xlab=expression(theta),ylab="density")
+      lines(fit1$grid,fit1$dens,lwd=2,col="blue")
+      lines(fit1$grid,fit1$dens.l,lwd=2,col="blue",lty=2)
+      lines(fit1$grid,true.density(fit1$grid),col="red")
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
@@ -203,10 +229,10 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
     # Extract random effects
-    
       DPrandom(fit1)
       plot(DPrandom(fit1))
       DPcaterpillar(DPrandom(fit1))
+
 }
 }
 

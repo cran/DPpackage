@@ -72,16 +72,16 @@ DPMmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   This generic function fits a semiparametric linear mixed effects meta-analysis model:
 
   \deqn{y_i \sim N(\theta_i +X_i \beta, \sigma^2_{ei}), i=1,\ldots,n}{yi ~ N(thetai+ Xi beta, sigma2ei), i=1,\ldots,n}
-  \deqn{\sigma^{-1} | \tau_{01}, \tau_{02} \sim Gamma(\tau_{01}/2,\tau_{02}/2)}{sigma^-1 | tau01, tau02 ~ Gamma(tau01/2,tau02/2)}
-  \deqn{\theta_i | G,\sigma \sim \int N(\mu,\sigma) G(d\mu)}{thetai | G, sigma ~ int N(mu,sigma)G(d mu)}
+  \deqn{\theta_i | G,\sigma^2 \sim \int N(\mu,\sigma^2) G(d\mu)}{thetai | G, sigma" ~ int N(mu,sigma2)G(d mu)}
+  \deqn{\sigma^{-2} | \tau_{01}, \tau_{02} \sim Gamma(\tau_{01}/2,\tau_{02}/2)}{sigma^-1 | tau01, tau02 ~ Gamma(tau01/2,tau02/2)}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
 
-  where, \eqn{G_0=N(\mu| \mu_b, \sigma_b)}{G0=N(mu| mub, sigmab)}. To complete the model 
+  where, \eqn{G_0=N(\mu| \mu_b, \sigma^2_b)}{G0=N(mu| mub, sigma2b)}. To complete the model 
   specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
   \deqn{\mu_b | m_b, S_b \sim N(m_b,S_b)}{mub | mb, Sb ~ N(mb,Sb)}
-  \deqn{\sigma^{-1}_b | \tau_{11}, \tau_{12} \sim Gamma(\tau_{11}/2,\tau_{12}/2)}{sigma^-1_b | tau11, tau12 ~ Gamma(tau11/2,tau12/2)}
+  \deqn{\sigma^{-2}_b | \tau_{11}, \tau_{12} \sim Gamma(\tau_{11}/2,\tau_{12}/2)}{sigma^-2_b | tau11, tau12 ~ Gamma(tau11/2,tau12/2)}
 
   The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
@@ -102,7 +102,7 @@ DPMmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   An object of class \code{DPMmeta} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
-  The results include \code{beta}, \code{sigma}, \code{mub}, \code{sigmab}, \code{\alpha}, and the 
+  The results include \code{beta}, \code{sigma2}, \code{mub}, \code{sigma2b}, \code{alpha}, and the 
   number of clusters.
   
   The function \code{DPMrandom} can be used to extract the posterior mean of the 
@@ -127,11 +127,11 @@ DPMmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   \item{beta}{ giving the value of the fixed effects.}
   
-  \item{sigma}{ giving the variance of the normal kernel.}  
+  \item{sigma2}{ giving the variance of the normal kernel.}  
   
   \item{mub}{ giving the mean of the normal baseline distributions.} 
 
-  \item{sigmab}{ giving the variance of the normal baseline distributions.}
+  \item{sigma2b}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{

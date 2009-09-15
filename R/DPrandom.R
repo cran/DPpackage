@@ -23,11 +23,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -815,7 +815,7 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
 
-   if(is(object, "DPraschpoisson"))
+   if(is(object, "DPraschpoisson") || is(object, "DPMraschpoisson"))
    {
 
        if (centered) 
@@ -944,7 +944,7 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
 
-   if(is(object, "FPTrasch"))
+   if(is(object, "FPTrasch") || is(object, "DPMrasch"))
    {
 
        if (centered) 
@@ -1127,6 +1127,70 @@ function(object,centered=FALSE,predictive=FALSE)
                 "95%HPD-Low","95%HPD-Upp"))
       	 
       	  z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+
+
+   if(is(object, "LDDPrasch"))
+   {
+
+       if (centered) 
+       { 
+	   stop("This option is not implemented for LDDPrasch.\n")
+       }
+
+       random <- matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+object$q)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+
+       type<-2      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
+
+       if(predictive==TRUE)
+       {
+		  #predp<-mean(object$save.state$randsave[,object$nsubject+object$q])      	     	
+
+          #predm<-median(object$save.state$randsave[,object$nsubject+])      	     	
+
+          #predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          #vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          #n<-length(vec)
+          
+          #alpha<-0.05
+          
+          #alow<-rep(0,2)
+          
+          #aupp<-rep(0,2)
+          
+       
+          #a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+          #            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          #predl<-a$alow[1]            
+          #predu<-a$aupp[1]
+          
+          #predse<-predsd/sqrt(n)
+     	 
+      	  #predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          #dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+          #      "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  #z$prediction<-predtable
        }
 
        class(z)<-c("DPrandom") 

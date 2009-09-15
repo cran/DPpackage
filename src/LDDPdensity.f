@@ -43,11 +43,11 @@ c     The author's contact information:
 c
 c     Alejandro Jara
 c     Department of Statistics
-c     Facultad de Ciencias Físicas y Matemáticas
-c     Universidad de Concepción
+c     Facultad de Ciencias Fisicas y Matematicas
+c     Universidad de Concepcion
 c     Avenida Esteban Iturra S/N
 c     Barrio Universitario
-c     Concepción
+c     Concepcion
 c     Chile
 c     Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c     Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -728,6 +728,42 @@ c               call dblepr("V1",-1,tmp1,1)
                   tmp2=tmp2+tmp1
                end do
 
+
+               call simdisc(prob,nrec+100,ncluster+1,evali)
+
+               if(evali.le.ncluster)then
+                  sigmawork=sigmaclus(evali)
+                  do k=1,p
+                     betawork(k)=betaclus(evali,k)
+                  end do
+               end if
+               if(evali.eq.ncluster+1)then 
+                  sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
+                  sigmaclus(ncluster+1)=sigmawork
+        
+                  call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
+                  do k=1,p
+                     betaclus(ncluster+1,k)=betawork(k)
+                  end do               
+               end if
+
+               tmp1=weight
+           
+               do i=1,npred  
+                  call rchkusr()
+     
+                  muwork=0.0
+                  do j=1,p
+                     muwork=muwork+zpred(i,j)*betawork(j)
+                  end do
+           
+                  fm(i)=fm(i)+muwork*tmp1
+                  do j=1,ngrid  
+                     denspl(i,j)=denspl(i,j)+tmp1*dnrm(grid(j),
+     &                           muwork,sqrt(sigmawork),0)
+                  end do 
+               end do
+
                do i=1,npred
                   call rchkusr()
                   meanfpm(i)=meanfpm(i)+fm(i)
@@ -740,17 +776,7 @@ c               call dblepr("V1",-1,tmp1,1)
 
 c+++++++++++++ cpo
 
-
-               do i=1,ncluster
-                  prob(i)=dble(ccluster(i))/(alpha+dble(nrec))
-               end do
                do i=ncluster+1,ncluster+100
-                  prob(i)=alpha/(100.d0*(alpha+dble(nrec)))
-               end do   
-               call simdisc(prob,nrec+100,ncluster+100,evali)
-
-               do i=ncluster+1,ncluster+100
-
                   sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
                   sigmaclus(i)=sigmawork
         
@@ -767,6 +793,14 @@ c+++++++++++++ cpo
                do ii=1,ncluster+100
    
                   do i=1,nrec
+                     ns=ccluster(ii)
+                     if(ss(i).eq.ii)ns=ns-1
+                     if(ii.le.ncluster)then
+                        prob(ii)=dble(ns)/(alpha+dble(nrec-1))
+                      else
+                        prob(ii)=alpha/(100.d0*(alpha+dble(nrec-1)))
+                     end if   
+
                      muwork=0.0
                      do k=1,p
                         muwork=muwork+z(i,k)*betaclus(ii,k)

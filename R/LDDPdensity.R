@@ -23,11 +23,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -115,18 +115,18 @@ function(formula,
        # Prior information
        #########################################################################################
 
-	 if(is.null(prior$a0))
-	 {
-		a0b0 <- c(-1,-1)
-		alpha <- prior$alpha
-	 }
-	 else
-	 {
-	 	a0b0 <- c(prior$a0,prior$b0)
-	 	alpha <- 1
-	 }
+	     if(is.null(prior$a0))
+		 {
+			 a0b0 <- c(-1,-1)
+			 alpha <- prior$alpha
+		 }
+		 else
+		 {
+			 a0b0 <- c(prior$a0,prior$b0)
+			 alpha <- 1
+		 }
 
-         sbeta0i <- solve(prior$Sbeta0)
+         sbeta0i <- solve(prior$S0)
          m0 <- prior$m0
 
          tau1 <- prior$tau1

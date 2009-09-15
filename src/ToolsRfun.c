@@ -149,6 +149,10 @@ double F77_SUB(dgamlog)(double *x)
 	return lgammafn(*x);
 }
 
+double F77_SUB(lbetaf)(double *a, double *b)
+{
+	return lbeta(*a, *b);
+}
 
 double F77_SUB(trigamm)(double *x)
 {

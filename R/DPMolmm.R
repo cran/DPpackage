@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara, 2006-2009.
 ###
-### Last modification: 30-04-2007.
+### Last modification: 17-08-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
 ###      Concepción
@@ -70,7 +70,7 @@ function(fixed,
          m$drop.unused.levels <- TRUE
          m[[1]] <- as.name("model.frame")
          mf <- eval.parent(m)
-
+         
        #########################################################################################
        # data structure
        #########################################################################################
@@ -113,7 +113,7 @@ function(fixed,
        # model structure
        #########################################################################################
          q <- length(crandom)
-         z<-matrix(1,nrow=nrec,ncol=1)
+         z <- matrix(1,nrow=nrec,ncol=1)
          colnames(z) <- "(Intercept)"
          nvarrand <- "(Intercept)"
 
@@ -151,8 +151,8 @@ function(fixed,
             p <- 1
             x <- matrix(0,nrow=nrec,ncol=1)
          }
-         xtx<-t(x)%*%x
-        
+         xtx <- t(x)%*%x
+
        #########################################################################################
        # elements for Pseudo Countour Probabilities' computation
        #########################################################################################
@@ -199,21 +199,20 @@ function(fixed,
             dimnames(possiP)<-list(namfact,c("Start","End"))
          }   
 
-
        #########################################################################################
        # prior information
        #########################################################################################
 
          if(nfixed==0)
          {
-            prec<-matrix(0,nrow=1,ncol=1)
-            sb<-matrix(0,nrow=1,ncol=1)
+            prec <- matrix(0,nrow=1,ncol=1)
+            sb <- matrix(0,nrow=1,ncol=1)
          }
          else
          {
-            b0<-prior$beta0
-            prec<-solve(prior$Sbeta0)
-            sb<-prec%*%b0
+            b0 <- prior$beta0
+            prec <- solve(prior$Sbeta0)
+            sb <- prec%*%b0
 
             if(length(b0)!=p)
             { 
@@ -226,12 +225,12 @@ function(fixed,
             }
          }
 
-         nu0<-prior$nu0
+         nu0 <- prior$nu0
          if(nu0<=0)
          { 
                 stop("The parameter of the IW prior distribution for the normal kernel must be positive")     
          }
-         tinv<-prior$tinv
+         tinv <- prior$tinv
          if(dim(tinv)[1]!=q || dim(tinv)[2]!=q)
          { 
                 stop("Error in the dimension of the matrix of the IW prior for the covariance of the normal kernel.\n")     
@@ -239,23 +238,23 @@ function(fixed,
 
          if(is.null(prior$a0))
          {
-            a0b0<-c(-10,-10)
-            alpha<-prior$alpha
-            alphapr<-0
+            a0b0 <- c(-10,-10)
+            alpha <- prior$alpha
+            alphapr <- 0
          }
          else
          {
-            a0b0<-c(prior$a0,prior$b0)
-            alpha<-rgamma(1,shape=prior$a0,scale=prior$b0)
-            alphapr<-1
+            a0b0 <- c(prior$a0,prior$b0)
+            alpha <- rgamma(1,shape=prior$a0,scale=prior$b0)
+            alphapr <- 1
             if(prior$a0<0 || prior$b0<0)
             { 
                    stop("The parameters of the Gamma prior for the precision parameter must be possitive.\n")     
             }
          }
 
-         psiinv<-solve(prior$Sb)
-         smu<-psiinv%*%prior$mb
+         psiinv <- solve(prior$Sb)
+         smu <- psiinv%*%prior$mb
          if(length(prior$mb) != q)
          { 
                 stop("Error in the dimension of the mean of the normal prior for the mean of the centering distribution.\n")     
@@ -277,12 +276,12 @@ function(fixed,
                 stop("The parameter of the IW prior for the covariance of the centering distribution must be positive")     
          }
 
-         tbinv<-prior$tbinv
+         tbinv <- prior$tbinv
          if(dim(tbinv)[1]!=q || dim(tbinv)[2]!=q)
          { 
                 stop("Error in the dimension of the matrix of the IW prior for the covariance of the centering distribution.\n")     
          }
-         nu<-c(prior$nu0,prior$nub)
+         nu <- c(prior$nu0,prior$nub)
 
        #########################################################################################
        # mcmc specification

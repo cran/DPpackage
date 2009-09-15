@@ -83,7 +83,7 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
   where the effect \eqn{f} of the a covariate \eqn{x} is approximated by a polinomial
   spline with equally spaced knots, written in terms of a linear combination of B-spline basis functions.
   Specifically, the function \eqn{f} is aproximated by a spline of degree \eqn{l} with \eqn{r}
-  equally spaced knots within the domain of \eqn{x}. Is is well known that
+  equally spaced knots within the domain of \eqn{x}. It is well known that
   this spline can be written in terms of a linear combination of \eqn{q=l+r} B-spline
   basis,
   \deqn{f(x)=\sum_{j=1}^q b_j B_j(x)}{f(x)=sum bj Bj(x)}.
@@ -95,7 +95,7 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
   with a IWLS proposal (see, West, 1985 and Gamerman, 1997). 
 
   For the \code{binomial(probit)} case the following latent variable representation is used:
-  \deqn{y_{ij} = I(w_{ij} > 0), j=1,\ldots,n_i}{yij = I(wij > 0), j=1,\ldots,ni}.
+  \deqn{y_{ij} = I(w_{ij} > 0), j=1,\ldots,n_i.}{yij = I(wij > 0), j=1,\ldots,ni.}
 }
 
 \value{

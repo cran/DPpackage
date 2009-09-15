@@ -28,11 +28,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -40,10 +40,10 @@
 
 ps <- function (..., k=50,degree=3,pord=1)
 {
-   bs<-"bs"
-   vars<-as.list(substitute(list(...)))[-1]
-   d<-length(vars)
-   term<-deparse(vars[[1]],backtick=TRUE,width.cutoff=500) # first covariate
+   bs <- "bs"
+   vars <- as.list(substitute(list(...)))[-1]
+   d <- length(vars)
+   term <- deparse(vars[[1]],backtick=TRUE,width.cutoff=500) # first covariate
    if (term[1]==".") stop("ps(.) not yet supported.")
    if (d>1) # then deal with further covariates
    for (i in 2:d)
@@ -56,8 +56,8 @@ ps <- function (..., k=50,degree=3,pord=1)
    if (length(unique(term))!=d) stop("Repeated variables as arguments of a smooth are not permitted")
    # assemble version of call with all options expanded as text
    full.call<-paste("ps(",term[1],sep="")
-   if (d>1) for (i in 2:d) full.call<-paste(full.call,",",term[i],sep="")
-   label<-paste(full.call,")",sep="") # used for labelling parameters
+   if (d>1) for (i in 2:d) full.call <- paste(full.call,",",term[i],sep="")
+   label <- paste(full.call,")",sep="") # used for labelling parameters
    full.call<-paste(full.call,",k=",k,",degree=",degree,
                     ",pord=",pord,")",sep="")
    ret<-list(term=term,bs=bs,bs.dim=k,dim=d,s.degree=degree,pord=pord,

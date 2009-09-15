@@ -144,6 +144,7 @@ LDDPdensity(formula,zpred,prior,mcmc,state,status,ngrid=100,
 }
 
 \references{
+De Iorio, M., Muller, P., Rosner, G., and MacEachern, S. (2004), An ANOVA model for dependent  random measures. Journal of the American Statistical Association, 99(465): 205-215.
 
 De Iorio, M., Muller, P., Rosner, G.L., and MacEachern, S (2004) An ANOVA 
   Model for Dependent Random Measures. Journal of the American Statistical 
@@ -186,7 +187,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Prior information
 
-      Sbeta0 <- diag(100,2)
+      S0 <- diag(100,2)
       m0 <- rep(0,2)
       psiinv <- diag(1,2)
      
@@ -194,7 +195,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
                     b0=1,
                     nu=4,
                     m0=m0,
-                    Sbeta0=Sbeta0,
+                    S0=S0,
                     psiinv=psiinv,
                     tau1=6.01,
                     taus1=6.01,

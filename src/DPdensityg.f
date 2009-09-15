@@ -7,7 +7,7 @@ c=======================================================================
      &                 psiinv1,s1,sigmaclus,ss,ccluster,iflag,
      &                 muwork,prob,seed,sigmawork,sigworkinv,theta,
      &                 workm1,workm2,workm3,workmh1,workmh2,workv1,
-     &                 workv2,workv3,ywork)
+     &                 workv2,workv3,ywork,workcpo)
 c=======================================================================                      
 c
 c     Subroutine `spdeng' to run a Markov chain in the DP mixture of  
@@ -38,11 +38,11 @@ c     The author's contact information:
 c
 c      Alejandro Jara
 c      Department of Statistics
-c      Facultad de Ciencias Físicas y Matemáticas
-c      Universidad de Concepción
+c      Facultad de Ciencias Fisicas y Matematicas
+c      Universidad de Concepcion
 c      Avenida Esteban Iturra S/N
 c      Barrio Universitario
-c      Concepción
+c      Concepcion
 c      Chile
 c      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 c      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -124,7 +124,7 @@ c                       normal baseline
 c        m1          :  real vector giving the mean of the normal 
 c                       component of the baseline distribution, m1(nvar)
 c        muclus      :  real matrix giving the current value of the 
-c                       means, muclus(nrec+2,nvar).
+c                       means, muclus(nrec+100,nvar).
 c        ncluster    :  integer giving the number of clusters in the
 c                       data.
 c        psi1        :  real matrix giving the scale matrix for the
@@ -134,7 +134,7 @@ c        psiinv1     :  real matrix giving the inverse of the scale
 c                       matrix for the inverted-Wishart component of 
 c                       the baseline distribution, psiinv1(nvar,nvar).
 c        sigmaclus   :  real matrix giving the current value of the
-c                       variances, sigmaclus(nrec+2,nvar*(nvar+1)/2) .
+c                       variances, sigmaclus(nrec+100,nvar*(nvar+1)/2) .
 c        ss          :  integer vector giving the cluster label for 
 c                       each record, ss(nrec).
 c-----------------------------------------------------------------------
@@ -168,7 +168,7 @@ c        muwork      :  real vector used to save the mean,
 c                       one observation, muwork(nvar).
 c        nuwork      :  index.
 c        prob        :  real vector used to update the cluster 
-c                       structure, prob(nrec+2).
+c                       structure, prob(nrec+100).
 c        rgamma      :  gamma random number generator
 c        s1          :  real matrix giving the covariance matrix of 
 c                       the normal component of the baseline 
@@ -230,9 +230,9 @@ c+++++Output
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,k0,m1(nvar),muclus(nrec+2,nvar)
+      real*8 alpha,k0,m1(nvar),muclus(nrec+100,nvar)
       real*8 psi1(nvar,nvar),psiinv1(nvar,nvar)
-      real*8 sigmaclus(nrec+2,nvar*(nvar+1)/2)
+      real*8 sigmaclus(nrec+100,nvar*(nvar+1)/2)
       
 c+++++Working space
       integer ccluster(nrec),count,dispcount,evali
@@ -241,14 +241,15 @@ c+++++Working space
       integer ns,nscan,nuniqs,nuwork,sprint
       integer seed(3),seed1,seed2,seed3,since,skipcount
       real*8 detlog
-      real*8 muwork(nvar),prob(nrec+2),rgamma
+      real*8 muwork(nvar),prob(nrec+100),rgamma
       real*8 s1(nvar,nvar)
       real*8 sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
-      real*8 theta(nvar),tmp1
+      real*8 theta(nvar),tmp1,tmp2
       real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
       real*8 workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
       real*8 workv1(nvar),workv2(nvar),workv3(nvar)
       real*8 ywork(nvar)
+      real*8 workcpo(nrec)
 
 c+++++CPU time
       real*8 sec00,sec0,sec1,sec
@@ -336,8 +337,7 @@ c++++++++++ observation in cluster with more than 1 element
                   call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                      workv1,workm1,workm2,workv2,iflag)
 
-                  prob(j)=exp(log(dble(ccluster(j)))+
-     &                        tmp1)
+                  prob(j)=dble(ccluster(j))*exp(tmp1)
                end do
                
                do k=1,nvar
@@ -347,7 +347,7 @@ c++++++++++ observation in cluster with more than 1 element
                end do
 
                call riwishart(nvar,nu1,workm3,workm1,workm2,workv1,
-     &                           workmh1,workmh2,iflag)
+     &                        workmh1,workmh2,iflag)
 
                do k=1,nvar
                   do l=1,nvar
@@ -371,11 +371,9 @@ c++++++++++ observation in cluster with more than 1 element
                call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                      workv1,workm1,workm2,workv2,iflag)
                    
-               prob(ncluster+1)=exp(log(alpha/dble(ncluster+1))+
-     &                             tmp1)
+               prob(ncluster+1)=(alpha/dble(ncluster+1))*exp(tmp1)
                
-               call simdisc(prob,nrec+2,ncluster+1,evali)
-               
+               call simdisc(prob,nrec+100,ncluster+1,evali)
                
                if(evali.le.ncluster)then
                   ss(i)=evali
@@ -404,7 +402,7 @@ c++++++++++ observation in cluster with only 1 element
                since=ss(i)
 
                if(since.lt.ncluster)then
-                   call relabeld(i,since,nrec,nvar,ncluster,
+                   call relabeldd(i,since,nrec,nvar,ncluster,
      &                           ccluster,ss,muclus,sigmaclus,
      &                           muwork,sigmawork)                   
                end if
@@ -428,8 +426,7 @@ c++++++++++ observation in cluster with only 1 element
      &                      workv1,workm1,workm2,workv2,iflag)
 
 
-                  prob(j)=exp(log(dble(ccluster(j)))+
-     &                        tmp1)
+                  prob(j)=dble(ccluster(j))*exp(tmp1)
                end do
 
                do k=1,nvar
@@ -443,10 +440,9 @@ c++++++++++ observation in cluster with only 1 element
                call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                      workv1,workm1,workm2,workv2,iflag)
                    
-               prob(ncluster+1)=exp(log(alpha/dble(ncluster+1))+
-     &                             tmp1)
+               prob(ncluster+1)=(alpha/dble(ncluster+1))*exp(tmp1)
 
-               call simdisc(prob,nrec+2,ncluster+1,evali)
+               call simdisc(prob,nrec+100,ncluster+1,evali)
 
                if(evali.le.ncluster)then
                   ss(i)=evali
@@ -803,7 +799,7 @@ c+++++++++++++ predictive information
                end do
                prob(ncluster+1)=alpha/(alpha+dble(nrec))
          
-               call simdisc(prob,nrec+2,ncluster+1,evali)
+               call simdisc(prob,nrec+100,ncluster+1,evali)
 
                if(evali.le.ncluster)then
                   do i=1,nvar  
@@ -864,20 +860,65 @@ c+++++++++++++ predictive information
 c+++++++++++++ cpo and save samples
 
                do i=1,nrec
-                  do j=1,nvar
-                     ywork(j)=y(i,j)
-                     muwork(j)=muclus(ss(i),j) 
-                     do k=1,nvar
-                        sigmawork(j,k)=sigmaclus(ss(i),ihmssf(j,k,nvar))
+                  workcpo(i)=0.d0
+               end do   
+
+               do i=ncluster+1,ncluster+100
+                  do k=1,nvar
+                     do l=1,nvar
+                        workm3(k,l)=psiinv1(k,l)
                      end do
                   end do
 
-                  call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
+                  call riwishart(nvar,nu1,workm3,workm1,workm2,workv1,
+     &                           workmh1,workmh2,iflag)
+
+                 do k=1,nvar
+                    do l=1,nvar
+                       s1(k,l)=workm3(k,l)/dble(k0)
+                       sigmaclus(i,ihmssf(k,l,nvar))=
+     &                         workm3(k,l)
+                    end do
+                 end do
+
+                 call rmvnorm(nvar,m1,s1,workmh1,workv1,theta) 
+                 do k=1,nvar
+                     muclus(i,k)=theta(k)
+                 end do      
+               end do
+
+               do ii=1,ncluster+100
+                  do i=1,nrec
+                     if(ii.le.ncluster)then
+                        ns=ccluster(ii)
+                        if(ss(i).eq.ii)ns=ns-1
+                        prob(ii)=dble(ns)/(alpha+dble(nrec-1))
+                      else
+                        prob(ii)=alpha/(100.d0*(alpha+dble(nrec-1)))
+                     end if   
+
+                     do j=1,nvar
+                        ywork(j)=y(i,j)
+                        muwork(j)=muclus(ii,j) 
+                        do k=1,nvar
+                           sigmawork(j,k)=sigmaclus(ii,ihmssf(j,k,nvar))
+                        end do
+                     end do
+
+                     call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                      workv1,workm1,workm2,workv2,iflag)
  
-                  tmp1=exp(tmp1)
-                  cpo(i)=cpo(i)+1.0d0/tmp1  
+                     workcpo(i)=workcpo(i)+prob(ii)*exp(tmp1)
+                  end do
                end do
+
+               tmp2=0.d0
+               do i=1,nrec 
+                  tmp1=workcpo(i)
+                  cpo(i)=cpo(i)+1.0d0/tmp1
+                  tmp2=tmp2+log(dble(isave))/cpo(i)  
+               end do
+c               call dblepr("LPML",-1,tmp2,1)
 
 c+++++++++++++ print
                skipcount = 0
@@ -900,11 +941,10 @@ c+++++++++++++ print
 
       return
       end
-      
 
 c=======================================================================      
       subroutine relabeld(ind,since,nrec,nvar,ncluster,ccluster,ss,
-     &                    muclus,sigmaclus,muwork,sigmawork)
+     &                     muclus,sigmaclus,muwork,sigmawork)
 c=======================================================================
 c     relabel the clusters after the elimination of one of them
 c     A.J.V., 2006
@@ -913,6 +953,59 @@ c     A.J.V., 2006
       integer ind,since,nrec,nvar,ncluster,ccluster(nrec)
       integer ss(nrec)
       real*8 muclus(nrec+2,nvar),sigmaclus(nrec+2,nvar*(nvar+1)/2)
+      real*8 muwork(nvar),sigmawork(nvar,nvar)
+
+      dimen=nvar*(nvar+1)/2
+
+      do i=1,nvar
+         muwork(i)=muclus(since,i)
+         do j=1,nvar
+            sigmawork(i,j)=sigmaclus(since,ihmssf(i,j,nvar))
+         end do
+      end do
+      
+      do i=since+1,ncluster
+         do j=1,nrec
+            if(ss(j).eq.i)then
+               ss(j)=i-1 
+            end if
+         end do
+         do j=1,nvar
+            muclus(i-1,j)=muclus(i,j)
+         end do
+         do j=1,dimen
+            sigmaclus(i-1,j)=sigmaclus(i,j)
+         end do
+         ccluster(i-1)=ccluster(i)
+      end do
+      
+      ss(ind)=ncluster
+      
+      do i=1,nvar
+         muclus(ncluster,i)=muwork(i)
+         do j=i,nvar
+             sigmaclus(ncluster,ihmssf(i,j,nvar))=sigmawork(i,j)
+         end do
+      end do
+      
+      ccluster(ncluster)=1
+      
+      return
+      end  
+            
+      
+
+c=======================================================================      
+      subroutine relabeldd(ind,since,nrec,nvar,ncluster,ccluster,ss,
+     &                     muclus,sigmaclus,muwork,sigmawork)
+c=======================================================================
+c     relabel the clusters after the elimination of one of them
+c     A.J.V., 2006
+      implicit none
+      integer dimen,i,ihmssf,j
+      integer ind,since,nrec,nvar,ncluster,ccluster(nrec)
+      integer ss(nrec)
+      real*8 muclus(nrec+100,nvar),sigmaclus(nrec+100,nvar*(nvar+1)/2)
       real*8 muwork(nvar),sigmawork(nvar,nvar)
 
       dimen=nvar*(nvar+1)/2

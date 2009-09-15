@@ -10,7 +10,7 @@
   
 \usage{
 
-DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
+DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
           data=sys.frame(sys.parent()),na.action=na.fail)      
       
 }
@@ -22,6 +22,12 @@ DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
     \item{ngrid}{    number of grid points where the density estimate is 
                      evaluated. This is only used if dimension of \code{y}
                      is lower or equal than 2. The default value is 1000.}
+
+    \item{grid}{     matrix of dimension ngrid*nvar of grid points where the density estimate is 
+                     evaluated. This is only used if dimension of \code{y}
+                     is lower or equal than 2. The default value is NULL
+                     and the grid is chosen according to the range of the
+	             data.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
@@ -97,7 +103,7 @@ DPdensity(y,ngrid=1000,prior,mcmc,state,status,method="neal",
   this model specification, the algorithms with auxiliary parameters
   described in MacEachern and Muller (1998) and Neal (2000) are
   adopted. Specifically, the no-gaps algorithm of 
-  MacEachern and Muller (1998), \code{"no-gaps"} and the algorithm 8 with \eqn{m=1} 
+  MacEachern and Muller (1998), \code{"no-gaps"}, and the algorithm 8 with \eqn{m=1} 
   of Neal (2000), \code{"neal"}, are considered in the \code{DPdensity} function. 
   The default method is the algorithm 8 of Neal.
 }
@@ -166,7 +172,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Data
       data(galaxy)
-      galaxy<-data.frame(galaxy,speeds=galaxy$speed/1000) 
+      galaxy <- data.frame(galaxy,speeds=galaxy$speed/1000) 
       attach(galaxy)
 
     # Initial state
@@ -174,29 +180,29 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # MCMC parameters
 
-      nburn<-1000
-      nsave<-10000
-      nskip<-10
-      ndisplay<-100
+      nburn <- 1000
+      nsave <- 10000
+      nskip <- 10
+      ndisplay <- 100
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Example of Prior information 1
     # Fixing alpha, m1, and Psi1
 
-      prior1<-list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,tau1=1,tau2=100)
+      prior1 <- list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,tau1=1,tau2=100)
 
 
     # Example of Prior information 2
     # Fixing alpha and m1
 
-      prior2<-list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),nu1=4,nu2=4,
-                   tau1=1,tau2=100)
+      prior2 <- list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),nu1=4,nu2=4,
+                     tau1=1,tau2=100)
 
 
     # Example of Prior information 3
     # Fixing only alpha
 
-      prior3<-list(alpha=1,m2=rep(0,1),s2=diag(100000,1),
+      prior3 <- list(alpha=1,m2=rep(0,1),s2=diag(100000,1),
                    psiinv2=solve(diag(0.5,1)),
                    nu1=4,nu2=4,tau1=1,tau2=100)
 
@@ -204,16 +210,16 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
     # Example of Prior information 4
     # Everything is random
 
-      prior4<-list(a0=2,b0=1,m2=rep(0,1),s2=diag(100000,1),
+      prior4 <- list(a0=2,b0=1,m2=rep(0,1),s2=diag(100000,1),
                    psiinv2=solve(diag(0.5,1)),
                    nu1=4,nu2=4,tau1=1,tau2=100)
 
     # Fit the models
 
-      fit1.1<-DPdensity(y=speeds,prior=prior1,mcmc=mcmc,state=state,status=TRUE)
-      fit1.2<-DPdensity(y=speeds,prior=prior2,mcmc=mcmc,state=state,status=TRUE)
-      fit1.3<-DPdensity(y=speeds,prior=prior3,mcmc=mcmc,state=state,status=TRUE)
-      fit1.4<-DPdensity(y=speeds,prior=prior4,mcmc=mcmc,state=state,status=TRUE)
+      fit1.1 <- DPdensity(y=speeds,prior=prior1,mcmc=mcmc,state=state,status=TRUE)
+      fit1.2 <- DPdensity(y=speeds,prior=prior2,mcmc=mcmc,state=state,status=TRUE)
+      fit1.3 <- DPdensity(y=speeds,prior=prior3,mcmc=mcmc,state=state,status=TRUE)
+      fit1.4 <- DPdensity(y=speeds,prior=prior4,mcmc=mcmc,state=state,status=TRUE)
 
     # Posterior means
       fit1.1
@@ -269,32 +275,32 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       data(airquality)
       attach(airquality)
 
-      ozone<-Ozone**(1/3)
-      radiation<-Solar.R
+      ozone <- Ozone**(1/3)
+      radiation <- Solar.R
 
     # Prior information
 
-      s2<-matrix(c(10000,0,0,1),ncol=2)
-      m2<-c(180,3)
-      psiinv2<-solve(matrix(c(10000,0,0,1),ncol=2))
+      s2 <- matrix(c(10000,0,0,1),ncol=2)
+      m2 <- c(180,3)
+      psiinv2 <- solve(matrix(c(10000,0,0,1),ncol=2))
      
-      prior<-list(a0=1,b0=1/5,nu1=4,nu2=4,s2=s2,
-                  m2=m2,psiinv2=psiinv2,tau1=0.01,tau2=0.01)
+      prior <- list(a0=1,b0=1/5,nu1=4,nu2=4,s2=s2,
+                    m2=m2,psiinv2=psiinv2,tau1=0.01,tau2=0.01)
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
 
-      nburn<-5000
-      nsave<-10000
-      nskip<-10
-      ndisplay<-1000
+      nburn <- 5000
+      nsave <- 10000
+      nskip <- 10
+      ndisplay <- 1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Fit the model
-      fit1<-DPdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
-                      state=state,status=TRUE,na.action=na.omit)
+      fit1 <- DPdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE,na.action=na.omit)
 
     # Plot the estimated density
       plot(fit1)

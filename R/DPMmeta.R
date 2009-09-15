@@ -25,11 +25,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -374,8 +374,8 @@ function(formula,
 	        mu<-state$mu
 	        mub<-state$mub
 	        ncluster<-state$ncluster
-	        sigma<-state$sigma
-	        sigmab<-state$sigmab
+	        sigma<-state$sigma2
+	        sigmab<-state$sigma2b
 	        ss<-state$ss
 	        betar<-0
 	 }
@@ -473,9 +473,9 @@ function(formula,
             pnames1 <- c(nameresp,namesxm[-1])
          }
 
-         pnames2 <- "sigma"   
+         pnames2 <- "sigma2"   
          pnames3 <- "mub"   
-         pnames4 <- "sigmab"
+         pnames4 <- "sigma2b"
          pnames5 <- c("ncluster","alpha")
 
 
@@ -499,8 +499,8 @@ function(formula,
 	               mu=foo$mu,
 	               mub=foo$mub,
 	               ncluster=foo$ncluster,
-	               sigma=foo$sigma,
-	               sigmab=foo$sigmab,
+	               sigma2=foo$sigma,
+	               sigma2b=foo$sigmab,
 	               ss=foo$ss)
 
 	 save.state <- list(thetasave=thetasave,

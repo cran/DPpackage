@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara, 2007-2009.
 ###
-### Last modification: 30-04-2007.
+### Last modification: 25-09-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
@@ -107,12 +107,12 @@ function(fixed,
          nrec <- dim(mf)[1]
          resp <- mf[,1]
          roffset <- model.offset(mf)
-         if (is.null(roffset)) roffset <-rep(0,nrec)
+         if (is.null(roffset)) roffset <- rep(0,nrec)
 
          crandom <- all.vars(random)
          namesre <- (names(mf)==crandom[length(crandom)])
          oldid <- mf[,namesre]
-         freqsub<-table(oldid)
+         freqsub <- table(oldid)
          namesre <- names(freqsub)         
          nsubject <- length(namesre)
          newid <- seq(1,nrec)
@@ -147,7 +147,7 @@ function(fixed,
        # model structure
        #########################################################################################
          q <- length(crandom)
-         z<-matrix(1,nrow=nrec,ncol=1)
+         z <- matrix(1,nrow=nrec,ncol=1)
          colnames(z) <- "(Intercept)"
          nvarrand <- "(Intercept)"
 
@@ -174,7 +174,7 @@ function(fixed,
             }   
          }   
          x <- model.matrix(fixed,data=mf)
-         p <- dim(x)[2]
+         p <- ncol(x)
          x <- x[,-1]
          p <- p-1
          nfixed <- p
@@ -364,17 +364,30 @@ function(fixed,
          acrate <- rep(0,2)
          dispp <- 0
          if(family$family=="Gamma") dispp <- 1
-         nuniq<-q*(q+1)
-         mc<-rep(0,5)                  
-         musave<-matrix(0,nrow=nsave,ncol=q*nsubject)
-         clustsave<-matrix(0,nrow=nsave,ncol=nsubject)
-         randsave<-matrix(0,nrow=nsave,ncol=q*(nsubject+1))
-         thetasave<-matrix(0,nrow=nsave,ncol=q+nfixed+dispp+q+nuniq+2)
-         cpo<-matrix(0,nrow=nrec,ncol=2)
+         nuniq <- q*(q+1)
+         mc <- rep(0,5)                  
+         musave <- matrix(0,nrow=nsave,ncol=q*nsubject)
+         clustsave <- matrix(0,nrow=nsave,ncol=nsubject)
+         randsave <- matrix(0,nrow=nsave,ncol=q*(nsubject+1))
+         thetasave <- matrix(0,nrow=nsave,ncol=q+nfixed+dispp+q+nuniq+2)
+         cpo <- matrix(0,nrow=nrec,ncol=2)
 
        #########################################################################################
        # parameters depending on status
        #########################################################################################
+         
+		 startglmm <- function(fixed,random,family,q)
+         {
+			 library(nlme)
+			 library(MASS)
+			 fit0 <- glmmPQL(fixed=fixed, random=random, family=family, verbose = FALSE) 
+			 beta <- fit0$coeff$fixed
+			 b <- fit0$coeff$random$newid
+			 sigma <- getVarCov(fit0)[1:q,1:q]
+			 out <- list(beta=beta,b=b,sigma=sigma)
+			 return(out)
+         }
+
          if(status==TRUE)
          {
             resp2 <- resp
@@ -386,81 +399,74 @@ function(fixed,
                 }
             }   
 
-            wsigma <- prior$tinv/(prior$nu0-q-1)
-            wsigma2 <- prior$tbinv/(prior$nub-q-1)
-            
-            bzs<-NULL
-            bzsb<-NULL
-            for(i in 1:q)
-            {
-               work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma[i,i]))
-               bzs<-cbind(bzs,work)
-               work<-rnorm(nsubject,mean=0,sd=sqrt(wsigma2[i,i]))
-               bzsb<-cbind(bzsb,work)
-            }
-
             if(nfixed==0)
             {
-	        beta<-matrix(0,nrow=1,ncol=1)
-	        fit0 <- glm.fit(z, resp2, family= family,offset=roffset)   
-	        b<-matrix(0,nrow=nsubject,ncol=q)
-		mu<-bzsb
-	        for(i in 1:nsubject){
-	            b[i,]<-coefficients(fit0)+bzs[i,]
-	        }
-                sigma <- prior$tinv/(prior$nu0-q-1)
+				fit0 <- startglmm(fixed=resp2~z-1+offset(roffset), random = ~ z - 1 | newid, family=family,q=q) 
+				beta <- matrix(0,nrow=1,ncol=1)
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+                sigma <- fit0$sigma
                 sigmainv <- solve(sigma)
-                sigmab <- prior$tbinv/(prior$nub-q-1)
+                sigmab <- fit0$sigma
                 sigmabinv <- solve(sigmab)
-             }
-             else
-             {
-	        fit0 <- glm.fit(cbind(x,z), resp2, family=family,offset=roffset)   
-	        b<-matrix(0,nrow=nsubject,ncol=q)
-                beta<-coefficients(fit0)[1:p]
-		mu<-bzsb
-	        for(i in 1:nsubject){
-	            b[i,]<-coefficients(fit0)[(p+1):(p+q)]+bzs[i,]
-	        }
-                sigma <- prior$tinv/(prior$nu0-q-1)
+				betar <- fit0$beta[1:q]
+				mub <- fit0$beta[1:q]
+				mu <- matrix(0,nrow=nsubject,ncol=q)
+				mu[1,1:q] <- fit0$beta[1:q]
+			}
+			else
+			{
+				fit0 <- startglmm(fixed=resp2~z+x-1+offset(roffset), random = ~ z - 1 | newid, family=family,q=q) 
+				beta <- fit0$beta[(q+1):(p+q)]
+				b <- NULL 
+				for(i in 1:q)
+				{
+   				    b <- cbind(b,fit0$b[,i]+fit0$beta[i])
+			    }
+                sigma <- fit0$sigma
                 sigmainv <- solve(sigma)
-                sigmab <- prior$tbinv/(prior$nub-q-1)
+                sigmab <- fit0$sigma
                 sigmabinv <- solve(sigmab)
-             }
-             betar<-rep(0,q)
-             mub<-rep(0,q)
-             ncluster<-nsubject
-             ss<-seq(1,nsubject)
+				betar <- fit0$beta[1:q]
+				mub <- fit0$beta[1:q]
+				mu <- matrix(0,nrow=nsubject,ncol=q)
+				mu[1,1:q] <- fit0$beta[1:q]
+			}
+             ncluster <- 1
+             ss <- rep(1,nsubject)
              if(family$family=="Gamma")
              {
                 v <- 1.1
              }  
-         }	
-         if(status==FALSE)
-         {
-	     alpha<-state$alpha
-             b<-state$b 
-             if(nfixed>0)
-             {
-	        beta<-state$beta
-	     }
-	     else
-	     {
-	        beta<-rep(0,p)
-	     }
-	     mu<-state$mu
-	     mub<-state$mub
-	     ncluster<-state$ncluster
-	     sigma<-state$sigma
-	     sigmab<-state$sigmab
-	     sigmainv<-solve(sigma)
-	     sigmabinv<-solve(sigmab)
-	     ss<-state$ss
-             if(family$family=="Gamma")
-             {
-                 v<-1/state$phi
-             }    
-             betar<-rep(0,q)
+		}	
+		if(status==FALSE)
+		{
+			alpha <- state$alpha
+			b <- state$b 
+			if(nfixed>0)
+			{
+				beta <- state$beta
+			}
+			else
+			{
+				beta <- rep(0,p)
+			}
+			mu <- state$mu
+			mub <- state$mub
+			ncluster <- state$ncluster
+			sigma <- state$sigma
+			sigmab <- state$sigmab
+			sigmainv <- solve(sigma)
+			sigmabinv <- solve(sigmab)
+			ss <- state$ss
+			if(family$family=="Gamma")
+			{
+				v <- 1/state$phi
+			}    
+			betar <- rep(0,q)
          }
 
        #########################################################################################
@@ -474,198 +480,198 @@ function(fixed,
             {
             
              # working space
-               iflagp<-rep(0,p) 
-               iflagr<-rep(0,q) 
-               prob<-rep(0,nsubject+1)
-               quadf<-matrix(0,nrow=q,ncol=q)
-               seed1<-sample(1:29000,1)
-               seed2<-sample(1:29000,1)
-               seed<-c(seed1,seed2)
-               theta<-rep(0,q)
-               workmhp<-rep(0,p*(p+1)/2) 
-               workmp<-matrix(0,nrow=p,ncol=p) 
-               workvp<-rep(0,p) 
+               iflagp <- rep(0,p) 
+               iflagr <- rep(0,q) 
+               prob <- rep(0,nsubject+1)
+               quadf <- matrix(0,nrow=q,ncol=q)
+               seed1 <- sample(1:29000,1)
+               seed2 <- sample(1:29000,1)
+               seed <- c(seed1,seed2)
+               theta <- rep(0,q)
+               workmhp <- rep(0,p*(p+1)/2) 
+               workmp <- matrix(0,nrow=p,ncol=p) 
+               workvp <- rep(0,p) 
                xtx <- t(x)%*%x               
-               xty<-rep(0,p) 
-               workmhr<-rep(0,q*(q+1)/2) 
-               workmhr2<-rep(0,q*(q+1)/2) 
-               workmr<-matrix(0,nrow=q,ncol=q) 
-               workvr<-rep(0,q) 
-               zty<-rep(0,q) 
-               ztz<-matrix(0,nrow=q,ncol=q) 
-               cstrt<-matrix(0,nrow=nsubject,ncol=nsubject) 
-               ccluster<-rep(0,nsubject) 
-               y<-rep(0,nrec) 
+               xty <- rep(0,p) 
+               workmhr <- rep(0,q*(q+1)/2) 
+               workmhr2 <- rep(0,q*(q+1)/2) 
+               workmr <- matrix(0,nrow=q,ncol=q) 
+               workvr <- rep(0,q) 
+               zty <- rep(0,q) 
+               ztz <- matrix(0,nrow=q,ncol=q) 
+               cstrt <- matrix(0,nrow=nsubject,ncol=nsubject) 
+               ccluster <- rep(0,nsubject) 
+               y <- rep(0,nrec) 
 
-               betasave<-rep(0,p)
-               bsave<-matrix(0,nrow=nsubject,ncol=q)
+               betasave <- rep(0,p)
+               bsave <- matrix(0,nrow=nsubject,ncol=q)
 
              # calling the compiled code
                foo <- .Fortran("dpmglmmprob",
- 	 	maxni      =as.integer(maxni),         
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
-         	datastr    =as.integer(datastr), 	 	
- 		yr         =as.integer(resp),
- 		x          =as.double(x),	 	
- 		z          =as.double(z),	 
- 		xtx        =as.double(xtx),	 	
- 		a0b0       =as.double(a0b0),
- 		prec       =as.double(prec),	  		
- 		sb         =as.double(sb),	  		
- 		nu         =as.integer(nu),
- 		tinv1      =as.double(tinv),	  		 		
- 		smu        =as.double(smu),	  		
- 		psiinv     =as.double(psiinv),	  		
- 		tinv2      =as.double(tbinv),	  		 		
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),		
- 		beta       =as.double(beta),
- 		b          =as.double(b),		
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma      =as.double(sigma),
- 		sigmainv   =as.double(sigmainv),
- 		mub        =as.double(mub),
- 		sigmab     =as.double(sigmab),
- 		sigmabinv  =as.double(sigmabinv),
- 		mc         =as.double(mc),
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		musave     =as.double(musave),
- 		clustsave  =as.integer(clustsave),
- 		iflagp     =as.integer(iflagp),
- 		workmhp    =as.double(workmhp),
- 		workmp     =as.double(workmp),
- 		workvp     =as.double(workvp),
- 		xty        =as.double(xty),
- 		iflagr     =as.integer(iflagr),
- 		theta      =as.double(theta),
-                workmhr    =as.double(workmhr),
-                workmhr2   =as.double(workmhr2),
-                workmr     =as.double(workmr),
-                workvr     =as.double(workvr),
- 		ztz        =as.double(ztz), 		
- 		zty        =as.double(zty), 		
- 		cstrt      =as.integer(cstrt),
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
- 		y          =as.double(y),
- 		seed       =as.integer(seed),
-                betasave   =as.double(betasave),
-                bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
+							   maxni      =as.integer(maxni),         
+							   nrec       =as.integer(nrec),
+							   nsubject   =as.integer(nsubject),
+							   nfixed     =as.integer(nfixed),
+							   p          =as.integer(p),
+							   q          =as.integer(q),
+							   subject    =as.integer(newid),
+							   datastr    =as.integer(datastr), 	 	
+							   yr         =as.integer(resp),
+							   x          =as.double(x),	 	
+							   z          =as.double(z),	 
+							   xtx        =as.double(xtx),	 	
+							   a0b0       =as.double(a0b0),
+							   prec       =as.double(prec),	  		
+							   sb         =as.double(sb),	  		
+							   nu         =as.integer(nu),
+							   tinv1      =as.double(tinv),						
+							   smu        =as.double(smu),	  		
+							   psiinv     =as.double(psiinv),	  		
+							   tinv2      =as.double(tbinv),	  		 		
+							   mcmc       =as.integer(mcmcvec),
+							   nsave      =as.integer(nsave),
+							   ncluster   =as.integer(ncluster),
+							   ss         =as.integer(ss),
+							   alpha      =as.double(alpha),		
+							   beta       =as.double(beta),
+							   b          =as.double(b),		
+							   betar      =as.double(betar),
+							   mu         =as.double(mu),
+							   sigma      =as.double(sigma),
+							   sigmainv   =as.double(sigmainv),
+							   mub        =as.double(mub),
+								sigmab     =as.double(sigmab),
+							   sigmabinv  =as.double(sigmabinv),
+							   mc         =as.double(mc),
+							   cpo        =as.double(cpo),
+							   randsave   =as.double(randsave),
+							   thetasave  =as.double(thetasave),
+							   musave     =as.double(musave),
+							   clustsave  =as.integer(clustsave),
+							   iflagp     =as.integer(iflagp),
+							   workmhp    =as.double(workmhp),
+							   workmp     =as.double(workmp),
+							   workvp     =as.double(workvp),
+							   xty        =as.double(xty),
+							   iflagr     =as.integer(iflagr),
+							   theta      =as.double(theta),
+							   workmhr    =as.double(workmhr),
+							   workmhr2   =as.double(workmhr2),
+							   workmr     =as.double(workmr),
+							   workvr     =as.double(workvr),
+							   ztz        =as.double(ztz), 		
+							   zty        =as.double(zty), 		
+							   cstrt      =as.integer(cstrt),
+							   ccluster   =as.integer(ccluster),
+							   prob       =as.double(prob),
+							   quadf      =as.double(quadf),
+							   y          =as.double(y),
+							   seed       =as.integer(seed),
+							   betasave   =as.double(betasave),
+							   bsave      =as.double(bsave),
+							   PACKAGE    ="DPpackage")	
             }
 
             if(family$link=="logit")
             {
              # working space
-               betac<-rep(0,p) 
-               iflagp<-rep(0,p) 
-               iflagr<-rep(0,q) 
-               prob<-rep(0,nsubject+1)
-               quadf<-matrix(0,nrow=q,ncol=q)
-               seed1<-sample(1:29000,1)
-               seed2<-sample(1:29000,1)
-               seed<-c(seed1,seed2)
-               theta<-rep(0,q)
-               thetac<-rep(0,q)
-               workmhp<-rep(0,p*(p+1)/2) 
-               workvp<-rep(0,p) 
+               betac <- rep(0,p) 
+               iflagp <- rep(0,p) 
+               iflagr <- rep(0,q) 
+               prob <- rep(0,nsubject+1)
+               quadf <- matrix(0,nrow=q,ncol=q)
+               seed1 <- sample(1:29000,1)
+               seed2 <- sample(1:29000,1)
+               seed <- c(seed1,seed2)
+               theta <- rep(0,q)
+               thetac <- rep(0,q)
+               workmhp <- rep(0,p*(p+1)/2) 
+               workvp <- rep(0,p) 
                xtx <- t(x)%*%x               
                xty<-rep(0,p) 
                xsweep <- matrix(0,nrow=(p+1),ncol=(p+1))
-               workmhr<-rep(0,q*(q+1)/2) 
-               workmhr2<-rep(0,q*(q+1)/2) 
-               workmr<-matrix(0,nrow=q,ncol=q) 
-               workvr<-rep(0,q) 
-               zty<-rep(0,q) 
-               ztz<-matrix(0,nrow=q,ncol=q) 
-               cstrt<-matrix(0,nrow=nsubject,ncol=nsubject) 
-               ccluster<-rep(0,nsubject) 
+               workmhr <- rep(0,q*(q+1)/2) 
+               workmhr2 <- rep(0,q*(q+1)/2) 
+               workmr <- matrix(0,nrow=q,ncol=q) 
+               workvr <- rep(0,q) 
+               zty <- rep(0,q) 
+               ztz <- matrix(0,nrow=q,ncol=q) 
+               cstrt <- matrix(0,nrow=nsubject,ncol=nsubject) 
+               ccluster <- rep(0,nsubject) 
                
                sb <- cbind(sb,prior$beta0)
                resp <- cbind(resp,ntrials)
 
-               betasave<-rep(0,p)
-               bsave<-matrix(0,nrow=nsubject,ncol=q)
+               betasave <- rep(0,p)
+               bsave <- matrix(0,nrow=nsubject,ncol=q)
                
              # calling the compiled code
 
                foo <- .Fortran("dpmglmmlogit",
- 	 	maxni      =as.integer(maxni),         
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
-         	datastr    =as.integer(datastr), 	 	
- 		y          =as.integer(resp),
- 		x          =as.double(x),	 	
- 		z          =as.double(z),
- 		a0b0       =as.double(a0b0),
- 		prec       =as.double(prec),	  		
- 		sb         =as.double(sb),	  		
- 		nu         =as.integer(nu),
- 		tinv1      =as.double(tinv),	  		 		
- 		smu        =as.double(smu),	  		
- 		psiinv     =as.double(psiinv),	  		
- 		tinv2      =as.double(tbinv),	  		 		
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),		
- 		beta       =as.double(beta),
- 		b          =as.double(b),		
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma      =as.double(sigma),
- 		sigmainv   =as.double(sigmainv),
- 		mub        =as.double(mub),
- 		sigmab     =as.double(sigmab),
- 		sigmabinv  =as.double(sigmabinv),
- 		mc         =as.double(mc), 		
- 		acrate     =as.double(acrate),
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		musave     =as.double(musave),
- 		clustsave  =as.integer(clustsave),
- 		iflagp     =as.integer(iflagp),
- 		betac      =as.double(betac), 
- 		workmhp    =as.double(workmhp),
- 		workvp     =as.double(workvp),
- 		xtx        =as.double(xtx),	 	
- 		xty        =as.double(xty),
- 		xsweep     =as.double(xsweep),
- 		iflagr     =as.integer(iflagr),
- 		theta      =as.double(theta),
- 		thetac     =as.double(thetac),
-                workmhr    =as.double(workmhr),
-                workmhr2   =as.double(workmhr2),
-                workmr     =as.double(workmr),
-                workvr     =as.double(workvr),
- 		ztz        =as.double(ztz), 		
- 		zty        =as.double(zty), 		
- 		cstrt      =as.integer(cstrt),
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
- 		seed       =as.integer(seed),
-                betasave   =as.double(betasave),
-                bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
+							   maxni      =as.integer(maxni),         
+							   nrec       =as.integer(nrec),
+							   nsubject   =as.integer(nsubject),
+							   nfixed     =as.integer(nfixed),
+							   p          =as.integer(p),
+							   q          =as.integer(q),
+							   subject    =as.integer(newid),
+							   datastr    =as.integer(datastr), 	 	
+							   y          =as.integer(resp),
+							   x          =as.double(x),	 	
+							   z          =as.double(z),
+							   a0b0       =as.double(a0b0),
+							   prec       =as.double(prec),	  		
+							   sb         =as.double(sb),	  		
+							   nu         =as.integer(nu),
+							   tinv1      =as.double(tinv),	  		 		
+							   smu        =as.double(smu),	  		
+							   psiinv     =as.double(psiinv),	  		
+							   tinv2      =as.double(tbinv),	  		 		
+							   mcmc       =as.integer(mcmcvec),
+							   nsave      =as.integer(nsave),
+							   ncluster   =as.integer(ncluster),
+							   ss         =as.integer(ss),
+							   alpha      =as.double(alpha),		
+							   beta       =as.double(beta),
+							   b          =as.double(b),		
+							   betar      =as.double(betar),
+							   mu         =as.double(mu),
+							   sigma      =as.double(sigma),
+							   sigmainv   =as.double(sigmainv),
+							   mub        =as.double(mub),
+							   sigmab     =as.double(sigmab),
+							   sigmabinv  =as.double(sigmabinv),
+							   mc         =as.double(mc), 		
+							   acrate     =as.double(acrate),
+							   cpo        =as.double(cpo),
+							   randsave   =as.double(randsave),
+							   thetasave  =as.double(thetasave),
+							   musave     =as.double(musave),
+							   clustsave  =as.integer(clustsave),
+							   iflagp     =as.integer(iflagp),
+							   betac      =as.double(betac), 
+							   workmhp    =as.double(workmhp),
+							   workvp     =as.double(workvp),
+							   xtx        =as.double(xtx),	 	
+							   xty        =as.double(xty),
+							   xsweep     =as.double(xsweep),
+							   iflagr     =as.integer(iflagr),
+							   theta      =as.double(theta),
+							   thetac     =as.double(thetac),
+							   workmhr    =as.double(workmhr),
+							   workmhr2   =as.double(workmhr2),
+							   workmr     =as.double(workmr),
+							   workvr     =as.double(workvr),
+							   ztz        =as.double(ztz), 		
+							   zty        =as.double(zty), 		
+							   cstrt      =as.integer(cstrt),
+							   ccluster   =as.integer(ccluster),
+							   prob       =as.double(prob),
+							   quadf      =as.double(quadf),
+							   seed       =as.integer(seed),
+							   betasave   =as.double(betasave),
+							   bsave      =as.double(bsave),
+							   PACKAGE    ="DPpackage")	
             
             }
             
@@ -676,102 +682,102 @@ function(fixed,
             if(family$link=="log")
             {
              # working space
-               betac<-rep(0,p) 
-               iflagp<-rep(0,p) 
-               iflagr<-rep(0,q) 
-               prob<-rep(0,nsubject+1)
-               quadf<-matrix(0,nrow=q,ncol=q)
-               seed1<-sample(1:29000,1)
-               seed2<-sample(1:29000,1)
-               seed<-c(seed1,seed2)
-               theta<-rep(0,q)
-               thetac<-rep(0,q)
-               workmhp<-rep(0,p*(p+1)/2) 
-               workvp<-rep(0,p) 
+               betac <- rep(0,p) 
+               iflagp <- rep(0,p) 
+               iflagr <- rep(0,q) 
+               prob <- rep(0,nsubject+1)
+               quadf <- matrix(0,nrow=q,ncol=q)
+               seed1 <- sample(1:29000,1)
+               seed2 <- sample(1:29000,1)
+               seed <- c(seed1,seed2)
+               theta <- rep(0,q)
+               thetac <- rep(0,q)
+               workmhp <- rep(0,p*(p+1)/2) 
+               workvp <- rep(0,p) 
                xtx <- t(x)%*%x               
-               xty<-rep(0,p) 
-               workmhr<-rep(0,q*(q+1)/2) 
-               workmhr2<-rep(0,q*(q+1)/2) 
-               workmr<-matrix(0,nrow=q,ncol=q) 
-               workvr<-rep(0,q) 
-               zty<-rep(0,q) 
-               ztz<-matrix(0,nrow=q,ncol=q) 
-               cstrt<-matrix(0,nrow=nsubject,ncol=nsubject) 
-               ccluster<-rep(0,nsubject) 
+               xty <- rep(0,p) 
+               workmhr <- rep(0,q*(q+1)/2) 
+               workmhr2 <- rep(0,q*(q+1)/2) 
+               workmr <- matrix(0,nrow=q,ncol=q) 
+               workvr <- rep(0,q) 
+               zty <- rep(0,q) 
+               ztz <- matrix(0,nrow=q,ncol=q) 
+               cstrt <- matrix(0,nrow=nsubject,ncol=nsubject) 
+               ccluster <- rep(0,nsubject) 
                
-               sb<-cbind(sb,prior$beta0)
+               sb <- cbind(sb,prior$beta0)
 
-               betasave<-rep(0,p)
-               bsave<-matrix(0,nrow=nsubject,ncol=q)
+               betasave <- rep(0,p)
+               bsave <- matrix(0,nrow=nsubject,ncol=q)
                
              # calling the compiled code
 
                foo <- .Fortran("dpmglmmpois",
- 	 	maxni      =as.integer(maxni),         
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
-         	datastr    =as.integer(datastr), 	 	
- 		y          =as.integer(resp),
- 		x          =as.double(x),	 	
- 		z          =as.double(z),
- 		roffset    =as.double(roffset),
- 		a0b0       =as.double(a0b0),
- 		prec       =as.double(prec),	  		
- 		sb         =as.double(sb),	  		
- 		nu         =as.integer(nu),
- 		tinv1      =as.double(tinv),	  		 		
- 		smu        =as.double(smu),	  		
- 		psiinv     =as.double(psiinv),	  		
- 		tinv2      =as.double(tbinv),	  		 		
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),		
- 		beta       =as.double(beta),
- 		b          =as.double(b),		
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma      =as.double(sigma),
- 		sigmainv   =as.double(sigmainv),
- 		mub        =as.double(mub),
- 		sigmab     =as.double(sigmab),
- 		sigmabinv  =as.double(sigmabinv),
- 		mc         =as.double(mc), 		
- 		acrate     =as.double(acrate),
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		musave     =as.double(musave),
- 		clustsave  =as.integer(clustsave),
- 		iflagp     =as.integer(iflagp),
- 		betac      =as.double(betac), 
- 		workmhp    =as.double(workmhp),
- 		workvp     =as.double(workvp),
- 		xtx        =as.double(xtx),	 	
- 		xty        =as.double(xty), 		
- 		iflagr     =as.integer(iflagr),
- 		theta      =as.double(theta),
- 		thetac     =as.double(thetac),
-                workmhr    =as.double(workmhr),
-                workmhr2   =as.double(workmhr2),
-                workmr     =as.double(workmr),
-                workvr     =as.double(workvr),
- 		ztz        =as.double(ztz), 		
- 		zty        =as.double(zty), 		
- 		cstrt      =as.integer(cstrt),
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
- 		seed       =as.integer(seed),
-                betasave   =as.double(betasave),
-                bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
-            }
+							   maxni      =as.integer(maxni),         
+							   nrec       =as.integer(nrec),
+							   nsubject   =as.integer(nsubject),
+							   nfixed     =as.integer(nfixed),
+							   p          =as.integer(p),
+							   q          =as.integer(q),
+							   subject    =as.integer(newid),
+							   datastr    =as.integer(datastr), 	 	
+							   y          =as.integer(resp),
+							   x          =as.double(x),	 	
+							   z          =as.double(z),
+							   roffset    =as.double(roffset),
+							   a0b0       =as.double(a0b0),
+							   prec       =as.double(prec),	  		
+							   sb         =as.double(sb),	  		
+							   nu         =as.integer(nu),
+							   tinv1      =as.double(tinv),	  		 		
+							   smu        =as.double(smu),	  		
+							   psiinv     =as.double(psiinv),	  		
+							   tinv2      =as.double(tbinv),	  		 		
+							   mcmc       =as.integer(mcmcvec),
+							   nsave      =as.integer(nsave),
+							   ncluster   =as.integer(ncluster),
+							   ss         =as.integer(ss),
+							   alpha      =as.double(alpha),		
+							   beta       =as.double(beta),
+							   b          =as.double(b),		
+							   betar      =as.double(betar),
+							   mu         =as.double(mu),
+							   sigma      =as.double(sigma),
+							   sigmainv   =as.double(sigmainv),
+							   mub        =as.double(mub),
+							   sigmab     =as.double(sigmab),
+							   sigmabinv  =as.double(sigmabinv),
+							   mc         =as.double(mc), 		
+							   acrate     =as.double(acrate),
+							   cpo        =as.double(cpo),
+							   randsave   =as.double(randsave),
+							   thetasave  =as.double(thetasave),
+							   musave     =as.double(musave),
+							   clustsave  =as.integer(clustsave),
+							   iflagp     =as.integer(iflagp),
+							   betac      =as.double(betac), 
+							   workmhp    =as.double(workmhp),
+							   workvp     =as.double(workvp),
+							   xtx        =as.double(xtx),	 	
+							   xty        =as.double(xty), 		
+							   iflagr     =as.integer(iflagr),
+							   theta      =as.double(theta),
+							   thetac     =as.double(thetac),
+							   workmhr    =as.double(workmhr),
+							   workmhr2   =as.double(workmhr2),
+							   workmr     =as.double(workmr),
+							   workvr     =as.double(workvr),
+							   ztz        =as.double(ztz), 		
+							   zty        =as.double(zty), 		
+							   cstrt      =as.integer(cstrt),
+							   ccluster   =as.integer(ccluster),
+							   prob       =as.double(prob),
+							   quadf      =as.double(quadf),
+							   seed       =as.integer(seed),
+							   betasave   =as.double(betasave),
+							   bsave      =as.double(bsave),
+							   PACKAGE    ="DPpackage")	
+			}
          }   
 
 
@@ -781,105 +787,105 @@ function(fixed,
             {
              # working space
                acrate <- rep(0,3)             
-               betac<-rep(0,p) 
-               iflagp<-rep(0,p) 
-               iflagr<-rep(0,q) 
-               prob<-rep(0,nsubject+1)
-               quadf<-matrix(0,nrow=q,ncol=q)
-               seed1<-sample(1:29000,1)
-               seed2<-sample(1:29000,1)
-               seed<-c(seed1,seed2)
-               theta<-rep(0,q)
-               thetac<-rep(0,q)
-               workmhp<-rep(0,p*(p+1)/2) 
-               workvp<-rep(0,p) 
+               betac <- rep(0,p) 
+               iflagp <- rep(0,p) 
+               iflagr <- rep(0,q) 
+               prob <- rep(0,nsubject+1)
+               quadf <- matrix(0,nrow=q,ncol=q)
+               seed1 <- sample(1:29000,1)
+               seed2 <- sample(1:29000,1)
+               seed <- c(seed1,seed2)
+               theta <- rep(0,q)
+               thetac <- rep(0,q)
+               workmhp <- rep(0,p*(p+1)/2) 
+               workvp <- rep(0,p) 
                xtx <- t(x)%*%x               
-               xty<-rep(0,p) 
-               workmhr<-rep(0,q*(q+1)/2) 
-               workmhr2<-rep(0,q*(q+1)/2) 
-               workmr<-matrix(0,nrow=q,ncol=q) 
-               workvr<-rep(0,q) 
-               zty<-rep(0,q) 
-               ztz<-matrix(0,nrow=q,ncol=q) 
-               cstrt<-matrix(0,nrow=nsubject,ncol=nsubject) 
-               ccluster<-rep(0,nsubject) 
+               xty <- rep(0,p) 
+               workmhr <- rep(0,q*(q+1)/2) 
+               workmhr2 <- rep(0,q*(q+1)/2) 
+               workmr <- matrix(0,nrow=q,ncol=q) 
+               workvr <- rep(0,q) 
+               zty <- rep(0,q) 
+               ztz <- matrix(0,nrow=q,ncol=q) 
+               cstrt <- matrix(0,nrow=nsubject,ncol=nsubject) 
+               ccluster <- rep(0,nsubject) 
                
-               sb<-cbind(sb,prior$beta0)
+               sb <- cbind(sb,prior$beta0)
                
-               nu<-c(nu,tune4)
+               nu <- c(nu,tune4)
 
-               betasave<-rep(0,(p+1))
-               bsave<-matrix(0,nrow=nsubject,ncol=q)
+               betasave <- rep(0,(p+1))
+               bsave <- matrix(0,nrow=nsubject,ncol=q)
                
              # calling the compiled code
 
                foo <- .Fortran("dpmglmmgam",
- 	 	maxni      =as.integer(maxni),         
- 	 	nrec       =as.integer(nrec),
- 	 	nsubject   =as.integer(nsubject),
- 	 	nfixed     =as.integer(nfixed),
- 	 	p          =as.integer(p),
- 	 	q          =as.integer(q),
- 	 	subject    =as.integer(newid),
-         	datastr    =as.integer(datastr), 	 	
- 		y          =as.double(resp),
- 		x          =as.double(x),	 	
- 		z          =as.double(z),
- 		roffset    =as.double(roffset),
- 		a0b0       =as.double(a0b0),
- 		prec       =as.double(prec),	  		
- 		sb         =as.double(sb),	  		
- 		nu         =as.integer(nu),
- 		tinv1      =as.double(tinv),	  		 		
- 		smu        =as.double(smu),	  		
- 		psiinv     =as.double(psiinv),	  		
- 		tinv2      =as.double(tbinv),
- 		tau        =as.double(tau),
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),		
- 		beta       =as.double(beta),
- 		b          =as.double(b),		
- 		betar      =as.double(betar),
- 		mu         =as.double(mu),
- 		sigma      =as.double(sigma),
- 		sigmainv   =as.double(sigmainv),
- 		mub        =as.double(mub),
- 		sigmab     =as.double(sigmab),
- 		sigmabinv  =as.double(sigmabinv),
- 		v          =as.double(v),
- 		mc         =as.double(mc), 		
- 		acrate     =as.double(acrate),
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave),
- 		musave     =as.double(musave),
- 		clustsave  =as.integer(clustsave),
- 		iflagp     =as.integer(iflagp),
- 		betac      =as.double(betac), 
- 		workmhp    =as.double(workmhp),
- 		workvp     =as.double(workvp),
- 		xtx        =as.double(xtx),	 	
- 		xty        =as.double(xty), 		
- 		iflagr     =as.integer(iflagr),
- 		theta      =as.double(theta),
- 		thetac     =as.double(thetac),
-                workmhr    =as.double(workmhr),
-                workmhr2   =as.double(workmhr2),
-                workmr     =as.double(workmr),
-                workvr     =as.double(workvr),
- 		ztz        =as.double(ztz), 		
- 		zty        =as.double(zty), 		
- 		cstrt      =as.integer(cstrt),
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		quadf      =as.double(quadf),
- 		seed       =as.integer(seed),
-                betasave   =as.double(betasave),
-                bsave      =as.double(bsave),
-		PACKAGE    ="DPpackage")	
+							   maxni      =as.integer(maxni),         
+							   nrec       =as.integer(nrec),
+							   nsubject   =as.integer(nsubject),
+							   nfixed     =as.integer(nfixed),
+							   p          =as.integer(p),
+							   q          =as.integer(q),
+							   subject    =as.integer(newid),
+							   datastr    =as.integer(datastr), 	 	
+							   y          =as.double(resp),
+							   x          =as.double(x),	 	
+							   z          =as.double(z),
+							   roffset    =as.double(roffset),
+							   a0b0       =as.double(a0b0),
+							   prec       =as.double(prec),	  		
+							   sb         =as.double(sb),	  		
+							   nu         =as.integer(nu),
+							   tinv1      =as.double(tinv),	  		 		
+							   smu        =as.double(smu),	  		
+							   psiinv     =as.double(psiinv),	  		
+							   tinv2      =as.double(tbinv),
+							   tau        =as.double(tau),
+							   mcmc       =as.integer(mcmcvec),
+							   nsave      =as.integer(nsave),
+							   ncluster   =as.integer(ncluster),
+							   ss         =as.integer(ss),
+							   alpha      =as.double(alpha),		
+							   beta       =as.double(beta),
+							   b          =as.double(b),		
+							   betar      =as.double(betar),
+							   mu         =as.double(mu),
+							   sigma      =as.double(sigma),
+							   sigmainv   =as.double(sigmainv),
+							   mub        =as.double(mub),
+							   sigmab     =as.double(sigmab),
+							   sigmabinv  =as.double(sigmabinv),
+							   v          =as.double(v),
+							   mc         =as.double(mc), 		
+							   acrate     =as.double(acrate),
+							   cpo        =as.double(cpo),
+							   randsave   =as.double(randsave),
+							   thetasave  =as.double(thetasave),
+							   musave     =as.double(musave),
+							   clustsave  =as.integer(clustsave),
+							   iflagp     =as.integer(iflagp),
+							   betac      =as.double(betac), 
+							   workmhp    =as.double(workmhp),
+							   workvp     =as.double(workvp),
+							   xtx        =as.double(xtx),	 	
+							   xty        =as.double(xty), 		
+							   iflagr     =as.integer(iflagr),
+							   theta      =as.double(theta),
+							   thetac     =as.double(thetac),
+							   workmhr    =as.double(workmhr),
+							   workmhr2   =as.double(workmhr2),
+							   workmr     =as.double(workmr),
+							   workvr     =as.double(workvr),
+							   ztz        =as.double(ztz), 		
+							   zty        =as.double(zty), 		
+							   cstrt      =as.integer(cstrt),
+							   ccluster   =as.integer(ccluster),
+							   prob       =as.double(prob),
+							   quadf      =as.double(quadf),
+							   seed       =as.integer(seed),
+							   betasave   =as.double(betasave),
+							   bsave      =as.double(bsave),
+							   PACKAGE    ="DPpackage")	
             }
         }
  		
@@ -887,18 +893,18 @@ function(fixed,
        # save state
        #########################################################################################
 
-         mc<-foo$mc
-         names(mc)<-c("Dbar", "Dhat", "pD", "DIC","LPML")
+         mc <- foo$mc
+         names(mc) <- c("Dbar", "Dhat", "pD", "DIC","LPML")
 
-         dimen<-q+nfixed+dispp+q+nuniq+2
-         thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=dimen)
-         randsave<-matrix(foo$randsave,nrow=nsave, ncol=q*(nsubject+1))
-         musave<-matrix(foo$musave,nrow=nsave,ncol=q*nsubject)
-         clustsave<-matrix(foo$clustsave,nrow=nsave,ncol=nsubject)
+         dimen <- q+nfixed+dispp+q+nuniq+2
+         thetasave <- matrix(foo$thetasave,nrow=nsave, ncol=dimen)
+         randsave <- matrix(foo$randsave,nrow=nsave, ncol=q*(nsubject+1))
+         musave <- matrix(foo$musave,nrow=nsave,ncol=q*nsubject)
+         clustsave <- matrix(foo$clustsave,nrow=nsave,ncol=nsubject)
 
-         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)
-         cpo<-cpom[,1]         
-         fso<-cpom[,2]
+         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)
+         cpo <- cpom[,1]         
+         fso <- cpom[,2]
 
          if(nfixed==0)
          {
@@ -913,7 +919,7 @@ function(fixed,
             pnames1 <- c(colnames(z),colnames(x))
          }   
 
- 	 pnames2<-"phi"
+		 pnames2 <- "phi"
 
          pnames3 <- NULL
          for(i in 1:q)
@@ -933,9 +939,9 @@ function(fixed,
          {
             for(j in i:q)
             {
-               if(i==j) aa <-paste("sigmab",colnames(z)[i],sep="-")
-               if(i!=j) aa <-paste("sigmab",colnames(z)[i],colnames(z)[j],sep="-")
-               pnames5<-c(pnames5,aa)            
+               if(i==j) aa <- paste("sigmab",colnames(z)[i],sep="-")
+               if(i!=j) aa <- paste("sigmab",colnames(z)[i],colnames(z)[j],sep="-")
+               pnames5 <- c(pnames5,aa)            
             }
          }
 
@@ -973,56 +979,54 @@ function(fixed,
 
          coeff<-apply(thetasave,2,mean)		
 
-	 state <- list(alpha=foo$alpha,
-	               b=matrix(foo$b,nrow=nsubject,ncol=q),
-	               beta=foo$beta,
-	               mu=matrix(foo$mu,nrow=nsubject,ncol=q),
-	               mub=foo$mub,
-	               ncluster=foo$ncluster,
-	               sigma=matrix(foo$sigma,nrow=q,ncol=q),
-	               sigmab=matrix(foo$sigmab,nrow=q,ncol=q),
-	               sigma2e=foo$sigma2e,
-	               ss=foo$ss,
-	               phi=1/foo$v)
+		state <- list(	alpha=foo$alpha,
+						b=matrix(foo$b,nrow=nsubject,ncol=q),
+						beta=foo$beta,
+						mu=matrix(foo$mu,nrow=nsubject,ncol=q),
+						mub=foo$mub,
+						ncluster=foo$ncluster,
+						sigma=matrix(foo$sigma,nrow=q,ncol=q),
+						sigmab=matrix(foo$sigmab,nrow=q,ncol=q),
+						ss=foo$ss,
+						phi=1/foo$v)
 
-	 save.state <- list(thetasave=thetasave,
-	                    randsave=randsave,
-	                    musave=musave,
-	                    clustsave=clustsave)
+		save.state <- list(	thetasave=thetasave,
+							randsave=randsave,
+							musave=musave,
+							clustsave=clustsave)
 
 
-         z<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nsubject=
-                 foo$nsubject,
-                 nfixed=foo$nfixed,
-                 nrandom=foo$q,
-                 cpo=cpo,
-                 fso=fso,
-                 alphapr=alphapr,
-                 prior=prior,
-                 namesre1=namesre,
-                 namesre2=colnames(z),
-                 z=z,
-                 x=x,
-                 mf=mf,
-                 dimen=dimen,
-                 acrate=foo$acrate,
-                 y=resp,
-                 dispp=dispp,
-                 possiP=possiP,
-                 fixed=fixed,
-                 mc=mc)
+         z <- list(	modelname=model.name,
+					coefficients=coeff,
+					call=cl,
+					prior=prior,
+					mcmc=mcmc,
+					state=state,
+					save.state=save.state,
+					nrec=foo$nrec,
+					nsubject=foo$nsubject,
+					nfixed=foo$nfixed,
+					nrandom=foo$q,
+					cpo=cpo,
+					fso=fso,
+					alphapr=alphapr,
+					prior=prior,
+					namesre1=namesre,
+					namesre2=colnames(z),
+					z=z,
+					x=x,
+					mf=mf,
+					dimen=dimen,
+					acrate=foo$acrate,
+					y=resp,
+					dispp=dispp,
+					possiP=possiP,
+					fixed=fixed,
+					mc=mc)
                  
          cat("\n\n")        
 
-         class(z)<-c("DPMglmm")
+         class(z) <- c("DPMglmm")
          return(z) 
 }
 

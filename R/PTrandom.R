@@ -21,13 +21,15 @@
 ### The author's contact information:
 ###
 ###      Alejandro Jara
-###      Biostatistical Centre
-###      Katholieke Universiteit Leuven
-###      U.Z. Sint-Rafaël
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
-###      Voice: +32 (0)16 336892  URL  : http://student.kuleuven.be/~s0166452/
-###      Fax  : +32 (0)16 337015  Email: Alejandro.JaraVallejos@med.kuleuven.be
+###      Department of Statistics
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
+###      Avenida Esteban Iturra S/N
+###      Barrio Universitario
+###      Concepcion
+###      Chile
+###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
+###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 
 "PTrandom"<-

@@ -64,6 +64,7 @@ DPsurvint(formula,prior,mcmc,state,status,
   This generic function fits a Mixture of Dirichlet process in a AFT regression model
   for interval censored data (Hanson and Johnson, 2004):
   \deqn{T_i = exp(- X_i \beta) V_i, i=1,\ldots,n}{Ti = exp(- Xi beta) Vi, i=1,\ldots,n}
+  \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{\beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
   \deqn{V_i | G \sim G}{Vi | G ~ G}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
   

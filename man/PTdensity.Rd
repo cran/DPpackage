@@ -11,7 +11,7 @@
   
 \usage{
 
-PTdensity(y,ngrid=1000,prior,mcmc,state,status,
+PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
           data=sys.frame(sys.parent()),na.action=na.fail)      
       
 }
@@ -23,6 +23,12 @@ PTdensity(y,ngrid=1000,prior,mcmc,state,status,
     \item{ngrid}{    number of grid points where the density estimate is 
                      evaluated. This is only used if dimension of \code{y}
                      is lower or equal than 2. The default value is 1000.}
+
+    \item{grid}{     matrix of dimension ngrid*nvar of grid points where the density estimate is 
+                     evaluated. This is only used if dimension of \code{y}
+                     is lower or equal than 2. The default value is NULL
+                     and the grid is chosen according to the range of the
+	             data.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for

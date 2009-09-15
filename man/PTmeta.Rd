@@ -81,17 +81,17 @@ PTmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 
   \deqn{y_i \sim N(\theta_i +X_i \beta, \sigma^2_{ei}), i=1,\ldots,n}{yi ~ N(thetai+ Xi beta, sigma2ei), i=1,\ldots,n}
   \deqn{\theta_i | G \sim G}{thetai | G ~ G}
-  \deqn{G | \alpha,\mu,\sigma \sim PT(\Pi^{\mu,\sigma},\textit{A})}{G | alpha,mu,sigma ~ PT(Pi^{mu,sigma},\textit{A})}
+  \deqn{G | \alpha,\mu,\sigma \sim PT(\Pi^{\mu,\sigma},\textit{A})}{G | alpha,mu,sigma ~ PT(Pi^{mu,sigma^2},\textit{A})}
 
-  where the PT prior is centered around a \eqn{N(\mu,\sigma)}{N(mu,sigma)} distribution. 
+  where the PT prior is centered around a \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution. 
   If \code{frstlprob} is equal to TRUE, \eqn{\mu=0}{mu=0} and a median zero PT prior 
-  is considered (see, Branscum and Hanson, 2006).
+  is considered (see, Branscum and Hanson, 2008).
  
   To complete the model specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
   \deqn{\mu | \mu_b, S_b \sim N(\mu_b,S_b)}{mu | mub, Sb ~ N(mub,Sb)}
-  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
+  \deqn{\sigma^{-2} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-2 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
 
   The precision parameter, \eqn{\alpha}, of the \code{PT} prior 
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
@@ -99,16 +99,16 @@ PTmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   The computational implementation of the model is based on the marginalization of
   the \code{PT} and on the MCMC algorihtms described in Hanson (2006) and 
-  Jara, Hanson and Lesaffre (2007).
+  Jara, Hanson and Lesaffre (2009).
   
-  The average effect is sampled using the method of composition described in Jara, Hanson and Lesaffre (2007).  
+  The average effect is sampled using the method of composition described in Jara, Hanson and Lesaffre (2009).  
 }
 
 \value{
   An object of class \code{PTmeta} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
-  The results include \code{beta}, \code{mu}, \code{sigma}, and \code{alpha}.
+  The results include \code{beta}, \code{mu}, \code{sigma2}, and \code{alpha}.
   
   The function \code{PTrandom} can be used to extract the posterior mean of the 
   random effects.
@@ -127,7 +127,7 @@ PTmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   \item{mu}{ giving the mean of the normal baseline distributions.} 
   
-  \item{sigma}{ giving the variance of the normal baseline distributions.}
+  \item{sigma2}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{
@@ -138,19 +138,19 @@ PTmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
 }
 
 \references{
-Branscum, A. and Hanson, T. (2006) Bayesian nonparametric meta-analysis 
-   using Polya tree mixture models.
+Branscum, A. and Hanson, T. (2008) Bayesian nonparametric meta-analysis 
+   using Polya tree mixture models. Biometrics, 64: 825-833.
 
 Christensen, R., Hanson, T.  Jara, A.. 2008. Parametric Nonparametric Statistics: An 
-  Introduction to Mixtures of Finite Polya Trees Models. To appear in The American 
-  Statistician.
+  Introduction to Mixtures of Finite Polya Trees Models. The American 
+  Statistician, 62: 296-306.
 
 Hanson, T. (2006) Inference for Mixtures of Finite Polya Trees.
   Journal of the American Statistical Association, 101: 1548-1565.
 
-Jara, A., Hanson, T., and Lesaffre, E. (2007) Robustiying Generalized Linear 
-  Mixed Models using Mixtures of Multivariate Polya Trees. Technical Report. Biostatistical 
-  Centre, Catholic University of Leuven.
+Jara, A., Hanson, T., and Lesaffre, E. (2009) Robustifying Generalized Linear 
+  Mixed Models using a New Class of Mixtures of Multivariate Polya Trees. Journal of Computational 
+  and Graphical Statistics (To appear).
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.

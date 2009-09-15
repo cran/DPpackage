@@ -23,24 +23,22 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Físicas y Matemáticas
-###      Universidad de Concepción
+###      Facultad de Ciencias Fisicas y Matematicas
+###      Universidad de Concepcion
 ###      Avenida Esteban Iturra S/N
 ###      Barrio Universitario
-###      Concepción
+###      Concepcion
 ###      Chile
 ###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
 ###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
 ###
 ###      Fernando Quintana
-###      Departamento de Estadística 
-###      Facultad de Matemáticas 
-###      Pontificia Universidad Católica de Chile 
+###      Departamento de Estadistica 
+###      Facultad de Matematicas 
+###      Pontificia Universidad Catolica de Chile 
 ###      Casilla 306, Correo 22 
-###      Kapucijnenvoer 35
-###      B-3000 Leuven
 ###      Voice: +56-2-3544464  URL  : http://www.mat.puc.cl/~quintana
-###      Fax  : +56-2-3547229  Email: quintana@,at.puc.cl
+###      Fax  : +56-2-3547229  Email: quintana@mat.puc.cl
 
 
 BDPdensity<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)

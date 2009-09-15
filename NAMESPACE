@@ -1,5 +1,8 @@
 useDynLib(DPpackage)
 
+import(MASS)
+import(nlme)
+
 export( 
         BDPdensity,
         BDPdensity.default,
@@ -34,6 +37,10 @@ export(
         DPMrandom.default,
         DPMolmm,
         DPMolmm.default,
+        DPMrasch,
+        DPMrasch.default,
+        DPMraschpoisson,
+        DPMraschpoisson.default,
         DPolmm,
         DPolmm.default,
         DPpsBF,        
@@ -53,10 +60,18 @@ export(
         FPTrasch.default,
         FPTraschpoisson,
         FPTraschpoisson.default,
+	HDPMdensity,
+	HDPMdensity.default,
+	HDPMcdensity,
+	HDPMcdensity.default,
         LDDPdensity,
         LDDPdensity.default,
         LDDPsurvival,
         LDDPsurvival.default,
+        LDDPrasch,
+        LDDPrasch.default,
+        LDDPraschpoisson,
+        LDDPraschpoisson.default,
         Pbinary,
         Pbinary.default,
         Plm,
@@ -175,6 +190,16 @@ S3method(summary, DPMolmm)
 S3method(print, summaryDPMolmm)
 S3method(anova, DPMolmm)
 
+S3method(print, DPMrasch)
+S3method(plot, DPMrasch)
+S3method(summary, DPMrasch)
+S3method(print, summaryDPMrasch)
+
+S3method(print, DPMraschpoisson)
+S3method(plot, DPMraschpoisson)
+S3method(summary, DPMraschpoisson)
+S3method(print, summaryDPMraschpoisson)
+
 S3method(print, DPolmm)
 S3method(plot, DPolmm)
 S3method(summary, DPolmm)
@@ -224,6 +249,18 @@ S3method(plot, FPTraschpoisson)
 S3method(summary, FPTraschpoisson)
 S3method(print, summaryFPTraschpoisson)
 
+S3method(print, HDPMdensity)
+S3method(plot,  HDPMdensity)
+S3method(summary, HDPMdensity)
+S3method(print, summaryHDPMdensity)
+S3method(predict, HDPMdensity)
+
+S3method(print, HDPMcdensity)
+S3method(plot,  HDPMcdensity)
+S3method(summary, HDPMcdensity)
+S3method(print, summaryHDPMcdensity)
+S3method(predict, HDPMcdensity)
+
 S3method(print, LDDPdensity)
 S3method(plot, LDDPdensity)
 S3method(summary, LDDPdensity)
@@ -233,6 +270,11 @@ S3method(print, LDDPsurvival)
 S3method(plot, LDDPsurvival)
 S3method(summary, LDDPsurvival)
 S3method(print, summaryLDDPsurvival)
+
+S3method(print, LDDPrasch)
+S3method(plot, LDDPrasch)
+S3method(summary, LDDPrasch)
+S3method(print, summaryLDDPrasch)
 
 S3method(print, Pbinary)
 S3method(plot, Pbinary)

@@ -32,7 +32,7 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
                      must be specified if \code{a0} and \code{b0} are missing, see details
                      below), \code{tau1} and \code{tau2} giving the hyperparameters for the 
                      prior distribution of the variance of the centering distribution,
-                     \code{sigma} giving the value of the variance
+                     \code{sigma2} giving the value of the variance
                      of the centering distribution (it must be specified if 
                      \code{tau1} and \code{tau2} are missing),
                      \code{mub} and \code{Sb} giving the hyperparameters 
@@ -76,12 +76,12 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   \deqn{\theta_i | G \sim G}{thetai | G ~ G}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
 
-  where, \eqn{G_0=N(\theta| \mu, \sigma)}{G0=N(theta| mu, sigma)}.  To complete the model 
+  where, \eqn{G_0=N(\theta| \mu, \sigma^2)}{G0=N(theta| mu, sigma2)}.  To complete the model 
   specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
   \deqn{\mu | \mu_b, S_b \sim N(\mu_b,S_b)}{mu | mub, Sb ~ N(mub,Sb)}
-  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
+  \deqn{\sigma^{-2} | \tau_1, \tau_2 \sim Gamma(\tau_1/2,\tau_2/2)}{sigma^-2 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
 
   The precision or total mass parameter, \eqn{\alpha}, of the \code{DP} prior 
   can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
@@ -102,7 +102,7 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   An object of class \code{DPmeta} representing the linear
   mixed-effects model fit. Generic functions such as \code{print}, \code{plot},
   \code{summary}, and \code{anova} have methods to show the results of the fit. 
-  The results include \code{beta}, \code{mu}, \code{sigma}, \code{\alpha}, and the 
+  The results include \code{beta}, \code{mu}, \code{sigma2}, \code{alpha}, and the 
   number of clusters.
   
   The function \code{DPrandom} can be used to extract the posterior mean of the 
@@ -129,7 +129,7 @@ DPmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
   
   \item{mu}{ giving the mean of the normal baseline distributions.} 
   
-  \item{sigma}{ giving the variance of the normal baseline distributions.}
+  \item{sigma2}{ giving the variance of the normal baseline distributions.}
 }
 
 \seealso{
