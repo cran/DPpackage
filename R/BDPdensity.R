@@ -1,7 +1,7 @@
 ### BDPdensity.R                   
 ### For density estimation using a Bernstein-Dirichlet prior
 ###
-### Copyright: Alejandro Jara and Fernando Quintana, 2007-2009.
+### Copyright: Alejandro Jara and Fernando Quintana, 2007-2010.
 ###
 ### Last modification: 16-04-2007.
 ###

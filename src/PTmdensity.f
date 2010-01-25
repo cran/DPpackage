@@ -1,6 +1,6 @@
 c=======================================================================                      
       subroutine ptmdensity(ngrid,nrec,nvar,y,
-     &                      ab,
+     &                      ab,murand,sigmarand,jfr,m0,s0,nu0,tinv,
      &                      mcmcvec,nsave,tune1,tune2,tune3,
      &                      acrate,cpo,f,randsave,thetasave,
      &                      cpar,mu,sigma,
@@ -10,7 +10,7 @@ c=======================================================================
      &                      parti,pattern,patterns,
      &                      s,sigmainv,sigmainvc,
      &                      ybar,z,zc,zwork,vv,
-     &                      workmh,workh1,workh2,workm2,
+     &                      workmh,workh1,workh2,workm1,workm2,
      &                      muc,sigmac,propv,propv1,propv2,
      &                      seed)
 c=======================================================================                  
@@ -21,11 +21,17 @@ c     The Multivariate Finite Polya Tree is centered in a multivariate
 c     N(mu,sigma) distribution. The Jeffery's prior is used for mu and
 c     sigma.
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
-c     Version 1.0: 
+c     Version 2.0: 
 c
-c     Last modification: 12-12-2006.
+c     Last modification: 25-01-2010.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Centering parameters can be fixed.
+c          - Proper prior can be used on the centering parameters.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -71,6 +77,17 @@ c        ca, cb      :  real giving the hyperparameters of the prior
 c                       distribution for the precision parameter,
 c                       c ~ Gamma(ca,cb). If ca<0 the precision 
 c                       parameter is considered as a constant.
+c        jfr         :  integer vector indicating whether Jeffery's
+c                       prior is used for the centering parameters.
+c        m0          :  real vector giving the mean of the normal prior
+c                       for the centering mean.
+c        s0          :  real matrix giving the precision of the normal
+c                       prior for the centering mean.
+c        nu0         :  integer giving the prior degrees of freedom
+c                       for the centering covariance matrix.
+c        tinv        :  real matrix giving the scale matrix for the
+c                       inv-wishart prior for the centering covariance
+c                       matrix.
 c
 c-----------------------------------------------------------------------
 c
@@ -230,6 +247,7 @@ c        whichn      :  integer vector giving the observation in each
 c                       partition, whichn(nrec).
 c        workh1      :  real working vector, workh1(nvar*(nvar+1)/2)
 c        workh2      :  real working vector, workh2(nvar*(nvar+1)/2)
+c        workm1      :  real working matrix, workm1(nvar,nvar)
 c        workm2      :  real working matrix, workm2(nvar,nvar)
 c        workmh      :  real working vector, workmh(nvar*(nvar+1)/2)
 c        ybar        :  real vector giving the sample mean, ybar(nvar).
@@ -249,6 +267,9 @@ c+++++Data
 
 c+++++Prior information
       real*8 ab(2),ca,cb
+      integer murand,sigmarand,jfr(2),nu0
+      real*8 m0(nvar),s0(nvar,nvar)
+      real*8 tinv(nvar,nvar)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
@@ -301,6 +322,7 @@ c+++++Working space - General
       real*8 vv(nvar)
       real*8 workmh(nvar*(nvar+1)/2)
       real*8 workh1(nvar*(nvar+1)/2),workh2(nvar*(nvar+1)/2)
+      real*8 workm1(nvar,nvar)
       real*8 workm2(nvar,nvar)
       
 c+++++Working space - MCMC scans
@@ -317,7 +339,7 @@ c+++++Working space - MH steps
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      real*8 rtnorm,rtlnorm
+      real*8 rtnorm,rtlnorm,rnorm
       real runif
 
 c++++ initialize variables
@@ -389,12 +411,10 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             propv(i,j)=sigma(i,j)
          end do
       end do
-
       call invdet(propv,nvar,sigmainv,detlogl,iflag,vv)
 
       do i=1,nvar
          do j=1,nvar
-c            propv(i,j)=sigma(i,j)
             propv(i,j)=0.d0            
          end do
       end do
@@ -403,10 +423,10 @@ c            propv(i,j)=sigma(i,j)
       
       do i=1,nvar
          do j=1,i
-            propv(i,j)=workmh(ihmssf(i,j,nvar))
+            sigmainv(i,j)=workmh(ihmssf(i,j,nvar))
          end do
       end do
-      call invdet(propv,nvar,sigmainv,detlog1,iflag,vv)
+      call inverse(sigmainv,nvar,iflag)
       
       do i=1,nrec
 
@@ -542,6 +562,7 @@ c+++++++ following observations
         
       end do
 
+c      call dblepr("loglik",-1,logliko,1)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Scanning the posterior distribution
@@ -556,165 +577,189 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating mu using a MH step                  +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-         do i=1,nvar
-            do j=1,nvar
-               propv(i,j)=tune1*s(i,j)/dble(nrec)
-            end do
-         end do
-         
-         call rmvnorm(nvar,mu,propv,workmh,vv,muc)
+         if(murand.eq.1)then
 
-         loglikn=0.d0
+            do i=1,nvar
+               do j=1,nvar
+                  propv(i,j)=tune1*s(i,j)/dble(nrec)
+               end do
+            end do
+         
+            call rmvnorm(nvar,mu,propv,workmh,vv,muc)
+
+            loglikn=0.d0
       
-         do i=1,nrec
+            do i=1,nrec
 
-            do j=1,nvar
-               zc(i,j)=y(i,j)-muc(j)
-            end do
-         
-            do j=1,nvar
-               tmp1=0.d0
-               do k=1,nvar
-                  tmp1=tmp1+sigmainv(j,k)*zc(i,k)   
-               end do
-               zwork(j)=tmp1
-            end do
-         
-            do j=1,nvar
-               zc(i,j)=zwork(j)
-            end do
-
-c++++++++++ check if the user has requested an interrupt
-            call rchkusr()
-
-c++++++++++ first observation
-            if(i.eq.1)then
-               loglikn=-0.5d0*detlogl
                do j=1,nvar
-                  loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
-               end do   
-
-c++++++++++ following observations
-             else
-
-               nint=2
-               prob=1.d0/dble(nint)
-               quan=invcdfnorm(prob,0.d0,1.d0,1,0)
-
-               countero=0
-            
-               do j=1,nvar
-                  if(zc(i,j).le.quan)then
-                     linf(j)=-999.d0
-                     lsup(j)=quan
-                     parti(j)=1
-                   else
-                     linf(j)=quan
-                     lsup(j)=999.d0
-                     parti(j)=2
-                  end if
+                  zc(i,j)=y(i,j)-muc(j)
                end do
-           
-               do l=1,i-1
-                  final=1
+         
+               do j=1,nvar
+                  tmp1=0.d0
+                  do k=1,nvar
+                     tmp1=tmp1+sigmainv(j,k)*zc(i,k)   
+                  end do
+                  zwork(j)=tmp1
+               end do
+         
+               do j=1,nvar
+                  zc(i,j)=zwork(j)
+               end do
+
+c+++++++++++++ check if the user has requested an interrupt
+               call rchkusr()
+
+c+++++++++++++ first observation
+               if(i.eq.1)then
+                  loglikn=-0.5d0*detlogl
                   do j=1,nvar
-                     if(zc(l,j).gt.lsup(j).or.zc(l,j).lt.linf(j))then
-                       final=0
+                     loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
+                  end do   
+
+c+++++++++++++ following observations
+                else
+
+                  nint=2
+                  prob=1.d0/dble(nint)
+                  quan=invcdfnorm(prob,0.d0,1.d0,1,0)
+
+                  countero=0
+            
+                  do j=1,nvar
+                     if(zc(i,j).le.quan)then
+                        linf(j)=-999.d0
+                        lsup(j)=quan
+                        parti(j)=1
+                      else
+                        linf(j)=quan
+                        lsup(j)=999.d0
+                        parti(j)=2
                      end if
                   end do
+           
+                  do l=1,i-1
+                     final=1
+                     do j=1,nvar
+                        if(zc(l,j).gt.lsup(j).or.zc(l,j).lt.linf(j))then
+                          final=0
+                        end if
+                     end do
                
-                  if(final.eq.1)then
-                     countero=countero+1
-                     whicho(countero)=l
-                  end if   
-               end do
+                     if(final.eq.1)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
             
-               loglikn=loglikn+
+                  loglikn=loglikn+
      &              log((2.d0**nvar)*cpar+dble((2.d0**nvar)*countero))-
      &              log((2.d0**nvar)*cpar+dble(i-1))
 
-               if(countero.eq.0) go to 2
+                  if(countero.eq.0) go to 2
 
-               ok=1
-               j=2
-               do while(ok.eq.1.and.j.le.20000)
-                  nint=2**j
-                  je2=j**2
-                  prob=1.d0/dble(nint)
+                  ok=1
+                  j=2
+                  do while(ok.eq.1.and.j.le.20000)
+                     nint=2**j
+                     je2=j**2
+                     prob=1.d0/dble(nint)
 
-                  do k=1,nvar
-                     k1=2*(parti(k)-1)+1
-                     k2=2*(parti(k)-1)+2
-                     quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
-               
-                     if(zc(i,k).le.quan)then
-                       parti(k)=k1 
-                       lsup(k)=quan
-                      else 
-                       parti(k)=k2
-                       linf(k)=quan
-                     end if
-                  end do                 
-               
-                  countern=0
-                  do l=1,countero
-                     final=1
                      do k=1,nvar
-                        if(zc(whicho(l),k).gt.lsup(k).or.
-     &                     zc(whicho(l),k).lt.linf(k)    )then
+                        k1=2*(parti(k)-1)+1
+                        k2=2*(parti(k)-1)+2
+                        quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
+               
+                        if(zc(i,k).le.quan)then
+                          parti(k)=k1 
+                          lsup(k)=quan
+                         else 
+                          parti(k)=k2
+                          linf(k)=quan
+                        end if
+                     end do                 
+               
+                     countern=0
+                     do l=1,countero
+                        final=1
+                        do k=1,nvar
+                           if(zc(whicho(l),k).gt.lsup(k).or.
+     &                        zc(whicho(l),k).lt.linf(k)    )then
                         
-                           final=0 
-                        end if   
-                     end do
+                              final=0 
+                          end if   
+                        end do
                   
-                     if(final.eq.1)then
-                       countern=countern+1
-                       whichn(countern)=whicho(l)
-                     end if
+                        if(final.eq.1)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                        end if
+                     end do
+
+                     loglikn=loglikn+
+     &                log((2.d0**nvar)*cpar*dble(je2)+
+     &                  dble((2.d0**nvar)*countern))-
+     &                log((2.d0**nvar)*cpar*dble(je2)+dble(countero))
+
+                     if(countern.eq.0)then
+                        ok=0
+                      else  
+                        countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
+                        j=j+1
+                     end if   
                   end do
 
-                  loglikn=loglikn+
-     &              log((2.d0**nvar)*cpar*dble(je2)+
-     &                  dble((2.d0**nvar)*countern))-
-     &              log((2.d0**nvar)*cpar*dble(je2)+dble(countero))
+2                 continue
 
-                  if(countern.eq.0)then
-                     ok=0
-                   else  
-                     countero=countern
-                     do l=1,countern
-                        whicho(l)=whichn(l)
-                     end do
-                     j=j+1
-                  end if   
-               end do
-
-2              continue
-
-               loglikn=loglikn-0.5d0*detlogl
-               do j=1,nvar
-                  loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
-               end do   
+                  loglikn=loglikn-0.5d0*detlogl
+                  do j=1,nvar
+                     loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
+                  end do   
             
-            end if
+               end if
         
-         end do
-
-c+++++++ acceptance step
-
-         ratio=dexp(loglikn-logliko)
-
-         if(dble(runif()).lt.ratio)then
-            do i=1,nvar
-               mu(i)=muc(i)
             end do
-            do i=1,nrec
-               do j=1,nvar
-                  z(i,j)=zc(i,j)
-               end do   
-            end do
-            logliko=loglikn
-            acrate(1)=acrate(1)+1.d0
+
+c++++++++++ acceptance step
+
+            logpriorn=0.d0
+            logprioro=0.d0
+
+            if(jfr(1).eq.0)then
+               do i=1,nvar
+                  do j=1,nvar
+                     logpriorn=logpriorn+(muc(i)-m0(i))* 
+     &                                    s0(i,j)    *
+     &                                   (muc(j)-m0(j))
+
+                     logprioro=logprioro+(mu(i)-m0(i))* 
+     &                                    s0(i,j)    *
+     &                                   (mu(j)-m0(j))
+                  end do
+               end do
+         
+               logpriorn=-0.5d0*logpriorn
+               logprioro=-0.5d0*logprioro
+            end if
+
+            ratio=loglikn-logliko+logpriorn-logprioro
+
+            if(log(dble(runif())).lt.ratio)then
+               do i=1,nvar
+                  mu(i)=muc(i)
+               end do
+               do i=1,nrec
+                  do j=1,nvar
+                     z(i,j)=zc(i,j)
+                  end do   
+               end do
+               logliko=loglikn
+               acrate(1)=acrate(1)+1.d0
+            end if
+
          end if
 
          
@@ -722,276 +767,284 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating sigma using a MH step               +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+         if(sigmarand.eq.1)then
 
-c+++++++ Candidate generating kernel
+c++++++++++ Candidate generating kernel
 
-         nu=dble(nrec)*tune2
+            nu=dble(nrec)*tune2
          
-         do i=1,nvar
-            do j=1,nvar
-               sigmac(i,j)=(nu-dble(nvar+1))*sigma(i,j)
-            end do
-         end do
-
-         call riwishart(nvar,int(nu),sigmac,sigmainvc,workm2,vv,
-     &                  workh1,workh2,iflag)
-
-         do i=1,nvar
-            do j=1,nvar
-               propv1(i,j)=sigma(i,j)
-            end do
-         end do
-         call invdet(propv1,nvar,sigmainv,detlog1,iflag,vv)
-
-         do i=1,nvar
-            do j=1,nvar
-               propv2(i,j)=sigmac(i,j)
-            end do
-         end do
-         call invdet(propv2,nvar,propv,detlog2,iflag,vv)
-
-         logcgkn=0.d0
-         logcgkn=-(nu+dble(nvar+1))*detlog1
-         logcgkn=logcgkn+nu*detlog2
-
-         tmp2=0.d0
-         do i=1,nvar
-            do j=1,nvar
-               tmp1=0.d0 
-               do k=1,nvar
-                  tmp1=tmp1+(nu-dble(nvar+1))*
-     &                       sigmac(i,k)*sigmainv(k,j)        
-               end do
-               if(i.eq.j)tmp2=tmp2+tmp1
-            end do
-         end do   
-         logcgkn=logcgkn-tmp2
-         logcgkn=logcgkn/dble(2)
-
-         logcgko=0.d0
-         logcgko=-(nu+dble(nvar+1))*detlog2
-         logcgko=logcgko+nu*detlog1
-         
-         tmp2=0.d0
-         do i=1,nvar
-            do j=1,nvar
-               tmp1=0.d0 
-               do k=1,nvar
-                  tmp1=tmp1+(nu-dble(nvar+1))*
-     &                       sigma(i,k)*sigmainvc(k,j)        
-               end do
-               if(i.eq.j)tmp2=tmp2+tmp1
-            end do
-         end do   
-         logcgko=logcgko-tmp2
-         logcgko=logcgko/dble(2)
-
-c+++++++ End candidate generating kernel
-
-         loglikn=0.d0
-      
-         do i=1,nvar
-            do j=1,nvar
-               propv(i,j)=sigmac(i,j)
-            end do
-         end do
-
-         call invdet(propv,nvar,sigmainvc,detloglc,iflag,vv)
-
-         do i=1,nvar
-            do j=1,nvar
-c                propv(i,j)=sigmac(i,j)
-                propv(i,j)=0.d0 
-            end do
-         end do
-         call cholesky(nvar,sigmac,workmh)
-      
-         do i=1,nvar
-            do j=1,i
-               propv(i,j)=workmh(ihmssf(i,j,nvar))
-            end do
-         end do
-         call invdet(propv,nvar,sigmainvc,detlog3,iflag,vv)
-      
-
-         do i=1,nrec
-
-            do j=1,nvar
-               zc(i,j)=y(i,j)-mu(j)
-            end do
-         
-            do j=1,nvar
-               tmp1=0.d0
-               do k=1,nvar
-                  tmp1=tmp1+sigmainvc(j,k)*zc(i,k)   
-               end do
-               zwork(j)=tmp1
-            end do
-         
-            do j=1,nvar
-               zc(i,j)=zwork(j)
-            end do
-
-c++++++++++ check if the user has requested an interrupt
-            call rchkusr()
-
-c++++++++++ first observation
-            if(i.eq.1)then
-               loglikn=-0.5d0*detloglc
+            do i=1,nvar
                do j=1,nvar
-                  loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
-               end do   
+                  sigmac(i,j)=(nu-dble(nvar+1))*sigma(i,j)
+               end do
+            end do
 
-c++++++++++ following observations
-             else
+            call riwishart(nvar,int(nu),sigmac,sigmainvc,workm2,vv,
+     &                     workh1,workh2,iflag)
 
-               nint=2
-               prob=1.d0/dble(nint)
-               quan=invcdfnorm(prob,0.d0,1.d0,1,0)
-
-               countero=0
-            
+            do i=1,nvar
                do j=1,nvar
-                  if(zc(i,j).le.quan)then
-                     linf(j)=-999.d0
-                     lsup(j)=quan
-                     parti(j)=1
-                   else
-                     linf(j)=quan
-                     lsup(j)=999.d0
-                     parti(j)=2
-                  end if
+                  propv1(i,j)=sigma(i,j)
                end do
-           
-               do l=1,i-1
-                  final=1
-                  do j=1,nvar
-                     if(zc(l,j).gt.lsup(j).or.zc(l,j).lt.linf(j))then
-                       final=0
-                     end if
-                  end do
-               
-                  if(final.eq.1)then
-                     countero=countero+1
-                     whicho(countero)=l
-                  end if   
+            end do
+            call invdet(propv1,nvar,sigmainv,detlog1,iflag,vv)
+
+            do i=1,nvar
+               do j=1,nvar
+                  propv2(i,j)=sigmac(i,j)
                end do
-            
-               loglikn=loglikn+
-     &              log((2.d0**nvar)*cpar+dble((2.d0**nvar)*countero))-
-     &              log((2.d0**nvar)*cpar+dble(i-1))
+            end do
+            call invdet(propv2,nvar,propv,detlog2,iflag,vv)
 
-               if(countero.eq.0) go to 3
+            logcgkn=0.d0
+            logcgkn=-(nu+dble(nvar+1))*detlog1
+            logcgkn=logcgkn+nu*detlog2
 
-               ok=1
-               j=2
-               do while(ok.eq.1.and.j.le.20000)
-                  nint=2**j
-                  je2=j**2
-                  prob=1.d0/dble(nint)
-
+            tmp2=0.d0
+            do i=1,nvar
+               do j=1,nvar
+                  tmp1=0.d0 
                   do k=1,nvar
-                     k1=2*(parti(k)-1)+1
-                     k2=2*(parti(k)-1)+2
-                     quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
-               
-                     if(zc(i,k).le.quan)then
-                       parti(k)=k1 
-                       lsup(k)=quan
-                      else 
-                       parti(k)=k2
-                       linf(k)=quan
-                     end if
-                  end do                 
-               
-                  countern=0
-                  do l=1,countero
-                     final=1
-                     do k=1,nvar
-                        if(zc(whicho(l),k).gt.lsup(k).or.
-     &                     zc(whicho(l),k).lt.linf(k)    )then
-                        
-                           final=0 
-                        end if   
-                     end do
-                  
-                     if(final.eq.1)then
-                       countern=countern+1
-                       whichn(countern)=whicho(l)
-                     end if
+                     tmp1=tmp1+(nu-dble(nvar+1))*
+     &                          sigmac(i,k)*sigmainv(k,j)        
                   end do
-
-                  loglikn=loglikn+
-     &              log((2.d0**nvar)*cpar*dble(je2)+
-     &                  dble((2.d0**nvar)*countern))-
-     &              log((2.d0**nvar)*cpar*dble(je2)+dble(countero))
-
-                  if(countern.eq.0)then
-                     ok=0
-                   else  
-                     countero=countern
-                     do l=1,countern
-                        whicho(l)=whichn(l)
-                     end do
-                     j=j+1
-                  end if   
+                  if(i.eq.j)tmp2=tmp2+tmp1
                end do
+            end do   
+            logcgkn=logcgkn-tmp2
+            logcgkn=logcgkn/dble(2)
 
-3              continue
-
-               loglikn=loglikn-0.5d0*detloglc
-               do j=1,nvar
-                  loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
-               end do   
-            
-            end if
-        
-         end do
-
-c+++++++ acceptance step
+            logcgko=0.d0
+            logcgko=-(nu+dble(nvar+1))*detlog2
+            logcgko=logcgko+nu*detlog1
          
-         tmp1= -(dble(nvar+1)/dble(2))*(detlog2 - detlog1)
-
-         ratio=dexp(loglikn-logliko+logcgkn-logcgko + tmp1)
-
-         if(dble(runif()).lt.ratio)then
+            tmp2=0.d0
             do i=1,nvar
                do j=1,nvar
-                  sigma(i,j)=sigmac(i,j)
-                  sigmainv(i,j)=sigmainvc(i,j)
+                  tmp1=0.d0 
+                  do k=1,nvar
+                     tmp1=tmp1+(nu-dble(nvar+1))*
+     &                          sigma(i,k)*sigmainvc(k,j)        
+                  end do
+                  if(i.eq.j)tmp2=tmp2+tmp1
                end do
-            end do
-            do i=1,nrec
-               do j=1,nvar
-                  z(i,j)=zc(i,j)
-               end do   
-            end do 
-            detlogl=detloglc
-            logliko=loglikn
-            acrate(2)=acrate(2)+1.d0
-          else
-            do i=1,nvar
-               do j=1,nvar
-                  propv(i,j)=sigma(i,j)
-               end do
-            end do
+            end do   
+            logcgko=logcgko-tmp2
+            logcgko=logcgko/dble(2)
 
-            call invdet(propv,nvar,sigmainv,detlogl,iflag,vv)
+c++++++++++ End candidate generating kernel
 
-            do i=1,nvar
-               do j=1,nvar
-                  propv(i,j)=sigma(i,j)
-               end do
-            end do
+            loglikn=0.d0
       
-            call cholesky(nvar,sigma,workmh)
+            do i=1,nvar
+               do j=1,nvar
+                  propv(i,j)=sigmac(i,j)
+               end do
+            end do
+            call invdet(propv,nvar,sigmainvc,detloglc,iflag,vv)
+
+            do i=1,nvar
+               do j=1,nvar
+                   propv(i,j)=0.d0 
+               end do
+            end do
+            call cholesky(nvar,sigmac,workmh)
       
             do i=1,nvar
                do j=1,i
-                  propv(i,j)=workmh(ihmssf(i,j,nvar))
+                  sigmainvc(i,j)=workmh(ihmssf(i,j,nvar))
                end do
             end do
-            call invdet(propv,nvar,sigmainv,detlog1,iflag,vv)
+            call inverse(sigmainvc,nvar,iflag)
+
+            do i=1,nrec
+
+               do j=1,nvar
+                  zc(i,j)=y(i,j)-mu(j)
+               end do
+         
+               do j=1,nvar
+                  tmp1=0.d0
+                  do k=1,nvar
+                     tmp1=tmp1+sigmainvc(j,k)*zc(i,k)   
+                  end do
+                  zwork(j)=tmp1
+               end do
+         
+               do j=1,nvar
+                  zc(i,j)=zwork(j)
+               end do
+
+c+++++++++++++ check if the user has requested an interrupt
+               call rchkusr()
+
+c+++++++++++++ first observation
+               if(i.eq.1)then
+                  loglikn=-0.5d0*detloglc
+                  do j=1,nvar
+                     loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
+                  end do   
+
+c+++++++++++++ following observations
+                else
+
+                  nint=2
+                  prob=1.d0/dble(nint)
+                  quan=invcdfnorm(prob,0.d0,1.d0,1,0)
+
+                  countero=0
+            
+                  do j=1,nvar
+                     if(zc(i,j).le.quan)then
+                        linf(j)=-999.d0
+                        lsup(j)=quan
+                        parti(j)=1
+                      else
+                        linf(j)=quan
+                        lsup(j)=999.d0
+                        parti(j)=2
+                     end if
+                  end do
+           
+                  do l=1,i-1
+                     final=1
+                     do j=1,nvar
+                        if(zc(l,j).gt.lsup(j).or.zc(l,j).lt.linf(j))then
+                          final=0
+                        end if
+                     end do
+               
+                     if(final.eq.1)then
+                        countero=countero+1
+                        whicho(countero)=l
+                     end if   
+                  end do
+            
+                  loglikn=loglikn+
+     &              log((2.d0**nvar)*cpar+dble((2.d0**nvar)*countero))-
+     &              log((2.d0**nvar)*cpar+dble(i-1))
+
+                  if(countero.eq.0) go to 3
+
+                  ok=1
+                  j=2
+                  do while(ok.eq.1.and.j.le.20000)
+                     nint=2**j
+                     je2=j**2
+                     prob=1.d0/dble(nint)
+
+                     do k=1,nvar
+                        k1=2*(parti(k)-1)+1
+                        k2=2*(parti(k)-1)+2
+                        quan=invcdfnorm(dble(k1)*prob,0.d0,1.d0,1,0)
+               
+                        if(zc(i,k).le.quan)then
+                          parti(k)=k1 
+                          lsup(k)=quan
+                         else 
+                          parti(k)=k2
+                          linf(k)=quan
+                        end if
+                     end do                 
+               
+                     countern=0
+                     do l=1,countero
+                        final=1
+                        do k=1,nvar
+                           if(zc(whicho(l),k).gt.lsup(k).or.
+     &                        zc(whicho(l),k).lt.linf(k)    )then
+                        
+                              final=0 
+                           end if   
+                        end do
+                  
+                        if(final.eq.1)then
+                          countern=countern+1
+                          whichn(countern)=whicho(l)
+                        end if
+                     end do
+
+                     loglikn=loglikn+
+     &                 log((2.d0**nvar)*cpar*dble(je2)+
+     &                  dble((2.d0**nvar)*countern))-
+     &                 log((2.d0**nvar)*cpar*dble(je2)+dble(countero))
+
+                     if(countern.eq.0)then
+                        ok=0
+                      else  
+                        countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
+                        j=j+1
+                     end if   
+                  end do
+
+3                 continue
+
+                  loglikn=loglikn-0.5d0*detloglc
+                  do j=1,nvar
+                     loglikn=loglikn+dnrm(zc(i,j),0.d0, 1.d0, 1)
+                  end do   
+               
+               end if
+        
+            end do
+
+c++++++++++ acceptance step
+
+            logprioro= -(dble(nvar+1)/dble(2))*(detlog2 - detlog1)
+            logprioro=0.d0
+
+            if(jfr(2).eq.0)then
+               call diwishart(nvar,nu0,sigmac,tinv,workm1,workm2,
+     &                        vv,iflag,logpriorn)        
+
+               call diwishart(nvar,nu0,sigma,tinv,workm1,workm2,
+     &                        vv,iflag,logprioro)        
+
+            end if
+
+            ratio=loglikn-logliko+logcgkn-logcgko+
+     &            logpriorn-logprioro 
+
+            if(log(dble(runif())).lt.ratio)then
+               do i=1,nvar
+                  do j=1,nvar
+                     sigma(i,j)=sigmac(i,j)
+                     sigmainv(i,j)=sigmainvc(i,j)
+                  end do
+               end do
+               do i=1,nrec
+                  do j=1,nvar
+                     z(i,j)=zc(i,j)
+                  end do   
+               end do 
+               detlogl=detloglc
+               logliko=loglikn
+               acrate(2)=acrate(2)+1.d0
+             else
+               do i=1,nvar
+                  do j=1,nvar
+                     propv(i,j)=sigma(i,j)
+                  end do
+               end do
+               call invdet(propv,nvar,sigmainv,detlogl,iflag,vv)
+               do i=1,nvar
+                  do j=1,nvar
+                     propv(i,j)=sigma(i,j)
+                  end do
+               end do
+               call cholesky(nvar,sigma,workmh)
+      
+               do i=1,nvar
+                  do j=1,i
+                     sigmainv(i,j)=workmh(ihmssf(i,j,nvar))
+                  end do
+               end do
+               call inverse(sigmainv,nvar,iflag)
+            end if
+
          end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1001,7 +1054,7 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c++++++++++ sample candidates
 
-            cparc=rtlnorm(log(cpar),tune3*1.0,0,0,.true.,.true.)
+            cparc=exp(rnorm(log(cpar),tune3*1.d0))
             logcgkn=dlnrm(cpar ,log(cparc),tune3*1.0,1) 
             logcgko=dlnrm(cparc,log(cpar ),tune3*1.0,1) 
 
@@ -1134,10 +1187,10 @@ c+++++++++++++ following observations
             end do
 
 c++++++++++ acceptance step
-            ratio=dexp(loglikn+logpriorn-logliko-logprioro+
-     &                 logcgkn-logcgko)
+            ratio=loglikn+logpriorn-logliko-logprioro+
+     &                 logcgkn-logcgko
 
-            if(dble(runif()).lt.ratio)then
+            if(log(dble(runif())).lt.ratio)then
                cpar=cparc
                acrate(3)=acrate(3)+1.d0
                logliko=loglikn
@@ -1543,9 +1596,9 @@ c++++++++++++++++++++++ check if the user has requested an interrupt
                         end do
             
                         loglikn=loglikn+
-     &                      log((2.d0**nvar)*cparc+
+     &                      log((2.d0**nvar)*cpar+
      &                      dble((2.d0**nvar)*countero))-
-     &                      log((2.d0**nvar)*cparc+dble(nrec))
+     &                      log((2.d0**nvar)*cpar+dble(nrec))
 
                         if(countero.eq.0) go to 7
 
@@ -1589,9 +1642,9 @@ c++++++++++++++++++++++ check if the user has requested an interrupt
                            end do
 
                            loglikn=loglikn+
-     &                       log((2.d0**nvar)*cparc*dble(je2)+
+     &                       log((2.d0**nvar)*cpar*dble(je2)+
      &                           dble((2.d0**nvar)*countern))-
-     &                       log((2.d0**nvar)*cparc*dble(je2)+
+     &                       log((2.d0**nvar)*cpar*dble(je2)+
      &                            dble(countero))
 
                            if(countern.eq.0)then

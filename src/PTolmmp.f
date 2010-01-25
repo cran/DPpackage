@@ -22,7 +22,7 @@ c     probit mixed effect model for ordinal data, using a Mixture of
 c     Multivariate Polya trees prior for the distribution of the random 
 c     effects.
 c
-c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2008
+c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2010.
 c
 c     Version 1.0:
 c

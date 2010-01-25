@@ -17,7 +17,7 @@ c     linear mixed model using a Dirichlet Process prior for the
 c     distributions of the random effecs. In this routine, inference is 
 c     based on the Polya urn representation of Dirichlet process.
 c
-c     Copyright: Alejandro Jara, 2006-2009
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 2.0: 
 c

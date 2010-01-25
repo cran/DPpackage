@@ -20,7 +20,7 @@ c
 c     Subroutine `psgamgauss' to run a Markov chain in a semiparametric 
 c     gaussian model, using a B-splines and penalties.
 c
-c     Copyright: Alejandro Jara, 2007-2009.
+c     Copyright: Alejandro Jara, 2007-2010.
 c
 c     Version 1.0:
 c

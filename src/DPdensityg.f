@@ -15,7 +15,7 @@ c     normals model. In this routine, inference is based on the
 c     Polya urn representation of the Dirichlet process. The no-gaps
 c     algorithm is used.
 c
-c     Copyright: Alejandro Jara, 2006-2009
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 1.0: 
 c     Last modification: 09-04-2007.

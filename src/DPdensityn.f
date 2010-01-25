@@ -13,7 +13,7 @@ c     normals model. In this routine, inference is based on the
 c     Polya urn representation of the Dirichlet process. The algorithm
 c     8 of Neal (2000) is used with m=1.
 c
-c     Copyright: Alejandro Jara, 2006-2009
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 1.0: 
 c

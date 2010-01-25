@@ -16,15 +16,11 @@ c=======================================================================
 c=======================================================================
 c     # 47
 c
-c     Version 1.0
-c
-c     Last modification: 30-09-2009.
-c
 c     Subroutine `hdpmdensity' to run a Markov chain in a  
 c     hierarchical DPM of normals model for density
 c     estimation. 
 c
-c     Copyright: Alejandro Jara, 2009.
+c     Copyright: Alejandro Jara, 2009-2010.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by

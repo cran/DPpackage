@@ -25,7 +25,7 @@ c
 c     Subroutine `dpsurvint' to run a Markov chain in the  
 c     semiparametric atf model for interval censored data. 
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 3.0: 
 c

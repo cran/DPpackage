@@ -20,7 +20,7 @@ c     probit mixed model using a Dirichlet process prior for the
 c     distribution of the random effects. In this routine, inference is 
 c     based on the Polya urn representation of Dirichlet process.
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 2.0: 
 c

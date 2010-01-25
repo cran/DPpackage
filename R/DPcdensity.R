@@ -2,7 +2,7 @@
 ### Fit a Dirichlet Process Mixture of Normals model for conditional density
 ### estimation.
 ###
-### Copyright: Alejandro Jara, 2008-2009.
+### Copyright: Alejandro Jara, 2008-2010.
 ###
 ### Last modification: 23-06-2008.
 ###

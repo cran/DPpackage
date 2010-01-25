@@ -17,7 +17,7 @@ c     Subroutine `fptbinaryl' to run a Markov chain in the
 c     binary regression model using a Finite Polya Tree prior 
 c     for the link, centered in a logistic distribution.
 c
-c     Copyright: Alejandro Jara and Tim Hanson, 2006-2009
+c     Copyright: Alejandro Jara and Tim Hanson, 2006-2010.
 c
 c     Version 1.0: 
 c

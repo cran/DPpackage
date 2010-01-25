@@ -2,7 +2,7 @@
 ### Fit a generalized linear mixed model with a Multivariate Polya Tree 
 ### prior for the random effect distribution
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2007-2009.
+### Copyright: Alejandro Jara and Tim Hanson, 2007-2010.
 ###
 ### Last modification: 25-09-2009.
 ###

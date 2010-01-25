@@ -2,7 +2,7 @@
 ### Fit a bernoulli regression model using
 ### a simple Finite Polya tree prior for the link function.
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2006-2009.
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2010.
 ###
 ### Last modification: 15-12-2006.
 ###

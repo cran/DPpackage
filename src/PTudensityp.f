@@ -1,7 +1,8 @@
 
 c=======================================================================                      
       subroutine ptdensityup(ngrid,nrec,y,
-     &                       ab,nlevel,ninter,
+     &                       ab,murand,sigmarand,jfr,m0,s0,tau,
+     &                       nlevel,ninter,
      &                       mcmcvec,nsave,tune1,tune2,tune3,
      &                       acrate,f,thetasave,cpo,
      &                       cpar,mu,sigma,
@@ -18,13 +19,17 @@ c
 c     This subroutine is based on the mpt FORTRAN program of 
 c     Tim Hanson.
 c
-c     Copyright: Alejandro Jara and Tim Hanson, 2006-2009.
+c     Copyright: Alejandro Jara and Tim Hanson, 2006-2010.
 c
-c     Version 2.0: 
+c     Version 3.0: 
 c
-c     Last modification: 18-12-2006.
+c     Last modification: 6-1-2010.
 c
 c     Changes and Bug fixes: 
+c
+c     Version 2.0 to Version 3.0:
+c          - Centering parameters can be fixed.
+c          - Proper prior can be used on the centering parameters.
 c
 c     Version 1.0 to Version 2.0:
 c          - Fixed bug in computation of MH ratio for precision parameter.
@@ -87,6 +92,14 @@ c        ninter      :  integer giving the number of final intervals
 c                       in the Finite Polya tree prior.
 c        nlevel      :  integer giving the number of binary partitions
 c                       in the Finite Polya tree prior.
+c        jfr         :  integer vector indicating whether Jeffery's
+c                       prior is used for the centering parameters.
+c        m0          :  real giving the mean of the normal prior
+c                       for the centering mean.
+c        s0          :  real giving the variance of the normal prior
+c                       for the centering mean.
+c        tau         :  real vector giving the hyperparameters of
+c                       inverse gamma prior for the centering variance.
 c
 c-----------------------------------------------------------------------
 c
@@ -221,6 +234,9 @@ c+++++Data
 c+++++Prior information
       integer nlevel,ninter
       real*8 ab(2),ca,cb
+      integer murand,sigmarand,jfr(2)
+      real*8 m0,s0
+      real*8 tau(2)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
@@ -411,141 +427,165 @@ c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating mu using a MH step                  +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-         muc=rnorm(mu,tune1*sigma/sqrt(dble(nrec)))
+         if(murand.eq.1)then
 
-         logliko=0.d0
-         loglikn=0.d0
+            muc=rnorm(mu,tune1*sigma/sqrt(dble(nrec)))
 
-         do i=1,nrec
-         
-c++++++++++ possition according to the candidate
+            logliko=0.d0
+            loglikn=0.d0
 
-            nint=2
-            tmp1=1.d0/dble(nint)
-            quan=invcdfnorm(tmp1,muc,sigma,1,0)
-            if(y(i).le.quan)then
-                intlp=1
-              else
-                intlp=2
-            end if  
-        
-            do j=2,nlevel
-               nint=2**j
-               tmp1=1.d0/dble(nint)            
-               k=intlp
-               k1=2*(k-1)+1
-               k2=2*(k-1)+2
-               
-               quan=invcdfnorm(dble(k1)*tmp1,muc,sigma,1,0) 
-               
-               if(y(i).le.quan)then
-                  intlp=k1
-                 else
-                  intlp=k2
-               end if  
-            end do
-            
-            intpn(i)=intlp
-
-c++++++++++ likelihood current
-
-            tmp1=prob(intpo(i))*dble(ninter)*dnrm(y(i),mu,sigma,0)
-
-            logliko=logliko+log(tmp1)
-
-c++++++++++ likelihood candidate
-
-            tmp2=prob(intpn(i))*dble(ninter)*dnrm(y(i),muc,sigma,0)
-            
-            loglikn=loglikn+log(tmp2)
-
-         end do 
-
-c+++++++ acceptance step
-
-         ratio=dexp(loglikn-logliko)
-
-         if(dble(runif()).lt.ratio)then
-            mu=muc
             do i=1,nrec
-               intpo(i)=intpn(i)
-            end do
-            acrate(1)=acrate(1)+1.d0
-         end if
+         
+c+++++++++++++ possition according to the candidate
 
+               nint=2
+               tmp1=1.d0/dble(nint)
+               quan=invcdfnorm(tmp1,muc,sigma,1,0)
+               if(y(i).le.quan)then
+                  intlp=1
+                 else
+                  intlp=2
+               end if  
+        
+               do j=2,nlevel
+                  nint=2**j
+                  tmp1=1.d0/dble(nint)            
+                  k=intlp
+                  k1=2*(k-1)+1
+                  k2=2*(k-1)+2
+               
+                  quan=invcdfnorm(dble(k1)*tmp1,muc,sigma,1,0) 
+               
+                  if(y(i).le.quan)then
+                     intlp=k1
+                    else
+                     intlp=k2
+                  end if  
+               end do
+            
+               intpn(i)=intlp
+
+c+++++++++++++ likelihood current
+
+               tmp1=prob(intpo(i))*dble(ninter)*dnrm(y(i),mu,sigma,0)
+
+               logliko=logliko+log(tmp1)
+
+c+++++++++++++ likelihood candidate
+
+               tmp2=prob(intpn(i))*dble(ninter)*dnrm(y(i),muc,sigma,0)
+            
+               loglikn=loglikn+log(tmp2)
+
+            end do 
+
+c++++++++++ acceptance step
+
+            logpriorn=0.d0
+            logprioro=0.d0
+
+            if(jfr(1).eq.0)then
+               logprioro=dnrm(mu, m0,sqrt(s0),1)
+               logpriorn=dnrm(muc,m0,sqrt(s0),1)
+            end if
+
+            ratio=loglikn-logliko+logpriorn-logprioro
+
+            if(log(dble(runif())).lt.ratio)then
+               mu=muc
+               do i=1,nrec
+                  intpo(i)=intpn(i)
+               end do
+               acrate(1)=acrate(1)+1.d0
+            end if
+          
+         end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating sigma using a MH step               +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-         logliko=0.d0
-         loglikn=0.d0
+         if(sigmarand.eq.1)then
 
-         sigma2c=rtlnorm(log(sigma2),tune2*0.1d0,0,0,.true.,.true.)
-         sigmac=sqrt(sigma2c)
+            logliko=0.d0
+            loglikn=0.d0
 
-         logcgkn=dlnrm(sigma2 ,log(sigma2c),tune2*0.1d0,1) 
-         logcgko=dlnrm(sigma2c,log(sigma2 ),tune2*0.1d0,1) 
+            sigma2c=rtlnorm(log(sigma2),tune2*0.1d0,0,0,.true.,.true.)
+            sigmac=sqrt(sigma2c)
+
+            logcgkn=dlnrm(sigma2 ,log(sigma2c),tune2*0.1d0,1) 
+            logcgko=dlnrm(sigma2c,log(sigma2 ),tune2*0.1d0,1) 
 
 
-         do i=1,nrec
-c++++++++++ possition according to the candidate
-
-            nint=2
-            tmp1=1.d0/dble(nint)
-            quan=invcdfnorm(tmp1,mu,sigmac,1,0)
-            if(y(i).le.quan)then
-                intlp=1
-              else
-                intlp=2
-            end if  
-        
-            do j=2,nlevel
-               nint=2**j
-               tmp1=1.d0/dble(nint)            
-               k=intlp
-               k1=2*(k-1)+1
-               k2=2*(k-1)+2
-               
-               quan=invcdfnorm(dble(k1)*tmp1,mu,sigmac,1,0) 
-               
-               if(y(i).le.quan)then
-                  intlp=k1
-                 else
-                  intlp=k2
-               end if  
-            end do
-            
-            intpn(i)=intlp
-
-c++++++++++ likelihood current
-
-            tmp1=prob(intpo(i))*dble(ninter)*dnrm(y(i),mu,sigma,0)
-
-            logliko=logliko+log(tmp1)
-
-c++++++++++ likelihood candidate
-
-            tmp2=prob(intpn(i))*dble(ninter)*dnrm(y(i),mu,sigmac,0)
-            
-            loglikn=loglikn+log(tmp2)
-
-         end do 
-
-c+++++++ acceptance step
-
-         ratio=dexp(loglikn-logliko+logcgkn-logcgko-
-     &              log(sigma2c)+log(sigma2))
-
-         if(dble(runif()).lt.ratio)then
-            sigma=sigmac
-            sigma2=sigma2c
             do i=1,nrec
-               intpo(i)=intpn(i)
-            end do
-            acrate(2)=acrate(2)+1.d0
-         end if
+c+++++++++++++ possition according to the candidate
 
+               nint=2
+               tmp1=1.d0/dble(nint)
+               quan=invcdfnorm(tmp1,mu,sigmac,1,0)
+               if(y(i).le.quan)then
+                  intlp=1
+                 else
+                  intlp=2
+               end if  
+        
+               do j=2,nlevel
+                  nint=2**j
+                  tmp1=1.d0/dble(nint)            
+                  k=intlp
+                  k1=2*(k-1)+1
+                  k2=2*(k-1)+2
+               
+                  quan=invcdfnorm(dble(k1)*tmp1,mu,sigmac,1,0) 
+                 
+                  if(y(i).le.quan)then
+                     intlp=k1
+                    else
+                     intlp=k2
+                  end if  
+               end do
+            
+               intpn(i)=intlp
+
+c+++++++++++++ likelihood current
+
+               tmp1=prob(intpo(i))*dble(ninter)*dnrm(y(i),mu,sigma,0)
+
+               logliko=logliko+log(tmp1)
+
+c+++++++++++++ likelihood candidate
+
+               tmp2=prob(intpn(i))*dble(ninter)*dnrm(y(i),mu,sigmac,0)
+            
+               loglikn=loglikn+log(tmp2)
+
+            end do 
+
+c++++++++++ acceptance step
+            logpriorn=-log(sigma2c)
+            logprioro=-log(sigma2)
+
+            if(jfr(2).eq.0)then
+               logpriorn=-(0.5d0*tau(1)+1.d0)*log(sigma2c)-
+     &                     0.5d0*tau(2)/sigma2c
+
+               logprioro=-(0.5d0*tau(1)+1.d0)*log(sigma2)-
+     &                     0.5d0*tau(2)/sigma2
+            end if
+
+            ratio=loglikn-logliko+logcgkn-logcgko+
+     &            logpriorn-logprioro 
+
+            if(log(dble(runif())).lt.ratio)then
+               sigma=sigmac
+               sigma2=sigma2c
+               do i=1,nrec
+                  intpo(i)=intpn(i)
+               end do
+               acrate(2)=acrate(2)+1.d0
+            end if
+
+         end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ MH to update the c parameter                 +++
@@ -596,10 +636,10 @@ c+++++++++++ evaluate log-likelihood
              end do   
 
 c++++++++++ acceptance step
-            ratio=dexp(loglikn+logpriorn-logliko-logprioro+
-     &                 logcgkn-logcgko)
+            ratio=loglikn+logpriorn-logliko-logprioro+
+     &            logcgkn-logcgko
 
-            if(dble(runif()).lt.ratio)then
+            if(log(dble(runif())).lt.ratio)then
                cpar=cparc
                acrate(3)=acrate(3)+1.d0
             end if            

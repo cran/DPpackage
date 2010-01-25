@@ -2,7 +2,7 @@
 ### Fit a semiparametric linear mixed effects meta-analysis using a
 ### Dirichlet Process prior for the distribution of the random effects.
 ###
-### Copyright: Alejandro Jara, 2007-2009.
+### Copyright: Alejandro Jara, 2007-2010.
 ###
 ### Last modification: 16-05-2007.
 ###

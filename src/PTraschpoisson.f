@@ -19,7 +19,7 @@ c     Subroutine `ptraschpoi' to run a Markov chain in the
 c     semiparametric Rasch Poisson Count model using a Polya tree prior
 c     for the random effect distribution. 
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 3.0: 
 c     Last modification: 04-09-2009.

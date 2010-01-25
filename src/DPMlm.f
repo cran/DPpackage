@@ -15,6 +15,12 @@ c=======================================================================
 c=======================================================================                      
 c     # of arguments = 44.
 c
+c     Copyright: Alejandro Jara, 2007-2010.
+c
+c     Version 1.0:
+c
+c     Last modification: 20-04-2007.
+c
 c      Alejandro Jara
 c      Department of Statistics
 c      Facultad de Ciencias Fisicas y Matematicas

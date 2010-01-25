@@ -1,7 +1,7 @@
 ### LDDPsurvival.R                    
 ### Fit a linear dependent DP model for survival modelling.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009-2010.
 ###
 ### Last modification: 18-08-2009.
 ###

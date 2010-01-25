@@ -1,7 +1,7 @@
 ### Plm.R                   
 ### Fit a parametric regression model.
 ###
-### Copyright: Alejandro Jara, 2009.
+### Copyright: Alejandro Jara, 2007-2010.
 ###
 ### Last modification: 15-03-2009.
 ###

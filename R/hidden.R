@@ -1,7 +1,7 @@
 
 .onAttach <- function(...) {
      cat("##\n## Dirichlet Process Package (DPpackage)\n")
-     cat("## Copyright (C) 2006 - 2009, Alejandro Jara\n")
+     cat("## Copyright (C) 2006 - 2010, Alejandro Jara\n")
      cat("## Department of Statistics \n")
      cat("## Universidad de Concepcion\n")
      cat("##\n## Support provided by the KUL-PUC bilateral\n")

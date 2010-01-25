@@ -1,7 +1,7 @@
 ### CSDPbinary.R
 ### Fit a semiparametric bernoulli regression model.
 ###
-### Copyright: Alejandro Jara, 2006-2009.
+### Copyright: Alejandro Jara, 2006-2010.
 ###
 ### Last modification: 22-12-2006.
 ###

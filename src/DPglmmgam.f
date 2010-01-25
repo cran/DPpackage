@@ -25,7 +25,7 @@ c     is based on  the Polya urn representation of Dirichlet process.
 c     The algorithm 8 with m=1 of Neal (2000) is used to sample the 
 c     configurations.
 c
-c     Copyright: Alejandro Jara, 2006-2009
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     The parametrization considered here is:
 c     log p(Y)= v* ((-1/mu)*Y - log(mu)) + c(Y,v),

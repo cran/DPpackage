@@ -19,7 +19,7 @@ c     for the distributions of the random effecs. In this routine,
 c     inference is based on the Polya urn representation of Dirichlet 
 c     process.
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 2.0: 
 c

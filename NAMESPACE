@@ -72,6 +72,8 @@ export(
         LDDPrasch.default,
         LDDPraschpoisson,
         LDDPraschpoisson.default,
+        LDPDdoublyint,
+        LDPDdoublyint.default,
         Pbinary,
         Pbinary.default,
         Plm,
@@ -93,6 +95,8 @@ export(
         PTolmm.default,
         PTrandom,
         PTrandom.default,
+	PTsampler,
+	PTsampler.default,
         TDPdensity,
         TDPdensity.default
 )
@@ -333,8 +337,21 @@ S3method(anova, PTolmm)
 S3method(print, PTrandom)
 S3method(plot, PTrandom)
 
+S3method(print, PTsampler)
+S3method(plot, PTsampler)
+S3method(summary, PTsampler)
+S3method(print, summaryPTsampler)
+
 S3method(print, TDPdensity)
 S3method(plot, TDPdensity)
 S3method(summary, TDPdensity)
 S3method(print, summaryTDPdensity)
+
+S3method(print, LDPDdoublyint)
+S3method(plot, LDPDdoublyint)
+S3method(summary, LDPDdoublyint)
+S3method(print, summaryLDPDdoublyint)
+S3method(predict, LDPDdoublyint)
+S3method(print, predict.LDPDdoublyint)
+S3method(plot, predict.LDPDdoublyint)
 

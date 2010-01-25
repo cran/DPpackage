@@ -24,7 +24,7 @@ c
 c     Subroutine `dpbinaryl' to run a Markov chain in the  
 c     semiparametric logistic regression model for binary data. 
 c
-c     Copyright: Alejandro Jara, 2006 - 2009
+c     Copyright: Alejandro Jara, 2006 - 2010.
 c
 c     Version 4.0: 
 c

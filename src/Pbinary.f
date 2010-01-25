@@ -18,7 +18,7 @@ c
 c     Subroutine `pbinary' to run a Markov chain in a  
 c     parametric binary regression model. 
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by

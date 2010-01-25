@@ -1,7 +1,7 @@
 
 c=======================================================================                      
       subroutine ptdensityu(ngrid,nrec,y,
-     &                      ab,
+     &                      ab,murand,sigmarand,jfr,m0,s0,tau,
      &                      mcmcvec,nsave,tune1,tune2,tune3,
      &                      acrate,f,thetasave,cpo,
      &                      cpar,mu,sigma,
@@ -12,13 +12,17 @@ c     Subroutine `ptdensityu' to run a Markov chain for univariate
 c     density estimation using a Mixture of Polya Tree prior. The
 c     Polya Tree is centered in a N(mu,sigma2) distribution.
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
-c     Version 2.0: 
+c     Version 3.0: 
 c
-c     Last modification: 12-12-2006.
+c     Last modification: 25-01-2009.
 c     
 c     Changes and Bug fixes: 
+c
+c     Version 2.0 to Version 3.0:
+c          - Centering parameters can be fixed.
+c          - Proper prior can be used on the centering parameters.
 c
 c     Version 1.0 to Version 2.0:
 c          - Uses vectors to keep the observations in each partition.
@@ -66,6 +70,14 @@ c        ca, cb      :  real giving the hyperparameters of the prior
 c                       distribution for the precision parameter,
 c                       c ~ Gamma(ca,cb). If ca<0 the precision 
 c                       parameter is considered as a constant.
+c        jfr         :  integer vector indicating whether Jeffery's
+c                       prior is used for the centering parameters.
+c        m0          :  real giving the mean of the normal prior
+c                       for the centering mean.
+c        s0          :  real giving the variance of the normal prior
+c                       for the centering mean.
+c        tau         :  real vector giving the hyperparameters of
+c                       inverse gamma prior for the centering variance.
 c
 c-----------------------------------------------------------------------
 c
@@ -176,6 +188,9 @@ c+++++Data
 
 c+++++Prior information
       real*8 ab(2),ca,cb
+      integer murand,sigmarand,jfr(2)
+      real*8 m0,s0
+      real*8 tau(2)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
@@ -402,282 +417,308 @@ c+++++++ check if the user has requested an interrupt
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating mu using a MH step                  +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   
+         if(murand.eq.1)then
+            muc=rnorm(mu,tune1*sigma/sqrt(dble(nrec)))
 
-         muc=rnorm(mu,tune1*sigma/sqrt(dble(nrec)))
+            loglikn=0.d0
 
-         loglikn=0.d0
+            do i=1,nrec
 
-         do i=1,nrec
+c+++++++++++++ check if the user has requested an interrupt
+               call rchkusr()
 
-c++++++++++ check if the user has requested an interrupt
-            call rchkusr()
+c+++++++++++++ first observation
+               if(i.eq.1)then
 
-c++++++++++ first observation
-            if(i.eq.1)then
+                  loglikn=dnrm(y(1),muc,sigma ,1)
 
-                 loglikn=dnrm(y(1),muc,sigma ,1)
+c+++++++++++++ following observations
+                 else
 
-c++++++++++ following observations
-              else
+                  nint=2
+                  prob=1.d0/dble(nint)
+                  quan=invcdfnorm(prob,muc,sigma,1,0)
 
-                 nint=2
-                 prob=1.d0/dble(nint)
-                 quan=invcdfnorm(prob,muc,sigma,1,0)
-
-                 countero=0
+                  countero=0
                  
-                 if(y(i).le.quan) then
-                    parti=1 
-                    do l=1,i-1
-                       if(y(l).le.quan)then
-                          countero=countero+1
-                          whicho(countero)=l
-                       end if   
-                    end do
-                  else
-                    parti=2 
-                    do l=1,i-1
-                       if(y(l).gt.quan)then
-                          countero=countero+1
-                          whicho(countero)=l
-                       end if   
-                    end do
-                 end if  
+                  if(y(i).le.quan) then
+                     parti=1 
+                     do l=1,i-1
+                        if(y(l).le.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
+                     end do
+                   else
+                     parti=2 
+                     do l=1,i-1
+                        if(y(l).gt.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
+                     end do
+                  end if  
 
-                 loglikn=loglikn+
-     &                   log(2.d0*cpar+dble(2*countero))-
-     &                   log(2.d0*cpar+dble(i-1))
+                  loglikn=loglikn+
+     &                    log(2.d0*cpar+dble(2*countero))-
+     &                    log(2.d0*cpar+dble(i-1))
 
-                 if(countero.eq.0) go to 2
+                  if(countero.eq.0) go to 2
 
-                 ok=1
-                 j=2
-                 do while(ok.eq.1)
-                    nint=2**j
-                    je2=j**2
-                    prob=1.d0/dble(nint)
+                  ok=1
+                  j=2
+                  do while(ok.eq.1)
+                     nint=2**j
+                     je2=j**2
+                     prob=1.d0/dble(nint)
 
-                    k1=2*(parti-1)+1
-                    k2=2*(parti-1)+2
-                    quan=invcdfnorm(dble(k1)*prob,muc,sigma,1,0)
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,muc,sigma,1,0)
                
-                    if(y(i).le.quan)then
-                      parti=k1
-                      k=k1
-                     else
-                      parti=k2
-                      k=k2
-                    end if                      
+                     if(y(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if                      
                     
-                    countern=0
+                     countern=0
                     
-                    if(k.eq.1)then
-                       do l=1,countero
-                          if(y(whicho(l)).le.quan)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                     else if(k.eq.nint)then
-                       quan=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0) 
-                       do l=1,countero
-                          if(y(whicho(l)).gt.quan)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                     else
-                       tmp1=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0)
-                       tmp2=invcdfnorm(dble(k  )*prob,muc,sigma,1,0)
+                     if(k.eq.1)then
+                        do l=1,countero
+                           if(y(whicho(l)).le.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                      else if(k.eq.nint)then
+                        quan=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0) 
+                        do l=1,countero
+                           if(y(whicho(l)).gt.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                      else
+                        tmp1=invcdfnorm(dble(k-1)*prob,muc,sigma,1,0)
+                        tmp2=invcdfnorm(dble(k  )*prob,muc,sigma,1,0)
 
-                       if(tmp1.ge.tmp2)then
-                         call rexit("Error in the limits")
-                       end if  
+                        if(tmp1.ge.tmp2)then
+                          call rexit("Error in the limits")
+                        end if  
                      
-                       do l=1,countero
-                          if(y(whicho(l)).gt.tmp1.and.
-     &                       y(whicho(l)).le.tmp2)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                    end if
+                        do l=1,countero
+                           if(y(whicho(l)).gt.tmp1.and.
+     &                        y(whicho(l)).le.tmp2)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                     end if
                     
-                    loglikn=loglikn+
-     &                      log(2.d0*cpar*dble(je2)+dble(2*countern))-
-     &                      log(2.d0*cpar*dble(je2)+dble(  countero))
+                     loglikn=loglikn+
+     &                       log(2.d0*cpar*dble(je2)+dble(2*countern))-
+     &                       log(2.d0*cpar*dble(je2)+dble(  countero))
 
-                    if(countern.eq.0)then
-                       ok=0
-                     else  
-                       countero=countern
-                       do l=1,countern
-                          whicho(l)=whichn(l)
-                       end do
-                       j=j+1
-                    end if   
-                 end do
+                     if(countern.eq.0)then
+                        ok=0
+                      else  
+                        countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
+                        j=j+1
+                     end if   
+                  end do
 
-2                continue
+2                 continue
                  
-                 loglikn=loglikn+dnrm(y(i),muc,sigma,1)
+                  loglikn=loglikn+dnrm(y(i),muc,sigma,1)
 
-            end if                 
-         end do 
+              end if                 
+            end do 
 
-c+++++++ acceptance step
+c++++++++++ acceptance step
 
-         ratio=dexp(loglikn-logliko)
+            logpriorn=0.d0
+            logprioro=0.d0
 
-         if(dble(runif()).lt.ratio)then
-            mu=muc
-            logliko=loglikn
-            acrate(1)=acrate(1)+1.d0
-         end if
+            if(jfr(1).eq.0)then
+               logprioro=dnrm(mu, m0,sqrt(s0),1)
+               logpriorn=dnrm(muc,m0,sqrt(s0),1)
+            end if
+
+            ratio=loglikn-logliko+logpriorn-logprioro
+
+            if(log(dble(runif())).lt.ratio)then
+               mu=muc
+               logliko=loglikn
+               acrate(1)=acrate(1)+1.d0
+            end if
+
+        end if
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Updating sigma using a MH step               +++
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-         loglikn=0.d0
+         if(sigmarand.eq.1)then
 
-         sigma2c=rtlnorm(log(sigma2),tune2*0.1d0,0,0,.true.,.true.)
-         sigmac=sqrt(sigma2c)
+            loglikn=0.d0
 
-         logcgkn=dlnrm(sigma2 ,log(sigma2c),tune2*0.1d0,1) 
-         logcgko=dlnrm(sigma2c,log(sigma2 ),tune2*0.1d0,1) 
+            sigma2c=rtlnorm(log(sigma2),tune2*0.1d0,0,0,.true.,.true.)
+            sigmac=sqrt(sigma2c)
+
+            logcgkn=dlnrm(sigma2 ,log(sigma2c),tune2*0.1d0,1) 
+            logcgko=dlnrm(sigma2c,log(sigma2 ),tune2*0.1d0,1) 
 
 
-         do i=1,nrec
+            do i=1,nrec
          
-c++++++++++ check if the user has requested an interrupt
-            call rchkusr()
+c+++++++++++++ check if the user has requested an interrupt
+               call rchkusr()
 
-c++++++++++ first observation
-            if(i.eq.1)then
+c+++++++++++++ first observation
+               if(i.eq.1)then
 
-                 loglikn=dnrm(y(1),mu,sigmac ,1)
+                  loglikn=dnrm(y(1),mu,sigmac ,1)
 
-c++++++++++ following observations
-              else
+c+++++++++++++ following observations
+                else
 
-                 nint=2
-                 prob=1.d0/dble(nint)
-                 quan=invcdfnorm(prob,mu,sigmac,1,0)
+                  nint=2
+                  prob=1.d0/dble(nint)
+                  quan=invcdfnorm(prob,mu,sigmac,1,0)
 
-                 countero=0
+                  countero=0
                  
-                 if(y(i).le.quan) then
-                    parti=1
-                    do l=1,i-1
-                       if(y(l).le.quan)then
-                          countero=countero+1
-                          whicho(countero)=l
-                       end if   
-                    end do
-                  else 
-                    parti=2
-                    do l=1,i-1
-                       if(y(l).gt.quan)then
-                          countero=countero+1
-                          whicho(countero)=l
-                       end if   
-                    end do
-                 end if  
+                  if(y(i).le.quan) then
+                     parti=1
+                     do l=1,i-1
+                        if(y(l).le.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
+                     end do
+                   else 
+                     parti=2
+                     do l=1,i-1
+                        if(y(l).gt.quan)then
+                           countero=countero+1
+                           whicho(countero)=l
+                        end if   
+                     end do
+                  end if  
 
-                 loglikn=loglikn+
-     &                   log(2.d0*cpar+dble(2*countero))-
-     &                   log(2.d0*cpar+dble(i-1))
+                  loglikn=loglikn+
+     &                    log(2.d0*cpar+dble(2*countero))-
+     &                    log(2.d0*cpar+dble(i-1))
 
-                 if(countero.eq.0) go to 3
+                  if(countero.eq.0) go to 3
 
-                 ok=1
-                 j=2
-                 do while(ok.eq.1)
-                    nint=2**j
-                    je2=j**2
-                    prob=1.d0/dble(nint)
+                  ok=1
+                  j=2
+                  do while(ok.eq.1)
+                     nint=2**j
+                     je2=j**2
+                     prob=1.d0/dble(nint)
 
-                    k1=2*(parti-1)+1
-                    k2=2*(parti-1)+2
-                    quan=invcdfnorm(dble(k1)*prob,mu,sigmac,1,0)
+                     k1=2*(parti-1)+1
+                     k2=2*(parti-1)+2
+                     quan=invcdfnorm(dble(k1)*prob,mu,sigmac,1,0)
                
-                    if(y(i).le.quan)then
-                      parti=k1
-                      k=k1
-                     else
-                      parti=k2
-                      k=k2
-                    end if  
+                     if(y(i).le.quan)then
+                       parti=k1
+                       k=k1
+                      else
+                       parti=k2
+                       k=k2
+                     end if  
                     
-                    countern=0
+                     countern=0
                     
-                    if(k.eq.1)then
-                       do l=1,countero
-                          if(y(whicho(l)).le.quan)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                     else if(k.eq.nint)then
-                       quan=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0) 
-                       do l=1,countero
-                          if(y(whicho(l)).gt.quan)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                     else
-                       tmp1=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0)
-                       tmp2=invcdfnorm(dble(k  )*prob,mu,sigmac,1,0)
+                     if(k.eq.1)then
+                        do l=1,countero
+                           if(y(whicho(l)).le.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                      else if(k.eq.nint)then
+                        quan=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0) 
+                        do l=1,countero
+                           if(y(whicho(l)).gt.quan)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                      else
+                        tmp1=invcdfnorm(dble(k-1)*prob,mu,sigmac,1,0)
+                        tmp2=invcdfnorm(dble(k  )*prob,mu,sigmac,1,0)
 
-                       if(tmp1.ge.tmp2)then
-                         call rexit("Error in the limits")
-                       end if  
+                        if(tmp1.ge.tmp2)then
+                           call rexit("Error in the limits")
+                        end if  
                      
-                       do l=1,countero
-                          if(y(whicho(l)).gt.tmp1.and.
-     &                       y(whicho(l)).le.tmp2)then
-                             countern=countern+1
-                             whichn(countern)=whicho(l)
-                          end if   
-                       end do
-                    end if
+                        do l=1,countero
+                           if(y(whicho(l)).gt.tmp1.and.
+     &                        y(whicho(l)).le.tmp2)then
+                              countern=countern+1
+                              whichn(countern)=whicho(l)
+                           end if   
+                        end do
+                     end if
                     
-                    loglikn=loglikn+
-     &                      log(2.d0*cpar*dble(je2)+dble(2*countern))-
-     &                      log(2.d0*cpar*dble(je2)+dble(  countero))
+                     loglikn=loglikn+
+     &                       log(2.d0*cpar*dble(je2)+dble(2*countern))-
+     &                       log(2.d0*cpar*dble(je2)+dble(  countero))
 
-                    if(countern.eq.0)then
-                       ok=0
-                     else  
-                       countero=countern
-                       do l=1,countern
-                          whicho(l)=whichn(l)
-                       end do
-                       j=j+1
-                    end if   
-                 end do
-
-3                continue
+                     if(countern.eq.0)then
+                        ok=0
+                      else  
+                        countero=countern
+                        do l=1,countern
+                           whicho(l)=whichn(l)
+                        end do
+                        j=j+1
+                     end if   
+                  end do
+ 
+3                 continue
                  
-                 loglikn=loglikn+dnrm(y(i),mu,sigmac,1)
+                  loglikn=loglikn+dnrm(y(i),mu,sigmac,1)
 
+               end if
+            end do 
+
+c++++++++++ acceptance step
+
+            logpriorn=-log(sigma2c)
+            logprioro=-log(sigma2)
+
+            if(jfr(2).eq.0)then
+               logpriorn=-(0.5d0*tau(1)+1.d0)*log(sigma2c)-
+     &                     0.5d0*tau(2)/sigma2c
+
+               logprioro=-(0.5d0*tau(1)+1.d0)*log(sigma2)-
+     &                     0.5d0*tau(2)/sigma2
             end if
-         end do 
 
-c+++++++ acceptance step
+            ratio=loglikn-logliko+logcgkn-logcgko+
+     &            logpriorn-logprioro 
 
-         ratio=dexp(loglikn-logliko+logcgkn-logcgko-
-     &              log(sigma2c)+log(sigma2))
 
-         if(dble(runif()).lt.ratio)then
-            sigma=sigmac
-            sigma2=sigma2c
-            logliko=loglikn
-            acrate(2)=acrate(2)+1.d0
+            if(log(dble(runif())).lt.ratio)then
+               sigma=sigmac
+               sigma2=sigma2c
+               logliko=loglikn
+               acrate(2)=acrate(2)+1.d0
+            end if
+
          end if
-
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ MH to update the c parameter                 +++
@@ -819,17 +860,16 @@ c++++++++++ following observations
             end do 
 
 c++++++++++ acceptance step
-            ratio=dexp(loglikn+logpriorn-logliko-logprioro+
-     &                 logcgkn-logcgko)
+            ratio=loglikn+logpriorn-logliko-logprioro+
+     &            logcgkn-logcgko
 
-            if(dble(runif()).lt.ratio)then
+            if(log(dble(runif())).lt.ratio)then
                cpar=cparc
                acrate(3)=acrate(3)+1.d0
                logliko=loglikn
             end if            
             
          end if 
-
 
 c++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++++ Save samples                                 +++

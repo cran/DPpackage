@@ -14,7 +14,7 @@ c     Subroutine `ptlm' to run a Markov chain in the
 c     semiparametric linear regression model using a fully 
 c     specified Mixture of Polya trees. 
 c
-c     Copyright: Alejandro Jara, 2006-2009.
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 3.0: 
 c

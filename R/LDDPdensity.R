@@ -1,9 +1,9 @@
 ### LDDPdensity.R                    
 ### Fit a linear dependent DP model for conditional density estimation.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2009.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2010.
 ###
-### Last modification: 21-10-2008.
+### Last modification: 11-01-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -70,21 +70,21 @@ function(formula,
        # call parameters
        #########################################################################################
 
-	 cl <- match.call()
-	 mf <- match.call(expand.dots = FALSE)
-	 m <- match(c("formula", "data","na.action"), names(mf), 0)
-	 mf <- mf[c(1, m)]
-	 mf$drop.unused.levels <- TRUE
-	 mf[[1]] <- as.name("model.frame")
-	 mf <- eval(mf, parent.frame())
+	     cl <- match.call()
+		 mf <- match.call(expand.dots = FALSE)
+		 m <- match(c("formula", "data","na.action"), names(mf), 0)
+		 mf <- mf[c(1, m)]
+		 mf$drop.unused.levels <- TRUE
+		 mf[[1]] <- as.name("model.frame")
+		 mf <- eval(mf, parent.frame())
 
        #########################################################################################
        # data structure
        #########################################################################################
- 	 y <- model.response(mf,"numeric")
-  	 nrec <- length(y)
-  	 z <- model.matrix(formula)
-  	 p <- ncol(z)
+		 y <- model.response(mf,"numeric")
+		 nrec <- length(y)
+		 z <- model.matrix(formula)
+		 p <- ncol(z)
 
        #########################################################################################
        # change working directory (if requested..)
@@ -107,10 +107,6 @@ function(formula,
          sdy <- sqrt(var(y))
          grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
        
-       #########################################################################################
-       # Elements for Pseudo Countour Probabilities' computation
-       #########################################################################################
-
        #########################################################################################
        # Prior information
        #########################################################################################
@@ -211,7 +207,7 @@ function(formula,
          xtx2 <- matrix(0,nrow=p,ncol=p)
          xty <- rep(0,p)
          xty2 <- rep(0,p)
-	 seed <- c(sample(1:29000,1),sample(1:29000,1))
+		 seed <- c(sample(1:29000,1),sample(1:29000,1))
 
          fs <- rep(0,ngrid) 
          fm <- rep(0,npred)
@@ -284,20 +280,26 @@ function(formula,
        # save state
        #########################################################################################
 
-         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)         
-         cpo<-cpom[,1]         
-         fso<-cpom[,2]
+         if(!is.null(work.dir))
+         {
+            cat("\n\n Changing working directory back to ",old.dir,"\n")
+            setwd(old.dir)
+         }
 
-         model.name<-"Bayesian Semiparametric Conditional Density Estimation using LDDP"
+         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)         
+         cpo <- cpom[,1]         
+         fso <- cpom[,2]
+
+         model.name <-"Bayesian Semiparametric Conditional Density Estimation using a LDDP Mixture of Normals"
          
-	 state <- list(alpha=foo$alpha,
-	               betaclus=matrix(foo$betaclus,nrow=nrec+100,ncol=p),
-	               sigmaclus=foo$sigmaclus,
-	               ss=foo$ss,
-	               ncluster=foo$ncluster,
-	               mub=foo$mub,
-	               sb=matrix(foo$sb,nrow=p,ncol=p),
-	               tau2=tau2)
+		 state <- list(	alpha=foo$alpha,
+						betaclus=matrix(foo$betaclus,nrow=nrec+100,ncol=p),
+						sigmaclus=foo$sigmaclus,
+						ss=foo$ss,
+						ncluster=foo$ncluster,
+						mub=foo$mub,
+						sb=matrix(foo$sb,nrow=p,ncol=p),
+						tau2=tau2)
 
          denspm <- matrix(foo$denspm,nrow=npred,ncol=ngrid)
          denspl <- matrix(foo$denspl,nrow=npred,ncol=ngrid)
@@ -345,32 +347,33 @@ function(formula,
          save.state <- list(thetasave=thetasave,
                             randsave=randsave)
 
-	 z<-list(modelname=model.name,
-	         call=cl,
-	         cpo=cpo,
-	         coefficients=coeff,
-	         fso=fso,
-                 prior=prior,
-                 mcmc=mcmc,
-                 nrec=foo$nrec,
-                 p=foo$p,
-                 z=z,
-                 ngrid=ngrid,
-		 npred=npred,
-		 zpred=zpred,
-		 grid=grid,
-		 densp.m=denspm,
-                 densp.l=denspl,
-                 densp.h=densph,
-                 meanfp.m=meanfpm,
-                 meanfp.l=meanfpl,
-                 meanfp.h=meanfph,
-                 state=state,
-                 save.state=save.state)
+		 z <- list(	modelname=model.name,
+					call=cl,
+					cpo=cpo,
+					coefficients=coeff,
+					fso=fso,
+					prior=prior,
+					mcmc=mcmc,
+					nrec=foo$nrec,
+					p=foo$p,
+					z=z,
+					ngrid=ngrid,
+					npred=npred,
+					zpred=zpred,
+					grid=grid,
+					densp.m=denspm,
+					densp.l=denspl,
+					densp.h=densph,
+					meanfp.m=meanfpm,
+					meanfp.l=meanfpl,
+					meanfp.h=meanfph,
+					state=state,
+					save.state=save.state,
+					work.dir=work.dir)
 
-	 cat("\n\n")
-	 class(z)<-c("LDDPdensity")
-	 z 
+		 cat("\n\n")
+		 class(z)<-c("LDDPdensity")
+		 z 
 }
 
 

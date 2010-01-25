@@ -13,7 +13,7 @@ c     Subroutine `tdpdensitypl' to run a Markov chain for a
 c     Triangular-Dirichlet model with parametric link to transform the 
 c     data to lie in [0,1].
 c
-c     Copyright: Alejandro Jara, 2007-2009.
+c     Copyright: Alejandro Jara, 2007-2010.
 c
 c     Version 1.0:
 c

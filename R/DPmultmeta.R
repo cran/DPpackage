@@ -3,7 +3,7 @@
 ### using a Dirichlet Process prior for the distribution of 
 ### the random effects.
 ###
-### Copyright: Alejandro Jara and Peter Mueller, 2008-2009.
+### Copyright: Alejandro Jara and Peter Mueller, 2008-2010.
 ###
 ### Last modification: 02-06-2008.
 ###

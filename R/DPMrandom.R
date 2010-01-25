@@ -1,7 +1,7 @@
 ### DPMrandom.R
 ### Extracts random effects from DPpackage objects DPMlmm.
 ###
-### Copyright: Alejandro Jara, 2007-2009,
+### Copyright: Alejandro Jara, 2007-2010,
 ###
 ### Last modification: 18-04-2007.
 ###

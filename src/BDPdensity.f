@@ -12,7 +12,7 @@ c
 c     Subroutine `bdpdensity' to run a Markov chain for a 
 c     Bernstein-Dirichlet model.
 c
-c     Copyright: Alejandro Jara, 2007 - 2009
+c     Copyright: Alejandro Jara, 2007 - 2010.
 c
 c     Version 2.0: 
 c

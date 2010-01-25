@@ -17,7 +17,7 @@ c     this includes a grid of points where the density
 c     estimate is evaluated. This fucntion can be used only for dimension
 c     <=2.
 c
-c     Copyright: Alejandro Jara, 2006-2009
+c     Copyright: Alejandro Jara, 2006-2010.
 c
 c     Version 1.0: 
 c

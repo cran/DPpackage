@@ -20,7 +20,7 @@ c
 c     Subroutine `psgamgam' to run a Markov chain in a semiparametric 
 c     gamma model, using a B-splines and penalties.
 c
-c     Copyright: Alejandro Jara, 2007-2009.
+c     Copyright: Alejandro Jara, 2007-2010.
 c
 c     The parametrization considered here is:
 c     log p(Y)= disp* ((-1/mu)*Y - log(mu)) + c(Y,disp),

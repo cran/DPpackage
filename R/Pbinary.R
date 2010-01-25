@@ -1,7 +1,7 @@
 ### Pbinary.R
 ### Fit a parametric bernoulli regression model.
 ###
-### Copyright: Alejandro Jara, 2006-2009.
+### Copyright: Alejandro Jara, 2006-2010.
 ###
 ### Last modification: 15-12-2006.
 ###

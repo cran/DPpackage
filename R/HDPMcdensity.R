@@ -2,7 +2,8 @@
 ### Fit a hierarchical mixture of DPM of normals model for conditional density 
 ### estimation
 ###
-### Copyright: Alejandro Jara and Peter Mueller
+### Copyright: Alejandro Jara and Peter Mueller, 2008-2010.
+###
 ### Last modification: 07-06-2008.
 ###
 ### This program is free software; you can redistribute it and/or modify

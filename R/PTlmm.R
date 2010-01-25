@@ -2,7 +2,7 @@
 ### Fit a linear mixed model using a Mxture of Multivariate Polya Trees 
 ### prior for the distribution of the random effects.
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2007-2009.
+### Copyright: Alejandro Jara and Tim Hanson, 2007-2010.
 ###
 ### Last modification: 25-09-2009.
 ###

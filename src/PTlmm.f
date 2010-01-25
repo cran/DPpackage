@@ -19,7 +19,7 @@ c     Subroutine `ptlmm' to run a Markov chain in a semiparametric
 c     linear mixed effect model using a Mixture of Multivariate Polya 
 c     trees prior for the distribution of the random effects.
 c
-c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2009.
+c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2010.
 c
 c     Version 1.0:
 c

@@ -2,7 +2,7 @@
 ### Fit a ordinal linear mixed model with a Polya Tree prior
 ### for the random effect distribution.
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2007-2009.
+### Copyright: Alejandro Jara and Tim Hanson, 2007-2010.
 ###
 ### Last modification: 01-07-2008.
 ###

@@ -2,7 +2,7 @@
 ### Fit a Rasch model with a mixture of Polya Tree prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara, 2006-2009.
+### Copyright: Alejandro Jara, 2006-2010.
 ###
 ### Last modification: 04-09-2009.
 ###

@@ -35,9 +35,21 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
                      prior distribution of the precision parameter of the Poly tree prior,
                      \code{alpha} giving the value of the precision parameter (it 
                      must be specified if \code{alpha} is missing, see details
-                     below) and, optionally, \code{M} giving the finite level
-                     to be considered. If \code{M} is specified, a Partially Specified
-                     Mixture of Polya trees is fitted.}
+                     below), optionally \code{M} giving the finite level
+                     to be considered (if \code{M} is specified, a partially specified
+                     mixture of Polya trees model is fitted), \code{nu0} and \code{tinv} or 
+                     \code{tau1} and \code{tau2} giving the hyperparameters of the 
+                     inverted Wishart or inverted gamma prior distribution for the centering  
+                     covariance or variance, respectively, \code{sigma} giving the value of the 
+                     variance or covariance
+                     matrix of the centering distribution (if missing and if 
+                     \code{nu0} and \code{tinv} or \code{tau1} and \code{tau2} are missing, 
+                     Jeffrey's prior is used for \code{sigma}),
+                     \code{m0} and \code{S0} giving the hyperparameters 
+                     of the normal prior distribution for the mean of the normal
+                     baseline distribution, and \code{mu} giving the value of the mean of the
+                     centering distribution (if missing and if  
+                     \code{m0} and \code{S0} are missing, Jeffery's prior is used for \code{mu}).}
 
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
                      the following integers: \code{nburn} giving the number of burn-in 
@@ -70,10 +82,8 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
   (see, e.g., Lavine, 1992 and 1994; Hanson, 2006). In the univariate case, the model 
   is given by:
   \deqn{Y_1, \ldots , Y_n | G \sim G}{Y1,...,Yn | G ~ G}
-  \deqn{G | \alpha,\mu,\sigma^2 \sim PT(\Pi^{\mu,\sigma^2},\textit{A})}{G | alpha,mu,sigma2 ~ PT(Pi^{mu,sigma2},\textit{A})}
-  \deqn{f(\mu,\sigma^{-2}) \propto \sigma^{-2}}{f(mu,sigma^-2) \propto 1/sigma2}
-
-  where, the the PT is centered around a \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution, by
+  \deqn{G | \alpha,\mu,\sigma \sim PT(\Pi^{\mu,\sigma},\textit{A})}{G | alpha,mu,sigma2 ~ PT(Pi^{mu,sigma},\textit{A})}
+  where, the the PT is centered around a \eqn{N(\mu,\sigma)}{N(mu,sigma)} distribution, by
   taking each \eqn{m} level of the partition \eqn{\Pi^{\mu, \sigma^2}}{Pi^{mu, sigma2}} to coincide 
   with the \eqn{k/2^m, k=0,\ldots,2^m} quantile of the \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution.
   The family \eqn{\textit{A}=\{\alpha_e: e \in E^{*}\}}{\textit{A}=\{alphae: e \in E^{*}\}}, 
@@ -88,13 +98,27 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
   level. The multivariate model is given by: 
   \deqn{Y_1, \ldots , Y_n | G \sim G}{Y1,...,Yn | G ~ G}
   \deqn{G | \alpha,\mu,\Sigma \sim PT(\Pi^{\mu,\Sigma},\textit{A})}{G | alpha,mu,Sigma ~ PT(Pi^{mu,Sigma},\textit{A})}
-  \deqn{p(\mu,\Sigma) \propto |\Sigma|^{-(d+1)/2}}{p(mu,Sigma) \propto |Sigma|^{-(d+1)/2}}
-  
   where, the the PT is centered around a \eqn{N_d(\mu,\Sigma)}{N_d(mu,Sigma)} distribution.
   In this case, the class of partitions that we consider, starts with base sets that are Cartesian 
   products of intervals obtained as quantiles from the standard normal distribution. A multivariate 
   location-scale transformation, \eqn{Y=\mu+\Sigma^{1/2} z}{Y=mu+Sigma^{1/2} z}, is applied to each 
   base set yielding the final sets. 
+
+  A Jeffry's prior can be specified for the centering parameters, 
+  \deqn{f(\mu,\sigma \propto \sigma^{-1}}{f(mu,sigma) \propto 1/sigma}
+  and
+  \deqn{f(\mu,\Sigma) \propto |\Sigma|^{-(d+1)/2}}{p(mu,Sigma) \propto |Sigma|^{-(d+1)/2}}
+  in the univariate and multivariate case, respectively. Alternatively, the centering parameters
+  can be fixed to user-specified values or proper priors can be assigned. In the univariate case,
+  the following proper priors can be assigned:
+  \deqn{\mu | m_0, S_0 \sim N(m_0,S_0)}{mu | m0, S0 ~ N(m0,S0)}
+  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim \Gamma(\tau_1/2,\tau_2/2)}{sigma^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
+ 
+  In the multivariate case, the following proper priors can be assigned: 
+  \deqn{\mu | m_0, S_0 \sim N(m_0,S_0)}{mu | m0, S0 ~ N(m0,S0)}
+  \deqn{\Sigma | \nu_0, T \sim IW(\nu_0,T)}{Sigma | nu0, T ~ IW(nu0,T)}
+  Note that the inverted-Wishart prior is parametrized such that
+  \eqn{E(\Sigma)= T^{-1}/(\nu_0-q-1)}{E(Sigma)= Tinv/(nu0-q-1)}.
 
   To complete the model specification, independent hyperpriors are assumed,
   \deqn{\alpha | a_0, b_0 \sim Gamma(a_0,b_0)}{alpha | a0, b0 ~ Gamma(a0,b0)}
@@ -162,27 +186,27 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       state <- NULL
 
     # MCMC parameters
-      nburn<-100
-      nsave<-1000
-      nskip<-10
-      ndisplay<-100
+      nburn <- 2000
+      nsave <- 5000
+      nskip <- 49
+      ndisplay <- 500
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                   tune1=0.15,tune2=1.1,tune3=1.1)
+                   tune1=0.03,tune2=0.25,tune3=1.8)
 
     # Prior information
-      prior<-list(alpha=1,M=8)
-
+      prior<-list(a0=1,b0=0.01,M=6,m0=21,S0=100,sigma=20)
 
     # Fitting the model
 
-      fit1<-PTdensity(y=speeds,ngrid=1000,prior=prior,mcmc=mcmc,
-                       state=state,status=TRUE)
+      fit1 <- PTdensity(y=speeds,ngrid=1000,prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE)
 
     # Posterior means
       fit1
 
     # Plot the estimated density
       plot(fit1,ask=FALSE)
+      points(speeds,rep(0,length(speeds)))
 
     # Plot the parameters
     # (to see the plots gradually set ask=TRUE)
@@ -190,7 +214,6 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
     # Extracting the density estimate
       cbind(fit1$x1,fit1$dens)
-
 
 
     ####################################
@@ -201,36 +224,42 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       data(airquality)
       attach(airquality)
 
-      ozone<-Ozone**(1/3)
-      radiation<-Solar.R
+      ozone <- Ozone**(1/3)
+      radiation <- Solar.R
 
     # Prior information
-
-      prior<-list(a0=5,b0=1,M=4)
+      prior <- list(a0=5,b0=1,M=4,
+                    m0=c(0,0),S0=diag(10000,2),
+                    nu0=4,tinv=diag(1,2))
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
-
-      nburn<-5000
-      nsave<-10000
-      nskip<-10
-      ndisplay<-1000
+      nburn <- 2000
+      nsave <- 5000
+      nskip <- 49
+      ndisplay <- 500
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                   tune1=0.5,tune2=1.5,tune3=10.5)
+                   tune1=0.8,tune2=1.0,tune3=1)
 
     # Fitting the model
-      fit1<-PTdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
-                      state=state,status=TRUE,na.action=na.omit)
+      fit1 <- PTdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE,na.action=na.omit)
+
+      fit1
 
     # Plot the estimated density
       plot(fit1)
 
     # Extracting the density estimate
-      fit1$x1
-      fit1$x2
-      fit1$dens
+      x1 <- fit1$x1
+      x2 <- fit1$x2
+      z <- fit1$dens
+      par(mfrow=c(1,1))
+      contour(x1,x2,z)
+      points(fit1$y)  
+
 }
 }
 

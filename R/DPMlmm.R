@@ -2,7 +2,7 @@
 ### Fit a linear mixed model using Dirichlet Process mixture of normals
 ### prior for the distribution of the random effects.
 ###
-### Copyright: Alejandro Jara, 2006-2009.
+### Copyright: Alejandro Jara, 2006-2010.
 ###
 ### Last modification: 25-09-2009.
 ###
@@ -351,7 +351,7 @@ function(fixed,
 			}
 			else
 			{
-				fit0 <- startlmm(fixed=resp~z+x-1+offset(roffset), random = ~ z - 1 | newid, family=gaussian, q=q) 
+				fit0 <- startlmm(fixed=resp~z+x-1, random = ~ z - 1 | newid, family=gaussian, q=q) 
 				beta <- fit0$beta[(q+1):(p+q)]
 				b <- NULL 
 				for(i in 1:q)

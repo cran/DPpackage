@@ -1,7 +1,7 @@
 ### PTlm.R                   
 ### Fit a semiparametric regression model.
 ###
-### Copyright: Alejandro Jara, 2007-2009.
+### Copyright: Alejandro Jara, 2007-2010.
 ###
 ### Last modification: 25-08-2007.
 ###

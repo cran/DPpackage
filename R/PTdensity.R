@@ -1,9 +1,9 @@
 ### PTdensity.R                   
 ### Fit a Mixture of Polya trees for density estimation
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2006-2009.
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2010.
 ###
-### Last modification: 05-10-2009.
+### Last modification: 25-01-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -45,10 +45,10 @@
 ###
 
 
-PTdensity<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
+PTdensity <- function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("PTdensity")
 
-PTdensity.default<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,na.action=na.fail)
+PTdensity.default <- function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,na.action=na.fail)
 {
          #########################################################################################
          # call parameters
@@ -83,102 +83,180 @@ PTdensity.default<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,
          # prior information
          #########################################################################################
 
+   		   jfr <- c(0,0)
+           if(nvar==1)
+           {
+              tau <- c(-1,1)
+              m0 <- 0
+              S0 <- 1
+           } 
+           else
+           {
+			  nu0 <- -1
+              tinv <- diag(1,nvar)
+              m0 <- rep(0,nvar)
+              S0 <- diag(1,nvar)
+           }
+
+           if(is.null(prior$mu))
+           {
+			  murand <- 1
+              if(is.null(prior$m0))
+              {
+                 jfr[1] <- 1
+              }
+              else
+              {
+                 m0 <- prior$m0
+                 S0 <- prior$S0
+			  }
+           }
+           else
+           {  
+			  murand <- 0
+              mu <- prior$mu
+           }
+
+           if(is.null(prior$sigma))
+           {
+			  sigmarand <- 1
+              if(nvar==1)
+              { 
+                 if(is.null(prior$tau1))
+                 {
+                     jfr[2] <- 1
+                 }
+                 else
+                 {
+                     tau <- c(prior$tau1,prior$tau2)
+                 }
+              }
+              else
+              {
+                 if(is.null(prior$nu0))
+                 {
+                    jfr[2] <- 1
+                 }
+                 else
+                 {
+                    nu0 <- prior$nu0
+                    tinv <- prior$tinv
+				 }   
+              }
+           }
+           else
+           {  
+			  sigmarand <- 0
+              sigma <- prior$sigma
+		   }
+
   	       if(is.null(prior$a0))
   	       {
   	          ca <- -1
-  	    cb<--1 
-  	    cpar<-prior$alpha
-  	    crand<-0
-  	 }
-         else
-         {
-            ca<-prior$a0
-  	    cb<-prior$b0
-  	    cpar<-rgamma(1,shape=ca,scale=cb)
-  	    crand<-1
-  	 }
-  	 ab<-c(ca,cb)
-  	 
+   	          cb <- -1 
+  	          cpar <- prior$alpha
+  	          crand <- 0
+  	       }
+           else
+           {
+              ca <- prior$a0
+  	          cb <- prior$b0
+  	          cpar <- 10
+   	          crand <- 1
+  	       }
+  	       ab <- c(ca,cb)
   	 
          #########################################################################################
          # mcmc specification
          #########################################################################################
-         mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-         nsave<-mcmc$nsave
+           mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+           nsave <- mcmc$nsave
 
-         if(is.null(mcmc$tune1))         
-         {
-             tune1<-1.1
-         }
-         else
-         {
-             tune1<-mcmc$tune1
-         }
+           if(is.null(mcmc$tune1))         
+           {
+               tune1 <- 1.1
+           }
+           else
+           {
+               tune1 <- mcmc$tune1
+           }
 
-         if(is.null(mcmc$tune2))         
-         {
-             tune2<-1.1
-         }
-         else
-         {
-             tune2<-mcmc$tune2
-         }
+           if(is.null(mcmc$tune2))         
+           {
+               tune2 <- 1.1
+           }
+           else
+           {
+               tune2 <- mcmc$tune2
+           }
 
-         if(is.null(mcmc$tune3))         
-         {
-             tune3<-1.1
-         }
-         else
-         {
-             tune3<-mcmc$tune3
-         }
+           if(is.null(mcmc$tune3))         
+           {
+               tune3 <- 1.1
+           }
+           else
+           {
+               tune3 <- mcmc$tune3
+           }
 
 
          #########################################################################################
          # output
          #########################################################################################
-         acrate<-rep(0,3)
+           acrate <- rep(0,3)
 
-         if(nvar==1)
-         {
-             f<-rep(0,ngrid)
-         }
-         else
-         {
-             ngrid<-as.integer(sqrt(ngrid))
-             f<-matrix(0,nrow=ngrid,ncol=ngrid)
-             fun1<-rep(0,ngrid)
-             fun2<-rep(0,ngrid)
-         }
+           if(nvar==1)
+           {
+               f <- rep(0,ngrid)
+           }
+           else
+           {
+               ngrid <- as.integer(sqrt(ngrid))
+               f <- matrix(0,nrow=ngrid,ncol=ngrid)
+               fun1 <- rep(0,ngrid)
+               fun2 <- rep(0,ngrid)
+           }
          
-         thetasave<-matrix(0,nrow=nsave,ncol=nvar+nvar*(nvar+1)/2+1)
-         randsave<-matrix(0,nrow=nsave,ncol=nvar)
+           thetasave <- matrix(0,nrow=nsave,ncol=nvar+nvar*(nvar+1)/2+1)
+           randsave <- matrix(0,nrow=nsave,ncol=nvar)
          
          #########################################################################################
          # parameters depending on status
          #########################################################################################
          
-    	 if(status==TRUE)
-	 {
-	    if(nvar==1)
-	    {
-	       mu<-mean(y)
-	       sigma<-sqrt(var(y))
-	    }
-	    else
-	    {
-               mu<-apply(y,2,mean)
-               sigma<-matrix(var(y),nvar,nvar)
-            }   
-   	 }
+      	   if(status==TRUE)
+	       {
+	          if(nvar==1)
+	          {
+                 if(murand==1)
+                 {
+	                mu <- mean(y)
+                 }
+                 if(sigmarand==1)
+                 {
+	                sigma <- sqrt(var(y))
+                 }
+                 
+	          }
+	          else
+	          {
+                 if(murand==1)
+                 {
+					mu <- apply(y,2,mean)
+                 }
+                 if(sigmarand==1)
+                 {
+                    sigma <- matrix(var(y),nvar,nvar)
+                 }
+              }   
+   	       }
 	 
-      	 if(status==FALSE)
-	 {
-	    cpar<-state$alpha
-            mu<-state$mu 
-	    sigma<-state$sigma
-	 }    
-
+      	   if(status==FALSE)
+	       {
+	          cpar <- state$alpha
+			  mu <- state$mu 
+	          sigma <- state$sigma
+	       }    
 
          #########################################################################################
          # working space
@@ -221,292 +299,320 @@ PTdensity.default<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,
          # calling the fortran code
          #########################################################################################
 
-         if(nvar==1)
-         {
-            if(is.null(prior$M))
-            {
-                whicho<-rep(0,nrec)
-    	        whichn<-rep(0,nrec)
-                foo <- .Fortran("ptdensityu",
-              	   ngrid      =as.integer(ngrid),
-         	   nrec       =as.integer(nrec),
- 		   y          =as.double(y),
- 		   ab         =as.double(ab),
-		   mcmcvec    =as.integer(mcmcvec),
-		   nsave      =as.integer(nsave),
-                   tune1      =as.double(tune1),
-                   tune2      =as.double(tune2),
-                   tune3      =as.double(tune3),
- 		   acrate     =as.double(acrate),
- 		   f          =as.double(f),
-		   thetasave  =as.double(thetasave),		
-		   cpo        =as.double(cpo),		
-		   cpar       =as.double(cpar),		
-		   mu         =as.double(mu),		
-		   sigma      =as.double(sigma),		
-		   grid       =as.double(grid),		
-		   seed       =as.integer(seed),
-		   whicho     =as.integer(whicho),
-		   whichn     =as.integer(whichn),
-		   PACKAGE    ="DPpackage")
-	    }	
+           if(nvar==1)
+           {
+              if(is.null(prior$M))
+              {
+				  whicho <- rep(0,nrec)
+    	          whichn <- rep(0,nrec)
+				  foo <- .Fortran("ptdensityu",
+						ngrid      =as.integer(ngrid),
+						nrec       =as.integer(nrec),
+						y          =as.double(y),
+						ab         =as.double(ab),
+						murand     =as.integer(murand),
+						sigmarand  =as.integer(sigmarand),
+						jfr        =as.integer(jfr),
+						m0         =as.double(m0),
+						s0         =as.double(S0),  
+						tau        =as.double(tau),
+						mcmcvec    =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						tune1      =as.double(tune1),
+						tune2      =as.double(tune2),
+						tune3      =as.double(tune3),
+						acrate     =as.double(acrate),
+						f          =as.double(f),
+						thetasave  =as.double(thetasave),		
+						cpo        =as.double(cpo),		
+						cpar       =as.double(cpar),		
+						mu         =as.double(mu),		
+						sigma      =as.double(sigma),		
+						grid       =as.double(grid),		
+						seed       =as.integer(seed),
+						whicho     =as.integer(whicho),
+						whichn     =as.integer(whichn),
+						PACKAGE    ="DPpackage")
+			}	
             else
             {
-                nlevel<-prior$M
-                ninter<-2**nlevel
-                assign<-matrix(0,nrow=nrec,ncol=nlevel)
-	        accums<-matrix(0,nrow=nlevel,ncol=ninter)
-                counter<-matrix(0,nrow=nlevel,ncol=ninter)
-                endp<-rep(0,ninter-1)
- 	        intpn<-rep(0,nrec)
-	        intpo<-rep(0,nrec)
-	        prob<-rep(0,ninter)
-                rvecs<-matrix(0,nrow=nlevel,ncol=ninter)
+				  nlevel <- prior$M
+                  ninter <- 2**nlevel
+                  assign <- matrix(0,nrow=nrec,ncol=nlevel)
+				  accums <- matrix(0,nrow=nlevel,ncol=ninter)
+                  counter <- matrix(0,nrow=nlevel,ncol=ninter)
+                  endp <- rep(0,ninter-1)
+				  intpn <- rep(0,nrec)
+				  intpo <- rep(0,nrec)
+				  prob <- rep(0,ninter)
+                  rvecs <- matrix(0,nrow=nlevel,ncol=ninter)
  
-                foo <- .Fortran("ptdensityup",
-            	   ngrid      =as.integer(ngrid),
-         	   nrec       =as.integer(nrec),
- 		   y          =as.double(y),
- 		   ab         =as.double(ab),
- 		   nlevel     =as.integer(nlevel),
- 		   ninter     =as.integer(ninter),
-		   mcmcvec    =as.integer(mcmcvec),
-		   nsave      =as.integer(nsave),
-                   tune1      =as.double(tune1),
-                   tune2      =as.double(tune2),
-                   tune3      =as.double(tune3),
- 		   acrate     =as.double(acrate),
- 		   f          =as.double(f),
-		   thetasave  =as.double(thetasave),		
-		   cpo        =as.double(cpo),		
-		   cpar       =as.double(cpar),		
-		   mu         =as.double(mu),		
-		   sigma      =as.double(sigma),		
-		   grid       =as.double(grid),		
-		   intpn     =as.integer(intpn),		
-		   intpo     =as.integer(intpo),		
-		   accums    =as.double(accums),
-		   assign    =as.integer(assign),
-		   counter   =as.integer(counter),
-		   endp      =as.double(endp),
-		   prob      =as.double(prob),
-		   rvecs     =as.double(rvecs),
-		   seed      =as.integer(seed),
-		   PACKAGE    ="DPpackage")
-	    }
-	 }   
-         else
-         {
-            iflag<-rep(0,nvar)
-            limw<-rep(0,nvar)
-            linf<-rep(0,nvar)
-            lsup<-rep(0,nvar)
-            muc<-rep(0,nvar)
-            narea<-2**nvar
-            mass<-rep(0,narea)
-            massi<-rep(0,narea)
-            parti<-rep(0,nvar)
-            pattern<-rep(0,nvar)
-            patterns<-rep(0,nvar)
-            propv<-matrix(0,nrow=nvar,ncol=nvar) 
-            propv1<-matrix(0,nrow=nvar,ncol=nvar) 
-            propv2<-matrix(0,nrow=nvar,ncol=nvar) 
-            s<-matrix(0,nrow=nvar,ncol=nvar)         
-            sigmac<-matrix(0,nrow=nvar,ncol=nvar)         
-            sigmainv<-matrix(0,nrow=nvar,ncol=nvar)         
-            sigmainvc<-matrix(0,nrow=nvar,ncol=nvar)         
-            vv<-rep(0,nvar)         
-            whicho<-rep(0,nrec)
-            whichn<-rep(0,nrec)
-            workh1<-rep(0,nvar*(nvar+1)/2)
-            workh2<-rep(0,nvar*(nvar+1)/2)
-            workmh<-rep(0,nvar*(nvar+1)/2)
-            workm1<-matrix(0,nrow=nvar,ncol=nvar)         
-            workm2<-matrix(0,nrow=nvar,ncol=nvar)         
-            ybar<-rep(0,nvar) 
-	    z<-matrix(0,nrow=nrec,ncol=nvar)
-	    zc<-matrix(0,nrow=nrec,ncol=nvar)
-	    zwork<-rep(0,nvar)         
+				  foo <- .Fortran("ptdensityup",
+						ngrid      =as.integer(ngrid),
+						nrec       =as.integer(nrec),
+						y          =as.double(y),
+						ab         =as.double(ab),
+						murand     =as.integer(murand),
+						sigmarand  =as.integer(sigmarand),
+						jfr        =as.integer(jfr),
+						m0         =as.double(m0),
+						s0         =as.double(S0),  
+						tau        =as.double(tau),
+						nlevel     =as.integer(nlevel),
+						ninter     =as.integer(ninter),
+						mcmcvec    =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						tune1      =as.double(tune1),
+						tune2      =as.double(tune2),
+						tune3      =as.double(tune3),
+						acrate     =as.double(acrate),
+						f          =as.double(f),
+						thetasave  =as.double(thetasave),		
+						cpo        =as.double(cpo),		
+						cpar       =as.double(cpar),		
+						mu         =as.double(mu),		
+						sigma      =as.double(sigma),		
+						grid       =as.double(grid),		
+						intpn     =as.integer(intpn),		
+						intpo     =as.integer(intpo),		
+						accums    =as.double(accums),
+						assign    =as.integer(assign),
+						counter   =as.integer(counter),
+						endp      =as.double(endp),
+						prob      =as.double(prob),
+						rvecs     =as.double(rvecs),
+						seed      =as.integer(seed),
+						PACKAGE    ="DPpackage")
+
+			  }
+	       }   
+           else
+           {
+				iflag <- rep(0,nvar)
+				limw <- rep(0,nvar)
+				linf <- rep(0,nvar)
+				lsup <- rep(0,nvar)
+				muc <- rep(0,nvar)
+				narea <- 2**nvar
+				mass <- rep(0,narea)
+				massi <- rep(0,narea)
+				parti <- rep(0,nvar)
+				pattern <- rep(0,nvar)
+				patterns <- rep(0,nvar)
+				propv <- matrix(0,nrow=nvar,ncol=nvar) 
+				propv1 <- matrix(0,nrow=nvar,ncol=nvar) 
+				propv2 <- matrix(0,nrow=nvar,ncol=nvar) 
+				s <- matrix(0,nrow=nvar,ncol=nvar)         
+				sigmac <- matrix(0,nrow=nvar,ncol=nvar)         
+				sigmainv <- matrix(0,nrow=nvar,ncol=nvar)         
+				sigmainvc <- matrix(0,nrow=nvar,ncol=nvar)         
+				vv <- rep(0,nvar)         
+				whicho <- rep(0,nrec)
+				whichn <- rep(0,nrec)
+				workh1 <- rep(0,nvar*(nvar+1)/2)
+				workh2 <- rep(0,nvar*(nvar+1)/2)
+				workmh <- rep(0,nvar*(nvar+1)/2)
+				workm1 <- matrix(0,nrow=nvar,ncol=nvar)         
+				workm2 <- matrix(0,nrow=nvar,ncol=nvar)         
+				ybar <- rep(0,nvar) 
+				z <- matrix(0,nrow=nrec,ncol=nvar)
+				zc <- matrix(0,nrow=nrec,ncol=nvar)
+				zwork <- rep(0,nvar)         
+
+				s0 <- solve(S0)
          
-            if(is.null(prior$M))
-            {
-                foo <- .Fortran("ptmdensity",
-             	   ngrid      =as.integer(ngrid),
-         	   nrec       =as.integer(nrec),
-                   nvar       =as.integer(nvar),
- 		   y          =as.double(y),
- 		   ab         =as.double(ab),
-		   mcmcvec    =as.integer(mcmcvec),
-		   nsave      =as.integer(nsave),
-                   tune1      =as.double(tune1),
-                   tune2      =as.double(tune2),
-                   tune3      =as.double(tune3),
- 		   acrate     =as.double(acrate),
-		   cpo        =as.double(cpo),		
- 		   f          =as.double(f),
- 		   randsave   =as.double(randsave),		
-		   thetasave  =as.double(thetasave),		
-		   cpar       =as.double(cpar),		
-		   mu         =as.double(mu),		
-		   sigma      =as.double(sigma),		
-                   grid1      =as.double(grid1),
-                   grid2      =as.double(grid2),
-                   iflag      =as.integer(iflag),
-                   whicho     =as.integer(whicho),
-                   whichn     =as.integer(whichn),
-                   limw       =as.double(limw),
-		   linf       =as.double(linf),
-		   lsup       =as.double(lsup),
-                   narea      =as.integer(narea),
-                   mass       =as.double(mass),
-                   massi      =as.integer(massi),
-                   parti      =as.integer(parti),
-                   pattern    =as.integer(pattern),
-                   patterns   =as.integer(patterns),
-		   s          =as.double(s),
-		   sigmainv   =as.double(sigmainv),
-		   sigmainvc  =as.double(sigmainvc),
-		   ybar       =as.double(ybar),
-		   z          =as.double(z),
-		   zc         =as.double(zc),
-		   zwork      =as.double(zwork),
-		   vv         =as.double(vv),
-		   workmh     =as.double(workmh),
-		   workh1     =as.double(workh1),
-		   workh2     =as.double(workh2),
-		   workm2     =as.double(workm2),
-		   muc        =as.double(muc),
-		   sigmac     =as.double(sigmac),
- 		   propv      =as.double(propv),
- 		   propv1     =as.double(propv1),
- 		   propv2     =as.double(propv2),
-		   seed       =as.integer(seed),
-		   PACKAGE    ="DPpackage")
-            }
-            else
-            {
-                foo <- .Fortran("ptmdensityp",
-             	   ngrid      =as.integer(ngrid),
-         	   nrec       =as.integer(nrec),
-                   nvar       =as.integer(nvar),
- 		   y          =as.double(y),
- 		   ab         =as.double(ab),
- 		   nlevel     =as.integer(prior$M),
-		   mcmcvec    =as.integer(mcmcvec),
-		   nsave      =as.integer(nsave),
-                   tune1      =as.double(tune1),
-                   tune2      =as.double(tune2),
-                   tune3      =as.double(tune3),
- 		   acrate     =as.double(acrate),
-		   cpo        =as.double(cpo),		
- 		   f          =as.double(f),
- 		   randsave   =as.double(randsave),		
-		   thetasave  =as.double(thetasave),		
-		   cpar       =as.double(cpar),		
-		   mu         =as.double(mu),		
-		   sigma      =as.double(sigma),		
-                   grid1      =as.double(grid1),
-                   grid2      =as.double(grid2),
-                   iflag      =as.integer(iflag),
-                   whicho     =as.integer(whicho),
-                   whichn     =as.integer(whichn),
-                   limw       =as.double(limw),
-		   linf       =as.double(linf),
-		   lsup       =as.double(lsup),
-                   narea      =as.integer(narea),
-                   mass       =as.double(mass),
-                   massi      =as.integer(massi),
-                   parti      =as.integer(parti),
-                   pattern    =as.integer(pattern),
-                   patterns   =as.integer(patterns),
-		   s          =as.double(s),
-		   sigmainv   =as.double(sigmainv),
-		   sigmainvc  =as.double(sigmainvc),
-		   ybar       =as.double(ybar),
-		   z          =as.double(z),
-		   zc         =as.double(zc),
-		   zwork      =as.double(zwork),
-		   vv         =as.double(vv),
-		   workmh     =as.double(workmh),
-		   workh1     =as.double(workh1),
-		   workh2     =as.double(workh2),
-		   workm2     =as.double(workm2),
-		   muc        =as.double(muc),
-		   sigmac     =as.double(sigmac),
- 		   propv      =as.double(propv),
- 		   propv1     =as.double(propv1),
- 		   propv2     =as.double(propv2),
-		   seed       =as.integer(seed),
-		   PACKAGE    ="DPpackage")
-            }
-         }
+				if(is.null(prior$M))
+				{
+					foo <- .Fortran("ptmdensity",
+						ngrid      =as.integer(ngrid),
+						nrec       =as.integer(nrec),
+						nvar       =as.integer(nvar),
+						y          =as.double(y),
+						ab         =as.double(ab),
+						murand     =as.integer(murand),
+						sigmarand  =as.integer(sigmarand),
+						jfr        =as.integer(jfr),
+						m0         =as.double(m0),
+						s0         =as.double(s0),  
+						nu0        =as.integer(nu0),
+						tinv	   =as.double(tinv),
+						mcmcvec    =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						tune1      =as.double(tune1),
+						tune2      =as.double(tune2),
+						tune3      =as.double(tune3),
+						acrate     =as.double(acrate),
+						cpo        =as.double(cpo),		
+						f          =as.double(f),
+						randsave   =as.double(randsave),		
+						thetasave  =as.double(thetasave),		
+						cpar       =as.double(cpar),		
+						mu         =as.double(mu),		
+						sigma      =as.double(sigma),		
+						grid1      =as.double(grid1),
+						grid2      =as.double(grid2),
+						iflag      =as.integer(iflag),
+						whicho     =as.integer(whicho),
+						whichn     =as.integer(whichn),
+						limw       =as.double(limw),
+						linf       =as.double(linf),
+						lsup       =as.double(lsup),
+						narea      =as.integer(narea),
+						mass       =as.double(mass),
+						massi      =as.integer(massi),
+						parti      =as.integer(parti),
+						pattern    =as.integer(pattern),
+						patterns   =as.integer(patterns),
+						s          =as.double(s),
+						sigmainv   =as.double(sigmainv),
+						sigmainvc  =as.double(sigmainvc),
+						ybar       =as.double(ybar),
+						z          =as.double(z),
+						zc         =as.double(zc),
+						zwork      =as.double(zwork),
+						vv         =as.double(vv),
+						workmh     =as.double(workmh),
+						workh1     =as.double(workh1),
+						workh2     =as.double(workh2),
+						workm1     =as.double(workm1),
+						workm2     =as.double(workm2),
+						muc        =as.double(muc),
+						sigmac     =as.double(sigmac),
+						propv      =as.double(propv),
+						propv1     =as.double(propv1),
+						propv2     =as.double(propv2),
+						seed       =as.integer(seed),
+						PACKAGE    ="DPpackage")
+				}
+				else
+				{
+					foo <- .Fortran("ptmdensityp",
+						ngrid      =as.integer(ngrid),
+						nrec       =as.integer(nrec),
+						nvar       =as.integer(nvar),
+						y          =as.double(y),
+						ab         =as.double(ab),
+                        nlevel     =as.integer(prior$M),
+						murand     =as.integer(murand),
+						sigmarand  =as.integer(sigmarand),
+						jfr        =as.integer(jfr),
+						m0         =as.double(m0),
+						s0         =as.double(s0),  
+						nu0        =as.integer(nu0),
+						tinv	   =as.double(tinv),
+						mcmcvec    =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						tune1      =as.double(tune1),
+						tune2      =as.double(tune2),
+						tune3      =as.double(tune3),
+						acrate     =as.double(acrate),
+						cpo        =as.double(cpo),		
+						f          =as.double(f),
+						randsave   =as.double(randsave),		
+						thetasave  =as.double(thetasave),		
+						cpar       =as.double(cpar),		
+						mu         =as.double(mu),		
+						sigma      =as.double(sigma),		
+						grid1      =as.double(grid1),
+						grid2      =as.double(grid2),
+						iflag      =as.integer(iflag),
+						whicho     =as.integer(whicho),
+						whichn     =as.integer(whichn),
+						limw       =as.double(limw),
+						linf       =as.double(linf),
+						lsup       =as.double(lsup),
+						narea      =as.integer(narea),
+						mass       =as.double(mass),
+						massi      =as.integer(massi),
+						parti      =as.integer(parti),
+						pattern    =as.integer(pattern),
+						patterns   =as.integer(patterns),
+						s          =as.double(s),
+						sigmainv   =as.double(sigmainv),
+						sigmainvc  =as.double(sigmainvc),
+						ybar       =as.double(ybar),
+						z          =as.double(z),
+						zc         =as.double(zc),
+						zwork      =as.double(zwork),
+						vv         =as.double(vv),
+						workmh     =as.double(workmh),
+						workh1     =as.double(workh1),
+						workh2     =as.double(workh2),
+						workm1     =as.double(workm1),
+						workm2     =as.double(workm2),
+						muc        =as.double(muc),
+						sigmac     =as.double(sigmac),
+						propv      =as.double(propv),
+						propv1     =as.double(propv1),
+						propv2     =as.double(propv2),
+						seed       =as.integer(seed),
+						PACKAGE    ="DPpackage")
+				}
+           }
 
          #########################################################################################
          # save state
          #########################################################################################
-         model.name<-"Bayesian semiparametric density estimation"		
+           model.name <- "Bayesian Density Estimation Using MPT"		
                 
-         varnames<-colnames(y)
-         if(is.null(varnames))
-         {
+           varnames<-colnames(y)
+           if(is.null(varnames))
+           {
                varnames<-all.vars(cl)[1:nvar]
-         }
+		   }
 		
-         state <- list(
-                       alpha=foo$cpar,
-	               mu=foo$mu,
-	               sigma=matrix(foo$sigma,nrow=nvar,ncol=nvar)
-                      )
+           state <- list(alpha=foo$cpar,
+	                     mu=foo$mu,
+	                     sigma=matrix(foo$sigma,nrow=nvar,ncol=nvar)
+                         )
          
-         thetasave<-matrix(foo$thetasave,nrow=nsave,ncol=(nvar+nvar*(nvar+1)/2+1))
-         if(nvar>1){
-            randsave<-matrix(foo$randsave,nrow=nsave,ncol=nvar)
-            colnames(randsave)<-varnames
-         }   
+		   thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(nvar+nvar*(nvar+1)/2+1))
+           if(nvar>1)
+           {
+              randsave <- matrix(foo$randsave,nrow=nsave,ncol=nvar)
+              colnames(randsave) <- varnames
+           }   
 
-         coeff<-apply(thetasave,2,mean) 
+           coeff<-apply(thetasave,2,mean) 
          
-         pnames1<-NULL
-	 for(i in 1:nvar)
-	 {
-	     pnames1<-c(pnames1,paste("mu",varnames[i],sep=":"))
-	 }
+           pnames1<-NULL
+	       for(i in 1:nvar)
+	       {
+	           pnames1<-c(pnames1,paste("mu",varnames[i],sep=":"))
+		   }
+           pnames2<-NULL
+      	   for(i in 1:nvar)
+	       {
+	           for(j in i:nvar)
+	           {
+	               if(i==j)
+	               {
+	                  tmp <- varnames[i]
+				   }
+				   else
+	               {
+	                  tmp <- paste(varnames[i],varnames[j],sep="-")
+	               }   
+				   pnames2 <- c(pnames2,paste("sigma",tmp,sep=":"))
+			   }	
+		   }
 	 
-
-         pnames2<-NULL
-	 for(i in 1:nvar)
-	 {
-	     for(j in i:nvar)
-	     {
-	        if(i==j)
-	        {
-	           tmp<-varnames[i]
-	        }
-	        else
-	        {
-	           tmp<-paste(varnames[i],varnames[j],sep="-")
-	        }   
-	 	pnames2<-c(pnames2,paste("sigma",tmp,sep=":"))
-	     }	
-	 }
-	 
-         names(coeff)<-c(pnames1,pnames2,"alpha")
-         colnames(thetasave)<-c(pnames1,pnames2,"alpha")
-
-         save.state <- list(thetasave=thetasave,randsave=randsave)
+           names(coeff) <- c(pnames1,pnames2,"alpha")
+           colnames(thetasave) <- c(pnames1,pnames2,"alpha")
+           save.state <- list(thetasave=thetasave,randsave=randsave)
          
-         if(crand==0)
-         {
-            acrate<-foo$acrate[1:2]
-         }
-         else
-         {
+		   if(crand==0)
+           {
+              acrate<-foo$acrate[1:2]
+           }
+           else
+           {
             acrate<-foo$acrate
-         }
+           }
 
-         x1<-NULL
-         x2<-NULL
-         dens<-NULL
+           x1<-NULL
+           x2<-NULL
+           dens<-NULL
          
          if(nvar==1)
          {
@@ -520,39 +626,15 @@ PTdensity.default<-function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,
          }
          else
          {
-            coincide<-function(x,ngrid,grid)
-            {
-               dens <- density(x,n=ngrid)         
-               densx <- dens$x
-               densy <- dens$y
-               densf<-rep(0,ngrid)
-               for(i in 1:ngrid)
-               {
-                   xsearch<-grid[i] 
-                   if(length(densx[densx<=xsearch])>0 && length(densx[densx>=xsearch])>0 )
-                   { 
-  	              densxs1 <- max(densx[densx<=xsearch])
-  	              densxs2 <- min(densx[densx>=xsearch])
-	              densys1 <- densy[densx==densxs1]
-	              densys2 <- densy[densx==densxs2]
-	              densf[i] <- densys1 + ((densys2-densys1)/(densxs2-densxs1))*(xsearch-densxs1)
-                   }
-                   else
-                   { 
-                      densf[i]<-0 
-                   } 
+            x1 <- grid1
+            x2 <- grid2
+            dens <- matrix(foo$f,nrow=ngrid,ncol=ngrid)
+            f <- matrix(foo$f,nrow=ngrid,ncol=ngrid)
 
-               } 
-               return(densf)
-            }
-            x1<-foo$grid1
-            x2<-foo$grid2
-            dens<-matrix(foo$f,nrow=ngrid,ncol=ngrid)
-            f<-matrix(foo$f,nrow=ngrid,ncol=ngrid)
-            grid1<-foo$grid1
-            grid2<-foo$grid2
-            fun1<-coincide(randsave[,1],ngrid,grid1)
-            fun2<-coincide(randsave[,2],ngrid,grid2)
+            dist1 <- grid2[2]-grid2[1] 
+			dist2 <- grid1[2]-grid1[1] 
+            fun1 <- (dist1/2)*(dens[,1]+dens[,ngrid]+2*apply(dens[,2:(ngrid-1)],1,sum))
+            fun2 <- (dist2/2)*(dens[1,]+dens[ngrid,]+2*apply(dens[2:(ngrid-1),],2,sum))
          }   
 
 	 z<-list(call=cl,y=y,varnames=varnames,modelname=model.name,cpo=foo$cpo,

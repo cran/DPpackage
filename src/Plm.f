@@ -10,7 +10,7 @@ c=======================================================================
 c     Subroutine `plm' to run a Markov chain for a 
 c     parametric linear model.
 c
-c     Copyright: Alejandro Jara, 2009
+c     Copyright: Alejandro Jara, 2009-2010.
 c
 c     Version 1.0: 
 c

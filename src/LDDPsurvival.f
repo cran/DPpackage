@@ -22,7 +22,7 @@ c     Subroutine `lddpsurvival' to run a Markov chain for a
 c     Linear Dependent Dirichlet Process prior for 
 c     survival analysis.
 c
-c     Copyright: Alejandro Jara, 2009
+c     Copyright: Alejandro Jara, 2009-2010.
 c
 c     Version 1.0: 
 c
@@ -1128,7 +1128,7 @@ c+++++Output
 
 c+++++Internal parameters
       integer maxnsave,maxngrid
-      parameter(maxnsave=30000,maxngrid=500)
+      parameter(maxnsave=30000,maxngrid=300)
       real*8 aupp(2),alow(2)
       real*8 workm(maxnsave,maxngrid)
 

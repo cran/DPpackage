@@ -19,7 +19,7 @@ c     probit mixed effect model for ordinal data, using a Dirichlet
 c     process mixture of normals prior for the distribution of the 
 c     random effects.
 c
-c     Copyright: Alejandro Jara, 2007-2009.
+c     Copyright: Alejandro Jara, 2007-2010.
 c
 c     Version 1.0:
 c

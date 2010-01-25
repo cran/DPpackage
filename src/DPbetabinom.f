@@ -13,7 +13,7 @@ c
 c     Subroutine `dpbetabinom' to run a Markov chain for a 
 c     semiparametric Beta-Binomial model using a DP prior.
 c
-c     Copyright: Alejandro Jara, 2009
+c     Copyright: Alejandro Jara, 2009-2010.
 c
 c     Version 1.0: 
 c

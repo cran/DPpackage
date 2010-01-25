@@ -26,7 +26,7 @@ c     semiparametric logistic regression model using a Centrally
 c     Standarized Dirichlet process prior for the link as in Newton et 
 c     al., 1996. 
 c
-c     Copyright: Alejandro Jara, 2006 - 2009
+c     Copyright: Alejandro Jara, 2006 - 2010.
 c
 c     Version 4.0: 
 c

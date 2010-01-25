@@ -17,7 +17,7 @@ c     Subroutine `dpmmeta' to run a Markov chain in the semiparametric
 c     meta-analytic linear mixed model using a Dirichlet Process Mixture
 c     of normals prior for the distributions of the random effecs. 
 c
-c     Copyright: Alejandro Jara, 2007-2009.
+c     Copyright: Alejandro Jara, 2007-2010.
 c
 c     Version 1.0:
 c

@@ -19,12 +19,18 @@ c     Subroutine `lddpcdensity' to run a Markov chain for a
 c     Linear Dependent Dirichlet Process prior for 
 c     conditional density estimation.
 c
-c     Copyright: Alejandro Jara, 2008 - 2009
+c     Copyright: Alejandro Jara, 2008 - 2010.
 c
-c     Version 1.0: 
+c     Version 2.0: 
 c
-c     Last modification: 14-03-2009.
+c     Last modification: 11-01-2010.
 c     
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Save number of clusters, cluster indicators, and cluster
+c            parameters in files.
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -293,6 +299,21 @@ c++++ opening files
       open(unit=2,file='dppackage2.out',status='unknown',
      &     form='unformatted')
 
+      open(unit=3,file='dppackage3.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=4,file='dppackage4.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=5,file='dppackage5.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=6,file='dppackage6.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=7,file='dppackage7.out',status='unknown',
+     &     form='unformatted')
+
 c++++++++++++++++++++++++++
 c     initialize variables
 c++++++++++++++++++++++++++
@@ -328,6 +349,8 @@ c++++ cluster structure
          cstrt(ss(i),ccluster(ss(i)))=i
       end do
  
+      write(3) nrec,p
+
       do iscan=1,nscan
 
 c++++++++++++++++++++++++++++++++++
@@ -774,6 +797,15 @@ c               call dblepr("V1",-1,tmp1,1)
                end do 
                write(2) (fm(i),i=1,npred)
 
+c+++++++++++++ save elements in files
+
+               write(4) ncluster
+               write(5) (ss(i),i=1,nrec)
+               do i=1,ncluster 
+                  write(6) (betaclus(i,j),j=1,p)
+               end do
+               write(7) (sigmaclus(i),i=1,ncluster)
+
 c+++++++++++++ cpo
 
                do i=ncluster+1,ncluster+100
@@ -852,11 +884,91 @@ c+++++++++++++ print
 
       close(unit=1)
       close(unit=2)
+      close(unit=3)
+      close(unit=4)
+      close(unit=5)
+      close(unit=6)
+      close(unit=7)
 
       call hpddensreg(nsave,npred,ngrid,0.05d0,1,worksam,fs,
      &                denspl,densph)
       call hpddensregmf(nsave,npred,0.05d0,1,worksam,meanfpl,meanfph)
       
+      return
+      end
+
+c=======================================================================
+      subroutine readlddpdens(nsave,nrec,p,
+     &                        ss,betaw,sigmaw,
+     &                        nclus,clusind,clusreg,
+     &                        clussig)
+c=======================================================================
+      implicit none
+
+c++++ input
+      integer nsave,nrec,p
+
+c++++ working
+      integer ss(nrec)
+      real*8 betaw(p)
+      real*8 sigmaw(nrec)
+
+c++++ output
+      integer nclus(nsave)
+      integer clusind(nsave,nrec)
+      real*8 clusreg(nsave,nrec*p)
+      real*8 clussig(nsave,nrec)
+
+c++++ internal working
+      integer count,i,j,k,ncluster
+
+      open(unit=4,file='dppackage4.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=5,file='dppackage5.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=6,file='dppackage6.out',status='unknown',
+     &     form='unformatted')
+
+      open(unit=7,file='dppackage7.out',status='unknown',
+     &     form='unformatted')
+
+
+c++++ algorithm
+
+      do i=1,nsave
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         read(4) ncluster
+         nclus(i)=ncluster
+
+         read(5) (ss(j),j=1,nrec)
+         do j=1,nrec
+            clusind(i,j)=ss(j)
+         end do  
+
+         count=0
+         do j=1,ncluster
+            read(6) (betaw(k),k=1,p)
+            do k=1,p
+               count=count+1
+               clusreg(i,count)=betaw(k) 
+            end do
+         end do
+
+         read(7) (sigmaw(j),j=1,ncluster)
+         do j=1,ncluster
+            clussig(i,j)=sigmaw(j)
+         end do
+      end do 
+     
+      close(unit=4)
+      close(unit=5)
+      close(unit=6)
+      close(unit=7)
+
       return
       end
 

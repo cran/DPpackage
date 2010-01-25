@@ -13,6 +13,12 @@ c=======================================================================
      &                      workv1,workv2,ywork)                        
 c=======================================================================                      
 c 
+c     Copyright: Alejandro Jara, 2008-2010.
+c
+c     Version 1.0:
+c
+c     Last modification: 20-04-2008.
+c
 c      Alejandro Jara
 c      Department of Statistics
 c      Facultad de Ciencias Fisicas y Matematicas

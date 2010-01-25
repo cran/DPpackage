@@ -11,7 +11,7 @@ c     Sample the configuration for the regression coefficients
 c     using the collapsed-state proposed by MacEachern (1998).
 c     This function is for univariate responses.
 c
-c     Alejandro Jara, 2008 
+c     Alejandro Jara, 2008-2010.
 c=======================================================================            
       implicit none
 c+++++Parameters

@@ -24,7 +24,7 @@ c     AFT effect model, using a Mixture of Multivariate Polya
 c     trees prior for the distribution of the errors and the frailty 
 c     terms.
 c
-c     Copyright: Alejandro Jara and Tim Hanson, 2009
+c     Copyright: Alejandro Jara and Tim Hanson, 2009-2010.
 c
 c     Version 1.0:
 c

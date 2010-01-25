@@ -217,7 +217,7 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
     # Prior information 2: median zero PT
 
-      prior1<-list(alpha=1,
+      prior2<-list(alpha=1,
                    tau1=20,
                    tau2=10,
                    mub=0,

@@ -21,7 +21,7 @@ c     Subroutine `ptglmmgam' to run a Markov chain in a semiparametric
 c     gamma mixed effect model, using a Mixture of Multivariate Polya 
 c     trees prior for the distribution of the random effects.
 c
-c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2009.
+c     Copyright: Alejandro Jara and Timothy Hanson, 2007-2010.
 c
 c     The parametrization considered here is:
 c     log p(Y)= v* ((-1/mu)*Y - log(mu)) + c(Y,v),

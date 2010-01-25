@@ -2,7 +2,7 @@
 ### Fit a semiparametric linear mixed effects meta-analysis using a
 ### Polya tree prior for the distribution of the random effects.
 ###
-### Copyright: Alejandro Jara, 2009.
+### Copyright: Alejandro Jara, 2008-2010.
 ###
 ### Last modification: 23-08-2007.
 ###
