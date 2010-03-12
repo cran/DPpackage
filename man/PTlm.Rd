@@ -238,7 +238,7 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}

@@ -235,7 +235,7 @@ plot(fit1$grid,fit1$dens.u,lwd=2,col="blue",type="l",lty=2,xlab=expression(theta
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

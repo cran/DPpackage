@@ -211,7 +211,7 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 }
 
 \author{
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}

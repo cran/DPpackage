@@ -264,11 +264,11 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 Peter Mueller \email{<pmueller@mdanderson.org>}
 
-Gary L. Rosner \email{<glrosner@mdanderson.org>}
+Gary L. Rosner \email{<grosner@jhmi.edu>}
 
 }
 

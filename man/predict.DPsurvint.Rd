@@ -159,7 +159,7 @@ Hanson, T., and Johnson, W. (2004) A Bayesian Semiparametric AFT Model for
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}

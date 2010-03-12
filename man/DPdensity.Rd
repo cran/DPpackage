@@ -314,7 +314,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

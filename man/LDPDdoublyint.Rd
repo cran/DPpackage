@@ -266,7 +266,7 @@ Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2009). Bayesian semiparametr
 }
 
 \author{
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}

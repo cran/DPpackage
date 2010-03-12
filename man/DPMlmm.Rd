@@ -223,7 +223,7 @@ Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal dat
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

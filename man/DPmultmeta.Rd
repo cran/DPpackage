@@ -205,7 +205,7 @@ MacEachern, S.N. (1998) Computational Methods for Mixture of Dirichlet Process M
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 Peter Mueller \email{<pmueller@mdanderson.org>}
 

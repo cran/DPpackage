@@ -15,6 +15,16 @@ c     Copyright: Alejandro Jara, 2008-2010.
 c
 c     Version 1.0:
 c
+c      Alejandro Jara
+c      Department of Statistics
+c      Facultad de Matematicas
+c      Pontificia Universidad Catolica de Chile
+c      Casilla 306, Correo 22 
+c      Santiago
+c      Chile
+c      Voice: +56-2-3544506  URL  : http://www.mat.puc.cl/~ajara
+c      Fax  : +56-2-3547729  Email: atjara@uc.cl
+c
 c=======================================================================
 
       implicit none 

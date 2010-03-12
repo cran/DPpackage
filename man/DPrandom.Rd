@@ -74,7 +74,7 @@ DPrandom(object,centered=FALSE,predictive=FALSE)
 }
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjarav@uc.cl>}
 
 }
 \keyword{models}

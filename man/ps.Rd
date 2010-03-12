@@ -32,7 +32,7 @@ Eilers, P.H.C. and Marx, B.D. (1996) Flexible Smoothing with B-splines and
 }
 
 \author{
-  Alejandro Jara \email{<ajarav@udec.cl>}
+  Alejandro Jara \email{<atjara@uc.cl>}
  }
 
 \examples{

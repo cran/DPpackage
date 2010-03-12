@@ -174,7 +174,7 @@ Perron, F. and Mengersen, K. (2001) Bayesian Nonparametric Modeling Using Mixtur
 }
 
 \author{
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}

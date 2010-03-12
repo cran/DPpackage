@@ -238,7 +238,7 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

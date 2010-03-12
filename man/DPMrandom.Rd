@@ -86,7 +86,7 @@ DPMrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 \keyword{models}

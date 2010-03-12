@@ -24,14 +24,14 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Fisicas y Matematicas
-###      Universidad de Concepcion
-###      Avenida Esteban Iturra S/N
-###      Barrio Universitario
-###      Concepcion
+###      Facultad de Matematicas
+###      Pontificia Universidad Catolica de Chile
+###      Casilla 306, Correo 22 
+###      Santiago
 ###      Chile
-###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
-###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+###      Voice: +56-2-3544506  URL  : http://www.mat.puc.cl/~ajara
+###      Fax  : +56-2-3547729  Email: atjara@uc.cl
+###      
 
 "LDPDdoublyint"<-
 function(onset,failure,p,xonset,q,xfailure,xpred,grid,prior,mcmc,state,status,work.dir=NULL)

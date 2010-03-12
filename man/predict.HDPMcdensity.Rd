@@ -134,7 +134,7 @@ Mueller, P., Quintana, F. and Rosner, G. (2004). A Method for Combining Inferenc
 }
 
 \author{
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 Peter Mueller \email{<pmueller@mdanderson.org>}
 

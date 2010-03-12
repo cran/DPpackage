@@ -235,7 +235,7 @@ Kraemer, H. C. (1992). Evaluating Medical Tests. Sage Publications.
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

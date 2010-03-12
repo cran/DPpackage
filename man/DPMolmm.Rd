@@ -232,7 +232,7 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 }
 

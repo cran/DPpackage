@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2010.
 ###
-### Last modification: 11-01-2010.
+### Last modification: 16-02-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -23,14 +23,13 @@
 ###
 ###      Alejandro Jara
 ###      Department of Statistics
-###      Facultad de Ciencias Fisicas y Matematicas
-###      Universidad de Concepcion
-###      Avenida Esteban Iturra S/N
-###      Barrio Universitario
-###      Concepcion
+###      Facultad de Matematicas
+###      Pontificia Universidad Catolica de Chile
+###      Casilla 306, Correo 22 
+###      Santiago
 ###      Chile
-###      Voice: +56-41-2203163  URL  : http://www2.udec.cl/~ajarav
-###      Fax  : +56-41-2251529  Email: ajarav@udec.cl
+###      Voice: +56-2-3544506  URL  : http://www.mat.puc.cl/~ajara
+###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Peter Mueller
 ###      Department of Biostatistics
@@ -41,14 +40,14 @@
 ###      Fax  : (713) 563-4243  Email: pmueller@mdanderson.org
 ###
 ###      Gary L. Rosner
-###      Department of Biostatistics
-###      The University of Texas MD Anderson Cancer Center
-###      1515 Holcombe Blvd, Unit 447 
-###      Houston TX 77030-4009, USA
-###      Voice: (713) 563-4285  URL  : http://www.mdanderson.org/departments/biostats
-###      Fax  : (713) 563-4243  Email: glrosner@mdanderson.org
+###      Division of Oncology Biostatistics/Bioinformatics
+###      The Sidney Kimmel Comprehensive Cancer Center
+###      Johns Hopkins
+###      550 North Broadway, Suite 1103
+###      Baltimore, Maryland  21205-2013
+###      Voice: (410) 955-4884  URL  : http://www.hopkinskimmelcancercenter.org/index.cfm/cID/1686/mpage/expertdata.cfm/expID/593
+###      Fax  : (410) 955-0859  Email: grosner@jhmi.edu
 ###
-
 
 "LDDPdensity"<-
 function(formula,zpred,prior,mcmc,state,status,ngrid=100,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
@@ -183,11 +182,11 @@ function(formula,
             alpha <- state$alpha
             ncluster <- state$ncluster
             ss <- state$ss
-            betaclus <- foo$betaclus
-            sigmaclus <- foo$sigmaclus
-            tau2 <- foo$tau2
-            mub <- foo$mub
-            sb <- foo$sb
+            betaclus <- state$betaclus
+            sigmaclus <- state$sigmaclus
+            tau2 <- state$tau2
+            mub <- state$mub
+            sb <- state$sb
          }    
 
        #########################################################################################

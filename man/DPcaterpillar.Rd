@@ -76,8 +76,8 @@ DPcaterpillar(object, midpoint="mean", hpd=TRUE , ask=TRUE,
 }
 
 \author{
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
-\keyword{aplot}
+\keyword{plot}
 \keyword{nonparametric}

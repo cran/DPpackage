@@ -3,7 +3,7 @@
      cat("##\n## Dirichlet Process Package (DPpackage)\n")
      cat("## Copyright (C) 2006 - 2010, Alejandro Jara\n")
      cat("## Department of Statistics \n")
-     cat("## Universidad de Concepcion\n")
+     cat("## P.U. Catolica de Chile\n")
      cat("##\n## Support provided by the KUL-PUC bilateral\n")
      cat("## (Belgium-Chile) grant BIL05/03, NIH/NCI\n")
      cat("## R01CA75981 grant, and Fondecyt 3095003 grant.\n##\n")

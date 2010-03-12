@@ -236,7 +236,7 @@ Sethuraman, J., and Tiwari, R. C. (1982) Convergence of Dirichlet Measures and
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 }
 
 \keyword{models}
