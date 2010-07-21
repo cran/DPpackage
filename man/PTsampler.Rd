@@ -88,7 +88,7 @@ PTsampler(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.options=NULL,
 }
 
 \references{
-Hanson, T., Monteiro, J.V.D, and Jara, A. (2009) The Polya Tree Sampler: Towards Efficient and Automatic  Independent Metropolis Proposals. Technical Report.
+Hanson, T., Monteiro, J.V.D, and Jara, A. (2010) The Polya Tree Sampler: Towards Efficient and Automatic  Independent Metropolis Proposals. Journal of Computational and Graphical Statistics (To appear).
 }
 
 \examples{

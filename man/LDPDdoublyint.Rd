@@ -89,7 +89,7 @@ LDPDdoublyint(onset,failure,p,xonset,q,xfailure,xpred,
 
 \details{
   This generic function fits a Linear Dependent Poisson-Dirichlet Process Mixture of Survival models
-  as in Jara et al. (2009). The joint distribution of the true chronological onset times and true time-to-events, \eqn{T_i}{Ti},
+  as in Jara et al. (2010). The joint distribution of the true chronological onset times and true time-to-events, \eqn{T_i}{Ti},
   is modeled using the mixture model
   \deqn{log(T_i)=y_i | f_{X_i} \sim f_{X_i}}{log(Ti)=yi | fXi ~ fXi}
   \deqn{f_{X_i} = \int N(X_i \beta, \Sigma) dG(\beta)}{fXi = \int N(Xi beta, Sigma) dG(beta)}
@@ -149,8 +149,7 @@ LDPDdoublyint(onset,failure,p,xonset,q,xfailure,xpred,
 }
 
 \references{
-Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2009). Bayesian semiparametric inference 
-   for multivariate doubly-interval-censored data. Technical Report.
+Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2010). Bayesian semiparametric inference for multivariate doubly-interval-censored data. Annals of Applied Statistics (To appear).
 }
 
 \examples{

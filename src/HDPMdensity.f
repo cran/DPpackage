@@ -22,6 +22,16 @@ c     estimation.
 c
 c     Copyright: Alejandro Jara, 2009-2010.
 c
+c     Version 2.0
+c
+c     Last modification: 14-05-2010.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Bug in computing mean vector for new cluster. Thanks to
+c            Ana Paula Sales for reporting the bug.  
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -353,8 +363,8 @@ c++++++++++ check if the user has requested an interrupt
                   tmp2=0.d0
                   do l=1,nvar
                      workm1(k,l)=sigmabinv(k,l)+sigmainv(k,l)
-                     tmp1=sigmainv(k,l)*ywork(l)
-                     tmp2=sigmabinv(k,l)*mub(l)
+                     tmp1=tmp1+sigmainv(k,l)*ywork(l)
+                     tmp2=tmp2+sigmabinv(k,l)*mub(l)
                   end do 
                   workv1(k)=tmp1+tmp2
                end do                

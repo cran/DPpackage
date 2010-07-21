@@ -581,6 +581,11 @@ c++++++++++ cluster's means and variances
             do i=1,nvar
                do j=i,nvar
                   sigmaclus(ii,ihmssf(i,j,nvar))=workm1(i,j)
+               end do
+            end do            
+
+            do i=1,nvar
+               do j=1,nvar
                   sigmawork(i,j)=workm1(i,j)/dble(k0+ns)
                end do
             end do            

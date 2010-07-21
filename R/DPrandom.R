@@ -722,12 +722,12 @@ function(object,centered=FALSE,predictive=FALSE)
    }
 
 
-   if(is(object, "DPdensity"))
+   if(is(object, "DPdensity") || is(object, "DPMdencens"))
    {
 
        if (centered) 
        { 
-	   stop("This option is not implemented for DPdensity.\n")
+	   stop("This option is not implemented for DPdensity or DPMdencens.\n")
        }
 
 

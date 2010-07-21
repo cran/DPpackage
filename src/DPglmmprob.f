@@ -575,6 +575,7 @@ c++++++++++ subject in cluster with more than 1 observations
                end do
                
                prob(ncluster+1)=exp(log(alpha)+(tmp1-tmp2-tmp3)/2.d0)
+               ccluster(ncluster+1)=0
 
                call simdisc(prob,nsubject+1,ncluster+1,evali)
 

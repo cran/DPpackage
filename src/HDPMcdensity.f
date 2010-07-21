@@ -18,17 +18,21 @@ c=======================================================================
 c=======================================================================
 c     # 65
 c
-c     Copyright: Alejandro Jara, 2009-2010.
-c
-c     Version 1.0
-c
-c     Last modification: 30-09-2009.
-c
 c     Subroutine `hdpmcdensity' to run a Markov chain in a  
 c     hierarchical DPM of normals model for conditional density
 c     estimation. 
 c
-c     Copyright: Alejandro Jara, 2009.
+c     Copyright: Alejandro Jara, 2009-2010.
+c
+c     Version 2.0
+c
+c     Last modification: 14-05-2010.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 1.0 to Version 2.0:
+c          - Bug in computing mean vector for new cluster. Thanks to
+c            Ana Paula Sales for reporting the bug.  
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -384,8 +388,8 @@ c++++++++++ check if the user has requested an interrupt
                   tmp2=0.d0
                   do l=1,ntvar
                      workm1(k,l)=sigmabinv(k,l)+sigmainv(k,l)
-                     tmp1=sigmainv(k,l)*ywork(l)
-                     tmp2=sigmabinv(k,l)*mub(l)
+                     tmp1=tmp1+sigmainv(k,l)*ywork(l)
+                     tmp2=tmp2+sigmabinv(k,l)*mub(l)
                   end do 
                   workv1(k)=tmp1+tmp2
                end do                

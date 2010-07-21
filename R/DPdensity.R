@@ -472,7 +472,7 @@ DPdensity.default <- function(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,met
          # save state
          #########################################################################################
 
-           model.name <- "Bayesian semiparametric density estimation"		
+           model.name <- "DPM of normals model for density estimation"		
          
 		   varnames <- colnames(y)
 	

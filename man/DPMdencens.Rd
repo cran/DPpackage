@@ -1,33 +1,33 @@
-\name{DPdensity}
-\alias{DPdensity}
-\alias{DPdensity.default}
+\name{DPMdencens}
+\alias{DPMdencens}
+\alias{DPMdencens.default}
 
-\title{Semiparametric Bayesian density estimation using a DPM of normals}
+\title{Bayesian density estimation for interval-censored data using a DPM of normals}
 \description{
     This function generates a posterior density sample for a 
-    Dirichlet process mixture of normals model.
+    Dirichlet process mixture of normals model for interval-censored data.
 }
   
 \usage{
-
-DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
-          data=sys.frame(sys.parent()),na.action=na.fail)      
-      
+DPMdencens(left,right,ngrid=100,grid=NULL,prior,mcmc,state,status)
 }
 
 \arguments{
-    \item{y}{        a vector or matrix giving the data from which the density estimate 
-                     is to be computed.}
+    \item{left}{     a vector or matrix giving the lower limit for each response variable.
+                     Note that the responses are defined on the entire real line and that
+                     unknown limits should be indicated by NA.}
+
+    \item{right}{    a vector or matrix giving the upper limit for each response variable.
+                     Note that the responses are defined on the entire real line and that
+                     unknown limits should be indicated by NA.}
 
     \item{ngrid}{    number of grid points where the density estimate is 
-                     evaluated. This is only used if dimension of \code{y}
-                     is lower or equal than 2. The default value is 1000.}
+                     evaluated. The default value is 100.}
 
-    \item{grid}{     matrix of dimension ngrid*nvar of grid points where the density estimate is 
-                     evaluated. This is only used if dimension of \code{y}
-                     is lower or equal than 2. The default value is NULL
+    \item{grid}{     matrix of dimension ngrid*nvar of grid points where  the density estimate is 
+                     evaluated. The default value is NULL
                      and the grid is chosen according to the range of the
-	             data.}
+	             interval limits.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
@@ -65,25 +65,17 @@ DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
                      continuation of a previous analysis (\code{FALSE}). In the latter case
                      the current value of the parameters must be specified in the 
                      object \code{state}.}
-
-    \item{method}{   the method to be used. See \code{Details}.}
-
-    \item{data}{     data frame.}       
-    
-    \item{na.action}{a function that indicates what should happen when the data
-                     contain \code{NA}s. The default action (\code{na.fail}) causes 
-                     \code{DPdensity} to print an error message and terminate if there are any
-                     incomplete observations.}       
 }
 
 \details{
   This generic function fits a Dirichlet process mixture of normal model for density
-  estimation (Escobar and West, 1995):
-  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n}{yi | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n}
-  \deqn{(\mu_i,\Sigma_i) | G \sim G}{(mui,Sigmai) | G ~ G}
-  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
-  
-  where, the baseline distribution is the conjugate normal-inverted-Wishart,
+  estimation (Escobar and West, 1995) based on interval-censored data: 
+  \deqn{y_{ij} \in [l_{ij},u_{ij}), i=1,\ldots,n, j=1,\ldots,m}{yij in [lij,uij),i=1,\ldots,n, j=1,\ldots,m,}
+  \deqn{y_i | \mu_i, \Sigma_i \sim N(\mu_i,\Sigma_i), i=1,\ldots,n,}{yi | mui, Sigmai ~ N(mui,Sigmai), i=1,\ldots,n,}
+  \deqn{(\mu_i,\Sigma_i) | G \sim G,}{(mui,Sigmai) | G ~ G,}
+  \deqn{G | \alpha, G_0 \sim DP(\alpha G_0),}{G | alpha, G0 ~ DP(alpha G0),}
+  where, \eqn{y_i=(y_{i1},\ldots,y_{im})}{yi=(yi1,\ldots,yim)}, and the baseline distribution is the conjugate 
+  normal-inverted-Wishart distribution,
   \deqn{G_0 = N(\mu| m_1, (1/k_0) \Sigma) IW (\Sigma | \nu_1, \psi_1)}{G0 = N(mu| m1, (1/k0) Sigma) IW (Sigma | nu1, psi1)} 
   
   To complete the model specification, independent hyperpriors are assumed (optional),
@@ -100,16 +92,18 @@ DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
   in the hyperprior specification of the model.
 
   Although the baseline distribution, \eqn{G_0}{G0}, is a conjugate prior in
-  this model specification, the algorithms with auxiliary parameters
-  described in MacEachern and Muller (1998) and Neal (2000) are
-  adopted. Specifically, the no-gaps algorithm of 
-  MacEachern and Muller (1998), \code{"no-gaps"}, and the algorithm 8 with \eqn{m=1} 
-  of Neal (2000), \code{"neal"}, are considered in the \code{DPdensity} function. 
-  The default method is the algorithm 8 of Neal.
+  this model specification, an algorithm based on auxiliary parameters is adopted. 
+  Specifically, the algorithm 8 with \eqn{m=1} of Neal (2000) is considered in the \code{DPMdencens} function. 
+
+  Finally, note that this function can be used to fit the DPM of normals model for ordinal data
+  proposed by Kottas, Mueller and Quintana (2005). In this case, the arbitrary cut-off points must
+  be specified in \code{left} and \code{right}. Samples from the predictive distribution contained
+  in the (last columns) of the object randsave (please see below) can be used to obtain an estimate of 
+  the cell probabilities. 
 }
 
 \value{
-  An object of class \code{DPdensity} representing the DP mixture of normals
+  An object of class \code{DPMdencens} representing the DP mixture of normals
   model fit. Generic functions such as \code{print}, \code{summary}, and \code{plot} have methods to 
   show the results of the fit. The results include the baseline parameters, \code{alpha}, and the 
   number of clusters.
@@ -145,170 +139,118 @@ DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
   \item{k0}{ giving the scale parameter of the normal part of the baseline distribution.}
   
   \item{psi1}{giving the scale matrix of the inverted-Wishart part of the baseline distribution.}
+
+  \item{y}{giving the matrix of imputed data points.}
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{PTdensity}}, \code{\link{BDPdensity}}
+\code{\link{DPrandom}}, \code{\link{DPdensity}}
 }
 
 \references{
 
 Escobar, M.D. and West, M. (1995) Bayesian Density Estimation and Inference 
-  Using Mixtures. Journal of the American Statistical Association, 90: 577-588.
+  Using Mixtures. Journal of the American Statistical Association, 90:
+  577-588.
 
-MacEachern, S. N. and Muller, P. (1998) Estimating mixture of Dirichlet Process
-  Models. Journal of Computational and Graphical Statistics, 7 (2): 223-338.
+Kottas, A., Mueller, P., Quintana, F. (2005). Nonparametric Bayesian
+  modeling for multivariate ordinal data. Journal of Computational and 
+  Graphical Statistics, 14: 610-625.
 
-Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture models.
-  Journal of Computational and Graphical Statistics, 9: 249-265.
+Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process
+  mixture models. Journal of Computational and Graphical Statistics, 9:
+  249-265.
 
 }
 
 \examples{
 \dontrun{
     ####################################
-    # Univariate example
+    # Bivariate example:
+    # Censored data is artificially
+    # created 
     ####################################
 
-    # Data
-      data(galaxy)
-      galaxy <- data.frame(galaxy,speeds=galaxy$speed/1000) 
-      attach(galaxy)
-
-    # Initial state
-      state <- NULL
-
-    # MCMC parameters
-
-      nburn <- 1000
-      nsave <- 10000
-      nskip <- 10
-      ndisplay <- 100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
-
-    # Example of Prior information 1
-    # Fixing alpha, m1, and Psi1
-
-      prior1 <- list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,tau1=1,tau2=100)
-
-
-    # Example of Prior information 2
-    # Fixing alpha and m1
-
-      prior2 <- list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),nu1=4,nu2=4,
-                     tau1=1,tau2=100)
-
-
-    # Example of Prior information 3
-    # Fixing only alpha
-
-      prior3 <- list(alpha=1,m2=rep(0,1),s2=diag(100000,1),
-                   psiinv2=solve(diag(0.5,1)),
-                   nu1=4,nu2=4,tau1=1,tau2=100)
-
-
-    # Example of Prior information 4
-    # Everything is random
-
-      prior4 <- list(a0=2,b0=1,m2=rep(0,1),s2=diag(100000,1),
-                   psiinv2=solve(diag(0.5,1)),
-                   nu1=4,nu2=4,tau1=1,tau2=100)
-
-    # Fit the models
-
-      fit1.1 <- DPdensity(y=speeds,prior=prior1,mcmc=mcmc,state=state,status=TRUE)
-      fit1.2 <- DPdensity(y=speeds,prior=prior2,mcmc=mcmc,state=state,status=TRUE)
-      fit1.3 <- DPdensity(y=speeds,prior=prior3,mcmc=mcmc,state=state,status=TRUE)
-      fit1.4 <- DPdensity(y=speeds,prior=prior4,mcmc=mcmc,state=state,status=TRUE)
-
-    # Posterior means
-      fit1.1
-      fit1.2
-      fit1.3
-      fit1.4
-
-    # Plot the estimated density
-      plot(fit1.1,ask=FALSE)
-      plot(fit1.2,ask=FALSE)
-      plot(fit1.3,ask=FALSE)
-      plot(fit1.4,ask=FALSE)
-
-    # Extracting the density estimate
-      cbind(fit1.1$x1,fit1.1$dens)
-      cbind(fit1.2$x1,fit1.2$dens)
-      cbind(fit1.3$x1,fit1.3$dens)
-      cbind(fit1.4$x1,fit1.4$dens)
-      
-    # Plot the parameters (only prior 2 for illustration)
-    # (to see the plots gradually set ask=TRUE)
-      plot(fit1.2,ask=FALSE,output="param")
-
-    # Plot the a specific parameters 
-    # (to see the plots gradually set ask=TRUE)
-      plot(fit1.2,ask=FALSE,output="param",param="psi1-speeds",nfigr=1,nfigc=2)
-
-    # Extracting the posterior mean of the specific means and covariance matrices 
-    # (only prior 2 for illustration)
-      DPrandom(fit1.2) 
-
-    # Ploting predictive information about the specific means and covariance matrices 
-    # with HPD and Credibility intervals
-    # (only prior 2 for illustration)
-    # (to see the plots gradually set ask=TRUE)
-      plot(DPrandom(fit1.2,predictive=TRUE),ask=FALSE)
-      plot(DPrandom(fit1.2,predictive=TRUE),ask=FALSE,hpd=FALSE)
-
-    # Ploting information about all the specific means and covariance matrices 
-    # with HPD and Credibility intervals
-    # (only prior 2 for illustration)
-    # (to see the plots gradually set ask=TRUE)
-      plot(DPrandom(fit1.2),ask=FALSE,hpd=FALSE)
-
-
-
-
-    ####################################
-    # Bivariate example
-    ####################################
-
-    # Data
-      data(airquality)
+      data(airquality)      
       attach(airquality)
 
       ozone <- Ozone**(1/3)
       radiation <- Solar.R
+      y <- na.omit(cbind(radiation,ozone))
+
+    # create censored-data 
+      xxlim <- seq(0,300,50)
+      yylim <- seq(1.5,5.5,1)
+
+      left <- matrix(0,nrow=nrow(y),ncol=2)
+      right <- matrix(0,nrow=nrow(y),ncol=2)
+
+      for(i in 1:nrow(y))
+      {
+          left[i,1] <- NA
+          right[i,1] <- NA
+          if(y[i,1] < xxlim[1]) right[i,1] <- xxlim[1] 
+          for(j in 1:length(xxlim))
+          { 
+              if(y[i,1] >= xxlim[j]) left[i,1] <- xxlim[j]	 
+              if(y[i,1] >= xxlim[j]) right[i,1] <- xxlim[j+1]	 
+          }	 
+          left[i,2] <- NA
+          right[i,2] <- NA
+          if(y[i,2] < yylim[1]) right[i,2] <- yylim[1] 
+
+          for(j in 1:length(yylim))
+          { 
+              if(y[i,2] >= yylim[j]) left[i,2] <- yylim[j]	 
+              if(y[i,2] >= yylim[j]) right[i,2] <- yylim[j+1]	 
+          }	 
+      }
 
     # Prior information
-
       s2 <- matrix(c(10000,0,0,1),ncol=2)
       m2 <- c(180,3)
-      psiinv2 <- solve(matrix(c(10000,0,0,1),ncol=2))
-     
-      prior <- list(a0=1,b0=1/5,nu1=4,nu2=4,s2=s2,
+      psiinv2 <- diag(c(1/10000,1),2)
+
+      prior <- list(alpha=1,nu1=4,nu2=4,s2=s2,
                     m2=m2,psiinv2=psiinv2,tau1=0.01,tau2=0.01)
 
     # Initial state
       state <- NULL
 
     # MCMC parameters
-
       nburn <- 5000
-      nsave <- 10000
-      nskip <- 10
+      nsave <- 5000
+      nskip <- 3
       ndisplay <- 1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+      mcmc <- list(nburn=nburn, 
+                   nsave=nsave,
+                   nskip=nskip,
+                   ndisplay=ndisplay)
 
-    # Fit the model
-      fit1 <- DPdensity(y=cbind(radiation,ozone),prior=prior,mcmc=mcmc,
-                        state=state,status=TRUE,na.action=na.omit)
+    # Fitting the model
+      fit1 <- DPMdencens(left=left,right=right,ngrid=100,prior=prior,mcmc=mcmc,
+                         state=state,status=TRUE)
+      fit1
+      summary(fit1)
 
     # Plot the estimated density
       plot(fit1)
 
-    # Extracting the density estimate
-      fit1$x1
-      fit1$x2
-      fit1$dens
+    # Extracting the univariate density estimates
+      cbind(fit1$grid[,1],fit1$funi[[1]])
+      cbind(fit1$grid[,2],fit1$funi[[2]])
+       
+    # Extracting the bivariate density estimates
+      fit1$grid[,1]
+      fit1$grid[,2]
+      fit1$fbiv[[1]]
+
+    # Plot of the estimated density along with the 
+    # true data points and censoring limits
+      contour(fit1$grid[,1],fit1$grid[,2],fit1$fbiv[[1]])
+      points(y)
+      abline(v=xxlim)
+      abline(h=yylim)
 }
 }
 

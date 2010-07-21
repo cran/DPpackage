@@ -67,7 +67,7 @@ c+++++Input
 
 c+++++Working
       integer maxm
-      parameter(maxm=50)
+      parameter(maxm=100)
       integer i,j,k,ier
       integer counter
       real*8 aw2(maxm,maxm),tmp1
@@ -78,7 +78,7 @@ c+++++Output
 c+++++Algorithm
 
       if(maxm.lt.m)then
-         call rexit("Increase ´maxm´ in ´condmvn´")
+         call rexit("Increase 'maxm' in 'condmvn'")
       end if   
 
       if(ind.eq.1)then  
