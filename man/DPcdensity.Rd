@@ -10,7 +10,8 @@
 }
   
 \usage{
-DPcdensity(y,x,xpred,ngrid,prior,mcmc,state,status,
+DPcdensity(y,x,xpred,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",
+           prior,mcmc,state,status,
            data=sys.frame(sys.parent()),work.dir=NULL)
 }
 
@@ -24,9 +25,20 @@ DPcdensity(y,x,xpred,ngrid,prior,mcmc,state,status,
     \item{xpred}{    a vector or matrix giving the values of the continuous 
                      predictors used for prediction.}
 
-    \item{ngrid}{    number of grid points where the density estimate is 
-                     evaluated. }
-    
+    \item{ngrid}{    number of grid points where the conditional density estimate is 
+                     evaluated.  The default is 100.}
+
+    \item{grid}{     vector of grid points where the conditional density estimate is 
+                     evaluated. The default value is NULL
+                     and the grid is chosen according to the range of the
+	             data.}
+
+    \item{compute.band}{  logical variable indicating whether the credible band for the conditional  
+                          density and mean function must be computed.}       
+
+    \item{type.band}{  string indication the type of credible band to be computed; if equal to "HPD" or
+                       "PD" then the 95 percent pointwise HPD or PD band is computed, respectively.}       
+
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{a0} and \code{b0} giving the hyperparameters for
                      prior distribution of the precision parameter of the Dirichlet process
@@ -192,16 +204,19 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       y <- ifelse(u<prob,y1,y2)
 
     # Prior information
+      w <- cbind(y,x)  
+      wbar <- apply(w,2,mean)
+      wcov <- var(w)
 
-      prior<-list(a0=10,
-                  b0=1,
-                  nu1=4,
-                  nu2=4,
-                  s2=diag(10000,2),
-                  m2=rep(0,2),
-                  psiinv2=diag(10000,2),
-                  tau1=2.01,
-                  tau2=0.01)
+      prior <- list(a0=10,
+                    b0=1,
+                    nu1=4,
+                    nu2=4,
+                    s2=0.5*wcov,
+                    m2=wbar,
+                    psiinv2=2*solve(wcov),
+                    tau1=6.01,
+                    tau2=2.01)
 
     # Initial state
       state <- NULL
@@ -209,7 +224,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
     # MCMC parameters
 
       mcmc <- list(nburn=5000,
-                   nsave=10000,
+                   nsave=5000,
                    nskip=3,
                    ndisplay=100)
 
@@ -223,8 +238,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
                         prior=prior, 
                         mcmc=mcmc, 
                         state=state, 
-                        status=TRUE)
-
+                        status=TRUE,
+                        compute.band=TRUE,type.band="PD")
 
     # true model and estimates
       par(mfrow=c(2,3))      
@@ -277,7 +292,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 Alejandro Jara \email{<atjara@uc.cl>}
 
-Tim Hanson \email{<hanson@biostat.umn.edu>}
+Tim Hanson \email{<hansont@stat.sc.edu>}
 
 }
 

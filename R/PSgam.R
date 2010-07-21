@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara, 2007-2010.
 ###
-### Last modification: 26-07-2007.
+### Last modification: 15-09-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -130,49 +130,49 @@ function(formula,
             sps[i] <- ind # the term that smooth relates to
           }
 
-          ns<-length(sps) # number of smooths
-          k<-ks<-kp<-1 # counters for terms in the 2 formulae
+          ns <- length(sps) # number of smooths
+          k <- ks <- kp <- 1 # counters for terms in the 2 formulae
           len.sps <- length(sps)
  
-          smooth.spec<-list()
+          smooth.spec <- list()
           if (nt)
           for (i in 1:nt) # work through all terms
           { 
             if (k<=ns&&((ks<=len.sps&&sps[ks]==i))) # it's a smooth
             { 
-              st<-eval(parse(text=terms[i]),envir=p.env)
+              st <- eval(parse(text=terms[i]),envir=p.env)
               if(k>1||kp>1)
               {
-                 rf<-paste(rf,"+",st$full.call,sep="") # add to full formula
+                 rf <- paste(rf,"+",st$full.call,sep="") # add to full formula
               }   
               else
               {
-                 rf<-paste(rf,st$full.call,sep="")
+                 rf <- paste(rf,st$full.call,sep="")
               }   
-              smooth.spec[[k]]<-st
-              ks<-ks+1  # counts ps() terms
-              k<-k+1    # counts smooth terms 
+              smooth.spec[[k]] <- st
+              ks <- ks+1  # counts ps() terms
+              k <- k+1    # counts smooth terms 
             } 
             else          # parametric
             { 
-              if (kp>1) pf<-paste(pf,"+",terms[i],sep="") # add to parametric formula
+              if (kp>1) pf <- paste(pf,"+",terms[i],sep="") # add to parametric formula
               else pf<-paste(pf,terms[i],sep="")
-              if (k>1||kp>1) rf<-paste(rf,"+",terms[i],sep="") # add to full formula
+              if (k>1||kp>1) rf <- paste(rf,"+",terms[i],sep="") # add to full formula
               else rf<-paste(rf,terms[i],sep="")
-              kp<-kp+1    # counts parametric terms
+              kp <- kp+1    # counts parametric terms
             }
           }    
       
           if (!is.null(off)) # deal with offset
-          { if (kp>1) pf<-paste(pf,"+",sep="")
-            if (kp>1||k>1) rf<-paste(rf,"+",sep="")
-            pf<-paste(pf,as.character(attr(tf,"variables")[1+off]),sep="")
-            rf<-paste(rf,as.character(attr(tf,"variables")[1+off]),sep="")
-            kp<-kp+1          
+          { if (kp>1) pf <- paste(pf,"+",sep="")
+            if (kp>1||k>1) rf <- paste(rf,"+",sep="")
+            pf <- paste(pf,as.character(attr(tf,"variables")[1+off]),sep="")
+            rf <- paste(rf,as.character(attr(tf,"variables")[1+off]),sep="")
+            kp <- kp+1          
           }
           if (attr(tf,"intercept")==0) 
-          {pf<-paste(pf,"-1",sep="");rf<-paste(rf,"-1",sep="");if (kp>1) pfok<-1 else pfok<-0}
-          else { pfok<-1;if (kp==1) { pf<-paste(pf,"1"); if (k==1) rf<-paste(rf,"1",sep="");}}
+          {pf <- paste(pf,"-1",sep="");rf<-paste(rf,"-1",sep="");if (kp>1) pfok <- 1 else pfok <- 0}
+          else { pfok <- 1;if (kp==1) { pf<-paste(pf,"1"); if (k==1) rf<-paste(rf,"1",sep="");}}
       
           fake.formula<-pf
           if (length(smooth.spec)>0) 
@@ -238,7 +238,7 @@ function(formula,
                     xl <- min(x)
                     xr <- max(x)
                     xmax <- xr + 0.01 * (xr - xl)
-		    xmin <- xl - 0.01 * (xr - xl)
+					xmin <- xl - 0.01 * (xr - xl)
                     
                     xgrid <- seq(xmin,xmax,len=ngrid)
                     xreal <- cbind(xreal,xgrid)
@@ -284,7 +284,7 @@ function(formula,
                     
                     zmean <- cbind(zmean,zw3)
                     znew <- cbind(znew,zw2)
-		    z <- cbind(z,zw1)
+					z <- cbind(z,zw1)
                     nknots <- c(nknots,length(bbase$knots))
                     knots[[count]]<-bbase$knots
                  }
@@ -365,16 +365,16 @@ function(formula,
                   p <- 1
                   namesx <- "(Intercept)"
                }
-               nfixed<-p
+               nfixed <- p
             }
             else
             {
-               p<-dim(x)[2]
-               ntrials<-x[,p]
-               x<-x[,-p]
-               namesx<-namesx[-p]
-               p<-p-1
-               nfixed<-p
+               p <- dim(x)[2]
+               ntrials <- x[,p]
+               x <- x[,-p]
+               namesx <- namesx[-p]
+               p <- p-1
+               nfixed <- p
             }
          }
          else
@@ -457,51 +457,51 @@ function(formula,
                     {
                         y <- pmatrix[i,j]
                         foo <- .Fortran("hashm",
-                           y          =as.double(y),
- 	  	           j1         =as.integer(i),
- 	  	           k1         =as.integer(j),
- 	  	           ind        =as.double(indnh),
- 	  		   m          =as.integer(maxnh),
- 	  		   nr         =as.integer(nznh),
-			   PACKAGE    ="DPpackage")	
+							y          =as.double(y),
+							j1         =as.integer(i),
+							k1         =as.integer(j),
+							ind        =as.double(indnh),
+							m          =as.integer(maxnh),
+							nr         =as.integer(nznh),
+							PACKAGE    ="DPpackage")	
 			   
-			indnh<- matrix(foo$ind,nrow=maxnh,ncol=3)
-			nznh <- foo$nr
+						indnh <- matrix(foo$ind,nrow=maxnh,ncol=3)
+						nznh <- foo$nr
                         
                         if(i!=j)
                         {
                            foo <- .Fortran("hashm",
-                              y          =as.double(y),
- 	  	              j1         =as.integer(j),
- 	  	              k1         =as.integer(i),
- 	  	              ind        =as.double(indnh),
- 	  		      m          =as.integer(maxnh),
- 	  		      nr         =as.integer(nznh),
-			      PACKAGE    ="DPpackage")	
+							y          =as.double(y),
+							j1         =as.integer(j),
+							k1         =as.integer(i),
+							ind        =as.double(indnh),
+							m          =as.integer(maxnh),
+							nr         =as.integer(nznh),
+							PACKAGE    ="DPpackage")	
 
-			   indnh <- matrix(foo$ind,nrow=maxnh,ncol=3)
-			   nznh <- foo$nr
-			}   
+							indnh <- matrix(foo$ind,nrow=maxnh,ncol=3)
+							nznh <- foo$nr
+						}   
                     }		
                 }
             }
             
-            # Linked list
+			# Linked list
               tmpv <- rep(0,nznh)
               iapm <- rep(0,q+1) 
               japm <- rep(0,nznh)
               apm <- rep(0,nznh)
               
               foo <- .Fortran("hashiajaa",
-                   x          =as.double(indnh),
- 	  	   nhash      =as.integer(maxnh),
- 	  	   n          =as.integer(nr),
- 	  	   ia         =as.integer(iapm),
- 	  	   ja         =as.integer(japm),
- 	  	   a          =as.double(apm),
- 	  	   m          =as.integer(nznh),
- 	  	   tmp        =as.integer(tmpv),
-		   PACKAGE    ="DPpackage")	               
+					x          =as.double(indnh),
+					nhash      =as.integer(maxnh),
+					n          =as.integer(nr),
+					ia         =as.integer(iapm),
+					ja         =as.integer(japm),
+					a          =as.double(apm),
+					m          =as.integer(nznh),
+					tmp        =as.integer(tmpv),
+					PACKAGE    ="DPpackage")	               
 
               iapm <- foo$ia
               japm <- foo$ja
@@ -547,30 +547,30 @@ function(formula,
             {
                 if(isF[i])
                 {
-                   nlevel[i]<-length(table(dataF[[i]]))
+                   nlevel[i] <- length(table(dataF[[i]]))
                 }
                 else
                 {
-                   nlevel[i]<-1
+                   nlevel[i] <- 1
                 }
             }
-            startp<-1+attr(Terms, "intercept")
+            startp <- 1+attr(Terms, "intercept")
             for(i in 1:nfact)
             {
-                tmp1<-1
+                tmp1 <- 1
                 for(j in 1:nvar)
                 {
                     if(mat[j,i]==1 && isF[j])
                     {
-                       tmp1<-tmp1*(nlevel[j]-1)
+                       tmp1 <- tmp1*(nlevel[j]-1)
                     }
                 }
-                endp<-startp+tmp1-1
-                possiP[i,1]<-startp    
-                possiP[i,2]<-endp
-                startp<-endp+1
+                endp <- startp+tmp1-1
+                possiP[i,1] <- startp    
+                possiP[i,2] <- endp
+                startp <- endp+1
             }
-            dimnames(possiP)<-list(namfact,c("Start","End"))
+            dimnames(possiP) <- list(namfact,c("Start","End"))
          }   
 
          
@@ -580,15 +580,15 @@ function(formula,
 
          if(nfixed==0)
          {
-            prec<-matrix(0,nrow=1,ncol=1)
-            bet0<-rep(0,1)
-            sb<-rep(0,1)
+            prec <- matrix(0,nrow=1,ncol=1)
+            bet0 <- rep(0,1)
+            sb <- rep(0,1)
          }
          else
          {
-            bet0<-prior$beta0
-            prec<-solve(prior$Sbeta0)
-            sb<-prec%*%bet0
+            bet0 <- prior$beta0
+            prec <- solve(prior$Sbeta0)
+            sb <- prec%*%bet0
 
             if(length(bet0)!=p)
             { 
@@ -605,9 +605,9 @@ function(formula,
 
          if(family$family=="Gamma" || family$family=="gaussian")
          {
-            tau1<-prior$tau1
-            tau2<-prior$tau2
-            tau<-c(tau1,tau2)
+            tau1 <- prior$tau1
+            tau2 <- prior$tau2
+            tau <- c(tau1,tau2)
             if(tau1<0 || tau2<0)
             { 
                stop("The parameters of the Gamma prior for the dispersion parameter must be possitive.\n")     
@@ -617,9 +617,9 @@ function(formula,
 
          if(nsmooth>0)
          {
-            taub1<-prior$taub1
-            taub2<-prior$taub2
-            taub<-c(taub1,taub2)
+            taub1 <- prior$taub1
+            taub2 <- prior$taub2
+            taub <- c(taub1,taub2)
             if(taub1<0 || taub2<0)
             { 
                stop("The parameters of the Gamma prior for the penalty parameters must be possitive.\n")     
@@ -635,13 +635,13 @@ function(formula,
             nsave <- 1000
             nskip <- 0
             ndisplay <- 100
-            mcmcvec<-c(nburn,nskip,ndisplay)
+            mcmcvec <- c(nburn,nskip,ndisplay)
             tune1 <- 1.1
          }
          else
          {
-            mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-            nsave<-mcmc$nsave
+            mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+            nsave <- mcmc$nsave
             if(is.null(mcmc$tune1))
             {
                tune1 <- 1.1
@@ -654,81 +654,79 @@ function(formula,
        #########################################################################################
        # output
        #########################################################################################
-         cpo<-matrix(0,nrow=nrec,ncol=2)
-         dispp<-0
-         if(family$family=="Gamma")dispp<-1
-         if(family$family=="gaussian")dispp<-1
-         mc<-rep(0,5)
-         randsave<-matrix(0,nrow=nsave,ncol=q)
-         thetasave<-matrix(0,nrow=nsave,ncol=(p+dispp+nsmooth))
-         pssave<-matrix(0,nrow=nsmooths*ngrid,ncol=2)
+         cpo <- matrix(0,nrow=nrec,ncol=2)
+         dispp <- 0
+         if(family$family=="Gamma")dispp <- 1
+         if(family$family=="gaussian")dispp <- 1
+         mc <- rep(0,5)
+         randsave <- matrix(0,nrow=nsave,ncol=q)
+         thetasave <- matrix(0,nrow=nsave,ncol=(p+dispp+nsmooth))
+         pssave <- matrix(0,nrow=nsmooths*ngrid,ncol=2)
 
        #########################################################################################
        # parameters depending on status
        #########################################################################################
     	 if(status==TRUE)
-	 {
-                resp2 <- resp
-                if(family$family=="binomial")
-                {
-                    if(family$link=="logit")
-                    {
-                        if(!is.null(n)) resp2<-cbind(resp,ntrials-resp)
-                    }
-                }   
+		 {
+			resp2 <- resp
+			if(family$family=="binomial")
+			{
+				if(family$link=="logit")
+				{
+					if(!is.null(n)) resp2 <- cbind(resp,ntrials-resp)
+				}
+			}   
 
-	        if(nfixed==0){
-	           beta<-matrix(0,nrow=1,ncol=1)
-	           sigmab<-rep(0,nsmooths)
-                   b<-rnorm(q,0,1)
-                   if(nsmooth>0)
-                   {
-                      sigmab<-rep(1,nsmooths)
-                   }   
-
+	        if(nfixed==0)
+			{
+				beta <- matrix(0,nrow=1,ncol=1)
+				sigmab <- rep(0,nsmooths)
+				b <- rep(0,q)
+				if(nsmooth>0)
+				{
+					sigmab<-rep(1,nsmooths)
+				}   
 	        }
 
-	        if(nfixed>0){
-	           fit0<- glm.fit(x, resp2, family= family,offset=roffset)   
-                   beta<-coefficients(fit0)
-	           b<-rnorm(q,0,1)
-           
-	           sigmab<-rep(0,nsmooths)
-                   if(nsmooth>0)
-                   {
-                      sigmab<-rep(1,nsmooths)
-                   }   
-	        }
-                if(family$family=="Gamma")disp<-1.1
-                if(family$family=="gaussian")disp<-1.1
-
-        
-	 }	
-      	 if(status==FALSE)
-	 {
-                if(nfixed>0)
-                {
-	           beta<-state$beta
+	        if(nfixed>0)
+			{
+				fit0 <- glm.fit(x, resp2, family= family,offset=roffset)   
+				beta <- coefficients(fit0)
+				b <- rnorm(q,0,0.1) 
+				sigmab	<-	rep(0,nsmooths)
+				if(nsmooth>0)
+				{
+					sigmab <- rep(1,nsmooths)
+				}   
+			}
+			if(family$family=="Gamma") disp <- 1.1
+			if(family$family=="gaussian") disp <- 1.1
+		}	
+		if(status==FALSE)
+		{
+			if(nfixed>0)
+			{
+	           beta <- state$beta
 	        }
 	        else
 	        {
-	           beta<-rep(0,p)
+	           beta <- rep(0,p)
 	        }
 	        
-                if(nsmooth>0)
-                {
-	           b<-state$b
-	           sigmab<-state$sigmab
+			if(nsmooth>0)
+			{
+				b <- state$b
+	            sigmab <- state$sigmab
 	        }
 	        else
 	        {
-	           b<-rep(0,q)
-	           sigmab<-rep(0,q)
+	           b <- rep(0,q)
+	           sigmab <- rep(0,q)
 	        }
 	        
-	        if(family$family=="Gamma")disp<-1/state$phi
-	        if(family$family=="gaussian")disp<-1/state$phi
-	 }
+	        if(family$family=="Gamma")disp <- 1/state$phi
+	        if(family$family=="gaussian")disp <- 1/state$phi
+		}
 
        #########################################################################################
        # calling the fortran code
@@ -750,83 +748,83 @@ function(formula,
 
                   maxq <- max(ends-starts+1)
 
-                  iflagq<-rep(0,maxq) 
-                  bc<-rep(0,maxq)
-                  theta<-rep(0,maxq)
-                  workmhq1<-rep(0,maxq*(maxq+1)/2) 
-                  workvq1<-rep(0,maxq) 
-                  ztz<-matrix(0,nrow=maxq,ncol=maxq)
-                  zty<-rep(0,maxq) 
-                  ztzinv<-matrix(0,nrow=maxq,ncol=maxq)
+                  iflagq <- rep(0,maxq) 
+                  bc <- rep(0,maxq)
+                  theta <- rep(0,maxq)
+                  workmhq1 <- rep(0,maxq*(maxq+1)/2) 
+                  workvq1 <- rep(0,maxq) 
+                  ztz <- matrix(0,nrow=maxq,ncol=maxq)
+                  zty <- rep(0,maxq) 
+                  ztzinv <- matrix(0,nrow=maxq,ncol=maxq)
 
-                  betasave<-rep(0,p)
-                  bsave<-rep(0,q)
-                  y<-rep(0,nrec)
+                  betasave <- rep(0,p)
+                  bsave <- rep(0,q)
+                  y <- rep(0,nrec)
 
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  seed<-c(seed1,seed2)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  seed <- c(seed1,seed2)
 
                   workvps <- rep(0,nsmooths*ngrid)
 
 
-                # fit the model
+                # fitting the model
 
                   foo <- .Fortran("psgamprob",
- 	  		nrec       =as.integer(nrec),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		nsmooth    =as.integer(nsmooth),
- 	  		q          =as.integer(q),
- 	  		starts     =as.integer(starts),
- 	  		ends       =as.integer(ends),
- 	  		nsmooths   =as.integer(nsmooths),
- 	  		maxq       =as.integer(maxq),
-	 		x          =as.double(x),
-	 		z          =as.double(z),
- 	 		yr         =as.integer(resp),
- 	 		roffset    =as.double(roffset),
+						nrec       =as.integer(nrec),
+						nfixed     =as.integer(nfixed),
+						p          =as.integer(p),
+						nsmooth    =as.integer(nsmooth),
+						q          =as.integer(q),
+						starts     =as.integer(starts),
+						ends       =as.integer(ends),
+						nsmooths   =as.integer(nsmooths),
+						maxq       =as.integer(maxq),
+						x          =as.double(x),
+						z          =as.double(z),
+						yr         =as.integer(resp),
+						roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
- 	 		prec       =as.double(prec),	 
- 	 		sb         =as.double(sb),	  		
- 	 		taub       =as.double(taub),
- 	 		iapm       =as.integer(iapm),
- 	 		japm       =as.integer(japm),
- 	 		apm        =as.double(apm),
- 	 		nznh       =as.integer(nznh),
- 	 		pordv      =as.double(pordv),
+						prec       =as.double(prec),	 
+						sb         =as.double(sb),	  		
+						taub       =as.double(taub),
+						iapm       =as.integer(iapm),
+						japm       =as.integer(japm),
+						apm        =as.double(apm),
+						nznh       =as.integer(nznh),
+						pordv      =as.double(pordv),
                         beta       =as.double(beta),   
                         b          =as.double(b),   
                         sigmab     =as.double(sigmab),   
                         y          =as.double(y),   
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		pssave     =as.double(pssave),
- 	 		seed       =as.integer(seed),
- 	 		iflagp     =as.integer(iflagp),
+						mcmc       =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						cpo        =as.double(cpo),
+						randsave   =as.double(randsave),
+						thetasave  =as.double(thetasave),
+						pssave     =as.double(pssave),
+						seed       =as.integer(seed),
+						iflagp     =as.integer(iflagp),
                         workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagq     =as.integer(iflagq),
- 	 		bc         =as.double(bc),
+						workvp1    =as.double(workvp1),
+						xtx        =as.double(xtx),
+						xty        =as.double(xty),
+						iflagq     =as.integer(iflagq),
+						bc         =as.double(bc),
                         workmhq1   =as.double(workmhq1),
- 	 		workvq1    =as.double(workvq1),
- 	 		ztz        =as.double(ztz),
- 	 		zty        =as.double(zty),
- 	 		ztzinv     =as.double(ztzinv),
- 	 		theta      =as.double(theta),
- 		        mc         =as.double(mc), 		
+						workvq1    =as.double(workvq1),
+						ztz        =as.double(ztz),
+						zty        =as.double(zty),
+						ztzinv     =as.double(ztzinv),
+						theta      =as.double(theta),
+						mc         =as.double(mc), 		
                         betasave   =as.double(betasave),
                         bsave      =as.double(bsave),
                         workvps    =as.double(workvps),
-			PACKAGE    ="DPpackage")	
+						PACKAGE    ="DPpackage")	
             }
 
 
@@ -834,36 +832,36 @@ function(formula,
             {
                 # specific working space
 
-                  acrate<-rep(0,1+nsmooth) 
+                  acrate <- rep(0,1+nsmooth) 
 
-                  iflagp<-rep(0,p) 
-                  betac<-rep(0,p)
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workvp1<-rep(0,p) 
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
+                  iflagp <- rep(0,p) 
+                  betac <- rep(0,p)
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workvp1 <- rep(0,p) 
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
 
                   maxq <- max(ends-starts+1)
 
-                  iflagq<-rep(0,maxq) 
-                  bc<-rep(0,maxq)
-                  theta<-rep(0,maxq)
-                  workmq1<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmq2<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmhq1<-rep(0,maxq*(maxq+1)/2) 
-                  workvq1<-rep(0,maxq) 
-                  ztz<-matrix(0,nrow=maxq,ncol=maxq)
-                  zty<-rep(0,maxq) 
-                  ztzinv<-matrix(0,nrow=maxq,ncol=maxq)
+                  iflagq <- rep(0,maxq) 
+                  bc <- rep(0,maxq)
+                  theta <- rep(0,maxq)
+                  workmq1 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmq2 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmhq1 <- rep(0,maxq*(maxq+1)/2) 
+                  workvq1 <- rep(0,maxq) 
+                  ztz <- matrix(0,nrow=maxq,ncol=maxq)
+                  zty <- rep(0,maxq) 
+                  ztzinv <- matrix(0,nrow=maxq,ncol=maxq)
 
-                  betasave<-rep(0,p)
-                  bsave<-rep(0,q)
+                  betasave <- rep(0,p)
+                  bsave <- rep(0,q)
 
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  seed<-c(seed1,seed2)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  seed <- c(seed1,seed2)
 
                   resp <- cbind(resp,ntrials)
                   
@@ -873,66 +871,66 @@ function(formula,
                 # fit the model
 
                   foo <- .Fortran("psgamlogit",
- 	  		nrec       =as.integer(nrec),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		nsmooth    =as.integer(nsmooth),
- 	  		q          =as.integer(q),
- 	  		starts     =as.integer(starts),
- 	  		ends       =as.integer(ends),
- 	  		nsmooths   =as.integer(nsmooths),
- 	  		maxq       =as.integer(maxq),
-	 		x          =as.double(x),
-	 		z          =as.double(z),
- 	 		y          =as.integer(resp),
- 	 		roffset    =as.double(roffset),
+						nrec       =as.integer(nrec),
+						nfixed     =as.integer(nfixed),
+						p          =as.integer(p),
+						nsmooth    =as.integer(nsmooth),
+						q          =as.integer(q),
+						starts     =as.integer(starts),
+						ends       =as.integer(ends),
+						nsmooths   =as.integer(nsmooths),
+						maxq       =as.integer(maxq),
+						x          =as.double(x),
+						z          =as.double(z),
+						y          =as.integer(resp),
+						roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
- 	 		bet0       =as.double(bet0),
- 	 		prec       =as.double(prec),	 
- 	 		sb         =as.double(sb),	  		
- 	 		taub       =as.double(taub),
- 	 		iapm       =as.integer(iapm),
- 	 		japm       =as.integer(japm),
- 	 		apm        =as.double(apm),
- 	 		nznh       =as.integer(nznh),
- 	 		pordv      =as.double(pordv),
+						bet0       =as.double(bet0),
+						prec       =as.double(prec),	 
+						sb         =as.double(sb),	  		
+						taub       =as.double(taub),
+						iapm       =as.integer(iapm),
+						japm       =as.integer(japm),
+						apm        =as.double(apm),
+						nznh       =as.integer(nznh),
+						pordv      =as.double(pordv),
                         beta       =as.double(beta),   
                         b          =as.double(b),   
                         sigmab     =as.double(sigmab),   
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
+						mcmc       =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
                         acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		pssave     =as.double(pssave),
- 	 		seed       =as.integer(seed),
- 	 		iflagp     =as.integer(iflagp),
- 	 		betac      =as.double(betac),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
+						cpo        =as.double(cpo),
+						randsave   =as.double(randsave),
+						thetasave  =as.double(thetasave),
+						pssave     =as.double(pssave),
+						seed       =as.integer(seed),
+						iflagp     =as.integer(iflagp),
+						betac      =as.double(betac),
+						workmp1    =as.double(workmp1),
+						workmp2    =as.double(workmp2),
                         workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagq     =as.integer(iflagq),
- 	 		bc         =as.double(bc),
- 	 		workmq1    =as.double(workmq1),
- 	 		workmq2    =as.double(workmq2),
+						workvp1    =as.double(workvp1),
+						xtx        =as.double(xtx),
+						xty        =as.double(xty),
+						iflagq     =as.integer(iflagq),
+						bc         =as.double(bc),
+						workmq1    =as.double(workmq1),
+						workmq2    =as.double(workmq2),
                         workmhq1   =as.double(workmhq1),
- 	 		workvq1    =as.double(workvq1),
- 	 		ztz        =as.double(ztz),
- 	 		zty        =as.double(zty),
- 	 		ztzinv     =as.double(ztzinv),
- 	 		theta      =as.double(theta),
- 		        mc         =as.double(mc), 		
+						workvq1    =as.double(workvq1),
+						ztz        =as.double(ztz),
+						zty        =as.double(zty),
+						ztzinv     =as.double(ztzinv),
+						theta      =as.double(theta),
+						mc         =as.double(mc), 		
                         betasave   =as.double(betasave),
                         bsave      =as.double(bsave),
                         workvps    =as.double(workvps),
-			PACKAGE    ="DPpackage")	
+						PACKAGE    ="DPpackage")	
 
             }
          }
@@ -943,36 +941,36 @@ function(formula,
             {
                 # specific working space
 
-                  acrate<-rep(0,1+nsmooth) 
+                  acrate <- rep(0,1+nsmooth) 
 
-                  iflagp<-rep(0,p) 
-                  betac<-rep(0,p)
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workvp1<-rep(0,p) 
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
+                  iflagp <- rep(0,p) 
+                  betac <- rep(0,p)
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workvp1 <- rep(0,p) 
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
 
                   maxq <- max(ends-starts+1)
 
-                  iflagq<-rep(0,maxq) 
-                  bc<-rep(0,maxq)
-                  theta<-rep(0,maxq)
-                  workmq1<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmq2<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmhq1<-rep(0,maxq*(maxq+1)/2) 
-                  workvq1<-rep(0,maxq) 
-                  ztz<-matrix(0,nrow=maxq,ncol=maxq)
-                  zty<-rep(0,maxq) 
-                  ztzinv<-matrix(0,nrow=maxq,ncol=maxq)
+                  iflagq <- rep(0,maxq) 
+                  bc <- rep(0,maxq)
+                  theta <- rep(0,maxq)
+                  workmq1 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmq2 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmhq1 <- rep(0,maxq*(maxq+1)/2) 
+                  workvq1 <- rep(0,maxq) 
+                  ztz <- matrix(0,nrow=maxq,ncol=maxq)
+                  zty <- rep(0,maxq) 
+                  ztzinv <- matrix(0,nrow=maxq,ncol=maxq)
 
-                  betasave<-rep(0,p)
-                  bsave<-rep(0,q)
+                  betasave <- rep(0,p)
+                  bsave <- rep(0,q)
 
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  seed<-c(seed1,seed2)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  seed <- c(seed1,seed2)
 
                   workvps <- rep(0,nsmooths*ngrid)
 
@@ -980,66 +978,66 @@ function(formula,
                 # fit the model
 
                   foo <- .Fortran("psgampois",
- 	  		nrec       =as.integer(nrec),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		nsmooth    =as.integer(nsmooth),
- 	  		q          =as.integer(q),
- 	  		starts     =as.integer(starts),
- 	  		ends       =as.integer(ends),
- 	  		nsmooths   =as.integer(nsmooths),
- 	  		maxq       =as.integer(maxq),
-	 		x          =as.double(x),
-	 		z          =as.double(z),
- 	 		y          =as.integer(resp),
- 	 		roffset    =as.double(roffset),
+						nrec       =as.integer(nrec),
+						nfixed     =as.integer(nfixed),
+						p          =as.integer(p),
+						nsmooth    =as.integer(nsmooth),
+						q          =as.integer(q),
+						starts     =as.integer(starts),
+						ends       =as.integer(ends),
+						nsmooths   =as.integer(nsmooths),
+						maxq       =as.integer(maxq),
+						x          =as.double(x),
+						z          =as.double(z),
+						y          =as.integer(resp),
+						roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
- 	 		bet0       =as.double(bet0),
- 	 		prec       =as.double(prec),	 
- 	 		sb         =as.double(sb),	  		
- 	 		taub       =as.double(taub),
- 	 		iapm       =as.integer(iapm),
- 	 		japm       =as.integer(japm),
- 	 		apm        =as.double(apm),
- 	 		nznh       =as.integer(nznh),
- 	 		pordv      =as.double(pordv),
+						bet0       =as.double(bet0),
+						prec       =as.double(prec),	 
+						sb         =as.double(sb),	  		
+						taub       =as.double(taub),
+						iapm       =as.integer(iapm),
+						japm       =as.integer(japm),
+						apm        =as.double(apm),
+						nznh       =as.integer(nznh),
+						pordv      =as.double(pordv),
                         beta       =as.double(beta),   
                         b          =as.double(b),   
                         sigmab     =as.double(sigmab),   
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
+						mcmc       =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
                         acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		pssave     =as.double(pssave),
- 	 		seed       =as.integer(seed),
- 	 		iflagp     =as.integer(iflagp),
- 	 		betac      =as.double(betac),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
+						cpo        =as.double(cpo),
+						randsave   =as.double(randsave),
+						thetasave  =as.double(thetasave),
+						pssave     =as.double(pssave),
+						seed       =as.integer(seed),
+						iflagp     =as.integer(iflagp),
+						betac      =as.double(betac),
+						workmp1    =as.double(workmp1),
+						workmp2    =as.double(workmp2),
                         workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagq     =as.integer(iflagq),
- 	 		bc         =as.double(bc),
- 	 		workmq1    =as.double(workmq1),
- 	 		workmq2    =as.double(workmq2),
+						workvp1    =as.double(workvp1),
+						xtx        =as.double(xtx),
+						xty        =as.double(xty),
+						iflagq     =as.integer(iflagq),
+						bc         =as.double(bc),
+						workmq1    =as.double(workmq1),
+						workmq2    =as.double(workmq2),
                         workmhq1   =as.double(workmhq1),
- 	 		workvq1    =as.double(workvq1),
- 	 		ztz        =as.double(ztz),
- 	 		zty        =as.double(zty),
- 	 		ztzinv     =as.double(ztzinv),
- 	 		theta      =as.double(theta),
- 		        mc         =as.double(mc), 		
+						workvq1    =as.double(workvq1),
+						ztz        =as.double(ztz),
+						zty        =as.double(zty),
+						ztzinv     =as.double(ztzinv),
+						theta      =as.double(theta),
+						mc         =as.double(mc), 		
                         betasave   =as.double(betasave),
                         bsave      =as.double(bsave),
                         workvps    =as.double(workvps),
-			PACKAGE    ="DPpackage")	
+						PACKAGE    ="DPpackage")	
             }
          }  
 
@@ -1049,36 +1047,36 @@ function(formula,
             {
                 # specific working space
 
-                  acrate<-rep(0,2+nsmooth) 
+                  acrate <- rep(0,2+nsmooth) 
 
-                  iflagp<-rep(0,p) 
-                  betac<-rep(0,p)
-                  workmp1<-matrix(0,nrow=p,ncol=p)
-                  workmp2<-matrix(0,nrow=p,ncol=p)
-                  workmhp1<-rep(0,p*(p+1)/2) 
-                  workvp1<-rep(0,p) 
-                  xtx<-matrix(0,nrow=p,ncol=p)
-                  xty<-rep(0,p) 
+                  iflagp <- rep(0,p) 
+                  betac <- rep(0,p)
+                  workmp1 <- matrix(0,nrow=p,ncol=p)
+                  workmp2 <- matrix(0,nrow=p,ncol=p)
+                  workmhp1 <- rep(0,p*(p+1)/2) 
+                  workvp1 <- rep(0,p) 
+                  xtx <- matrix(0,nrow=p,ncol=p)
+                  xty <- rep(0,p) 
 
                   maxq <- max(ends-starts+1)
 
-                  iflagq<-rep(0,maxq) 
-                  bc<-rep(0,maxq)
-                  theta<-rep(0,maxq)
-                  workmq1<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmq2<-matrix(0,nrow=maxq,ncol=maxq)
-                  workmhq1<-rep(0,maxq*(maxq+1)/2) 
-                  workvq1<-rep(0,maxq) 
-                  ztz<-matrix(0,nrow=maxq,ncol=maxq)
-                  zty<-rep(0,maxq) 
-                  ztzinv<-matrix(0,nrow=maxq,ncol=maxq)
+                  iflagq <- rep(0,maxq) 
+                  bc <- rep(0,maxq)
+                  theta <- rep(0,maxq)
+                  workmq1 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmq2 <- matrix(0,nrow=maxq,ncol=maxq)
+                  workmhq1 <- rep(0,maxq*(maxq+1)/2) 
+                  workvq1 <- rep(0,maxq) 
+                  ztz <- matrix(0,nrow=maxq,ncol=maxq)
+                  zty <- rep(0,maxq) 
+                  ztzinv <- matrix(0,nrow=maxq,ncol=maxq)
 
-                  betasave<-rep(0,p+1)
-                  bsave<-rep(0,q)
+                  betasave <- rep(0,p+1)
+                  bsave <- rep(0,q)
 
-                  seed1<-sample(1:29000,1)
-                  seed2<-sample(1:29000,1)
-                  seed<-c(seed1,seed2)
+                  seed1 <- sample(1:29000,1)
+                  seed2 <- sample(1:29000,1)
+                  seed <- c(seed1,seed2)
 
                   workvps <- rep(0,nsmooths*ngrid)
 
@@ -1086,69 +1084,69 @@ function(formula,
                 # fit the model
 
                   foo <- .Fortran("psgamgam",
- 	  		nrec       =as.integer(nrec),
- 	  		nfixed     =as.integer(nfixed),
- 	  		p          =as.integer(p),
- 	  		nsmooth    =as.integer(nsmooth),
- 	  		q          =as.integer(q),
- 	  		starts     =as.integer(starts),
- 	  		ends       =as.integer(ends),
- 	  		nsmooths   =as.integer(nsmooths),
- 	  		maxq       =as.integer(maxq),
-	 		x          =as.double(x),
-	 		z          =as.double(z),
- 	 		y          =as.double(resp),
- 	 		roffset    =as.double(roffset),
+						nrec       =as.integer(nrec),
+						nfixed     =as.integer(nfixed),
+						p          =as.integer(p),
+						nsmooth    =as.integer(nsmooth),
+						q          =as.integer(q),
+						starts     =as.integer(starts),
+						ends       =as.integer(ends),
+						nsmooths   =as.integer(nsmooths),
+						maxq       =as.integer(maxq),
+						x          =as.double(x),
+						z          =as.double(z),
+						y          =as.double(resp),
+						roffset    =as.double(roffset),
                         ngrid      =as.integer(ngrid),
                         znew       =as.double(znew),
                         xreal      =as.double(xreal),
                         possfp     =as.integer(possfp),
- 	 		bet0       =as.double(bet0),
- 	 		prec       =as.double(prec),	 
- 	 		sb         =as.double(sb),	  		
- 	 		taub       =as.double(taub),
- 	 		iapm       =as.integer(iapm),
- 	 		japm       =as.integer(japm),
- 	 		apm        =as.double(apm),
- 	 		nznh       =as.integer(nznh),
- 	 		pordv      =as.double(pordv),
- 	 		tau        =as.double(tau),
+						bet0       =as.double(bet0),
+						prec       =as.double(prec),	 
+						sb         =as.double(sb),	  		
+						taub       =as.double(taub),
+						iapm       =as.integer(iapm),
+						japm       =as.integer(japm),
+						apm        =as.double(apm),
+						nznh       =as.integer(nznh),
+						pordv      =as.double(pordv),
+						tau        =as.double(tau),
                         beta       =as.double(beta),   
                         b          =as.double(b),   
                         sigmab     =as.double(sigmab),   
                         disp       =as.double(disp),   
- 	 		mcmc       =as.integer(mcmcvec),
- 	 		nsave      =as.integer(nsave),
- 	 		tune1      =as.double(tune1),
+						mcmc       =as.integer(mcmcvec),
+						nsave      =as.integer(nsave),
+						tune1      =as.double(tune1),
                         acrate     =as.double(acrate),   
- 	 		cpo        =as.double(cpo),
- 	 		randsave   =as.double(randsave),
- 	 		thetasave  =as.double(thetasave),
- 	 		pssave     =as.double(pssave),
- 	 		seed       =as.integer(seed),
- 	 		iflagp     =as.integer(iflagp),
- 	 		betac      =as.double(betac),
- 	 		workmp1    =as.double(workmp1),
- 	 		workmp2    =as.double(workmp2),
+						cpo        =as.double(cpo),
+						randsave   =as.double(randsave),
+						thetasave  =as.double(thetasave),
+						pssave     =as.double(pssave),
+						seed       =as.integer(seed),
+						iflagp     =as.integer(iflagp),
+						betac      =as.double(betac),
+						workmp1    =as.double(workmp1),
+						workmp2    =as.double(workmp2),
                         workmhp1   =as.double(workmhp1),
- 	 		workvp1    =as.double(workvp1),
- 	 		xtx        =as.double(xtx),
- 	 		xty        =as.double(xty),
- 	 		iflagq     =as.integer(iflagq),
- 	 		bc         =as.double(bc),
- 	 		workmq1    =as.double(workmq1),
- 	 		workmq2    =as.double(workmq2),
+						workvp1    =as.double(workvp1),
+						xtx        =as.double(xtx),
+						xty        =as.double(xty),
+						iflagq     =as.integer(iflagq),
+						bc         =as.double(bc),
+						workmq1    =as.double(workmq1),
+						workmq2    =as.double(workmq2),
                         workmhq1   =as.double(workmhq1),
- 	 		workvq1    =as.double(workvq1),
- 	 		ztz        =as.double(ztz),
- 	 		zty        =as.double(zty),
- 	 		ztzinv     =as.double(ztzinv),
- 	 		theta      =as.double(theta),
- 		        mc         =as.double(mc), 		
+						workvq1    =as.double(workvq1),
+						ztz        =as.double(ztz),
+						zty        =as.double(zty),
+						ztzinv     =as.double(ztzinv),
+						theta      =as.double(theta),
+						mc         =as.double(mc), 		
                         betasave   =as.double(betasave),
                         bsave      =as.double(bsave),
                         workvps    =as.double(workvps),
-			PACKAGE    ="DPpackage")	
+						PACKAGE    ="DPpackage")	
             }
          }   
 
@@ -1157,30 +1155,30 @@ function(formula,
          {
             # specific working space
 
-              iflagp<-rep(0,p) 
-              betac<-rep(0,p)
-              workmhp1<-rep(0,p*(p+1)/2) 
-              workvp1<-rep(0,p) 
-              xtx<-matrix(0,nrow=p,ncol=p)
-              xty<-rep(0,p) 
+              iflagp <- rep(0,p) 
+              betac <- rep(0,p)
+              workmhp1 <- rep(0,p*(p+1)/2) 
+              workvp1 <- rep(0,p) 
+              xtx <- matrix(0,nrow=p,ncol=p)
+              xty <- rep(0,p) 
 
               maxq <- max(ends-starts+1)
 
-              iflagq<-rep(0,maxq) 
-              bc<-rep(0,maxq)
-              theta<-rep(0,maxq)
-              workmhq1<-rep(0,maxq*(maxq+1)/2) 
-              workvq1<-rep(0,maxq) 
-              ztz<-matrix(0,nrow=maxq,ncol=maxq)
-              zty<-rep(0,maxq) 
-              ztzinv<-matrix(0,nrow=maxq,ncol=maxq)
+              iflagq <- rep(0,maxq) 
+              bc <- rep(0,maxq)
+              theta <- rep(0,maxq)
+              workmhq1 <- rep(0,maxq*(maxq+1)/2) 
+              workvq1 <- rep(0,maxq) 
+              ztz <- matrix(0,nrow=maxq,ncol=maxq)
+              zty <- rep(0,maxq) 
+              ztzinv <- matrix(0,nrow=maxq,ncol=maxq)
 
-              betasave<-rep(0,p+1)
-              bsave<-rep(0,q)
+              betasave <- rep(0,p+1)
+              bsave <- rep(0,q)
 
-              seed1<-sample(1:29000,1)
-              seed2<-sample(1:29000,1)
-              seed<-c(seed1,seed2)
+              seed1 <- sample(1:29000,1)
+              seed2 <- sample(1:29000,1)
+              seed <- c(seed1,seed2)
 
               workvps <- rep(0,nsmooths*ngrid)
 
@@ -1188,61 +1186,61 @@ function(formula,
             # fit the model
 
               foo <- .Fortran("psgamgauss",
- 	  	nrec       =as.integer(nrec),
- 	  	nfixed     =as.integer(nfixed),
- 	  	p          =as.integer(p),
- 	  	nsmooth    =as.integer(nsmooth),
- 	  	q          =as.integer(q),
- 	  	starts     =as.integer(starts),
- 	  	ends       =as.integer(ends),
- 	  	nsmooths   =as.integer(nsmooths),
- 	  	maxq       =as.integer(maxq),
-	 	x          =as.double(x),
-	 	z          =as.double(z),
- 	 	y          =as.double(resp),
- 	 	roffset    =as.double(roffset),
-                ngrid      =as.integer(ngrid),
-                znew       =as.double(znew),
-                xreal      =as.double(xreal),
-                possfp     =as.integer(possfp),
- 	 	prec       =as.double(prec),	 
- 	 	sb         =as.double(sb),	  		
- 	 	taub       =as.double(taub),
- 	 	iapm       =as.integer(iapm),
- 	 	japm       =as.integer(japm),
- 	 	apm        =as.double(apm),
- 	 	nznh       =as.integer(nznh),
- 	 	pordv      =as.double(pordv),
- 	 	tau        =as.double(tau),
-                beta       =as.double(beta),   
-                b          =as.double(b),   
-                sigmab     =as.double(sigmab),   
-                disp       =as.double(disp),   
- 	 	mcmc       =as.integer(mcmcvec),
- 	 	nsave      =as.integer(nsave),
- 	 	cpo        =as.double(cpo),
- 	 	randsave   =as.double(randsave),
- 	 	thetasave  =as.double(thetasave),
- 	 	pssave     =as.double(pssave),
- 	 	seed       =as.integer(seed),
- 	 	iflagp     =as.integer(iflagp),
-                workmhp1   =as.double(workmhp1),
- 	 	workvp1    =as.double(workvp1),
- 	 	xtx        =as.double(xtx),
- 	 	xty        =as.double(xty),
- 	 	iflagq     =as.integer(iflagq),
- 	 	bc         =as.double(bc),
-                workmhq1   =as.double(workmhq1),
- 	 	workvq1    =as.double(workvq1),
- 	 	ztz        =as.double(ztz),
- 	 	zty        =as.double(zty),
- 	 	ztzinv     =as.double(ztzinv),
- 	 	theta      =as.double(theta),
- 		mc         =as.double(mc), 		
-                betasave   =as.double(betasave),
-                bsave      =as.double(bsave),
-                workvps    =as.double(workvps),
-		PACKAGE    ="DPpackage")	
+					nrec       =as.integer(nrec),
+					nfixed     =as.integer(nfixed),
+					p          =as.integer(p),
+					nsmooth    =as.integer(nsmooth),
+					q          =as.integer(q),
+					starts     =as.integer(starts),
+					ends       =as.integer(ends),
+					nsmooths   =as.integer(nsmooths),
+					maxq       =as.integer(maxq),
+					x          =as.double(x),
+					z          =as.double(z),
+					y          =as.double(resp),
+					roffset    =as.double(roffset),
+					ngrid      =as.integer(ngrid),
+					znew       =as.double(znew),
+					xreal      =as.double(xreal),
+					possfp     =as.integer(possfp),
+					prec       =as.double(prec),	 
+					sb         =as.double(sb),	  		
+					taub       =as.double(taub),
+					iapm       =as.integer(iapm),
+					japm       =as.integer(japm),
+					apm        =as.double(apm),
+					nznh       =as.integer(nznh),
+					pordv      =as.double(pordv),
+					tau        =as.double(tau),
+					beta       =as.double(beta),   
+					b          =as.double(b),   
+					sigmab     =as.double(sigmab),   
+					disp       =as.double(disp),   
+					mcmc       =as.integer(mcmcvec),
+					nsave      =as.integer(nsave),
+					cpo        =as.double(cpo),
+					randsave   =as.double(randsave),
+					thetasave  =as.double(thetasave),
+					pssave     =as.double(pssave),
+					seed       =as.integer(seed),
+					iflagp     =as.integer(iflagp),
+					workmhp1   =as.double(workmhp1),
+					workvp1    =as.double(workvp1),
+					xtx        =as.double(xtx),
+					xty        =as.double(xty),
+					iflagq     =as.integer(iflagq),
+					bc         =as.double(bc),
+					workmhq1   =as.double(workmhq1),
+					workvq1    =as.double(workvq1),
+					ztz        =as.double(ztz),
+					zty        =as.double(zty),
+					ztzinv     =as.double(ztzinv),
+					theta      =as.double(theta),
+					mc         =as.double(mc), 		
+					betasave   =as.double(betasave),
+					bsave      =as.double(bsave),
+					workvps    =as.double(workvps),
+					PACKAGE    ="DPpackage")	
          }   
 
 
@@ -1252,23 +1250,23 @@ function(formula,
         
          if(family$family=="Gamma" || family$family=="gaussian")
          {
-            phi<-1/foo$disp
+            phi <- 1/foo$disp
          }
          else
          {
-            phi<-0
+            phi <- 0
          }
-         mc<-foo$mc
-         names(mc)<-c("Dbar", "Dhat", "pD", "DIC","LPML")
+         mc <- foo$mc
+         names(mc) <- c("Dbar", "Dhat", "pD", "DIC","LPML")
          
-         dimen<-p+dispp+nsmooth
-         thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=dimen)
-         randsave<-matrix(foo$randsave,nrow=nsave, ncol=ngrid*q)
-         pssave<-matrix(foo$pssave,nrow=nsmooths*ngrid, ncol=2)
+         dimen <- p+dispp+nsmooth
+         thetasave <- matrix(foo$thetasave,nrow=nsave, ncol=dimen)
+         randsave <- matrix(foo$randsave,nrow=nsave, ncol=q)
+         pssave <- matrix(foo$pssave,nrow=nsmooths*ngrid, ncol=2)
 
-         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)         
-         cpo<-cpom[,1]         
-         fso<-cpom[,2]
+         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)         
+         cpo <- cpom[,1]         
+         fso <- cpom[,2]
 
          if(nfixed==0)
          {
@@ -1290,60 +1288,60 @@ function(formula,
          
          if(family$family=="Gamma" || family$family=="gaussian")
          {
-         	colnames(thetasave)<-c(pnames1,"phi",pnames2)
+         	colnames(thetasave) <- c(pnames1,"phi",pnames2)
          }
          else
          {
                 colnames(thetasave)<-c(pnames1,pnames2)
          }
 
-	 model.name<-"Bayesian semiparametric generalized additive model using P-Splines"
+		 model.name <- "Bayesian semiparametric generalized additive model using P-Splines"
 	 
-         coeff<-apply(thetasave,2,mean)		
+         coeff <- apply(thetasave,2,mean)		
 
-	 state <- list(b=foo$b,
-	               beta=foo$beta,
-	               sigmab=foo$sigmab,
-	               phi=phi
-	               )
+		 state <- list(	b=foo$b,
+						beta=foo$beta,
+						sigmab=foo$sigmab,
+						phi=phi)
 
-	 save.state <- list(thetasave=thetasave,randsave=randsave,
-	                    pssave=pssave)
+		 save.state <- list(thetasave=thetasave,randsave=randsave,
+							pssave=pssave)
 
-         acrate<-foo$acrate
+         acrate <- foo$acrate
 
-	 out<-list(modelname=model.name,
-	         coefficients=coeff,
-	         call=cl,
-                 prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 nrec=foo$nrec,
-                 nfixed=foo$nfixed,
-                 nsmooth=foo$nsmooth,
-                 q=foo$q,
-                 dispp=dispp,
-                 cpo=cpo,
-                 fso=fso,
-                 prior=prior,
-                 x=x,
-                 z=z,
-                 mf=mf,
-                 dimen=dimen,
-                 acrate=acrate,
-                 possiP=possiP,
-                 mc=mc,
-                 starts=starts,
-                 ends=ends,
-                 xreal=xreal,
-                 n.smoothers=n.smoothers,
-                 nr.smoothers=nr.smoothers,
-                 possfp=possfp)
+		 out <- list(modelname=model.name,
+		 			 coefficients=coeff,
+					 call=cl,
+					 prior=prior,
+					 mcmc=mcmc,
+					 state=state,
+					 save.state=save.state,
+					 nrec=foo$nrec,
+					 nfixed=foo$nfixed,
+					 nsmooth=foo$nsmooth,
+					 q=foo$q,
+					 dispp=dispp,
+					 cpo=cpo,
+					 fso=fso,
+					 prior=prior,
+					 x=x,
+					 z=z,
+					 mf=mf,
+					 dimen=dimen,
+					 acrate=acrate,
+					 possiP=possiP,
+					 mc=mc,
+					 starts=starts,
+					 ends=ends,
+					 xreal=xreal,
+					 n.smoothers=n.smoothers,
+					 nr.smoothers=nr.smoothers,
+					 possfp=possfp,
+					 formula=formula)
                  
          cat("\n\n")        
 
-         class(out)<-c("PSgam")
+         class(out) <- c("PSgam")
          return(out) 
 
 }
@@ -1549,37 +1547,90 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
 ######################################################################################
 ######################################################################################
 ######################################################################################
-    if(object$nfixed>0)
-    {
-       possiP<-object$possiP
-       nfact<-dim(possiP)[1]
-       P<-rep(0,nfact)
-       df<-rep(0,nfact)
-    
-       for(i in 1:nfact)
+
+	 P <- NULL
+	 df <- NULL
+	 tmp <- NULL
+
+
+	 possiP <- object$possiP
+	 nfact <- nrow(possiP)
+        
+	 nsmooth <- object$nsmooth
+
+     if(object$nfixed>1)
+     { 
+
+	 for(i in 1:nfact)
+	 {
+		   if(sum(object$possiP[i,1]==object$possfp)==0)
+		   {
+				tmp <- c(tmp,rownames(possiP)[i])
+				if((possiP[i,2]-possiP[i,1])>0)
+				{ 
+					df <- c(df,(possiP[i,2]-possiP[i,1])+1)
+					x <- matrix(object$save.state$thetasave[,possiP[i,1]:possiP[i,2]])
+					foo <- pcp(x=x) 
+					P <- c(P,foo$pval)
+				}else
+				{
+					df <- c(df,1)
+					x <- object$save.state$thetasave[,possiP[i,1]:possiP[i,2]]
+					foo <- pcp2(x=x) 
+					P <- c(P,foo$pval)
+				}
+			}
+	   }
+
+	 for(i in 1:nfact)
+	 {
+		   if(sum(object$possiP[i,1]==object$possfp)>0)
+		   {
+				tmp <- c(tmp,rownames(possiP)[i])
+				if((possiP[i,2]-possiP[i,1])>0)
+				{ 
+					df <- c(df,(possiP[i,2]-possiP[i,1])+1)
+					x <- matrix(object$save.state$thetasave[,possiP[i,1]:possiP[i,2]])
+					foo <- pcp(x=x) 
+					P <- c(P,foo$pval)
+				}else
+				{
+					df <- c(df,1)
+					x <- object$save.state$thetasave[,possiP[i,1]:possiP[i,2]]
+					foo <- pcp2(x=x) 
+					P <- c(P,foo$pval)
+				}
+			}
+	   }
+       }
+
+       possiQ <- cbind(object$starts,object$ends)
+       for(i in 1:nsmooth)
        {
-           df[i]<-1
-           if((possiP[i,2]-possiP[i,1])>0)
+           if((possiQ[i,2]-possiQ[i,1])>0)
            { 
-              x<-matrix(object$save.state$thetasave[,possiP[i,1]:possiP[i,2]])
-              foo<-pcp(x=x) 
-              P[i]<-foo$pval
-              df[i]<-(possiP[i,2]-possiP[i,1])+1
+			  df <- c(df,(possiQ[i,2]-possiQ[i,1])+1)
+              x <- matrix(object$save.state$randsave[,possiQ[i,1]:possiQ[i,2]])
+              foo <- pcp(x=x) 
+              P <- c(P,foo$pval)
            }
            else
            {
-              x<-object$save.state$thetasave[,possiP[i,1]:possiP[i,2]]
-              foo<-pcp2(x=x) 
-              P[i]<-foo$pval
+			  df <- c(df,1)
+              x <- object$save.state$randsave[,possiQ[i,1]:possiQ[i,2]]
+              foo <- pcp2(x=x) 
+              P <- c(P,foo$pval)
            }
        }
 
        table <- data.frame(df,P) 
-       dimnames(table) <- list(rownames(possiP), c("Df","PsCP"))
+
+	   tmp <- c(tmp,object$n.smoothers)
+
+       dimnames(table) <- list(tmp, c("Df","PsCP"))
        structure(table, heading = c("Table of Pseudo Contour Probabilities\n", 
-        paste("Response:", deparse(formula(object$fixed)[[2]]))), class = c("anovaPsCP",
+        paste("Response:", deparse(formula(object$formula)[[2]]))), class = c("anovaPsCP",
         "data.frame"))
-    }    
 }
 
 
@@ -1664,15 +1715,15 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
 
     if(hpd)
     {             
-         limm<-apply(mat, 2, hpdf)
-         coef.l<-limm[1,]
-         coef.u<-limm[2,]
+         limm <- apply(mat, 2, hpdf)
+         coef.l <- limm[1,]
+         coef.u <- limm[2,]
     }
     else
     {
          limm<-apply(mat, 2, pdf)
-         coef.l<-limm[1,]
-         coef.u<-limm[2,]
+         coef.l <- limm[1,]
+         coef.u <- limm[2,]
     }
 
     coef.table <- cbind(coef.p, coef.m, coef.sd, coef.se , coef.l , coef.u)
@@ -1795,47 +1846,47 @@ pcp2<-function(x,hnull=NULL,precision=0.001,prob=0.95)
 "plot.PSgam"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
 {
 
-fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
-# Author: AJV, 2006
-#
-{
-	dens <- density(x,n=npts)
-	densx <- dens$x
-	densy <- dens$y
+	fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
+	# Author: AJV, 2006
+	#
+	{
+		dens <- density(x,n=npts)
+		densx <- dens$x
+		densy <- dens$y
 
-	meanvar <- mean(x)
-	densx1 <- max(densx[densx<=meanvar])
-	densx2 <- min(densx[densx>=meanvar])
+		meanvar <- mean(x)
+		densx1 <- max(densx[densx<=meanvar])
+		densx2 <- min(densx[densx>=meanvar])
         densy1 <- densy[densx==densx1]
         densy2 <- densy[densx==densx2]
         ymean <- densy1 + ((densy2-densy1)/(densx2-densx1))*(meanvar-densx1)
         
 
         if(hpd==TRUE)
-	{
-		alpha<-0.05
-		alow<-rep(0,2)
+		{
+			alpha<-0.05
+			alow<-rep(0,2)
         	aupp<-rep(0,2)
         	n<-length(x)
-		a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(x),
+			a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(x),
 		                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-		xlinf<-a$alow[1]            
-		xlsup<-a$aupp[1]            
-	}
-	else
-	{
-		xlinf <- quantile(x,0.025)
-		xlsup <- quantile(x,0.975)
-	}
+			xlinf<-a$alow[1]            
+			xlsup<-a$aupp[1]            
+		}
+		else
+		{
+			xlinf <- quantile(x,0.025)
+			xlsup <- quantile(x,0.975)
+		}
 
-	densx1 <- max(densx[densx<=xlinf])
-	densx2 <- min(densx[densx>=xlinf])
-	densy1 <- densy[densx==densx1]
-	densy2 <- densy[densx==densx2]
-	ylinf <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlinf-densx1)
+		densx1 <- max(densx[densx<=xlinf])
+		densx2 <- min(densx[densx>=xlinf])
+		densy1 <- densy[densx==densx1]
+		densy2 <- densy[densx==densx2]
+		ylinf <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlinf-densx1)
 
-	densx1 <- max(densx[densx<=xlsup])
-	densx2 <- min(densx[densx>=xlsup])
+		densx1 <- max(densx[densx<=xlsup])
+		densx2 <- min(densx[densx>=xlsup])
         densy1 <- densy[densx==densx1]
         densy2 <- densy[densx==densx2]
         ylsup <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlsup-densx1)
@@ -1859,35 +1910,64 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
         segments(xlinf, 0, xlinf, ylinf,lwd=1.2)
         segments(xlsup, 0, xlsup, ylsup,lwd=1.2)
 
-	axis(1., at = round(c(xlinf, meanvar,xlsup), 2.), labels = T,pos = 0.)
+		axis(1., at = round(c(xlinf, meanvar,xlsup), 2.), labels = T,pos = 0.)
         axis(1., at = round(seq(min(densx),max(densx),length=15), 2.), labels = F,pos = 0.)
         axis(2., at = round(seq(0,max(densy),length=5), 2.), labels = T,pos =min(densx))
-}
+	}
+
+    hpdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[1],a$aupp[1]))
+    }
+    
+    pdf<-function(x)
+    {
+         alpha<-0.05
+         vec<-x
+         n<-length(x)         
+         alow<-rep(0,2)
+         aupp<-rep(0,2)
+         a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+         return(c(a$alow[2],a$aupp[2]))
+    }
 
 
-   if(is(x, "PSgam"))
-   {
+    if(is(x, "PSgam"))
+    {
         if(is.null(param))
         {
-           coef.p<-x$coefficients
-           n<-length(coef.p)
-           pnames<-names(coef.p)
+           coef.p <- x$coefficients
+           n <- length(coef.p)
+           pnames <- names(coef.p)
            
            par(ask = ask)
            layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
 
            for(i in 1:n)
            {
-               title1<-paste("Trace of",pnames[i],sep=" ")
-               title2<-paste("Density of",pnames[i],sep=" ")       
+               title1 <- paste("Trace of",pnames[i],sep=" ")
+               title2 <- paste("Density of",pnames[i],sep=" ")       
                plot(x$save.state$thetasave[,i],type='l',main=title1,xlab="MCMC scan",ylab=" ")
                fancydensplot1(x$save.state$thetasave[,i],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
 
-           ngrid <- dim(x$xreal)[1]
-           nsmooth <- dim(x$xreal)[2]
+           ngrid <- nrow(x$xreal)
+           nsmooth <- ncol(x$xreal)
            meanss <- x$save.state$pssave[,1]
            sdss <- sqrt(x$save.state$pssave[,2])
+
+		   #limm <- apply(x$save.state$pssave[,1], 2, hpdf)
+		   #linf <- limm[1,]
+		   #lsup <- limm[2,]
+
            linf <- meanss-sdss
            lsup <- meanss+sdss
 
@@ -1900,7 +1980,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
                ymin <- min(linf[begs:ends],lsup[begs:ends])
                ymax <- max(linf[begs:ends],lsup[begs:ends])
                
-               dff<-diff(c(ymin,ymax))
+               dff <- diff(c(ymin,ymax))
                ymin <- ymin-0.07*dff
                ymax <- ymax+0.07*dff
                
@@ -1919,23 +1999,23 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
    
         else
         {
-            coef.p<-x$coefficients
-	    n<-length(coef.p)
-	    pnames<-names(coef.p)
-	    poss<-0 
+            coef.p <- x$coefficients
+			n <- length(coef.p)
+			pnames <- names(coef.p)
+			poss <- 0 
             for(i in 1:n)
             {
                if(pnames[i]==param)poss=i
             }
             if (poss==0) 
-	    {
-	      stop("This parameter is not present in the original model.\n")
-	    }
+			{
+				stop("This parameter is not present in the original model.\n")
+			}
 	    
-	    par(ask = ask)
-	    layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
-            title1<-paste("Trace of",pnames[poss],sep=" ")
-            title2<-paste("Density of",pnames[poss],sep=" ")       
+			par(ask = ask)
+			layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
+            title1 <- paste("Trace of",pnames[poss],sep=" ")
+            title2 <- paste("Density of",pnames[poss],sep=" ")       
             plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")
             fancydensplot1(x$save.state$thetasave[,poss],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
 

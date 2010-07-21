@@ -68,9 +68,13 @@ c-----------------------------------------------------------------------
 c
 c---- Prediction -------------------------------------------------------
 c 
+c        cband       :  integer value indicating whether the 
+c                       credible bands need to be computed or not.
 c        ngrid       :  integer giving the number of grid points where 
 c                       the density estimates are evaluated.. 
-c        npred       :  integer giving the number of predictions..
+c        npred       :  integer giving the number of predictions.
+c        tband       :  integer indicating the type of credible 
+c                       band that need to be computed.
 c        grid        :  real vector giving the grid, grid(ngrid). 
 c        zpred       :  real matrix giving the design matrix of the 
 c                       predictions, zpred(npred,p).
@@ -203,7 +207,7 @@ c++++ data
       real*8 z(nrec,p)
 
 c++++ prediction
-      integer ngrid,npred
+      integer cband,ngrid,npred,tband
       real*8 grid(ngrid)
       real*8 zpred(npred,p)
 
@@ -238,7 +242,7 @@ c++++ output
       real*8 meanfph(npred)
 
 c++++ mcmc
-      integer mcmc(3),nburn,nskip,nsave,ndisplay
+      integer mcmc(5),nburn,nskip,nsave,ndisplay
   
 c++++ seeds
       integer seed1,seed2,seed(2)
@@ -322,6 +326,8 @@ c++++ mcmc, priors and "zipped"
       nburn=mcmc(1)
       nskip=mcmc(2)
       ndisplay=mcmc(3)
+      cband=mcmc(4)
+      tband=mcmc(5)
    
       seed1=seed(1)
       seed2=seed(2)
@@ -889,10 +895,15 @@ c+++++++++++++ print
       close(unit=6)
       close(unit=7)
 
-      call hpddensreg(nsave,npred,ngrid,0.05d0,1,worksam,fs,
-     &                denspl,densph)
-      call hpddensregmf(nsave,npred,0.05d0,1,worksam,meanfpl,meanfph)
+      if(cband.eq.1)then
+
+         call hpddensreg(nsave,npred,ngrid,0.05d0,tband,worksam,fs,
+     &                   denspl,densph)
+         call hpddensregmf(nsave,npred,0.05d0,tband,worksam,
+     &                     meanfpl,meanfph)
       
+      end if
+
       return
       end
 

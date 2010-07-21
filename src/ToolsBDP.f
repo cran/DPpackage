@@ -140,19 +140,19 @@ c       j=int(y*dble(k))+1
        
        j=iceil(y*k)
        
-       if(y.gt.dble(j)/dble(k))then
-          call dblepr("y",-1,y,1)
-          call intpr("k",-1,k,1)
-          call intpr("j",-1,j,1)          
-          call rexit("Error in 'jcomponent'")      
-       end if
+c       if(y.gt.dble(j)/dble(k))then
+c          call dblepr("y",-1,y,1)
+c          call intpr("k",-1,k,1)
+c          call intpr("j",-1,j,1)          
+c          call rexit("Error in 'jcomponent'")      
+c       end if
 
-       if(y.lt.dble(j-1)/dble(k))then
-          call dblepr("y",-1,y,1)
-          call intpr("k",-1,k,1)
-          call intpr("j",-1,j,1)                    
-          call rexit("Error in 'jcomponent'")      
-       end if
+c       if(y.lt.dble(j-1)/dble(k))then
+c          call dblepr("y",-1,y,1)
+c          call intpr("k",-1,k,1)
+c          call intpr("j",-1,j,1)                    
+c          call rexit("Error in 'jcomponent'")      
+c       end if
       
        return
        end
@@ -259,7 +259,7 @@ c=======================================================================
           tt4=1.d0-dble(j-1)/dble(k)
           call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleybd´")      
+             call rexit("Error in 'sampleybd'")      
           end if
           tmp1=tt1
        
@@ -267,7 +267,7 @@ c=======================================================================
           tt4=1.d0-dble(j)/dble(k)
           call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleybd´")      
+             call rexit("Error in 'sampleybd'")      
           end if
           tmp2=tt1
  
@@ -275,21 +275,21 @@ c=======================================================================
        
           call cdfbet(2,tmp3,1.d0-tmp3,y,y2,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleybd´")      
+             call rexit("Error in 'sampleybd'")      
           end if
 
        end if
         
        if(y.gt.dble(j)/dble(k))then
-          call rexit("Error in ´sampleybd´")      
+          call rexit("Error in 'sampleybd'")      
        end if
 
        if(y.le.dble(j-1)/dble(k))then
-          call rexit("Error in ´sampleybd´")      
+          call rexit("Error in 'sampleybd'")      
        end if
 
        if(y.eq.0.d0)then
-          call rexit("Error in ´sampleybd´ (0)")      
+          call rexit("Error in 'sampleybd' (0)")      
        end if
 
 

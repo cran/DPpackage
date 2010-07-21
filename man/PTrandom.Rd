@@ -82,7 +82,7 @@ PTrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
 \author{
 Alejandro Jara \email{<atjara@uc.cl>}
 
-Tim Hanson \email{<hanson@biostat.umn.edu>}
+Tim Hanson \email{<hansont@stat.sc.edu>}
 }
 
 \keyword{models}

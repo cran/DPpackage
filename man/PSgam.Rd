@@ -86,7 +86,7 @@ PSgam(formula,family=gaussian(),offset,n,prior,mcmc,state,status,
   equally spaced knots within the domain of \eqn{x}. It is well known that
   this spline can be written in terms of a linear combination of \eqn{q=l+r} B-spline
   basis,
-  \deqn{f(x)=\sum_{j=1}^q b_j B_j(x)}{f(x)=sum bj Bj(x)}.
+  \deqn{f(x)=\sum_{j=1}^q b_j B_j(x).}{f(x)=sum bj Bj(x).}
  
   The computational implementation of the model is model-specific. 
    
@@ -144,8 +144,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
  # Normal simulated data
    set.seed(0)
-   n<-400
-   sig<-2
+   n <- 400
+   sig <- 2
    x0 <- runif(n, 0, 1)
    x1 <- runif(n, 0, 1)
    x2 <- runif(n, 0, 1)
@@ -159,21 +159,21 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
    y <- f + e
 
  # prior
-   prior<-list(taub1=0.01,
-               taub2=0.01,
-               beta0=rep(0,1),
-               Sbeta0=diag(100,1),
-               tau1=0.01,
-               tau2=0.01)
+   prior <- list(taub1=2.02,
+                 taub2=0.02,
+                 beta0=rep(0,1),
+                 Sbeta0=diag(100,1),
+                 tau1=6.01,
+                 tau2=2.01)
 
   # Initial state
     state <- NULL
 
   # MCMC parameters
-    nburn<-5000
-    nsave<-5000
-    nskip<-0
-    ndisplay<-10
+    nburn <- 5000
+    nsave <- 5000
+    nskip <- 0
+    ndisplay <- 100
     mcmc <- list(nburn=nburn,
                  nsave=nsave,
                  nskip=nskip,
@@ -181,32 +181,32 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
 
   # fitting the model
-    fit1<-PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
-                family=gaussian(),prior=prior,
-                mcmc=mcmc,ngrid=30,
-                state=state,status=TRUE)
+    fit1 <- PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
+                  family=gaussian(),prior=prior,
+                  mcmc=mcmc,ngrid=30,
+                  state=state,status=TRUE)
 
 
   # A binary example 
     g <- (f-5)/3
     g <- binomial()$linkinv(g)
-    y <- rbinom(g,1,g)
+    y <- rbinom(n,1,g)
 
   # fitting the model
-    fit2<-PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
-                family=binomial(logit),prior=prior,
-                mcmc=mcmc,ngrid=30,
-                state=state,status=TRUE)
+    fit2 <- PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
+                  family=binomial(logit),prior=prior,
+                  mcmc=mcmc,ngrid=30,
+                  state=state,status=TRUE)
 
   # Poisson data
-    g<-exp(f/4)
-    y<-rpois(rep(1,n),g)
+    g <- exp(f/4)
+    y <- rpois(n,g)
 
   # fitting the model
-    fit3<-PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
-                family=poisson(log),prior=prior,
-                mcmc=mcmc,ngrid=30,
-                state=state,status=TRUE)
+    fit3 <- PSgam(formula=y~ps(x0,x1,x2,x3,k=20,degree=3,pord=1),
+                  family=poisson(log),prior=prior,
+                  mcmc=mcmc,ngrid=30,
+                  state=state,status=TRUE)
 }
 }
 

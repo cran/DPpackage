@@ -58,24 +58,31 @@ c      Fax  : +56-2-3547729  Email: atjara@uc.cl
 c
 c---- Data -------------------------------------------------------------
 c 
-c        ngrid       :  integer giving the size of the grid where
-c                       the densities will be evaluated.
-c        grid        :  real vector giving the grid of values for
-c                       the response, grid(ngrid).
 c        nmissi      :  integer indicating whether the data contain
 c                       (1) or not (0) missing data. 
 c        nmiss       :  integer giving the number of missing data 
 c                       points. 
 c        missp       :  integer matrix giving the location of the
 c                       missing data points, missp(nmiss,2).
-c        npred       :  integer giving the number of predictions.
 c        nrec        :  integer giving the number of observations.
 c        nvar        :  integer giving the number of variables.
 c        nx          :  integer giving the number of predictors.
-c        xpred       :  real matrix giving the value of the
-c                       predictors for prediction, xpred(npred,nx).
 c        z           :  real matrix giving the response variables,
 c                       z(nrec,nvar).
+c
+c---- Predictions ------------------------------------------------------
+c 
+c        cband       :  integer value indicating whether the 
+c                       credible bands need to be computed or not.
+c        ngrid       :  integer giving the size of the grid where
+c                       the densities will be evaluated.
+c        grid        :  real vector giving the grid of values for
+c                       the response, grid(ngrid).
+c        npred       :  integer giving the number of predictions.
+c        tband       :  integer indicating the type of credible 
+c                       band that need to be computed.
+c        xpred       :  real matrix giving the value of the
+c                       predictors for prediction, xpred(npred,nx).
 c
 c-----------------------------------------------------------------------
 c
@@ -276,7 +283,7 @@ c+++++Data
       real*8 z(nrec,nvar)
 
 c+++++Prediction
-      integer npred,ngrid
+      integer cband,npred,ngrid,tband
       real*8 xpred(npred,nx)   
       real*8 grid(ngrid) 
 
@@ -288,7 +295,7 @@ c+++++Prior
       real*8 s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
-      integer mcmc(3),nburn,nskip,nsave,ndisplay
+      integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
       real*8 cpo(nrec,2)
@@ -378,7 +385,9 @@ c++++ Define parameters
       nburn=mcmc(1)
       nskip=mcmc(2)
       ndisplay=mcmc(3)
-      
+      cband=mcmc(4)
+      tband=mcmc(5)
+
       nuniqs=nvar*(nvar+1)/2
       nu1=nuvec(1)
       nu2=nuvec(2)
@@ -539,8 +548,7 @@ c++++++++++ sampling
                call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                   workv1,workm1,workm2,workv2,iflag)
 
-               prob(j)=exp(log(dble(ccluster(j)))+
-     &                     tmp1)
+               prob(j)=dble(ccluster(j))*exp(tmp1)
             end do
             
             if(isample.eq.1)then
@@ -556,7 +564,7 @@ c++++++++++ sampling
 
                do k=1,nvar
                   do l=1,nvar
-                     s1(k,l)=workm3(k,l)/dble(k0)
+                     s1(k,l)=workm3(k,l)/k0
                      sigmaclus(ncluster+1,ihmssf(k,l,nvar))=
      &                      workm3(k,l)
                   end do
@@ -580,8 +588,7 @@ c++++++++++ sampling
             call dmvn(nvar,ywork,muwork,sigmawork,tmp1,
      &                workv1,workm1,workm2,workv2,iflag)
                    
-            prob(ncluster+1)=exp(log(alpha)+
-     &                           tmp1)
+            prob(ncluster+1)=alpha*exp(tmp1)
                
             call simdisc(prob,nrec+100,ncluster+1,evali)
                
@@ -795,7 +802,7 @@ c+++++++ mean of the normal component
 
             do i=1,nvar
                do j=1,nvar
-                  workm1(i,j)=workm1(i,j)*dble(k0)
+                  workm1(i,j)=workm1(i,j)*k0
                end do
             end do
 
@@ -1199,12 +1206,15 @@ c+++++++++++++ print
       close(unit=1)
       close(unit=2)
 
-      call hpddensreg(nsave,npred,ngrid,0.05d0,1,
-     &                worksam,fs,denspl,densph)
+      if(cband.eq.1)then
 
-      call hpddensregmf(nsave,npred,0.05d0,1,
-     &                  worksam,meanfpl,meanfph)
-      
+         call hpddensreg(nsave,npred,ngrid,0.05d0,tband,
+     &                   worksam,fs,denspl,densph)
+
+         call hpddensregmf(nsave,npred,0.05d0,tband,
+     &                     worksam,meanfpl,meanfph)
+      end if
+
       return
       end
 

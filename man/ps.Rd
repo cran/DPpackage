@@ -11,9 +11,9 @@ ps(..., k=50,degree=3,pord=1)
 \arguments{
      \item{...}{the predictors.}
 
-     \item{k}{an integer giving the number of intervals for B-splines.}
+     \item{k}{an integer giving the number of knots. The number of basis functions is k+degree.}
      
-     \item{degree}{an integer giving the degree of the B-splines.}
+     \item{degree}{an integer giving the degree of the B-splines, e.g. degree=3 gives a cubic spline.}
 
      \item{pord}{an integer giving the order of difference penalty.}
 }

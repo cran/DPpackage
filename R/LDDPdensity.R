@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2010.
 ###
-### Last modification: 16-02-2010.
+### Last modification: 27-08-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@
 ###
 
 "LDDPdensity"<-
-function(formula,zpred,prior,mcmc,state,status,ngrid=100,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
+function(formula,zpred,prior,mcmc,state,status,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
 UseMethod("LDDPdensity")
 
 "LDDPdensity.default"<-
@@ -61,6 +61,9 @@ function(formula,
          state,
          status, 
          ngrid=100,
+         grid=NULL,
+		 compute.band=FALSE,
+		 type.band="PD",
          data=sys.frame(sys.parent()),
          na.action=na.fail,
          work.dir=NULL)
@@ -101,11 +104,32 @@ function(formula,
 
          npred <- nrow(zpred)
 
-         miny <- min(y)
-         maxy <- max(y)
-         sdy <- sqrt(var(y))
-         grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
-       
+         if(is.null(grid))
+         {
+			miny <- min(y)
+			maxy <- max(y)
+			sdy <- sqrt(var(y))
+			grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
+		 }
+		 else
+		 {
+			grid <- as.vector(grid)
+			ngrid <- length(grid)
+		 }
+
+		 cband <- 0
+		 if(compute.band)
+		 {
+			cband <- 1
+		 }
+			
+		 tband <- 1
+		 if(type.band!="HPD")
+		 {
+			tband <- 2
+		 }
+
+
        #########################################################################################
        # Prior information
        #########################################################################################
@@ -135,7 +159,7 @@ function(formula,
        # mcmc specification
        #########################################################################################
 
-         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,cband,tband)
          nsave <- mcmc$nsave
 
        #########################################################################################
@@ -368,7 +392,8 @@ function(formula,
 					meanfp.h=meanfph,
 					state=state,
 					save.state=save.state,
-					work.dir=work.dir)
+					work.dir=work.dir,
+					compute.band=compute.band)
 
 		 cat("\n\n")
 		 class(z)<-c("LDDPdensity")
@@ -676,10 +701,18 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
            for(i in 1:x$npred)
            {
-               title1 <- paste("Density Prediction #",i,sep=" ")           
-               plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
-               lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
-               lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
+               if(x$compute.band)
+               {
+                  title1 <- paste("Density Prediction #",i,sep=" ")           
+                  plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
+                  lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
+                  lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
+			   }
+               else
+               {
+				  title1 <- paste("Density Prediction #",i,sep=" ")           
+				  plot(x$grid,x$densp.m[i,],main=title1,lty=1,type='l',lwd=2,xlab="y",ylab="density")
+			   }
            }
            
         }
@@ -687,9 +720,9 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
         else
         {
             coef.p<-x$coefficients
-	    n<-length(coef.p)
-	    pnames<-names(coef.p)
-	    poss<-0 
+			n<-length(coef.p)
+			pnames<-names(coef.p)
+			poss<-0 
             for(i in 1:n)
             {
                if(pnames[i]==param)poss=i
@@ -704,8 +737,8 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
 	    if(param !="predictive")
 	    {
-                title1<-paste("Trace of",pnames[poss],sep=" ")
-                title2<-paste("Density of",pnames[poss],sep=" ")       
+                title1 <- paste("Trace of",pnames[poss],sep=" ")
+                title2 <- paste("Density of",pnames[poss],sep=" ")       
                 plot(ts(x$save.state$thetasave[,poss]),main=title1,xlab="MCMC scan",ylab=" ")
                 if(param=="ncluster")
                 {
@@ -721,10 +754,18 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
             {
                for(i in 1:x$npred)
                {
-                   title1 <- paste("Density Prediction #",i,sep=" ")           
-                   plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
-                   lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
-                   lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
+					if(x$compute.band)
+					{
+						title1 <- paste("Density Prediction #",i,sep=" ")           
+						plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
+						lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
+						lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
+					}
+					else
+					{
+						title1 <- paste("Density Prediction #",i,sep=" ")           
+						plot(x$grid,x$densp.m[i,],main=title1,lty=1,type='l',lwd=2,xlab="y",ylab="density")
+					}
                }
             }                
         }

@@ -270,7 +270,7 @@ Hanson, T., Monteiro, J.V.D, and Jara, A. (2010) The Polya Tree Sampler: Towards
 \author{
 Alejandro Jara \email{<atjara@uc.cl>}
 
-Tim Hanson \email{<hanson@biostat.umn.edu>}
+Tim Hanson \email{<hansont@stat.sc.edu>}
 }
 
 \keyword{models}

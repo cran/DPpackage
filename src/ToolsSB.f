@@ -130,4 +130,60 @@ c+++++Algorihtm
       end
 
 
+c=======================================================================
+      subroutine sickbreak(n,v,workv,w)
+c=======================================================================
+c     Subroutine to compute the stick breaking weights.
+c=======================================================================
+      implicit none
+
+c+++++Input
+      integer n
+      real*8 v(n)
+
+c+++++External working space
+      real*8 workv(n+1)
+
+c+++++Output
+      real*8 w(n)
+
+c+++++Internal working space
+      integer i 
+      real*8 tmp1,tmp2
+
+c+++++Algorihtm
+    
+c      w(1)=v(1)
+c      tmp1=1.d0-v(1)
+c      do i=2,n
+c	 w(i)=tmp1*v(i)
+c         tmp1=tmp1*(1.d0-v(i))	
+c      end do
+
+
+      workv(1)=0.d0
+      tmp1=0.d0
+      do i=1,n
+         tmp2=1.d0-v(i)  
+         if(i.ne.n)then
+            tmp1=tmp1-dlog(tmp2) 
+            workv(i+1)=tmp1 
+         end if
+      end do 
+      workv(n+1)=1.0D300
+
+      tmp1=0.d0
+      do i=1,n
+         w(i)=dexp(-workv(i))-dexp(-workv(i+1))
+         tmp1=tmp1+w(i)
+      end do  
+
+      do i=1,n
+         w(i)=w(i)/tmp1
+      end do 
+
+      return
+      end
+
+
  

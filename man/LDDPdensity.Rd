@@ -12,6 +12,7 @@
 \usage{
 
 LDDPdensity(formula,zpred,prior,mcmc,state,status,ngrid=100,
+            grid=NULL,compute.band=FALSE,type.band="PD",
             data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
 
 }
@@ -60,8 +61,20 @@ LDDPdensity(formula,zpred,prior,mcmc,state,status,ngrid=100,
                      the current value of the parameters must be specified in the 
                      object \code{state}.}
 
-    \item{ngrid}{    integer giving the number of grid points where the density estimate is 
+    \item{ngrid}{    integer giving the number of grid points where the conditional density estimate is 
                      evaluated. The default is 100.}
+
+    \item{grid}{     vector of grid points where the conditional density estimate is 
+                     evaluated. The default value is NULL
+                     and the grid is chosen according to the range of the
+	             data.}
+
+    \item{compute.band}{  logical variable indicating whether the credible band for the conditional  
+                          density and mean function must be computed.}       
+
+    \item{type.band}{  string indication the type of credible band to be computed; if equal to "HPD" or
+                       "PD" then the 95 percent pointwise HPD or PD band is computed, respectively.}       
+
 
     \item{data}{     data frame.}     
     
@@ -217,7 +230,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Fit the model
       fit1 <- LDDPdensity(y~trt,prior=prior,mcmc=mcmc,state=state,status=TRUE,
-                          ngrid=200,zpred=zpred)
+                          ngrid=200,zpred=zpred,compute.band=TRUE,type.band="PD")
 
     # Plot posterior density estimates
     # with design vector x0=(1,0) 
@@ -246,7 +259,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 \author{
 
-Alejandro Jara \email{<ajarav@udec.cl>}
+Alejandro Jara \email{<atjara@uc.cl>}
 
 Peter Mueller \email{<pmueller@mdanderson.org>}
 

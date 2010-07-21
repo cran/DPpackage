@@ -66,6 +66,8 @@ export(
 	HDPMdensity.default,
 	HDPMcdensity,
 	HDPMcdensity.default,
+	LDBDPdensity,
+	LDBDPdensity.default,
         LDDPdensity,
         LDDPdensity.default,
         LDDPsurvival,
@@ -276,6 +278,11 @@ S3method(plot,  HDPMcdensity)
 S3method(summary, HDPMcdensity)
 S3method(print, summaryHDPMcdensity)
 S3method(predict, HDPMcdensity)
+
+S3method(print, LDBDPdensity)
+S3method(plot, LDBDPdensity)
+S3method(summary, LDBDPdensity)
+S3method(print, summaryLDBDPdensity)
 
 S3method(print, LDDPdensity)
 S3method(plot, LDDPdensity)

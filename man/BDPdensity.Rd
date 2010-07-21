@@ -10,7 +10,7 @@
   
 \usage{
 
-BDPdensity(y,support=3,ngrid=1000,prior,mcmc,state,status,
+BDPdensity(y,support=3,ngrid=1000,grid=NULL,prior,mcmc,state,status,
           data=sys.frame(sys.parent()),na.action=na.fail)      
       
 }
@@ -26,6 +26,11 @@ BDPdensity(y,support=3,ngrid=1000,prior,mcmc,state,status,
     \item{ngrid}{    number of grid points where the density estimate is 
                      evaluated. This is only used if dimension of \code{y}
                      is lower or equal than 2. The default value is 1000.}
+
+    \item{grid}{     vector of grid points where the density estimate is 
+                     evaluated. The default value is NULL
+                     and the grid is chosen according to the range of the
+	             data.}
     
     \item{prior}{    a list giving the prior information. The list includes the following
                      parameter: \code{aa0} and \code{ab0} giving the hyperparameters for

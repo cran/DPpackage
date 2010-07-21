@@ -380,7 +380,7 @@ c++++++++++ observation in cluster with more than 1 element
 
                do k=1,nvar
                   do l=1,nvar
-                     s1(k,l)=workm3(k,l)/dble(k0)
+                     s1(k,l)=workm3(k,l)/k0
                      sigmaclus(ncluster+1,ihmssf(k,l,nvar))=
      &                         workm3(k,l)
                   end do

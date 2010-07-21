@@ -33,7 +33,7 @@ c     A Gamma(tau1/2,tau2/2) is specified on disp
 c
 c     Version 1.0:
 c
-c     Last modification: 26-07-2007.
+c     Last modification: 15-09-2010.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -863,10 +863,19 @@ c+++++++++++++ smoothers
                         thetasave(isave,1+i)=sigmab(i)
                      end do
                   end if
-                  do i=1,q
-                     randsave(isave,i)=b(i)
-                     bsave(i)=bsave(i)+b(i)
+
+                  do i=1,nsmooth
+                     tmp1=0.d0
+                     do j=starts(i),ends(i)
+                        tmp1=tmp1+b(j)
+                     end do
+                     tmp1=tmp1/dble(ends(i)-starts(i)+1)
+                     do j=starts(i),ends(i)
+                        randsave(isave,j)=b(j)-tmp1
+                        bsave(j)=bsave(j)+b(j)
+                     end do
                   end do
+
                end if   
 
                if(nsmooth.gt.0)then
@@ -881,11 +890,7 @@ c+++++++++++++ smoothers
                            tmp2=tmp2+b(l)
                         end do
                         tmp2=tmp2/dble(ends(i)-starts(i)+1)  
-                        if(nfixed.gt.0)then
-                           if(possfp(i).gt.0)then
-                              tmp1=tmp1+xreal(j,i)*beta(possfp(i))
-                           end if   
-                        end if   
+
                         pssave(ll,1)=pssave(ll,1)+tmp1-tmp2 
                         pssave(ll,2)=tmp1-tmp2
                      end do

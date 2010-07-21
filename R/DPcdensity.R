@@ -4,7 +4,7 @@
 ###
 ### Copyright: Alejandro Jara, 2008-2010.
 ###
-### Last modification: 23-06-2008.
+### Last modification: 27-08-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -35,14 +35,17 @@
 
 
 "DPcdensity"<-
-function(y,x,xpred,ngrid,prior,mcmc,state,status,data=sys.frame(sys.parent()),work.dir=NULL)
+function(y,x,xpred,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",prior,mcmc,state,status,data=sys.frame(sys.parent()),work.dir=NULL)
 UseMethod("DPcdensity")
 
 DPcdensity.default<-
 function(y,
          x,
          xpred,
-         ngrid,
+         ngrid=100,
+		 grid=NULL,
+		 compute.band=FALSE,
+		 type.band="PD",
          prior,
          mcmc,
          state,
@@ -117,20 +120,41 @@ function(y,
             return(-1)
          }
  
-         yy <- na.omit(y)  
-         miny <- min(yy)
-         maxy <- max(yy)
-         vary <- var(yy)
-         grid <- seq(from=miny-0.25*sqrt(vary),to=maxy+0.25*sqrt(vary),length.out=ngrid)
-         
+		 if(is.null(grid))
+		 { 
+			yy <- na.omit(y)  
+			miny <- min(yy)
+			maxy <- max(yy)
+			vary <- var(yy)
+			grid <- seq(from=miny-0.25*sqrt(vary),to=maxy+0.25*sqrt(vary),length.out=ngrid)
+		 }
+		 else
+		 {
+			grid <- as.vector(grid)
+			ngrid <- length(grid)
+		 }
+
+		 cband <- 0
+		 if(compute.band)
+		 {
+			cband <- 1
+		 }
+			
+		 tband <- 1
+		 if(type.band!="HPD")
+		 {
+			tband <- 2
+		 }
+
+
        #########################################################################################
        # prior information
        #########################################################################################
 
          if(is.null(prior$a0))      
-  	 {
+		 {
             a0 <--1
-  	    b0 <--1 
+			b0 <--1 
             alpha<-prior$alpha
             alpharand<-0
          }
@@ -138,40 +162,40 @@ function(y,
          {
             a0 <- prior$a0
             b0 <- prior$b0
-  	    alpha <- 1
-  	    alpharand <- 1
-  	 }
+			alpha <- 1
+			alpharand <- 1
+		 }
          a0b0 <- c(a0,b0)
   	 
-  	 if(is.null(prior$nu2))
-  	 {
+		 if(is.null(prior$nu2))
+		 {
             psiinv1 <- matrix(prior$psiinv1,nvar,nvar)
             psiinv2 <- psiinv1
             psi1 <- matrix(solve(psiinv1),nvar,nvar)
             nuvec <- c(prior$nu1,-1)
             psi1rand <- 0
-  	 }
-  	 else
-  	 {
-  	    psiinv1 <- matrix(var(z),nvar,nvar)
+		 }
+		 else
+		 {
+			psiinv1 <- matrix(var(z),nvar,nvar)
             psi1 <- matrix(solve(psiinv1),nvar,nvar)
             psiinv2 <- matrix(prior$psiinv2,nvar,nvar)
-  	    nuvec <- c(prior$nu1,prior$nu2)
-  	    psi1rand <- 1
-  	 }
+			nuvec <- c(prior$nu1,prior$nu2)
+			psi1rand <- 1
+		 }
   	 
-  	 if(is.null(prior$m2) && is.null(prior$s2))
-  	 {
-  	    s2inv <- matrix(0,nrow=nvar,ncol=nvar) 
-  	    s2invm2 <- matrix(0,nrow=nvar,ncol=1)
-  	    m1 <- prior$m1
-  	    m1rand <- 0
-  	 }
-  	 else
-  	 {
+		if(is.null(prior$m2) && is.null(prior$s2))
+		{
+			s2inv <- matrix(0,nrow=nvar,ncol=nvar) 
+			s2invm2 <- matrix(0,nrow=nvar,ncol=1)
+			m1 <- prior$m1
+			m1rand <- 0
+		}
+		else
+		{
             s2inv <- solve(prior$s2)
             s2invm2 <- s2inv%*%prior$m2
-  	    m1 <- rep(0,nvar)
+			m1 <- rep(0,nvar)
             for(i in 1:nvar)
       	    {
                 m1[i] <- mean(z[,i])+rnorm(1,0,100)
@@ -195,7 +219,7 @@ function(y,
        #########################################################################################
        # mcmc specification
        #########################################################################################
-         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,cband,tband)
          nsave <- mcmc$nsave
 
        #########################################################################################
@@ -217,7 +241,7 @@ function(y,
          nuniq <- nvar*(nvar+1)/2
 
          if(status==TRUE)
-	 {
+		 {
             muclus <- matrix(0,nrow=nrec+100,ncol=nvar)
             sigmaclus <- matrix(0,nrow=nrec+100,ncol=nuniq)
             for(i in 1:1)
@@ -235,21 +259,21 @@ function(y,
              }
              ncluster <- 1
              ss <- rep(1,nrec)
-   	 }
+		 }
 	 
       	 if(status==FALSE)
-	 {
-	    alpha <- state$alpha
+		 {
+			alpha <- state$alpha
             m1 <- state$m1
             muclus <- state$muclus 
-	    ncluster <- state$ncluster
-	    psi1 <- state$psi1
-	    psiinv1 <- solve(psi1)
-	    k0 <- state$k0
-	    sigmaclus <- state$sigmaclus 
-	    ss <- state$ss
+			ncluster <- state$ncluster
+			psi1 <- state$psi1
+			psiinv1 <- solve(psi1)
+			k0 <- state$k0
+			sigmaclus <- state$sigmaclus 
+			ss <- state$ss
             if(nmissi==1) z <- state$z
-	 }    
+		 }    
 
        #########################################################################################
        # working space
@@ -278,7 +302,7 @@ function(y,
          workv1 <- rep(0,nvar) 
          workv2 <- rep(0,nvar) 
          workv3 <- rep(0,nvar) 
-	 ywork <- rep(0,nvar)
+		 ywork <- rep(0,nvar)
 
          iflagx <- rep(0,nx)
          workvx <- rep(0,nx) 
@@ -301,73 +325,72 @@ function(y,
 
 
          foo <- .Fortran("dpdenregr",
-  	 	nrec       =as.integer(nrec),
+				nrec       =as.integer(nrec),
                 nx         =as.integer(nx),
-  	 	nvar       =as.integer(nvar),
-  	 	nmissi     =as.integer(nmissi),
-  	 	nmiss      =as.integer(nmiss),
-  	 	z          =as.double(z),
-  	 	missp      =as.integer(missp),
-  	 	npred      =as.integer(npred),
-  	 	xpred      =as.double(xpred),
-  	 	ngrid      =as.integer(ngrid),
-  	 	grid       =as.double(grid),
-  	 	a0b0       =as.double(a0b0),
-  	 	k0         =as.double(k0),
-  	 	nuvec      =as.integer(nuvec),
-  	 	s2inv      =as.double(s2inv),
-  	 	s2invm2    =as.double(s2invm2),
-  	 	psiinv2    =as.double(psiinv2),
-  	 	tau        =as.double(tau),
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		cpo        =as.double(cpo),
- 		thetasave  =as.double(thetasave),
- 		denspm     =as.double(denspm),
- 		denspl     =as.double(denspl),
- 		densph     =as.double(densph),
- 		meanfpm    =as.double(meanfpm),
- 		meanfpl    =as.double(meanfpl),
- 		meanfph    =as.double(meanfph),
- 		alpha      =as.double(alpha),		
- 		m1         =as.double(m1),		
+				nvar       =as.integer(nvar),
+				nmissi     =as.integer(nmissi),
+				nmiss      =as.integer(nmiss),
+				z          =as.double(z),
+				missp      =as.integer(missp),
+				npred      =as.integer(npred),
+				xpred      =as.double(xpred),
+				ngrid      =as.integer(ngrid),
+				grid       =as.double(grid),
+				a0b0       =as.double(a0b0),
+				k0         =as.double(k0),
+				nuvec      =as.integer(nuvec),
+				s2inv      =as.double(s2inv),
+				s2invm2    =as.double(s2invm2),
+				psiinv2    =as.double(psiinv2),
+				tau        =as.double(tau),
+				mcmc       =as.integer(mcmcvec),
+				nsave      =as.integer(nsave),
+				cpo        =as.double(cpo),
+				thetasave  =as.double(thetasave),
+				denspm     =as.double(denspm),
+				denspl     =as.double(denspl),
+				densph     =as.double(densph),
+				meanfpm    =as.double(meanfpm),
+				meanfpl    =as.double(meanfpl),
+				meanfph    =as.double(meanfph),
+				alpha      =as.double(alpha),		
+				m1         =as.double(m1),		
                 muclus     =as.double(muclus),		 		
- 		ncluster   =as.integer(ncluster),
- 		psi1       =as.double(psi1),
- 		psiinv1    =as.double(psiinv1),
- 		s1         =as.double(s1),
- 		sigmaclus  =as.double(sigmaclus),
- 		ss         =as.integer(ss),
- 		ccluster   =as.integer(ccluster),
+				ncluster   =as.integer(ncluster),
+				psi1       =as.double(psi1),
+				psiinv1    =as.double(psiinv1),
+				s1         =as.double(s1),
+				sigmaclus  =as.double(sigmaclus),
+				ss         =as.integer(ss),
+				ccluster   =as.integer(ccluster),
                 cstrt      =as.integer(cstrt), 
- 		iflag      =as.integer(iflag),
- 		num        =as.double(num),
- 		denom      =as.double(denom),
- 		fs         =as.double(fs),
- 		fm         =as.double(fm),
- 		muwork     =as.double(muwork),
- 		prob       =as.double(prob),
- 		seed       =as.integer(seed),
- 		sigmawork  =as.double(sigmawork),
- 		sigworkinv =as.double(sigworkinv),
- 		theta      =as.double(theta),
- 		workm1     =as.double(workm1),
- 		workm2     =as.double(workm2),
- 		workm3     =as.double(workm3),
- 		workmh1    =as.double(workmh1),
- 		workmh2    =as.double(workmh2),
- 		workv1     =as.double(workv1),
- 		workv2     =as.double(workv2),
- 		workv3     =as.double(workv3),
-		ywork      =as.double(ywork),
- 		iflagx     =as.integer(iflagx),
- 		workvx     =as.double(workvx),
- 		workmx     =as.double(workmx),
- 		worksam    =as.double(worksam),
- 		numcpo     =as.double(numcpo),
- 		denomcpo   =as.double(denomcpo),
-		PACKAGE    ="DPpackage")
-
+				iflag      =as.integer(iflag),
+				num        =as.double(num),
+				denom      =as.double(denom),
+				fs         =as.double(fs),
+				fm         =as.double(fm),
+				muwork     =as.double(muwork),
+				prob       =as.double(prob),
+				seed       =as.integer(seed),
+				sigmawork  =as.double(sigmawork),
+				sigworkinv =as.double(sigworkinv),
+				theta      =as.double(theta),
+				workm1     =as.double(workm1),
+				workm2     =as.double(workm2),
+				workm3     =as.double(workm3),
+				workmh1    =as.double(workmh1),
+				workmh2    =as.double(workmh2),
+				workv1     =as.double(workv1),
+				workv2     =as.double(workv2),
+				workv3     =as.double(workv3),
+				ywork      =as.double(ywork),
+				iflagx     =as.integer(iflagx),
+				workvx     =as.double(workvx),
+				workmx     =as.double(workmx),
+				worksam    =as.double(worksam),
+				numcpo     =as.double(numcpo),
+				denomcpo   =as.double(denomcpo),
+				PACKAGE    ="DPpackage")
 
        #########################################################################################
        # save state
@@ -400,27 +423,27 @@ function(y,
 
          pnames1 <- NULL
          for(i in 1:nvar)
-	 {
-	     pnames1 <- c(pnames1,paste("m1",varnames[i],sep=":"))
-	 }
+		 {
+			pnames1 <- c(pnames1,paste("m1",varnames[i],sep=":"))
+		 }
          pnames2 <- "k0"
        
          pnames3 <- NULL
-	 for(i in 1:nvar)
-	 {
-	     for(j in i:nvar)
-	     {
-	        if(i==j)
-	        {
-	           tmp<-varnames[i]
-	        }
-	        else
-	        {
-	           tmp <- paste(varnames[i],varnames[j],sep="-")
-	        }   
-	 	pnames3 <- c(pnames3,paste("psi1",tmp,sep=":"))
-	      }	
-         }
+		 for(i in 1:nvar)
+		 {
+			for(j in i:nvar)
+			{
+				if(i==j)
+				{
+					tmp<-varnames[i]
+				}
+				else
+				{
+					tmp <- paste(varnames[i],varnames[j],sep="-")
+				}   
+				pnames3 <- c(pnames3,paste("psi1",tmp,sep=":"))
+			}	
+		 }
 
          pnames4 <- c("ncluster","alpha")
          pnames <- c(pnames1,pnames2,pnames3,pnames4)
@@ -466,7 +489,8 @@ function(y,
                    meanfp.h=meanfp.h,
                    npred=npred,
                    ngrid=ngrid,
-                   grid=grid)
+                   grid=grid,
+                   compute.band=compute.band)
                  
          cat("\n\n")
          class(z)<-"DPcdensity"
@@ -689,17 +713,17 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 	meanvar <- mean(x)
 	densx1 <- max(densx[densx<=meanvar])
 	densx2 <- min(densx[densx>=meanvar])
-        densy1 <- densy[densx==densx1]
-        densy2 <- densy[densx==densx2]
-        ymean <- densy1 + ((densy2-densy1)/(densx2-densx1))*(meanvar-densx1)
+	densy1 <- densy[densx==densx1]
+	densy2 <- densy[densx==densx2]
+	ymean <- densy1 + ((densy2-densy1)/(densx2-densx1))*(meanvar-densx1)
         
 
-        if(hpd==TRUE)
+	if(hpd==TRUE)
 	{
 		alpha<-0.05
 		alow<-rep(0,2)
-        	aupp<-rep(0,2)
-        	n<-length(x)
+		aupp<-rep(0,2)
+		n<-length(x)
 		a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(x),
 		                     alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
 		xlinf<-a$alow[1]            
@@ -719,28 +743,28 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
 	densx1 <- max(densx[densx<=xlsup])
 	densx2 <- min(densx[densx>=xlsup])
-        densy1 <- densy[densx==densx1]
-        densy2 <- densy[densx==densx2]
-        ylsup <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlsup-densx1)
+	densy1 <- densy[densx==densx1]
+	densy2 <- densy[densx==densx2]
+	ylsup <- densy1 + ((densy2-densy1)/(densx2-densx1))*(xlsup-densx1)
 
-        plot(0.,0.,xlim = c(min(densx), max(densx)), ylim = c(min(densy), max(densy)),
+	plot(0.,0.,xlim = c(min(densx), max(densx)), ylim = c(min(densy), max(densy)),
              axes = F,type = "n" , xlab=xlab, ylab=ylab, main=main, cex=1.2)
 
         
-        xpol<-c(xlinf,xlinf,densx[densx>=xlinf & densx <=xlsup],xlsup,xlsup)
-        ypol<-c(0,ylinf,densy[densx>=xlinf & densx <=xlsup] ,ylsup,0)
+	xpol<-c(xlinf,xlinf,densx[densx>=xlinf & densx <=xlsup],xlsup,xlsup)
+	ypol<-c(0,ylinf,densy[densx>=xlinf & densx <=xlsup] ,ylsup,0)
              
-        polygon(xpol, ypol, border = FALSE,col=col)
+	polygon(xpol, ypol, border = FALSE,col=col)
         
-        lines(c(min(densx), max(densx)),c(0,0),lwd=1.2)
+	lines(c(min(densx), max(densx)),c(0,0),lwd=1.2)
         
-        segments(min(densx),0, min(densx),max(densy),lwd=1.2)
+	segments(min(densx),0, min(densx),max(densy),lwd=1.2)
         
-        lines(densx,densy,lwd=1.2)
+	lines(densx,densy,lwd=1.2)
              
-        segments(meanvar, 0, meanvar, ymean,lwd=1.2)
-        segments(xlinf, 0, xlinf, ylinf,lwd=1.2)
-        segments(xlsup, 0, xlsup, ylsup,lwd=1.2)
+	segments(meanvar, 0, meanvar, ymean,lwd=1.2)
+	segments(xlinf, 0, xlinf, ylinf,lwd=1.2)
+	segments(xlsup, 0, xlsup, ylsup,lwd=1.2)
 
 	axis(1., at = round(c(xlinf, meanvar,xlsup), 2.), labels = T,pos = 0.)
         axis(1., at = round(seq(min(densx),max(densx),length=15), 2.), labels = F,pos = 0.)
@@ -752,16 +776,24 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
       if(output=="density")
       {
       # Density estimation
-	par(ask = ask)
-	layout(matrix(seq(1,nfigr*nfigc,1),nrow=nfigr,ncol=nfigc,byrow=TRUE))
+		par(ask = ask)
+		layout(matrix(seq(1,nfigr*nfigc,1),nrow=nfigr,ncol=nfigc,byrow=TRUE))
 
         for(i in 1:x$npred)
- 	{
-	    title1<-paste("Density of",x$xpred[i,],sep=' ')
-            plot( x$grid,x$densp.h[i,],lwd=1,type="l",lty=2,main=title1,xlab="values",ylab="density")
-            lines(x$grid,x$densp.l[i,],lwd=1,type="l",lty=2)
-            lines(x$grid,x$densp.m[i,],lwd=2,type="l",lty=1)
-	}
+		{
+               if(x$compute.band)
+               {
+                  title1 <- paste("Density Prediction #",i,sep=" ")           
+                  plot(x$grid,x$densp.h[i,],main=title1,lty=2,type='l',lwd=2,xlab="y",ylab="density")
+                  lines(x$grid,x$densp.l[i,],lty=2,lwd=2)
+                  lines(x$grid,x$densp.m[i,],lty=1,lwd=3)
+			   }
+               else
+               {
+				  title1 <- paste("Density Prediction #",i,sep=" ")           
+				  plot(x$grid,x$densp.m[i,],main=title1,lty=1,type='l',lwd=2,xlab="y",ylab="density")
+			   }
+		}
 
       }
       else
@@ -808,18 +840,18 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 
             pnames<-colnames(x$save.state$thetasave)
             n<-dim(x$save.state$thetasave)[2]
-	    poss<-0 
+			poss<-0 
             for(i in 1:n)
             {
                if(pnames[i]==param)poss=i
             }
             if (poss==0) 
-	    {
-	      stop("This parameter is not present in the original model.\n")
-	    }
+			{
+				stop("This parameter is not present in the original model.\n")
+			}
 	    
-	    par(ask = ask)
-	    layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
+			par(ask = ask)
+			layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr, ncol=nfigc, byrow = TRUE))
             title1<-paste("Trace of",pnames[poss],sep=" ")
             title2<-paste("Density of",pnames[poss],sep=" ")       
             plot(x$save.state$thetasave[,poss],type='l',main=title1,xlab="MCMC scan",ylab=" ")

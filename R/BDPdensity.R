@@ -3,7 +3,7 @@
 ###
 ### Copyright: Alejandro Jara and Fernando Quintana, 2007-2010.
 ###
-### Last modification: 16-04-2007.
+### Last modification: 30-08-2010.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -41,32 +41,42 @@
 ###      Fax  : +56-2-3547229  Email: quintana@mat.puc.cl
 
 
-BDPdensity<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
+BDPdensity<-function(y,support=3,ngrid=1000,grid=NULL,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail)
 UseMethod("BDPdensity")
 
-BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data,na.action=na.fail)
+BDPdensity.default<-function(y,support=3,ngrid=1000,grid=NULL,prior,mcmc,state,status,data,na.action=na.fail)
 {
          #########################################################################################
          # call parameters
          #########################################################################################
            cl <- match.call()
-	   resp<-na.action(as.matrix(y))	
-	   varnames<-all.vars(cl)[1]
+		   resp<-na.action(as.matrix(y))	
+	       varnames<-all.vars(cl)[1]
 	  
          #########################################################################################
          # data structure
          #########################################################################################
      	   nrec<-dim(resp)[1]
-	   nvar<-dim(resp)[2]
+		   nvar<-dim(resp)[2]
            
            if(nvar>1)
            {
              stop("This function can only be used for univariate density estimation.\n")      
            }
            
-           resp<-as.vector(resp)
-           grid<-seq(0,1,length=ngrid)
-           
+           resp <- as.vector(resp)
+
+
+           if(is.null(grid))
+           {
+			  grid <- seq(0,1,len=ngrid)
+		   }
+		   else
+		   {
+			  grid <- as.vector(grid)
+			  ngrid <- length(grid)
+		   }
+
            if(support==3)
            {
               left<-min(resp)-0.5*sqrt(var(resp))
@@ -81,7 +91,7 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
               right<-1
               x<-resp
               jacob<-1
-              grids<-grid
+              grids <- grid
            }
            if(support==2)
            {
@@ -89,28 +99,28 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
               right<-max(resp)+0.5*sqrt(var(resp))
               x<-(resp-left)/(right-left)
               jacob<-1.0/right
-              grids<- grid*right
+              grids <- grid*right
            }
            
          #########################################################################################
          # prior information
          #########################################################################################
 
-  	   if(is.null(prior$aa0))
-  	   {
-  	      aa0<--1
-  	      ab0<--1 
-  	      alpha<-prior$alpha
-  	      alpharand<-0
-  	   }
+		   if(is.null(prior$aa0))
+		   {
+				aa0<--1
+				ab0<--1 
+				alpha<-prior$alpha
+				alpharand<-0
+		   }
            else
            {
-              aa0<-prior$aa0
-  	      ab0<-prior$ab0
-  	      alpha<-1
-  	      alpharand<-1
-  	   }
-  	   a0b0<-c(aa0,ab0)
+				aa0<-prior$aa0
+				ab0<-prior$ab0
+				alpha<-1
+				alpharand<-1
+		   }
+		   a0b0<-c(aa0,ab0)
 
            kmax<-prior$kmax
            a0<-prior$a0
@@ -137,21 +147,21 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
          #########################################################################################
          
     	   if(status==TRUE)
-	   {
+		   {	
                   yclus<-rbeta(nrec,a0,b0)  
                   k<-kmax
                   ncluster<-nrec
                   ss<-seq(1,nrec)
-   	   }
+		   }
 	 
       	   if(status==FALSE)
-	   {
+		   {
 	          alpha<-state$alpha
                   k<-state$k
 	          ncluster<-state$ncluster
 	          yclus<-state$yclus
 	          ss<-state$ss
-	   }    
+		   }    
 
          #########################################################################################
          # working space
@@ -168,33 +178,33 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
          #########################################################################################
 
           foo <- .Fortran("bdpdensity",
-  	 	nrec       =as.integer(nrec),
-  	 	jacob      =as.double(jacob),  	 	
-  	 	x          =as.double(x),
-  	 	a0b0       =as.double(a0b0),
-  	 	a0         =as.double(a0),
-                b0         =as.double(b0),  	 	
-                kmax       =as.integer(kmax),
-  	 	k          =as.integer(k),
-  	 	ncluster   =as.integer(ncluster),
- 		ss         =as.integer(ss),
- 		alpha      =as.double(alpha),
- 		yclus      =as.double(yclus),
- 		mcmc       =as.integer(mcmcvec),
- 		nsave      =as.integer(nsave),
- 		cpo        =as.double(cpo),
- 		randsave   =as.double(randsave),
- 		thetasave  =as.double(thetasave), 		
- 		ngrid      =as.integer(ngrid),
- 		grid       =as.double(grid),
- 		fun        =as.double(fun),
- 		seed       =as.integer(seed),
- 		cstrt      =as.integer(cstrt), 		
- 		ccluster   =as.integer(ccluster),
- 		prob       =as.double(prob),
- 		probk      =as.double(probk),
- 		y          =as.double(y),
-		PACKAGE    ="DPpackage")
+					nrec       =as.integer(nrec),
+					jacob      =as.double(jacob),  	 	
+					x          =as.double(x),
+					a0b0       =as.double(a0b0),
+					a0         =as.double(a0),
+					b0         =as.double(b0),  	 	
+					kmax       =as.integer(kmax),
+					k          =as.integer(k),
+					ncluster   =as.integer(ncluster),
+					ss         =as.integer(ss),
+					alpha      =as.double(alpha),
+					yclus	   =as.double(yclus),
+					mcmc       =as.integer(mcmcvec),
+					nsave      =as.integer(nsave),
+					cpo        =as.double(cpo),
+					randsave   =as.double(randsave),
+					thetasave  =as.double(thetasave), 		
+					ngrid      =as.integer(ngrid),
+					grid       =as.double(grid),
+					fun        =as.double(fun),
+					seed       =as.integer(seed),
+					cstrt      =as.integer(cstrt), 		
+					ccluster   =as.integer(ccluster),
+					prob       =as.double(prob),
+					probk      =as.double(probk),
+					y          =as.double(y),
+					PACKAGE    ="DPpackage")
 
          #########################################################################################
          # save state
@@ -220,24 +230,24 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,prior,mcmc,state,status,data
 
            save.state <- list(thetasave=thetasave,randsave=randsave)
            
-  	   z<-list(call=cl,
-  	           y=resp,
-  	           varnames=varnames,
-  	           cpo=cpo,
-  	           fso=fso,
-  	           modelname=model.name,
-  	           coefficients=coeff,
-                   prior=prior,
-                   mcmc=mcmc,
-                   state=state,
-                   save.state=save.state,
-                   nrec=foo$nrec,
-                   grid=grids,
-                   fun=foo$fun)
+		   z<-list(	call=cl,
+					y=resp,
+					varnames=varnames,
+					cpo=cpo,
+					fso=fso,
+					modelname=model.name,
+					coefficients=coeff,
+					prior=prior,
+					mcmc=mcmc,
+					state=state,
+					save.state=save.state,
+					nrec=foo$nrec,
+					grid=grids,
+					fun=foo$fun)
                  
           cat("\n\n")
- 	  class(z)<-"BDPdensity"
-  	  return(z)
+		  class(z)<-"BDPdensity"
+		  return(z)
 }
 
 
