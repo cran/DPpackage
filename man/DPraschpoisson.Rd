@@ -67,7 +67,7 @@ DPraschpoisson(y,prior,mcmc,offset,state,status,
 
 \details{
   This generic function fits a semiparametric Rasch Poisson model as in
-  San Martin et al. (2006), where the linear predictor is modeled as follows:
+  San Martin et al. (2011), where the linear predictor is modeled as follows:
   \deqn{\eta_{ij} = \theta_i - \beta_j, i=1,\ldots,n, j=1,\ldots,k}{etaij = thetai - betaj, i=1,\ldots,n, j=1,\ldots,k}
   \deqn{\theta_i | G \sim G}{thetai | G ~ G}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
@@ -163,8 +163,8 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
 Neal, R. M. (2000) Markov Chain sampling methods for Dirichlet process mixture models.
   Journal of Computational and Graphical Statistics, 9:249-265.
 
-San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
-  of Bayesian Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2011) On the Bayesian 
+  nonparametric generalization of IRT-type models. Psychometrika (To appear)
 
 West, M. (1985) Generalized linear models: outlier accomodation, scale parameter and
   prior distributions. In Bayesian Statistics 2 (eds Bernardo et al.), 531-558, Amsterdam:

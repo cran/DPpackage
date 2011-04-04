@@ -50,14 +50,14 @@ BDPdensity.default<-function(y,support=3,ngrid=1000,grid=NULL,prior,mcmc,state,s
          # call parameters
          #########################################################################################
            cl <- match.call()
-		   resp<-na.action(as.matrix(y))	
-	       varnames<-all.vars(cl)[1]
+		   resp <- na.action(as.matrix(y))	
+	       varnames <- all.vars(cl)[1]
 	  
          #########################################################################################
          # data structure
          #########################################################################################
-     	   nrec<-dim(resp)[1]
-		   nvar<-dim(resp)[2]
+     	   nrec <- nrow(resp)
+		   nvar <- ncol(resp)
            
            if(nvar>1)
            {

@@ -148,9 +148,9 @@ Christensen, R., Hanson, T.  Jara, A.. 2008. Parametric Nonparametric Statistics
 Hanson, T. (2006) Inference for Mixtures of Finite Polya Trees.
   Journal of the American Statistical Association, 101: 1548-1565.
 
-Jara, A., Hanson, T., and Lesaffre, E. (2009) Robustifying Generalized Linear 
-  Mixed Models using a New Class of Mixtures of Multivariate Polya Trees. Journal of Computational 
-  and Graphical Statistics (To appear).
+Jara, A., Hanson, T., Lesaffre, E. (2009) Robustifying Generalized Linear 
+   Mixed Models using a New Class of Mixtures of Multivariate Polya Trees. 
+   Journal of Computational and Graphical Statistics, 18(4): 838-860.
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.

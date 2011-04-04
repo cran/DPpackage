@@ -374,3 +374,4 @@ S3method(predict, LDPDdoublyint)
 S3method(print, predict.LDPDdoublyint)
 S3method(plot, predict.LDPDdoublyint)
 
+

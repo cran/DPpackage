@@ -67,7 +67,7 @@ PTsampler(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.options=NULL,
   regions of higher support under the target distribution to minimize the distance between 
   the target distribution and the Polya tree predictive distribution. In the sampling phase, samples from the
   final approximating mixture of finite Polya trees are used as candidates which are accepted with a standard
-  Metropolis-Hastings acceptance probability. We refer to Hanson, Monteiro, and Jara (2009) for more details
+  Metropolis-Hastings acceptance probability. We refer to Hanson, Monteiro, and Jara (2011) for more details
   on the Polya tree sampler.
 }
 
@@ -88,7 +88,7 @@ PTsampler(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.options=NULL,
 }
 
 \references{
-Hanson, T., Monteiro, J.V.D, and Jara, A. (2010) The Polya Tree Sampler: Towards Efficient and Automatic  Independent Metropolis Proposals. Journal of Computational and Graphical Statistics (To appear).
+Hanson, T., Monteiro, J.V.D, and Jara, A. (2011) The Polya Tree Sampler: Toward Efficient and Automatic  Independent Metropolis-Hastings Proposals. Journal of Computational and Graphical Statistics, 20: 41-62.
 }
 
 \examples{

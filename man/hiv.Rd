@@ -50,8 +50,8 @@ De Grutola, V. and Lagakos, S.W. (1989). Analysis of doubly-censored survival da
    application to AIDS. Biometrics, 45: 1-11.
 }
 \references{
-Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2009). Bayesian semiparametric inference 
-   for multivariate doubly-interval-censored data. Technical Report.
+Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2010). Bayesian semiparametric inference 
+   for multivariate doubly-interval-censored data. Annals of Applied Statistics, 4: 2126-2149.
 }
 \examples{
 data(hiv)

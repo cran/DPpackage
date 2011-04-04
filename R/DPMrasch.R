@@ -226,6 +226,7 @@ function(y,
          #########################################################################################
 		   acrate <- rep(0,2)
 		   cpo <- matrix(0,nrow=nsubject,ncol=p)
+		   cpov <- rep(0,nsubject)
 		   ngrid <- length(grid)
 
            thetasave <- matrix(0,nrow=nsave,ncol=p+6)
@@ -372,6 +373,7 @@ function(y,
 							nsave      =as.integer(nsave),
                             acrate     =as.double(acrate),
  		                    cpo        =as.double(cpo),
+							cpov       =as.double(cpov),
  		                    randsave   =as.double(randsave),
  		                    thetasave  =as.double(thetasave),
                             densave    =as.double(densave),
@@ -516,7 +518,8 @@ function(y,
                      alpharand=alpharand,
 					 murand=murand,
                      sigmarand=sigmarand,
-					 tauk2rand=tauk2rand)
+					 tauk2rand=tauk2rand,
+					 cpov=foo$cpov)
                  
            cat("\n\n")
  	       class(z) <- c("DPMrasch")

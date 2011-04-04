@@ -150,7 +150,7 @@ LDPDdoublyint(onset,failure,p,xonset,q,xfailure,xpred,
 
 \references{
 Jara, A., Lesaffre, E., De Iorio, M., Quintana, F. (2010). Bayesian semiparametric inference for 
-   multivariate doubly-interval-censored data. Annals of Applied Statistics (To appear).
+   multivariate doubly-interval-censored data. Annals of Applied Statistics, 4: 2126-2149.
 }
 
 \examples{

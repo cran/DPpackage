@@ -5,7 +5,7 @@ c=======================================================================
      &                   maxm,ntprob,ntsets,                             
      &                   a0b0,b0,prec,sb,tau1,tau2,m,s,             
      &                   mcmc,nsave,algo,              
-     &                   acrate,cpo,
+     &                   acrate,cpo,cpov,
      &                   densave,cdfsave,randsave,thetasave,bf,    
      &                   alpha,b,beta,mu,sigma2,probmat, 
      &                   seed,         
@@ -257,6 +257,7 @@ c+++++MCMC parameters
 c+++++Output
       real*8 acrate
       real*8 cpo(nsubject,p)
+      real*8 cpov(nsubject)
       real*8 densave(nsave,ngrid),cdfsave(nsave,ngrid)
       real*8 randsave(nsave,nsubject+1)
       real*8 thetasave(nsave,p+4)
@@ -1155,6 +1156,7 @@ c+++++++++++++ density
 c+++++++++++++ cpo
 
                do i=1,nsubject
+                  tmp2=0.d0
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
@@ -1166,8 +1168,9 @@ c+++++++++++++ cpo
                      mean=exp(eta)/(1.d0+exp(eta))
                      tmp1=dbin(dble(yij),1.d0,mean,1)
                      cpo(i,j)=cpo(i,j)+1.0d0/exp(tmp1)   
-
+                     tmp2=tmp2+tmp1
                   end do
+                  cpov(i)=cpov(i)+1.d0/exp(tmp2)
                end do
 
 c+++++++++++++ Savage-Dickey ratio
@@ -1225,6 +1228,7 @@ c+++++++++++++ print
          do j=1,p
             cpo(i,j)=dble(nsave)/cpo(i,j)
          end do   
+         cpov(i)=dble(nsave)/cpov(i)  
       end do
 
       numerBF=numerBF/dble(nsave)

@@ -4,7 +4,8 @@ c=======================================================================
      &                      roffset, 
      &                      a0b0,b0,prec,psiinv,sb,smu,tau1,tau2,
      &                      mcmc,nsave,
-     &                      acrate,cpo,cdfsave,randsave,thetasave,
+     &                      acrate,cpo,cpov,
+     &                      cdfsave,randsave,thetasave,
      &                      alpha,b,bclus,beta,mu,ncluster,sigma2,
      &                      sigmainv,ss,
      &                      betac,ccluster,cstrt,fsavet,iflagp,prob,
@@ -234,6 +235,7 @@ c+++++MCMC parameters
 c+++++Output
       real*8 acrate(2)
       real*8 cpo(nsubject,p)
+      real*8 cpov(nsubject)
       real*8 cdfsave(nsave,ngrid)
       real*8 randsave(nsave,nsubject+1)
       real*8 thetasave(nsave,p+5)
@@ -893,8 +895,9 @@ c+++++++++++++ predictive information
 
 c+++++++++++++ cpo
 
-               tmp2=0.d0
+               tmp3=0.d0
                do i=1,nsubject
+                  tmp2=0.d0
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
@@ -903,12 +906,14 @@ c+++++++++++++ cpo
                        eta=b(i)-beta(j-1)+roffset(i,j)
                      end if  
                      mean=exp(eta)
-                     tmp1=dpoiss(dble(yij),mean,0)
-                     cpo(i,j)=cpo(i,j)+1.0d0/tmp1   
-                     tmp2=tmp2+log(dble(isave)/cpo(i,j))
+                     tmp1=dpoiss(dble(yij),mean,1)
+                     cpo(i,j)=cpo(i,j)+1.0d0/exp(tmp1)
+                     tmp2=tmp2+tmp1
+                     tmp3=tmp3+log(dble(isave)/cpo(i,j))
                   end do
+                  cpov(i)=cpov(i)+1.d0/exp(tmp2)
                end do
-c               call dblepr("LPML",-1,tmp2,1)
+c               call dblepr("LPML",-1,tmp3,1)
 
 c+++++++++++++ print
                skipcount = 0
@@ -932,6 +937,7 @@ c+++++++++++++ print
          do j=1,p
             cpo(i,j)=dble(nsave)/cpo(i,j)
          end do   
+         cpov(i)=dble(nsave)/cpov(i)  
       end do
              
       return

@@ -4,7 +4,8 @@ c=======================================================================
      &                      roffset,ngrid,grid,
      &                      maxn,a0b0,m0,s0,prec,sb,tau,
      &                      mcmc,nsave,
-     &                      acrate,cpo,randsave,thetasave,densave,
+     &                      acrate,cpo,cpov,
+     &                      randsave,thetasave,densave,
      &                      cdfsave,
      &                      alpha,b,beta,ss,ncluster,mub,sigmab,tauk2,
      &                      wdp,vdp,muclus,sigmaclus,
@@ -70,6 +71,7 @@ c+++++MCMC parameters
 c+++++Output
       real*8 acrate
       real*8 cpo(nsubject,p)
+      real*8 cpov(nsubject)
       real*8 randsave(nsave,nsubject+1)
       real*8 thetasave(nsave,p+6)
       real*8 densave(nsave,ngrid)
@@ -636,6 +638,7 @@ c+++++++++++++ density and cdf
 c+++++++++++++ cpo
 
                do i=1,nsubject
+                  tmp2=0.d0
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
@@ -646,7 +649,9 @@ c+++++++++++++ cpo
                      mean=exp(eta)
                      tmp1=dpoiss(dble(yij),mean,1)
                      cpo(i,j)=cpo(i,j)+1.0d0/exp(tmp1)   
+                     tmp2=tmp2+tmp1
                   end do
+                  cpov(i)=cpov(i)+1.d0/exp(tmp2)
                end do
 
 c+++++++++++++ print
@@ -669,7 +674,8 @@ c+++++++++++++ print
       do i=1,nsubject
          do j=1,p
             cpo(i,j)=dble(nsave)/cpo(i,j)
-         end do   
+         end do 
+         cpov(i)=dble(nsave)/cpov(i)  
       end do
 
       return

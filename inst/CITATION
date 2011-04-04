@@ -1,15 +1,39 @@
 citHeader("To cite DPpackage in publications use:")
 
-citEntry(entry="Article",
-         title = "Applied Bayesian Non- and Semi-parametric Inference using DPpackage",
-         author = personList(as.person("Jara, A.")),
-         year         = "2007",
-         journal      = "Rnews",
-         volume       = "7",
-         number       = "3",
-         pages        = "17--26",
-         textVersion =
-         paste("Jara, A. (2007)",
-               "Applied Bayesian Non- and Semi-parametric Inference using DPpackage",
-               "Rnews, 7(3), 17-26")
+citEntry(entry = "Article",
+  title        = "{DPpackage}: Bayesian Semi- and Nonparametric Modeling in {R}",
+  author       = personList(as.person("Alejandro Jara"),
+                   as.person("Timothy Hanson"),
+                   as.person("Fernando Quintana"),
+                   as.person("Peter M\\\"uller"),
+                   as.person("Gary Rosner")),
+  journal      = "Journal of Statistical Software",
+  year         = "2011",
+  volume       = "40",
+  number       = "5",
+  pages        = "1--30",
+  url          = "http://www.jstatsoft.org/v40/i05/",
+
+  textVersion  =
+  paste("Alejandro Jara, Timothy Hanson, Fernando Quintana, Peter Mueller, Gary Rosner (2011).",
+        "DPpackage: Bayesian Semi- and Nonparametric Modeling in R.",
+        "Journal of Statistical Software, 40(5), 1-30.",
+        "URL http://www.jstatsoft.org/v40/i05/.")
+)
+
+citEntry(entry = "Article",
+  title        = "Applied {B}ayesian Non- and Semi-parametric Inference Using {DPpackage}",
+  author       = personList(as.person("Alejandro Jara")),
+  journal      = "R News",
+  year         = "2007",
+  volume       = "7",
+  number       = "3",
+  pages        = "17--26",
+  url	       = "http://CRAN.R-project.org/doc/Rnews/",
+  
+  textVersion  = 
+  paste("Alejandro Jara (2007).", 
+  	"Applied Bayesian Non- and Semi-parametric Inference Using DPpackage.",
+  	"R News 7(3), 17-26.",
+  	"URL http://CRAN.R-project.org/doc/Rnews/")
 )

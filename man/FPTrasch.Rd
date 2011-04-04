@@ -66,7 +66,7 @@ FPTrasch(y,prior,mcmc,offset,state,status,grid=seq(-10,10,length=1000),
 
 \details{
   This generic function fits a Finite Polya Tree Rasch model as in
-  San Martin et al. (2006), where the linear predictor is modeled as follows:
+  San Martin et al. (2011), where the linear predictor is modeled as follows:
   \deqn{\eta_{ij} = \theta_i - \beta_j, i=1,\ldots,n, j=1,\ldots,k}{etaij = thetai - betaj, i=1,\ldots,n, j=1,\ldots,k}
   \deqn{\theta_i | G \sim G}{thetai | G ~ G}
   \deqn{G | \alpha,\mu,\sigma^2 \sim FPT^M(\Pi^{\mu,\sigma^2},\textit{A})}{G | alpha,mu,sigma2 ~ FPT^M(Pi^{mu,sigma2},\textit{A})}  
@@ -129,13 +129,13 @@ FPTrasch(y,prior,mcmc,offset,state,status,grid=seq(-10,10,length=1000),
 }
 
 \references{
-Hanson, T., and Johnson, W. (2002) Modeling regression error with a Mixture
+Hanson, T., Johnson, W. (2002) Modeling regression error with a Mixture
   of Polya Trees. Journal of the American Statistical Association, 
   97: 1020 - 1033.
 
-Jara, A.,   Hanson, T.,  Lesaffre, E. (2009) Robustifying Generalized Linear 
-   Mixed Models using a New Mixture of Multivariate Polya Trees. Journal of
-   Computational and Graphical Statistics (To appear).
+Jara, A., Hanson, T.,  Lesaffre, E. (2009) Robustifying Generalized Linear 
+   Mixed Models using a New Class of Mixture of Multivariate Polya Trees. Journal of
+   Computational and Graphical Statistics, 18(4): 838-860.
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.
@@ -143,8 +143,8 @@ Lavine, M. (1992) Some aspects of Polya tree distributions for statistical
 Lavine, M. (1994) More aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 22: 1161-1176.
   
-San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2006) On the Analysis
-  of Bayesian Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2011) On the Bayesian nonparametric 
+  generalization of IRT-type models. Psychometrika (To appear).
 }
 
 \examples{

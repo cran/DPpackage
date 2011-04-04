@@ -74,7 +74,7 @@ DPMraschpoisson(y,prior,mcmc,offset=NULL,state,status,
 
 \details{
   This generic function fits a semiparametric Rasch Poisson model as in
-  San Martin et al. (2009), where
+  San Martin et al. (2011), where
   \deqn{\eta_{ij} = \theta_i - \beta_j, i=1,\ldots,n, j=1,\ldots,k}{etaij = thetai - betaj, i=1,\ldots,n, j=1,\ldots,k}
   \deqn{\theta_i | G \sim \int N(\mu,\sigma) G(d\mu,\sigma)}{thetai | G ~ int N(mu,sigma)G(d mu, d sigma)}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
@@ -149,8 +149,8 @@ Gamerman, D. (1997) Sampling from the posterior distribution in generalized line
 
 Ishwaran, H. and James, L.F. (2002) Approximate Dirichlet process computing finite normal mixtures:  smoothing and prior information. Journal of Computational and Graphical Statistics, 11:508-532.
 
-San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2009) On the Analysis
-  of Bayesian Semiparametric IRT-type Models. In preparation.
+San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2011) On the Bayesian nonparametric 
+  generalization of IRT-type models. Psychometrika (To appear)
 
 West, M. (1985) Generalized linear models: outlier accomodation, scale parameter and
   prior distributions. In Bayesian Statistics 2 (eds Bernardo et al.), 531-558, Amsterdam:

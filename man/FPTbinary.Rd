@@ -130,7 +130,8 @@ Hanson, T. (2006) Inference for Mixtures of Finite Polya tree models.
   Journal of the American Statistical Association, 101: 1548-1565. 
 
 Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) Semiparametric Bayesian
-  Analysis of Misclassified Binary Data. In preparation.
+  Analysis of Misclassified Binary Data. XXIII International Biometric   
+  Conference, July 16-21, Montreal, Canada. 
 
 Lavine, M. (1992) Some aspects of Polya tree distributions for statistical 
   modelling. The Annals of Statistics, 20: 1222-11235.

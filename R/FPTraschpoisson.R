@@ -34,8 +34,8 @@
 ###
 
 
-FPTraschpoisson<-function(y,prior,mcmc,offset,state,status,
-                 grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()),compute.band=FALSE)
+FPTraschpoisson <- function(y,prior,mcmc,offset,state,status,
+                            grid=seq(-10,10,length=1000),data=sys.frame(sys.parent()),compute.band=FALSE)
 UseMethod("FPTraschpoisson")
 
 FPTraschpoisson.default<-
@@ -188,6 +188,7 @@ function(y,
          #########################################################################################
            acrate <- 0
            cpo <- matrix(0,nrow=nsubject,ncol=p)
+           cpov <- rep(0,nsubject)
            ngrid <- length(grid)
 	       densave <- matrix(0,nrow=nsave,ncol=ngrid)
            cdfsave <- matrix(0,nrow=nsave,ncol=ngrid)
@@ -313,6 +314,7 @@ function(y,
                     algo       =as.integer(algo),
 					acrate     =as.double(acrate),
 					cpo        =as.double(cpo),
+                    cpov       =as.double(cpov),
 					densave    =as.double(densave),
 					cdfsave    =as.double(cdfsave), 		
 					randsave   =as.double(randsave),
@@ -448,7 +450,8 @@ function(y,
                      cdf.u=cdf.u,
                      grid=grid,
                      bf=foo$bf,
-                     algo=algo)
+                     algo=algo,
+                     cpov=foo$cpov)
                  
            cat("\n\n")
  	       class(z)<-c("FPTraschpoisson")

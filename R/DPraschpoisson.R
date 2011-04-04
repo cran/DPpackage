@@ -171,6 +171,7 @@ function(y,
          #########################################################################################
            acrate <- rep(0,2)
 		   cpo <- matrix(0,nrow=nsubject,ncol=p)
+		   cpov <- rep(0,nsubject)
            ngrid <- length(grid)
            cdfsave <- matrix(0,nrow=nsave,ncol=ngrid)
            thetasave <- matrix(0,nrow=nsave,ncol=p+5)
@@ -304,6 +305,7 @@ function(y,
 				nsave      =as.integer(nsave),
                 acrate     =as.double(acrate),
 				cpo        =as.double(cpo),
+				cpov	   =as.double(cpov),
 				cdfsave    =as.double(cdfsave), 		
 				randsave   =as.double(randsave),
 				thetasave  =as.double(thetasave),
@@ -427,7 +429,8 @@ function(y,
                      cdf=cdf.m,
 					 cdf.l=cdf.l,
                      cdf.u=cdf.u,
-					 grid=grid)
+					 grid=grid,
+					 cpov=foo$cpov)
                  
            cat("\n\n")
  	       class(z)<-"DPraschpoisson"

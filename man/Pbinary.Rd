@@ -112,7 +112,7 @@ Pbinary(formula,link="logit",prior,mcmc,state,status,misc=NULL,
 \references{
 Jara, A., Garcia-Zattera, M.J., Lesaffre, E. (2006) Semiparametric Bayesian
   Analysis of Misclassified Binary Data. XXIII International Biometric Conference,
-  July 16-21, Montréal, Canada.
+  July 16-21, Montreal, Canada.
 }
 
 \examples{

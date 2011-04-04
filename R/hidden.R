@@ -4,9 +4,9 @@
      cat("## Copyright (C) 2006 - 2010, Alejandro Jara\n")
      cat("## Department of Statistics \n")
      cat("## P.U. Catolica de Chile\n")
-     cat("##\n## Support provided by the KUL-PUC bilateral\n")
-     cat("## (Belgium-Chile) grant BIL05/03, NIH/NCI\n")
-     cat("## R01CA75981 grant, and Fondecyt 3095003 grant.\n##\n")
+     cat("##\n## Support provided by Fondecyt\n")
+	 cat("## 3095003 and 11100144 grants, and NIH/NCI\n")
+	 cat("## R01CA75981 grant.\n##\n")
 }
 
 
