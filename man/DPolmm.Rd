@@ -12,8 +12,9 @@
   
 \usage{
 
-DPolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
-      na.action=na.fail)
+DPolmm(fixed,random,prior,mcmc,state,status,
+       data=sys.frame(sys.parent()),
+       na.action=na.fail)
 }
 
 \arguments{
@@ -195,32 +196,26 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
     # Fitting the model
 
 
-      fit1<-DPolmm(fixed=imps79o~sweek+tx+sweek*tx,random=~1|id,prior=prior,
-                   mcmc=mcmc,state=state,status=TRUE)
+      fit1<-DPolmm(fixed=imps79o~sweek+tx+sweek*tx,random=~1|id,
+                   prior=prior,mcmc=mcmc,state=state,status=TRUE)
       fit1
-
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
       summary(fit1,hpd=FALSE)
 
-
     # Plot model parameters
       plot(fit1)
-
 
     # Plot an specific model parameter
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="sigma-(Intercept)")	
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
 
     # Extract random effects
-    
       DPrandom(fit1)
       DPrandom(fit1,centered=TRUE)
 
-
     # Extract predictive information of random effects
-    
       DPrandom(fit1,predictive=TRUE)
       DPrandom(fit1,centered=TRUE,predictive=TRUE)
       

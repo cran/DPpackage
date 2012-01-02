@@ -51,74 +51,73 @@ function(formula,
          # call parameters
          #########################################################################################
 
-	 cl <- match.call()
-	 mf <- match.call(expand.dots = FALSE)
-	 m <- match(c("formula", "data","na.action"), names(mf), 0)
-	 mf <- mf[c(1, m)]
-	 mf$drop.unused.levels <- TRUE
-	 mf[[1]] <- as.name("model.frame")
-	 mf <- eval(mf, parent.frame())
+	       cl <- match.call()
+	       mf <- match.call(expand.dots = FALSE)
+	       m <- match(c("formula", "data","na.action"), names(mf), 0)
+	       mf <- mf[c(1, m)]
+	       mf$drop.unused.levels <- TRUE
+	       mf[[1]] <- as.name("model.frame")
+	       mf <- eval(mf, parent.frame())
 
          #########################################################################################
          # data and model structure
          #########################################################################################
-         if(is.null(prior$frstlprob))
-         {
-           mdzero<-1
-         }
-         else
-         {
-           mdzero<-0
-           if(prior$frstlprob)mdzero<-1
-         }
+           if(is.null(prior$frstlprob))
+           {
+              mdzero <- 1
+		   }
+           else
+           {
+              mdzero <- 0
+              if(prior$frstlprob)mdzero <- 1
+		   }
 
- 	 y<- model.response(mf,"numeric")
-  	 nrec<-length(y)
-  	 x<-model.matrix(formula)
-  	 p<-dim(x)[2]
+     	   y <- model.response(mf,"numeric")
+  	       nrec <- length(y)
+		   x <-  model.matrix(formula)
+  	       p <- ncol(x)
 
-	 if(mdzero==0)
-  	 {
-            p<-p-1
-            if(p>1)
-            {
-               x<-x[,-1]
-            }   
-         }   
-  	 nfixed<-p
-         if(p==0)
-         {
-            nfixed <- 0
-            p <- 1
-            x <- matrix(0,nrow=nrec,ncol=1)
-         }
-
+		   if(mdzero==0)
+		   {
+              p <- p-1
+			  if(p>1)
+			  {
+                 x <- x[,-1]
+              }   
+           }   
+  	       nfixed<-p
+           if(p==0)
+           {
+              nfixed <- 0
+              p <- 1
+              x <- matrix(0,nrow=nrec,ncol=1)
+           }
 
          #########################################################################################
          # Elements for Pseudo Countour Probabilities' computation
          #########################################################################################
-         Terms <- if (missing(data)) 
-              terms(formula)
-         else terms(formula, data = data)
+           Terms <- if (missing(data)) 
+                terms(formula)
+           else terms(formula, data = data)
 
-         ntanova<-0   
-         if((mdzero==1) & (nfixed==1)) ntanova<-1
+           ntanova<-0   
+           if((mdzero==1) & (nfixed==1)) ntanova<-1
 
-         possiP <- NULL
-         if((nfixed>0) & (ntanova==0))
-         {
-            mat <- attr(Terms,"factors")
-            namfact <- colnames(mat)
-            nvar <- dim(mat)[1]
-            nfact <- dim(mat)[2]
-            possiP <- matrix(0,ncol=2,nrow=nfact)
-            if (missing(data)) dataF <- model.frame(formula=formula,xlev=NULL)
+           possiP <- NULL
+           if((nfixed>0) & (ntanova==0))
+           {
+              mat <- attr(Terms,"factors")
+              namfact <- colnames(mat)
+              nvar <- dim(mat)[1]
+              nfact <- dim(mat)[2]
+              possiP <- matrix(0,ncol=2,nrow=nfact)
+              if (missing(data)) dataF <- model.frame(formula=formula,xlev=NULL)
                dataF <- model.frame(formula=formula,data,xlev=NULL)
-            namD <- names(dataF)
-            isF <- sapply(dataF, function(x) is.factor(x) || is.logical(x))
-            nlevel <- rep(0,nvar)
-            for(i in 1:nvar)
-            {
+              namD <- names(dataF)
+              isF <- sapply(dataF, function(x) is.factor(x) || is.logical(x))
+              nlevel <- rep(0,nvar)
+              for(i in 1:nvar)
+              {
                 if(isF[i])
                 {
                    nlevel[i]<-length(table(dataF[[i]]))
@@ -127,13 +126,13 @@ function(formula,
                 {
                    nlevel[i]<-1
                 }
-            }
+              }
 
-            startp<-1+1
-            if(mdzero==1)startp<-1+2
+              startp<-1+1
+              if(mdzero==1)startp<-1+2
 
-            for(i in 1:nfact)
-            {
+              for(i in 1:nfact)
+              {
                 tmp1<-1
                 for(j in 1:nvar)
                 {
@@ -146,61 +145,60 @@ function(formula,
                 possiP[i,1]<-startp    
                 possiP[i,2]<-endp
                 startp<-endp+1
-            }
-            dimnames(possiP)<-list(namfact,c("Start","End"))
-         }   
-
+              }
+              dimnames(possiP)<-list(namfact,c("Start","End"))
+           }   
 
          #########################################################################################
          # prior information
          #########################################################################################
 
-         if(nfixed==0)
-         {
-            betapv<-matrix(0,nrow=1,ncol=1)
-            betpm<-rep(0,1)
-            propv<-matrix(0,nrow=1,ncol=1)
-         }
-         else
-         {
-            betapm<-prior$beta0
-            betapv<-prior$Sbeta0
-            propv<-solve(t(x)%*%x+solve(prior$Sbeta0))
+           if(nfixed==0)
+           {
+              betapv <- matrix(0,nrow=1,ncol=1)
+              betapm <- rep(0,1)
+              propv <- matrix(0,nrow=1,ncol=1)
+           }
+           else
+           {
+              betapm <- prior$beta0
+              betapv <- prior$Sbeta0
+              propv <- solve(t(x)%*%x+solve(prior$Sbeta0))
 
-            if(length(betapm)!=p)
-            { 
-                   stop("Error in the dimension of the mean of the normal prior for the fixed effects.\n")     
-            }
+              if(length(betapm)!=p)
+              { 
+                     stop("Error in the dimension of the mean of the normal prior for the fixed effects.\n")     
+              }
 
-            if(dim(betapv)[1]!=p || dim(betapv)[2]!=p)
-            { 
-                   stop("Error in the dimension of the covariance of the normal prior for the fixed effects.\n")     
-            }
+              if(dim(betapv)[1]!=p || dim(betapv)[2]!=p)
+              { 
+                     stop("Error in the dimension of the covariance of the normal prior for the fixed effects.\n")     
+              }
 
-         }
+           }
 
-	 if(is.null(prior$a0))
-	 {
-	    alpharand<-0 
-            a0b0<-c(-1,-1)
-	    alpha<-prior$alpha
-	 }
-	 else
-	 {
-	    alpharand<-1 	 
-	    a0b0<-c(prior$a0,prior$b0)
-	    alpha<-rgamma(1,prior$a0,prior$b0)
-	 }
+  	       if(is.null(prior$a0))
+		   {
+			  alpharand<-0 
+			  a0b0<-c(-1,-1)
+			  alpha<-prior$alpha
+		   }
+		   else
+		   {
+			   alpharand<-1 	 
+			   a0b0<-c(prior$a0,prior$b0)
+			   alpha<-rgamma(1,prior$a0,prior$b0)
+		   }
 	
-         if(mdzero==1)
-         {
-            murand<-0
-            mu<-0
-            m0<-0
-            s0<--1
-         }
-         else
-         {
+		   if(mdzero==1)
+           {
+			  murand<-0
+              mu<-0
+              m0<-0
+              s0<--1
+           }
+           else
+           {
             if(is.null(prior$mub))
             {
                murand<-0 
@@ -263,142 +261,143 @@ function(formula,
          # mcmc specification
          #########################################################################################
 
-         if(missing(mcmc))
-         {
-            nburn <- 1000
-            nsave <- 1000
-            nskip <- 0
-            ndisplay <- 100
-            mcmcvec<-c(nburn,nskip,ndisplay)
-         }
-         else
-         {
-            mcmcvec<-c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-            nsave<-mcmc$nsave
-         }
+           if(missing(mcmc))
+           {
+              nburn <- 1000
+              nsave <- 1000
+              nskip <- 0
+              ndisplay <- 100
+              mcmcvec <- c(nburn,nskip,ndisplay)
+           }
+           else
+           {
+              mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+              nsave <- mcmc$nsave
+           }
 
          #########################################################################################
          # output
          #########################################################################################
          
-         acrate<-rep(0,4)
-         if(mdzero==1)
-         {
-  	    fit0<- glm.fit(x, y, family= gaussian(link = "identity"))   
-  	    beta<-coefficients(fit0)
-            left<-min(resid(fit0))-0.5*sqrt(var(resid(fit0)))
-            right<-max(resid(fit0))+0.5*sqrt(var(resid(fit0)))
-         }
-         else
-         {
-  	    fit0<- glm.fit(cbind(x,rep(1,nrec)), y, family= gaussian(link = "identity"))   
-  	    beta<-coefficients(fit0)[1:p]
-            left<-min(coefficients(fit0)[p+1]+resid(fit0))-0.5*sqrt(var(resid(fit0)))
-            right<-max(coefficients(fit0)[p+1]+resid(fit0))+0.5*sqrt(var(resid(fit0)))
-         }
+           acrate<-rep(0,4)
+           if(mdzero==1)
+           {
+  	          fit0  <- glm.fit(x, y, family= gaussian(link = "identity"))   
+  	          beta <- coefficients(fit0)
+			  left <- min(resid(fit0))-0.5*sqrt(var(resid(fit0)))
+              right <- max(resid(fit0))+0.5*sqrt(var(resid(fit0)))
+		   }
+           else
+           {
+  	          fit0 <- glm.fit(cbind(x,rep(1,nrec)), y, family= gaussian(link = "identity"))   
+  	          beta <- coefficients(fit0)[1:p]
+              left <- min(coefficients(fit0)[p+1]+resid(fit0))-0.5*sqrt(var(resid(fit0)))
+              right <- max(coefficients(fit0)[p+1]+resid(fit0))+0.5*sqrt(var(resid(fit0)))
+           }
  
-         cpo<-rep(0,nrec)
+           cpo <- rep(0,nrec)
          
-         if(is.null(grid))
-	 {
-            grid <- seq(left,right,length=ngrid)
-         }
-         else
-         {
-            ngrid <- length(grid)  
-         }
+           if(is.null(grid))
+	       {
+               grid <- seq(left,right,length=ngrid)
+           }
+           else
+           {
+               ngrid <- length(grid)  
+		   }
 
-	 f<-rep(0,ngrid)
-	 thetasave <- matrix(0, nrow=nsave, ncol=nfixed+3)
-	 randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
+   	       f <- rep(0,ngrid)
+		   thetasave <- matrix(0, nrow=nsave, ncol=nfixed+3)
+		   randsave  <- matrix(0, nrow=nsave, ncol=nrec+1)
 
          #########################################################################################
          # parameters depending on status
          #########################################################################################
 
-	 if(status==TRUE)
-	 {
-	        if(alpharand==1)
-	        {
-	           alpha<-1
-	        }
-	        else
-	        {
-	           alpha<-prior$alpha  
-	        }
+   	       if(status==TRUE)
+	       {
+	          if(alpharand==1)
+	          {
+	             alpha <- 1
+	          }
+	          else
+	          {
+	             alpha <- prior$alpha  
+	          }
 
-	        if(murand==1)
-	        {
-  	            mu<-coefficients(fit0)[p+1]
-  	        }
-  	        else
-  	        {
-                    if(mdzero==0)mu<-prior$mu
-  	        }
+  	          if(murand==1)
+	          {
+				 mu <- coefficients(fit0)[p+1]
+  	          }
+  	          else
+  	          {
+				if(mdzero==0)mu <- prior$mu
+  	          }
   	        
-	        if(sigmarand==1)
-	        {
-                   sigma2<-sum((resid(fit0))**2)/(nrec-p)
-                }
-                else
-                {
-                   sigma2<-prior$sigma2
-                }
+  	          if(sigmarand==1)
+	          {
+                   sigma2 <- sum((resid(fit0))**2)/(nrec-p)
+			  }
+			  else
+			  {
+                   sigma2 <- prior$sigma2
+			  }
 
-                if(mdzero==1)
-                {
-  		   v <- resid(fit0)
-  		}
-  		else
-  		{
+			  if(mdzero==1)
+			  {
+				 v <- resid(fit0)
+       		  }
+  		      else
+  		      {
                    v <- mu+resid(fit0)
-                }   
+			  }   
 	        
-                mcmcad<-c(0.1,0.0,
+			  mcmcad < -c(0.1,0.0,
                           -6.0,1.0,0.0,0.0,0.0,
                           -6.0,1.0,0.0,0.0,0.0,
                           -3.0,1.0,0.0,0.0,0.0,
                           0.0)
-	 }	
-	 if(status==FALSE)
-	 {
-		beta<-state$beta
-	        
-	        if(alpharand==1)
-	        {
-	           alpha<-state$alpha 
-	        }
-	        if(murand==1)
-	        {
-	           mu<-state$mu
-	        }
-	        if(sigmarand==1)
-	        {
-	           sigma2<-state$sigma2
-	        }
+  		   }	
 
-	        v <- state$v
+           if(status==FALSE)
+	       {
+			   beta <- state$beta
 	        
-	        if(is.null(state$mcmcad))
-	        {
+	           if(alpharand==1)
+	           {
+	              alpha<-state$alpha 
+	           }
+	           if(murand==1)
+	           {
+	              mu<-state$mu
+	           }
+	           if(sigmarand==1)
+	           {
+	              sigma2<-state$sigma2
+	           }
+
+	           v <- state$v
+	        
+	           if(is.null(state$mcmcad))
+	           {
                    mcmcad<-c(0.1,0.0,
                             -6.0,1.0,0.0,0.0,0.0,
                             -6.0,1.0,0.0,0.0,0.0,
                             -3.0,1.0,0.0,0.0,0.0,                            
                              0.0)
-	        }
-	        else
-	        {
-	           mcmcad<-state$mcmcad
-	        }
-	 }
+	           }
+	           else
+	           {
+	              mcmcad <- state$mcmcad
+	           }
+	       }
 
          #########################################################################################
          # working space
          #########################################################################################
-         seed<-c(sample(1:29000,1),sample(1:29000,1))
-         mdzero<-0
- 	 iflag<-rep(0,p)
+           seed<-c(sample(1:29000,1),sample(1:29000,1))
+           mdzero<-0
+ 	       iflag<-rep(0,p)
  	 whicho<-rep(0,nrec)
 	 whichn<-rep(0,nrec)
 	 betac<-rep(0,p)
@@ -417,7 +416,7 @@ function(formula,
          if(is.null(prior$M))
          {
             foo <- .Fortran("ptlmp",
-  	 	mdzero    =as.integer(mdzero),
+				  mdzero    =as.integer(mdzero),
   	 	ngrid     =as.integer(ngrid),
 	 	nrec      =as.integer(nrec),
 	 	p         =as.integer(p),

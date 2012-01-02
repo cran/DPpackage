@@ -72,7 +72,7 @@ int F77_SUB(invcdfbinom)(double *p, int *size, double *prob, int *lower_tail, in
 }
 
 
-int F77_SUB(invcdfbetas)(double *p, double *a, double *b, int *lower_tail, int *log_p)
+double F77_SUB(invcdfbetas)(double *p, double *a, double *b, int *lower_tail, int *log_p)
 {
 	return qbeta(*p, *a, *b, *lower_tail, *log_p);
 }

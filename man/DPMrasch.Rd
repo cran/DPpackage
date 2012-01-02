@@ -168,10 +168,11 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       
       y <- matrix(0,nrow=nsubject,ncol=nitem)
       dimnames(y)<-list(paste("id",seq(1:nsubject)), 
-                                       paste("item",seq(1,nitem)))
+                        paste("item",seq(1,nitem)))
 
       ind <- rbinom(nsubject,1,0.5)
-      theta <- ind*rnorm(nsubject,-1,sqrt(0.25))+(1-ind)*rnorm(nsubject,2,sqrt(0.065))
+      theta <- ind*rnorm(nsubject,-1,sqrt(0.25))+
+               (1-ind)*rnorm(nsubject,2,sqrt(0.065))
       beta <- c(0,seq(-3,3,length=nitem-1))
 
       true.density <- function(grid)
@@ -229,8 +230,10 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       fit1 <- DPMrasch(y=y,prior=prior,mcmc=mcmc,
                        state=state,status=TRUE,grid=seq(-3,4,0.01))
    
-      plot(fit1$grid,fit1$dens.m,type="l",lty=1,col="red",xlim=c(-3,4),ylim=c(0,0.8))
-      lines(fit1$grid,true.density(fit1$grid),lty=2,col="blue")
+      plot(fit1$grid,fit1$dens.m,type="l",lty=1,col="red",
+           xlim=c(-3,4),ylim=c(0,0.8))
+      lines(fit1$grid,true.density(fit1$grid),
+            lty=2,col="blue")
 
       plot(fit1$grid,fit1$cdf.m,type="l",lty=1,col="red")
       lines(fit1$grid,true.cdf(fit1$grid),lty=2,col="blue")

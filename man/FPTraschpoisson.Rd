@@ -211,10 +211,13 @@ San Martin, E., Jara, A., Rolin, J.-M., and Mouchart, M. (2011) On the Bayesian
 
     # Fit the model
       fit1 <- FPTraschpoisson(y=y,prior=prior,mcmc=mcmc,
-                              state=state,status=TRUE,grid=seq(-1,5,0.01),compute.band=TRUE)
+                              state=state,status=TRUE,
+                              grid=seq(-1,5,0.01),
+                              compute.band=TRUE)
 
     # Density estimate (along with HPD band) and truth
-      plot(fit1$grid,fit1$dens.u,lwd=2,col="blue",type="l",lty=2,xlab=expression(theta),ylab="density")
+      plot(fit1$grid,fit1$dens.u,lwd=2,col="blue",type="l",lty=2,
+           xlab=expression(theta),ylab="density")
       lines(fit1$grid,fit1$dens,lwd=2,col="blue")
       lines(fit1$grid,fit1$dens.l,lwd=2,col="blue",lty=2)
       lines(fit1$grid,true.density(fit1$grid),col="red")

@@ -237,19 +237,21 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
 
       nburn <- 5000
       nsave <- 5000
-      nskip <-0
+      nskip <- 0
       ndisplay <- 1000
       mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
 
     # Fit the Probit model
-      fit1<-DPglmm(fixed=infect~gender+height+cosv+sinv+xero+baseage+baseage2+
-                   follow+follow2,random=~1|id,family=binomial(probit),
-                   prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit1 <- DPglmm(fixed=infect~gender+height+cosv+sinv+xero+baseage+
+                     baseage2+follow+follow2,random=~1|id,
+                     family=binomial(probit),prior=prior,mcmc=mcmc,
+                     state=state,status=TRUE)
 
     # Fit the Logit model
-      fit2<-DPglmm(fixed=infect~gender+height+cosv+sinv+xero+baseage+baseage2+
-                   follow+follow2,random=~1|id,family=binomial(logit),
-                   prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit2 <- DPglmm(fixed=infect~gender+height+cosv+sinv+xero+baseage+
+                     baseage2+follow+follow2,random=~1|id,
+                     family=binomial(logit),prior=prior,mcmc=mcmc,
+                     state=state,status=TRUE)
 
     # Summary with HPD and Credibility intervals
       summary(fit1)
@@ -259,11 +261,13 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       summary(fit2,hpd=FALSE)
 
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE)
       plot(fit1,ask=FALSE,nfigr=2,nfigc=2)	
 
-    # Plot an specific model parameter (to see the plots gradually set ask=TRUE)
+    # Plot an specific model parameter 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="baseage")	
       plot(fit1,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
 }

@@ -12,8 +12,9 @@
   
 \usage{
 
-DPMolmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
-      na.action=na.fail)
+DPMolmm(fixed,random,prior,mcmc,state,status,
+        data=sys.frame(sys.parent()),
+        na.action=na.fail)
 }
 
 \arguments{
@@ -199,8 +200,8 @@ Muliere, P. and Tardella, L. (1998) Approximating distributions of random functi
     # Fitting the model
 
 
-      fit1<-DPMolmm(fixed=imps79o~sweek+tx+sweek*tx,random=~1|id,prior=prior,
-                    mcmc=mcmc,state=state,status=TRUE)
+      fit1 <- DPMolmm(fixed=imps79o~sweek+tx+sweek*tx,random=~1|id,
+                      prior=prior,mcmc=mcmc,state=state,status=TRUE)
       fit1
 
     # Summary with HPD and Credibility intervals

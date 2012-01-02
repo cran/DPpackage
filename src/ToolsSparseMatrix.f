@@ -224,9 +224,8 @@ c=======================================================================
       real*8 a(1),b(1),mult
       
       if (stora.ne.storhalf.or.storb.ne.storfull) then
-        print*,'option not implemented'    
-        stop
-      endif
+         call rexit("adjadd: option not implemented")
+      end if
             
       do 10 i=i1,i2
         rowb=ib(i+j1-i1)

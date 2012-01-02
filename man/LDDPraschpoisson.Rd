@@ -10,8 +10,10 @@
 }
    
 \usage{
-LDDPraschpoisson(formula,prior,mcmc,offset=NULL,state,status,
-                 grid=seq(-10,10,length=1000),zpred,data=sys.frame(sys.parent()),
+LDDPraschpoisson(formula,prior,mcmc,
+                 offset=NULL,state,status,
+                 grid=seq(-10,10,length=1000), 
+                 zpred,data=sys.frame(sys.parent()),
                  compute.band=FALSE)
 }
 
@@ -181,22 +183,29 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
       dtrue1 <- function(grid)
       {
-         0.6*dnorm(grid,-1,0.4)+0.3*dnorm(grid,0,0.5)+0.1*dnorm(grid,1,0.5)
+         0.6*dnorm(grid,-1,0.4)+
+         0.3*dnorm(grid,0,0.5)+
+         0.1*dnorm(grid,1,0.5)
       }
       
       dtrue2 <- function(grid)
       {
-         0.5*dnorm(grid,-1,0.5)+0.5*dnorm(grid,1,0.5)
+         0.5*dnorm(grid,-1,0.5)+
+         0.5*dnorm(grid,1,0.5)
       }
 
       dtrue3 <- function(grid)
       {
-         0.1*dnorm(grid,-1,0.5)+0.3*dnorm(grid,0,0.5)+0.6*dnorm(grid,1,0.4)
+         0.1*dnorm(grid,-1,0.5)+ 
+         0.3*dnorm(grid,0,0.5)+
+         0.6*dnorm(grid,1,0.4)
       }
 
       rtrue1 <- function(n)
       {
-          ind <- sample(x=c(1,2,3),size=n,replace =TRUE, prob =c(0.6,0.3,0.1))
+          ind <- sample(x=c(1,2,3),
+                        size=n,replace=TRUE, 
+                        prob=c(0.6,0.3,0.1))
           x1 <- rnorm(n,-1,0.4)
           x2 <- rnorm(n, 0,0.5)
           x3 <- rnorm(n, 1,0.5)
@@ -209,7 +218,9 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
       rtrue2 <- function(n)
       {
-          ind <- sample(x=c(1,2),size=n,replace =TRUE, prob =c(0.5,0.5))
+          ind <- sample(x=c(1,2),
+                        size=n,replace=TRUE, 
+                        prob=c(0.5,0.5))
           x1 <- rnorm(n,-1,0.5)
           x2 <- rnorm(n, 1,0.5)
           x <- rep(0,n)
@@ -220,7 +231,9 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
       rtrue3 <- function(n)
       {
-          ind <- sample(x=c(1,2,3),size=n,replace =TRUE, prob =c(0.1,0.3,0.6))
+          ind <- sample(x=c(1,2,3),
+                        size=n,replace=TRUE, 
+                        prob=c(0.1,0.3,0.6))
           x1 <- rnorm(n,-1,0.5)
           x2 <- rnorm(n, 0,0.5)
           x3 <- rnorm(n, 1,0.4)
@@ -250,7 +263,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       
       y <- matrix(0,nrow=nsubject,ncol=nitem)
       dimnames(y)<-list(paste("id",seq(1:nsubject)), 
-                                       paste("item",seq(1,nitem)))
+                        paste("item",seq(1,nitem)))
 
       beta <- c(0,seq(-3,-1,length=nitem-1))
 

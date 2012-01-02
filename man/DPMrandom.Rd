@@ -8,7 +8,8 @@
 }
 
 \usage{
-DPMrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
+DPMrandom(object,centered=FALSE,predictive=FALSE,
+          ngrid=1000,gridl=NULL)
 }
 \arguments{
  \item{object}{DPM fitted model object from which random effects
@@ -60,12 +61,14 @@ DPMrandom(object,centered=FALSE,predictive=FALSE,ngrid=1000,gridl=NULL)
       nsave<-10000
       nskip<-20
       ndisplay<-1000
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay)
+      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,
+                   ndisplay=ndisplay)
 
     # Fitting the model
     
-      fit1<-DPMlmm(fixed=height~1,random=~age|child,prior=prior,mcmc=mcmc,
-                   state=state,status=TRUE)
+      fit1 <- DPMlmm(fixed=height~1,random=~age|child,
+                     prior=prior,mcmc=mcmc,
+                     state=state,status=TRUE)
       fit1
 
     # Extract random effects

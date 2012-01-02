@@ -14,7 +14,8 @@
   
 \usage{
 
-DPmultmeta(y,asymvar,prior,mcmc,state,status,data=sys.frame(sys.parent()))
+DPmultmeta(y,asymvar,prior,mcmc,state,status,
+           data=sys.frame(sys.parent()))
 
 }
 
@@ -126,12 +127,12 @@ MacEachern, S.N. (1998) Computational Methods for Mixture of Dirichlet Process M
 
 \examples{
 \dontrun{
-    ##########################################################################   
+    ######################################################################   
     # Simulated Data: 
     #         mu_i ~ 0.5 N(mub1,Sigmab1) + 0.5 N(mub2,Sigmab2)
     #         y_i ~ N(mu_i,Sigma_i) 
     #         Sigma_1=...=Sigma_n=Sigma assumed to be known 
-    ##########################################################################
+    ######################################################################
       nvar <- 2
       nrec <- 100
       Sigma <- matrix(c(0.25,0.15,0.15,0.25),nrow=nvar,ncol=nvar) 
@@ -154,9 +155,9 @@ MacEachern, S.N. (1998) Computational Methods for Mixture of Dirichlet Process M
       }
       colnames(y) <- c("y1","y2")  
  
-    ##########################################################################
+    ######################################################################   
     # Asymptotic variance
-    ##########################################################################
+    ######################################################################   
       z <- NULL
       for(i in 1:nvar)
       {

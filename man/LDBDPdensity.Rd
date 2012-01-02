@@ -165,19 +165,22 @@ Petrone, S. and Waserman, L. (2002) Consistency of Bernstein polynomial posterio
       for(i in 1:nrec)
       {
            y[i] <- ifelse(runif(1) < (0.8-0.5*x[i]^2), 
-                    rbeta(1,22-(x[i]^2)*20,5+x[i]*20),rbeta(1,8+x[i]*5,20))
+                    rbeta(1,22-(x[i]^2)*20,5+x[i]*20),
+                    rbeta(1,8+x[i]*5,20))
       }
 
     # true model
 
       true.dens <- function(grid,x)
       {
-	  (0.8-0.5*x^2)*dbeta(grid,22-(x^2)*20,5+x*20)+(0.2+0.5*x^2)*dbeta(grid,8+x*5,20)
+	  (0.8-0.5*x^2)*dbeta(grid,22-(x^2)*20,5+x*20)+
+          (0.2+0.5*x^2)*dbeta(grid,8+x*5,20)
       }	
 
       true.mean <- function(x)
       {
-          (0.8-0.5*x^2)*(22-(x^2)*20)/(22-(x^2)*20+5+x*20)+(0.2+0.5*x^2)*(8+x*5)/(8+x*5+20)
+          (0.8-0.5*x^2)*(22-(x^2)*20)/(22-(x^2)*20+5+x*20)+
+          (0.2+0.5*x^2)*(8+x*5)/(8+x*5+20)
       }	
 
     # predictions
@@ -221,17 +224,20 @@ Petrone, S. and Waserman, L. (2002) Consistency of Bernstein polynomial posterio
     # (conditional density and mean function)
 
       par(mfrow=c(2,2))
-      plot(fit$grid,fit$densp.h[7,],type="l",lwd=2,xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
+      plot(fit$grid,fit$densp.h[7,],type="l",lwd=2,
+           xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
       lines(fit$grid,fit$densp.m[7,],lwd=2,lty=1) 
       lines(fit$grid,fit$densp.l[7,],lwd=2,lty=2)
       lines(fit$grid,true.dens(fit$grid,fit$xpred[7,2]),lwd=2,col="red")
 
-      plot(fit$grid,fit$densp.h[13,],type="l",lwd=2,xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
+      plot(fit$grid,fit$densp.h[13,],type="l",lwd=2,
+           xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
       lines(fit$grid,fit$densp.m[13,],lwd=2,lty=1) 
       lines(fit$grid,fit$densp.l[13,],lwd=2,lty=2)
       lines(fit$grid,true.dens(fit$grid,fit$xpred[13,2]),lwd=2,col="red")
 
-      plot(fit$grid,fit$densp.h[19,],type="l",lwd=2,xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
+      plot(fit$grid,fit$densp.h[19,],type="l",lwd=2,
+           xlim=c(0,1),ylim=c(0,4),xlab="y",ylab="density",lty=2) 
       lines(fit$grid,fit$densp.m[19,],lwd=2,lty=1) 
       lines(fit$grid,fit$densp.l[19,],lwd=2,lty=2)
       lines(fit$grid,true.dens(fit$grid,fit$xpred[19,2]),lwd=2,col="red")

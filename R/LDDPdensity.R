@@ -1,9 +1,9 @@
 ### LDDPdensity.R                    
 ### Fit a linear dependent DP model for conditional density estimation.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2010.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2011.
 ###
-### Last modification: 27-08-2010.
+### Last modification: 08-11-2011.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -32,12 +32,12 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Peter Mueller
-###      Department of Biostatistics
-###      The University of Texas MD Anderson Cancer Center
-###      1515 Holcombe Blvd, Unit 447 
-###      Houston TX 77030-4009, USA
-###      Voice: (713) 563-4296  URL  : http://www.mdanderson.org/departments/biostats
-###      Fax  : (713) 563-4243  Email: pmueller@mdanderson.org
+###      Department of Mathematics
+###      The University of Texas at Austin
+###      1, University Station, C1200
+###      Austin, TX 78712, USA
+###      Voice: (512) 471-7168  URL  : http://www.ma.utexas.edu/users/pmueller/
+###      Fax  : (512) 471-9038  Email: pmueller@math.utexas.edu
 ###
 ###      Gary L. Rosner
 ###      Division of Oncology Biostatistics/Bioinformatics
@@ -155,11 +155,17 @@ function(formula,
          nu <- prior$nu
          psiinv <- prior$psiinv 
  
+         rocc <- prior$rocc
+         if(is.null(rocc))rocc <- 0
+
+         nroc <- prior$nroc
+         if(is.null(nroc))nroc <- 100
+
        #########################################################################################
        # mcmc specification
        #########################################################################################
 
-         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,cband,tband)
+         mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay,cband,tband,rocc)
          nsave <- mcmc$nsave
 
        #########################################################################################
@@ -168,9 +174,11 @@ function(formula,
          ncluster <- 1
          ss <- rep(1,nrec)
          
-         betas <- solve(t(z)%*%z)%*%t(z)%*%y
-         e <- y - z%*%betas
-         sigma2s <- sum(e*e)/(nrec-p)
+         fit0 <- lm(y ~ z - 1)
+
+         betas <- coefficients(fit0)
+         e <- residuals(fit0)
+         sigma2s <- sum(e*e)/fit0$df.residual
          
          betaclus <- matrix(0,nrow=nrec+100,ncol=p)
          sigmaclus <- rep(0,nrec+100)
@@ -178,14 +186,17 @@ function(formula,
          betaclus[1,] <- betas
          sigmaclus[1] <- sigma2s
 
-         sb <- 100*solve(t(z)%*%z)
-         mub <- solve(t(z)%*%z)%*%t(z)%*%y
+         sb <- vcov(fit0)
+         mub <- betas
          tau2 <- 2.01
          
        #########################################################################################
        # output
        #########################################################################################
          cpo <- matrix(0,nrow=nrec,ncol=2)
+         cdfpm <- matrix(0,nrow=npred,ncol=ngrid)
+         cdfpl <- matrix(0,nrow=npred,ncol=ngrid)
+         cdfph <- matrix(0,nrow=npred,ncol=ngrid)
          denspm <- matrix(0,nrow=npred,ncol=ngrid)
          denspl <- matrix(0,nrow=npred,ncol=ngrid)
          densph <- matrix(0,nrow=npred,ncol=ngrid)
@@ -193,8 +204,13 @@ function(formula,
          meanfpl <- rep(0,npred)
          meanfph <- rep(0,npred)
 
+         rocpm <- matrix(0,nrow=npred,ncol=nroc)
+         rocpl <- matrix(0,nrow=npred,ncol=nroc)
+         rocph <- matrix(0,nrow=npred,ncol=nroc)
+
          thetasave <- matrix(0,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
          randsave <- matrix(0,nrow=nsave,ncol=nrec*p)
+         aucsave <- matrix(0,nrow=nsave,ncol=npred)
 
        #########################################################################################
        # parameters depending on status
@@ -239,6 +255,11 @@ function(formula,
          
          workcpo <- rep(0,nrec)
 
+         rocgrid <- seq(0.01,0.99,len=nroc)
+         rocquan <- rep(0,nroc)
+         rocqgrid <- matrix(0,nrow=npred,ncol=nroc)
+
+
        #########################################################################################
        # calling the fortran code
        #########################################################################################
@@ -250,7 +271,9 @@ function(formula,
                           z         = as.double(z),
                           ngrid     = as.integer(ngrid),
                           npred     = as.integer(npred),
+                          nroc      = as.integer(nroc),
                           grid      = as.double(grid),
+                          rocgrid   = as.double(rocgrid),
                           zpred     = as.double(zpred),
                           a0b0      = as.double(a0b0), 
                           tau1      = as.double(tau1),
@@ -271,12 +294,19 @@ function(formula,
                           cpo       = as.double(cpo),
                           thetasave = as.double(thetasave),
                           randsave  = as.double(randsave),
+                          aucsave   = as.double(aucsave),
+                          cdfpm     = as.double(cdfpm),
+                          cdfpl     = as.double(cdfpl),
+                          cdfph     = as.double(cdfph),
                           denspm    = as.double(denspm),
                           denspl    = as.double(denspl),
                           densph    = as.double(densph),
                           meanfpm   = as.double(meanfpm),
                           meanfpl   = as.double(meanfpl),
                           meanfph   = as.double(meanfph),
+                          rocpm     = as.double(rocpm),
+                          rocpl     = as.double(rocpl),
+                          rocph     = as.double(rocph),
                           mcmc      = as.integer(mcmcvec),
                           nsave     = as.integer(nsave),
                           seed      = as.integer(seed),
@@ -297,6 +327,8 @@ function(formula,
                           fm        = as.double(fm),
                           worksam   = as.double(worksam),
                           workcpo   = as.double(workcpo),
+                          rocquan   = as.double(rocquan),
+                          rocqgrid  = as.double(rocqgrid),
                           PACKAGE="DPpackage")	
          
        #########################################################################################
@@ -324,6 +356,9 @@ function(formula,
 						sb=matrix(foo$sb,nrow=p,ncol=p),
 						tau2=tau2)
 
+         cdfpm <- matrix(foo$cdfpm,nrow=npred,ncol=ngrid)
+         cdfpl <- matrix(foo$cdfpl,nrow=npred,ncol=ngrid)
+         cdfph <- matrix(foo$cdfph,nrow=npred,ncol=ngrid)
          denspm <- matrix(foo$denspm,nrow=npred,ncol=ngrid)
          denspl <- matrix(foo$denspl,nrow=npred,ncol=ngrid)
          densph <- matrix(foo$densph,nrow=npred,ncol=ngrid)
@@ -331,8 +366,13 @@ function(formula,
          meanfpl <- foo$meanfpl
          meanfph <- foo$meanfph
 
+         rocpm <- matrix(foo$rocpm,nrow=npred,ncol=nroc)
+         rocpl <- matrix(foo$rocpl,nrow=npred,ncol=nroc)
+         rocph <- matrix(foo$rocph,nrow=npred,ncol=nroc)
+
          randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*p)
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
+         aucsave <- matrix(foo$aucsave,nrow=nsave,ncol=npred)
 
          coeffname <- dimnames(z)[[2]]
 
@@ -356,7 +396,6 @@ function(formula,
          pnames <- c(pnames1,pnames2,"tau2","ncluster","alpha")
          colnames(thetasave) <- pnames
 
-
          coeff <- apply(thetasave, 2, mean)
 
          renames <- NULL
@@ -368,7 +407,8 @@ function(formula,
          colnames(randsave) <- renames
          
          save.state <- list(thetasave=thetasave,
-                            randsave=randsave)
+                            randsave=randsave,
+                            aucsave=aucsave)
 
 		 z <- list(	modelname=model.name,
 					call=cl,
@@ -384,6 +424,13 @@ function(formula,
 					npred=npred,
 					zpred=zpred,
 					grid=grid,
+                    rocgrid=rocgrid,
+					cdfp.m=cdfpm,
+					cdfp.l=cdfpl,
+					cdfp.h=cdfph,
+					rocp.m=rocpm,
+					rocp.l=rocpl,
+					rocp.h=rocph,
 					densp.m=denspm,
 					densp.l=denspl,
 					densp.h=densph,
@@ -515,7 +562,7 @@ function(formula,
 
 ### Precision parameter
 
-    dimen1<-object$p+object$p*(object$p+1)/2
+    dimen1<-object$p+object$p*(object$p+1)/2+1
     
     if(is.null(object$prior$a0))
     {

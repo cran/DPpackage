@@ -1,9 +1,9 @@
 ### LDDPsurvival.R                    
 ### Fit a linear dependent DP model for survival modelling.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009-2010.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009-2011.
 ###
-### Last modification: 16-02-2010.
+### Last modification: 20-10-2011.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -32,12 +32,12 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Peter Mueller
-###      Department of Biostatistics
-###      The University of Texas MD Anderson Cancer Center
-###      1515 Holcombe Blvd, Unit 447 
-###      Houston TX 77030-4009, USA
-###      Voice: (713) 563-4296  URL  : http://www.mdanderson.org/departments/biostats
-###      Fax  : (713) 563-4243  Email: pmueller@mdanderson.org
+###      Department of Mathematics
+###      The University of Texas at Austin
+###      1, University Station, C1200
+###      Austin, TX 78712, USA
+###      Voice: (512) 471-7168  URL  : http://www.ma.utexas.edu/users/pmueller/
+###      Fax  : (512) 471-9038  Email: pmueller@math.utexas.edu
 ###
 ###      Gary L. Rosner
 ###      Division of Oncology Biostatistics/Bioinformatics
@@ -50,11 +50,11 @@
 ###
 
 
-"LDDPsurvival"<-
+"LDDPsurvival" <-
 function(formula,zpred,prior,mcmc,state,status,grid,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
 UseMethod("LDDPsurvival")
 
-"LDDPsurvival.default"<-
+"LDDPsurvival.default" <-
 function(formula,
          zpred,
          prior,
@@ -93,6 +93,22 @@ function(formula,
              typed[ymat[,2]==-999] <- 3
              typed[ymat[,1]==ymat[,2]] <- 4
          }
+
+       #########################################################################################
+       # MLE analysis
+       #########################################################################################
+
+          ymat2 <- ymat
+          ymat2[ymat2[,1]==-999,1] <- 0
+          ymat2[ymat2[,2]==-999,2] <- 10^10
+          ll <- ymat2[,1]
+          rr <- ymat2[,2]
+          library(survival)
+          fit0 <- survreg(formula = Surv(time=ll,time2=rr,type="interval2") ~ z-1, dist = "lognormal")
+
+		  betaw <- coefficients(fit0)
+          cgkvar <- vcov(fit0)[1:p,1:p]
+          sigma2w <- fit0$scale
 
        #########################################################################################
        # change working directory (if requested..)
@@ -154,19 +170,15 @@ function(formula,
 		 y[typed==3] <- log(ymat[typed==3,1]+1)
          y[typed==4] <- log(ymat[typed==4,1])
 
-         betas <- solve(t(z)%*%z)%*%t(z)%*%y
-         e <- y - z%*%betas
-         sigma2s <- sum(e*e)/(nrec-p)
-         
          betaclus <- matrix(0,nrow=nrec+100,ncol=p)
          sigmaclus <- rep(0,nrec+100)
          
-         betaclus[1,] <- betas
-         sigmaclus[1] <- sigma2s
+         betaclus[1,] <- betaw
+         sigmaclus[1] <- sigma2w
 
-         sb <- 100*solve(t(z)%*%z)
-         mub <- solve(t(z)%*%z)%*%t(z)%*%y
-         tau2 <- 2.01
+         sb <- cgkvar
+         mub <- betaw
+         tau2 <- 2*sigma2w
 
 		 censor <- sum(typed!=4)		
 		 if(censor>0)censor <- 1
@@ -316,11 +328,11 @@ function(formula,
        # save state
        #########################################################################################
 
-         cpom<-matrix(foo$cpo,nrow=nrec,ncol=2)         
-         cpo<-cpom[,1]         
-         fso<-cpom[,2]
+         cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)         
+         cpo <- cpom[,1]         
+         fso <- cpom[,2]
 
-         model.name<-"Bayesian Semiparametric Conditional Density Estimation using LDDP"
+         model.name <- "Bayesian semiparametric survival model using a LDDP mixture"
          
          state <- list(alpha=foo$alpha,
 	               betaclus=matrix(foo$betaclus,nrow=nrec+100,ncol=p),
@@ -329,7 +341,8 @@ function(formula,
 	               ncluster=foo$ncluster,
 	               mub=foo$mub,
 	               sb=matrix(foo$sb,nrow=p,ncol=p),
-	               tau2=tau2)
+	               tau2=foo$tau2,
+                   y=foo$y)
 
          denspm <- matrix(foo$denspm,nrow=npred,ncol=ngrid)
          denspl <- matrix(foo$denspl,nrow=npred,ncol=ngrid)
@@ -420,7 +433,7 @@ function(formula,
                  save.state=save.state)
 
 	 cat("\n\n")
-	 class(z)<-c("LDDPsurvival")
+	 class(z) <- c("LDDPsurvival")
 	 z 
 }
 

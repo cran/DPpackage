@@ -228,7 +228,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process
                    ndisplay=ndisplay)
 
     # Fitting the model
-      fit1 <- DPMdencens(left=left,right=right,ngrid=100,prior=prior,mcmc=mcmc,
+      fit1 <- DPMdencens(left=left,right=right,ngrid=100,
+                         prior=prior,mcmc=mcmc,
                          state=state,status=TRUE)
       fit1
       summary(fit1)

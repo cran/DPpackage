@@ -10,9 +10,9 @@
   
 \usage{
 
-DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,method="neal",
-          data=sys.frame(sys.parent()),na.action=na.fail)      
-      
+DPdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
+          method="neal",data=sys.frame(sys.parent()),
+          na.action=na.fail)      
 }
 
 \arguments{
@@ -189,14 +189,15 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
     # Example of Prior information 1
     # Fixing alpha, m1, and Psi1
 
-      prior1 <- list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,tau1=1,tau2=100)
+      prior1 <- list(alpha=1,m1=rep(0,1),psiinv1=diag(0.5,1),nu1=4,
+                     tau1=1,tau2=100)
 
 
     # Example of Prior information 2
     # Fixing alpha and m1
 
-      prior2 <- list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),nu1=4,nu2=4,
-                     tau1=1,tau2=100)
+      prior2 <- list(alpha=1,m1=rep(0,1),psiinv2=solve(diag(0.5,1)),
+                     nu1=4,nu2=4,tau1=1,tau2=100)
 
 
     # Example of Prior information 3
@@ -216,10 +217,14 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Fit the models
 
-      fit1.1 <- DPdensity(y=speeds,prior=prior1,mcmc=mcmc,state=state,status=TRUE)
-      fit1.2 <- DPdensity(y=speeds,prior=prior2,mcmc=mcmc,state=state,status=TRUE)
-      fit1.3 <- DPdensity(y=speeds,prior=prior3,mcmc=mcmc,state=state,status=TRUE)
-      fit1.4 <- DPdensity(y=speeds,prior=prior4,mcmc=mcmc,state=state,status=TRUE)
+      fit1.1 <- DPdensity(y=speeds,prior=prior1,mcmc=mcmc,
+                          state=state,status=TRUE)
+      fit1.2 <- DPdensity(y=speeds,prior=prior2,mcmc=mcmc,
+                          state=state,status=TRUE)
+      fit1.3 <- DPdensity(y=speeds,prior=prior3,mcmc=mcmc,
+                          state=state,status=TRUE)
+      fit1.4 <- DPdensity(y=speeds,prior=prior4,mcmc=mcmc,
+                          state=state,status=TRUE)
 
     # Posterior means
       fit1.1
@@ -245,26 +250,28 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
     # Plot the a specific parameters 
     # (to see the plots gradually set ask=TRUE)
-      plot(fit1.2,ask=FALSE,output="param",param="psi1-speeds",nfigr=1,nfigc=2)
+      plot(fit1.2,ask=FALSE,output="param",param="psi1-speeds",
+           nfigr=1,nfigc=2)
 
-    # Extracting the posterior mean of the specific means and covariance matrices 
+    # Extracting the posterior mean of the specific 
+    # means and covariance matrices 
     # (only prior 2 for illustration)
       DPrandom(fit1.2) 
 
-    # Ploting predictive information about the specific means and covariance matrices 
+    # Ploting predictive information about the specific 
+    # means and covariance matrices 
     # with HPD and Credibility intervals
     # (only prior 2 for illustration)
     # (to see the plots gradually set ask=TRUE)
       plot(DPrandom(fit1.2,predictive=TRUE),ask=FALSE)
       plot(DPrandom(fit1.2,predictive=TRUE),ask=FALSE,hpd=FALSE)
 
-    # Ploting information about all the specific means and covariance matrices 
+    # Ploting information about all the specific means 
+    # and covariance matrices 
     # with HPD and Credibility intervals
     # (only prior 2 for illustration)
     # (to see the plots gradually set ask=TRUE)
       plot(DPrandom(fit1.2),ask=FALSE,hpd=FALSE)
-
-
 
 
     ####################################

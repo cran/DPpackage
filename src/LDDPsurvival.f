@@ -22,11 +22,11 @@ c     Subroutine `lddpsurvival' to run a Markov chain for a
 c     Linear Dependent Dirichlet Process prior for 
 c     survival analysis.
 c
-c     Copyright: Alejandro Jara, 2009-2010.
+c     Copyright: Alejandro Jara, 2009-2011.
 c
-c     Version 1.0: 
+c     Version 2.0: 
 c
-c     Last modification: 14-03-2009.
+c     Last modification: 20-10-2011.
 c     
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -311,6 +311,7 @@ c++++ internal working space
       integer skipcount
       integer sprint
       real*8 cdflnorm
+      real*8 cdfnorm
       real*8 dnrm
       real*8 dlnrm
       real*8 rgamma
@@ -319,8 +320,11 @@ c++++ internal working space
       real*8 muwork
       real*8 rtnorm
       real*8 sigmawork
-      real*8 tmp1,tmp2,tmp3
+      real*8 tmp1,tmp2,tmp3,tmp4
       real*8 yc
+
+      real*8 cpotest
+      real*8 cpotest2
       
       logical ainf,asup
    
@@ -345,6 +349,9 @@ c++++ opening files
 c++++++++++++++++++++++++++
 c     initialize variables
 c++++++++++++++++++++++++++
+
+      cpotest=0.d0
+      cpotest2=0.d0
 
       sigmawork=0.d0 
 c++++ mcmc, priors and "zipped"
@@ -463,19 +470,18 @@ c++++++++++ check if the user has requested an interrupt
          
             do j=1,ncluster
 
-               tmp1=0.0
+               tmp1=0.d0
                do k=1,p
                   tmp1=tmp1+z(i,k)*betaclus(j,k)
                end do                
                sigmawork=sigmaclus(j)
 
-               tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),1)
-                        
-               prob(j)=exp(log(dble(ccluster(j)))+tmp2)
+               tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),0)
+               prob(j)=dble(ccluster(j))*tmp2
             end do
 
             if(isample.eq.1)then
-               sigmawork=1.d0/rgamma(0.5*tau1,0.5*tau2)
+               sigmawork=1.d0/rgamma(0.5d0*tau1,0.5d0*tau2)
                sigmaclus(ncluster+1)=sigmawork
         
                call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
@@ -486,14 +492,13 @@ c++++++++++ check if the user has requested an interrupt
 
             sigmawork=sigmaclus(ncluster+1)
 
-            tmp1=0.0
+            tmp1=0.d0
             do k=1,p
                tmp1=tmp1+z(i,k)*betaclus(ncluster+1,k)
             end do               
          
-            tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),1)
-
-            prob(ncluster+1)=exp(log(alpha)+tmp2)
+            tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),0)
+            prob(ncluster+1)=alpha*tmp2
 
             call simdisc(prob,nrec+100,ncluster+1,evali)
 
@@ -520,7 +525,15 @@ c+++++++++++++++++++++++++++++++++++
             end do
          end do   
          call inverse(xtx2,p,iflagp)
-         xty2=matmul(xtx2,mub)
+
+c          xty2=matmul(xtx2,mub)
+         do k=1,p
+            tmp1=0.d0 
+            do l=1,p
+               tmp1=tmp1+xtx2(k,l)*mub(l)
+            end do
+           xty2(k)=tmp1
+         end do   
 
          do i=1,ncluster
 
@@ -548,7 +561,15 @@ c+++++++++++++ check if the user has requested an interrupt
             end do
 
             call inverse(xtx,p,iflagp)      
-            betam=matmul(xtx,xty)
+
+c            betam=matmul(xtx,xty)
+            do k=1,p
+               tmp1=0.d0 
+               do l=1,p
+                  tmp1=tmp1+xtx(k,l)*xty(l)
+               end do
+               betam(k)=tmp1
+            end do   
       
             call rmvnorm(p,betam,xtx,workmh1,workv1,betawork)
   
@@ -570,14 +591,14 @@ c++++++++++ check if the user has requested an interrupt
             call rchkusr()
 
             ns=ccluster(i)
-            tmp2=0.0
+            tmp2=0.d0
             do j=1,ns
 
 c+++++++++++++ check if the user has requested an interrupt
                call rchkusr()
 
                ii=cstrt(i,j)
-               tmp1=0.0
+               tmp1=0.d0
                do k=1,p
                   tmp1=tmp1+z(ii,k)*betaclus(i,k)
                end do
@@ -605,7 +626,14 @@ c+++++++++++++++++++++++++++++++++++
 c+++++++ baseline mean           +++
 c+++++++++++++++++++++++++++++++++++
 
-         xty=matmul(sbeta0i,m0)
+c         xty=matmul(sbeta0i,m0)
+         do k=1,p
+            tmp1=0.d0 
+            do l=1,p
+               tmp1=tmp1+sbeta0i(k,l)*m0(l)
+            end do
+           xty(k)=tmp1
+         end do   
 
          do i=1,p
             do j=1,p
@@ -625,10 +653,27 @@ c+++++++++++++++++++++++++++++++++++
             do i=1,p
                betawork(i)=betaclus(ii,i)
             end do
-            xty=xty+matmul(xtx2,betawork)
+
+c            xty=xty+matmul(xtx2,betawork)
+            do k=1,p
+               tmp1=0.d0 
+               do l=1,p
+                  tmp1=tmp1+xtx2(k,l)*betawork(l)
+               end do
+              xty(k)=xty(k)+tmp1
+            end do   
          end do
 
-         betawork=matmul(xtx,xty)
+c         betawork=matmul(xtx,xty)
+         do k=1,p
+            tmp1=0.d0 
+            do l=1,p
+               tmp1=tmp1+xtx(k,l)*xty(l)
+            end do
+            betawork(k)=tmp1
+         end do   
+
+
          call rmvnorm(p,betawork,xtx,workmh1,workv1,mub)
 
 c         call dblepr("mub",-1,mub,p)
@@ -731,7 +776,11 @@ c+++++++++++++ random effects
                   end do   
                end do
 
-c+++++++++++++ Partially sampling the DP.
+c+++++++++++++ Partially sampling the DP (and CPO).
+
+               do i=1,nrec
+                  workcpo(i)=0.d0
+               end do   
 
                do i=1,ncluster
                    prob(i)=real(ccluster(i))/(alpha+real(nrec))
@@ -746,7 +795,7 @@ c+++++++++++++ Partially sampling the DP.
                   end do
                end if
                if(evali.eq.ncluster+1)then 
-                  sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
+                  sigmawork=1.d0/rgamma(0.5d0*tau1,0.5d0*tau2)
                   sigmaclus(ncluster+1)=sigmawork
         
                   call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
@@ -762,7 +811,7 @@ c+++++++++++++ Partially sampling the DP.
                do i=1,npred  
                   call rchkusr()
      
-                  muwork=0.0
+                  muwork=0.d0
                   do j=1,p
                      muwork=muwork+zpred(i,j)*betawork(j)
                   end do
@@ -777,12 +826,48 @@ c+++++++++++++ Partially sampling the DP.
                   end do 
                end do
 
-               do while((1.0-tmp2).gt.eps)
+               do i=1,nrec
+
+                  muwork=0.d0
+                  do j=1,p
+                     muwork=muwork+z(i,j)*betawork(j)
+                  end do                
+
+                  if(typed(i).eq.1)then
+                     tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                             sqrt(sigmawork),1,0)
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
+
+                  if(typed(i).eq.2)then
+                     tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                     tmp4=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                     workcpo(i)=workcpo(i)+tmp1*(tmp3-tmp4)
+                  end if
+
+                  if(typed(i).eq.3)then
+                     tmp3=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0,0)
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
+
+                  if(typed(i).eq.4)then
+                     tmp3=dnrm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0)*(1.d0/ymat(i,1))
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
+               end do
+
+               do while((1.d0-tmp2).gt.eps)
                   call rchkusr()
 
                   tmp3=rbeta(1.d0,alpha+real(nrec))
                   tmp1=weight*tmp3
-                  weight=weight*(1.0-tmp3)
+                  weight=weight*(1.d0-tmp3)
 
                   call simdisc(prob,nrec+100,ncluster+1,evali)
 
@@ -794,7 +879,7 @@ c+++++++++++++ Partially sampling the DP.
                   end if
 
                   if(evali.eq.ncluster+1)then 
-                     sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
+                     sigmawork=1.d0/rgamma(0.5d0*tau1,0.5d0*tau2)
                      sigmaclus(ncluster+1)=sigmawork
         
                      call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
@@ -806,7 +891,7 @@ c+++++++++++++ Partially sampling the DP.
                   do i=1,npred  
                      call rchkusr()
 
-                     muwork=0.0
+                     muwork=0.d0
                      do j=1,p
                         muwork=muwork+zpred(i,j)*betawork(j)
                      end do
@@ -814,7 +899,8 @@ c+++++++++++++ Partially sampling the DP.
                      fm(i)=fm(i)+muwork*tmp1
               
                      do j=1,ngrid  
-                        denspl(i,j)=denspl(i,j)+tmp1*dlnrm(grid(j),
+                        denspl(i,j)=denspl(i,j)+tmp1*dlnrm(
+     &                              grid(j),
      &                              muwork,sqrt(sigmawork),0)
 
                         survpl(i,j)=survpl(i,j)+tmp1*
@@ -823,9 +909,44 @@ c+++++++++++++ Partially sampling the DP.
                      end do 
                   end do
 
+                  do i=1,nrec
+
+                     muwork=0.d0
+                     do j=1,p
+                        muwork=muwork+z(i,j)*betawork(j)
+                     end do                
+
+                     if(typed(i).eq.1)then
+                       tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                             sqrt(sigmawork),1,0)
+                       workcpo(i)=workcpo(i)+tmp1*tmp3
+                     end if
+
+                     if(typed(i).eq.2)then
+                       tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                       tmp4=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                       workcpo(i)=workcpo(i)+tmp1*(tmp3-tmp4)
+                     end if
+
+                     if(typed(i).eq.3)then
+                       tmp3=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0,0)
+                       workcpo(i)=workcpo(i)+tmp1*tmp3
+                     end if
+
+                     if(typed(i).eq.4)then
+                       tmp3=dnrm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0)*(1.d0/ymat(i,1))
+                       workcpo(i)=workcpo(i)+tmp1*tmp3
+                     end if
+                  end do
+
                   tmp2=tmp2+tmp1
                end do
-
 
                call simdisc(prob,nrec+100,ncluster+1,evali)
 
@@ -845,23 +966,60 @@ c+++++++++++++ Partially sampling the DP.
                   end do               
                end if
 
-               tmp1=weight
+               tmp1=1.d0-tmp2
                do i=1,npred  
                   call rchkusr()
      
-                  muwork=0.0
+                  muwork=0.d0
                   do j=1,p
                      muwork=muwork+zpred(i,j)*betawork(j)
                   end do
            
                   fm(i)=fm(i)+muwork*tmp1
                   do j=1,ngrid  
-                     denspl(i,j)=denspl(i,j)+tmp1*dlnrm(grid(j),
+                     denspl(i,j)=denspl(i,j)+tmp1*dlnrm(
+     &                           grid(j),
      &                           muwork,sqrt(sigmawork),0)
  
                      survpl(i,j)=survpl(i,j)+tmp1*cdflnorm(grid(j),
      &                           muwork,sqrt(sigmawork),0,0)                
                   end do 
+               end do
+
+               do i=1,nrec
+
+                  muwork=0.d0
+                  do j=1,p
+                     muwork=muwork+z(i,j)*betawork(j)
+                  end do                
+
+                  if(typed(i).eq.1)then
+                     tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                             sqrt(sigmawork),1,0)
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
+
+                  if(typed(i).eq.2)then
+                     tmp3=cdfnorm(log(ymat(i,2)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                     tmp4=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),1,0)
+
+                     workcpo(i)=workcpo(i)+tmp1*(tmp3-tmp4)
+                  end if
+
+                  if(typed(i).eq.3)then
+                     tmp3=cdfnorm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0,0)
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
+
+                  if(typed(i).eq.4)then
+                     tmp3=dnrm(log(ymat(i,1)),muwork,
+     &                       sqrt(sigmawork),0)*(1.d0/ymat(i,1))
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
+                  end if
                end do
 
                ii=0
@@ -882,82 +1040,12 @@ c+++++++++++++ Partially sampling the DP.
                end do 
                write(2) (fm(i),i=1,npred)
 
-c+++++++++++++ cpo
+c+++++++++++++ lpml
 
-               do i=ncluster+1,ncluster+100
-
-                  sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
-                  sigmaclus(i)=sigmawork
-        
-                  call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
-                  do k=1,p
-                     betaclus(i,k)=betawork(k)
-                  end do 
-               end do
-               
-               do i=1,nrec
-                  workcpo(i)=0.d0
-               end do   
-         
-               do ii=1,ncluster+100
-   
-                  do i=1,nrec
-
-                     ns=ccluster(ii)
-                     if(ss(i).eq.ii)ns=ns-1
-                     if(ii.le.ncluster)then
-                        prob(ii)=dble(ns)/(alpha+dble(nrec-1))
-                      else
-                        prob(ii)=alpha/(100.d0*(alpha+dble(nrec-1)))
-                     end if   
-
-                     muwork=0.0
-                     do k=1,p
-                        muwork=muwork+z(i,k)*betaclus(ii,k)
-                     end do                
-                     sigmawork=sigmaclus(ii)
-                     
-                     if(typed(i).eq.1)then
-                        tmp3=cdflnorm(ymat(i,2),muwork,
-     &                       sqrt(sigmawork),1,0)
-                        workcpo(i)=workcpo(i)+prob(ii)*tmp3
-                     end if
-
-                     if(typed(i).eq.2)then
-                        tmp3=cdflnorm(ymat(i,2),muwork,
-     &                       sqrt(sigmawork),1,0)
-                        workcpo(i)=workcpo(i)+prob(ii)*tmp3
-
-                        tmp3=cdflnorm(ymat(i,1),muwork,
-     &                       sqrt(sigmawork),1,0)
-                        workcpo2(i)=workcpo2(i)+prob(ii)*tmp3
-                     end if
-
-                     if(typed(i).eq.3)then
-                        tmp3=cdflnorm(ymat(i,1),muwork,
-     &                       sqrt(sigmawork),0,0)
-                        workcpo(i)=workcpo(i)+prob(ii)*tmp3
-                     end if
-
-                     if(typed(i).eq.4)then
-                        tmp3=dlnrm(ymat(i,1),muwork,
-     &                       sqrt(sigmawork),0)
-                        workcpo(i)=workcpo(i)+prob(ii)*tmp3
-                     end if
-                  end do   
-               end do
-                
                tmp2=0.d0
                do i=1,nrec
                   tmp3=workcpo(i)
-
-                  if(typed(i).eq.2)then
-                     tmp3=workcpo(i)-workcpo2(i)
-                   else
-                     tmp3=workcpo(i)
-                  end if
-
-                  cpo(i,1)=cpo(i,1)+1.0d0/tmp3  
+                  cpo(i,1)=cpo(i,1)+1.d0/tmp3  
                   cpo(i,2)=cpo(i,2)+tmp3                   
                   tmp2=tmp2+log(dble(isave)/cpo(i,1))
                end do
@@ -984,6 +1072,9 @@ c+++++++++++++ print
          cpo(i,1)=dble(nsave)/cpo(i,1)
          cpo(i,2)=cpo(i,2)/dble(nsave)
       end do
+
+c      tmp1=log(dble(nsave)/cpotest2)
+c      call dblepr("cpotest",-1,tmp1,1)
 
       do i=1,npred
          call rchkusr()

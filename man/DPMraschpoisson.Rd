@@ -230,7 +230,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
       fit1 <- DPMraschpoisson(y=y,prior=prior,mcmc=mcmc,
                               state=state,status=TRUE,grid=seq(-3,4,0.01))
    
-      plot(fit1$grid,fit1$dens.m,type="l",lty=1,col="red",xlim=c(-3,4),ylim=c(0,0.8))
+      plot(fit1$grid,fit1$dens.m,type="l",lty=1,col="red",
+           xlim=c(-3,4),ylim=c(0,0.8))
       lines(fit1$grid,true.density(fit1$grid),lty=2,col="blue")
 
       plot(fit1$grid,fit1$cdf.m,type="l",lty=1,col="red")

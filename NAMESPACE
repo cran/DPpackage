@@ -2,6 +2,8 @@ useDynLib(DPpackage)
 
 import(MASS)
 import(nlme)
+import(splines)
+import(survival)
 
 export( 
         BDPdensity,
@@ -76,6 +78,12 @@ export(
         LDDPrasch.default,
         LDDPraschpoisson,
         LDDPraschpoisson.default,
+        LDDProc,
+        LDDProc.default,
+        LDTFPdensity,
+        LDTFPdensity.default,
+        LDTFPsurvival,
+        LDTFPsurvival.default,
         LDPDdoublyint,
         LDPDdoublyint.default,
         Pbinary,
@@ -299,6 +307,11 @@ S3method(plot, LDDPrasch)
 S3method(summary, LDDPrasch)
 S3method(print, summaryLDDPrasch)
 
+S3method(print, LDDProc)
+S3method(plot, LDDProc)
+S3method(summary, LDDProc)
+S3method(print, summaryLDDProc)
+
 S3method(print, Pbinary)
 S3method(plot, Pbinary)
 S3method(summary, Pbinary)
@@ -374,4 +387,12 @@ S3method(predict, LDPDdoublyint)
 S3method(print, predict.LDPDdoublyint)
 S3method(plot, predict.LDPDdoublyint)
 
+S3method(print, LDTFPdensity)
+S3method(plot, LDTFPdensity)
+S3method(summary, LDTFPdensity)
+S3method(print, summaryLDTFPdensity)
 
+S3method(print, LDTFPsurvival)
+S3method(plot, LDTFPsurvival)
+S3method(summary, LDTFPsurvival)
+S3method(print, summaryLDTFPsurvival)

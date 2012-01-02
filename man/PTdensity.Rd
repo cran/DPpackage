@@ -41,10 +41,10 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
                      \code{tau1} and \code{tau2} giving the hyperparameters of the 
                      inverted Wishart or inverted gamma prior distribution for the centering  
                      covariance or variance, respectively, \code{sigma} giving the value of the 
-                     variance or covariance
-                     matrix of the centering distribution (if missing and if 
+                     standard deviation (univariate case) or covariance
+                     matrix (multivariate case) of the centering distribution (if missing and if 
                      \code{nu0} and \code{tinv} or \code{tau1} and \code{tau2} are missing, 
-                     Jeffrey's prior is used for \code{sigma}),
+                     Jeffrey's prior is used for the centering (co)variance matrix,
                      \code{m0} and \code{S0} giving the hyperparameters 
                      of the normal prior distribution for the mean of the normal
                      baseline distribution, and \code{mu} giving the value of the mean of the
@@ -73,7 +73,7 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
     
     \item{na.action}{a function that indicates what should happen when the data
                      contain \code{NA}s. The default action (\code{na.fail}) causes 
-                     \code{DPdensity} to print an error message and terminate if there are any
+                     \code{PTdensity} to print an error message and terminate if there are any
                      incomplete observations.}       
 }
 
@@ -82,8 +82,8 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
   (see, e.g., Lavine, 1992 and 1994; Hanson, 2006). In the univariate case, the model 
   is given by:
   \deqn{Y_1, \ldots , Y_n | G \sim G}{Y1,...,Yn | G ~ G}
-  \deqn{G | \alpha,\mu,\sigma \sim PT(\Pi^{\mu,\sigma},\textit{A})}{G | alpha,mu,sigma2 ~ PT(Pi^{mu,sigma},\textit{A})}
-  where, the the PT is centered around a \eqn{N(\mu,\sigma)}{N(mu,sigma)} distribution, by
+  \deqn{G | \alpha,\mu,\sigma \sim PT(\Pi^{\mu,\sigma^2},\textit{A})}{G | alpha,mu,sigma2 ~ PT(Pi^{mu,sigma2},\textit{A})}
+  where, the the PT is centered around a \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution, by
   taking each \eqn{m} level of the partition \eqn{\Pi^{\mu, \sigma^2}}{Pi^{mu, sigma2}} to coincide 
   with the \eqn{k/2^m, k=0,\ldots,2^m} quantile of the \eqn{N(\mu,\sigma^2)}{N(mu,sigma2)} distribution.
   The family \eqn{\textit{A}=\{\alpha_e: e \in E^{*}\}}{\textit{A}=\{alphae: e \in E^{*}\}}, 
@@ -105,14 +105,14 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
   base set yielding the final sets. 
 
   A Jeffry's prior can be specified for the centering parameters, 
-  \deqn{f(\mu,\sigma \propto \sigma^{-1}}{f(mu,sigma) \propto 1/sigma}
+  \deqn{f(\mu,\sigma^2 \propto \sigma^{-2}}{f(mu,sigma2) \propto 1/sigma2}
   and
   \deqn{f(\mu,\Sigma) \propto |\Sigma|^{-(d+1)/2}}{p(mu,Sigma) \propto |Sigma|^{-(d+1)/2}}
   in the univariate and multivariate case, respectively. Alternatively, the centering parameters
   can be fixed to user-specified values or proper priors can be assigned. In the univariate case,
   the following proper priors can be assigned:
   \deqn{\mu | m_0, S_0 \sim N(m_0,S_0)}{mu | m0, S0 ~ N(m0,S0)}
-  \deqn{\sigma^{-1} | \tau_1, \tau_2 \sim \Gamma(\tau_1/2,\tau_2/2)}{sigma^-1 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
+  \deqn{\sigma^{-2} | \tau_1, \tau_2 \sim \Gamma(\tau_1/2,\tau_2/2)}{sigma^-2 | tau1, tau2 ~ Gamma(tau1/2,tau2/2)}
  
   In the multivariate case, the following proper priors can be assigned: 
   \deqn{\mu | m_0, S_0 \sim N(m_0,S_0)}{mu | m0, S0 ~ N(m0,S0)}
@@ -136,7 +136,7 @@ PTdensity(y,ngrid=1000,grid=NULL,prior,mcmc,state,status,
   An object of class \code{PTdensity} representing the Polya tree
   model fit. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. 
-  The results include \code{mu}, \code{sigma2} or \code{Sigma} in the univariate
+  The results include \code{mu}, \code{sigma} or \code{Sigma} in the univariate
   or multivariate case, respectively, and the precision
   parameter \code{alpha}.
   

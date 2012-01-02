@@ -13,8 +13,8 @@
   
 \usage{
 
-DPlmm(fixed,random,prior,mcmc,state,status,data=sys.frame(sys.parent()),
-      na.action=na.fail)
+DPlmm(fixed,random,prior,mcmc,state,status,
+      data=sys.frame(sys.parent()),na.action=na.fail)
 }
 
 \arguments{
@@ -212,11 +212,13 @@ Verbeke, G. and Molenberghs, G. (2000). Linear mixed models for longitudinal dat
       summary(fit2,hpd=FALSE)
 
 
-    # Plot model parameters (to see the plots gradually set ask=TRUE)
+    # Plot model parameters 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit2,ask=FALSE)
       plot(fit2,ask=FALSE,nfigr=2,nfigc=2)	
 
-    # Plot an specific model parameter (to see the plots gradually set ask=TRUE)
+    # Plot an specific model parameter 
+    # (to see the plots gradually set ask=TRUE)
       plot(fit2,ask=FALSE,nfigr=1,nfigc=2,param="sigma-(Intercept)")	
       plot(fit2,ask=FALSE,nfigr=1,nfigc=2,param="ncluster")	
 }

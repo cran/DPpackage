@@ -11,8 +11,10 @@
    
 \usage{
 
-LDDPsurvival(formula,zpred,prior,mcmc,state,status,grid,
-             data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
+LDDPsurvival(formula,zpred,prior,mcmc,
+             state,status,grid,
+             data=sys.frame(sys.parent()),
+             na.action=na.fail,work.dir=NULL)
 
 }
 
@@ -212,52 +214,58 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
                    ndisplay=ndisplay)
 
     # Fit the model
-      fit1 <- LDDPsurvival(ymat~trt,prior=prior,mcmc=mcmc,state=state,status=TRUE,
+      fit1 <- LDDPsurvival(ymat~trt,prior=prior,
+                           mcmc=mcmc,state=state,status=TRUE,
                            grid=seq(0.01,70,1),zpred=zpred)
 
 
     # Plot posterior density estimates
     # with design vector x0=(1,0) 
 
-      plot(fit1$grid,fit1$densp.h[1,],type="l",xlab="time",ylab="density",lty=2,lwd=2)
+      plot(fit1$grid,fit1$densp.h[1,],type="l",
+           xlab="time",ylab="density",lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.l[1,],lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.m[1,],lty=1,lwd=3)
 
     # Plot posterior density estimates
     # with design vector x0=(1,1) 
 
-      plot(fit1$grid,fit1$densp.h[2,],type="l",xlab="time",ylab="density",lty=2,lwd=2)
+      plot(fit1$grid,fit1$densp.h[2,],type="l",
+           xlab="time",ylab="density",lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.l[2,],lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.m[2,],lty=1,lwd=3)
 
     # Plot posterior survival estimates
     # with design vector x0=(1,0) 
 
-      plot(fit1$grid,fit1$survp.h[1,],type="l",xlab="time",ylab="survival",lty=2,lwd=2,ylim=c(0,1))
+      plot(fit1$grid,fit1$survp.h[1,],type="l",
+           xlab="time",ylab="survival",lty=2,lwd=2,ylim=c(0,1))
       lines(fit1$grid,fit1$survp.l[1,],lty=2,lwd=2)
       lines(fit1$grid,fit1$survp.m[1,],lty=1,lwd=3)
 
     # Plot posterior survival estimates
     # with design vector x0=(1,1) 
 
-      plot(fit1$grid,fit1$survp.h[2,],type="l",xlab="time",ylab="survival",lty=2,lwd=2,ylim=c(0,1))
+      plot(fit1$grid,fit1$survp.h[2,],type="l",
+           xlab="time",ylab="survival",lty=2,lwd=2,ylim=c(0,1))
       lines(fit1$grid,fit1$survp.l[2,],lty=2,lwd=2)
       lines(fit1$grid,fit1$survp.m[2,],lty=1,lwd=3)
 
     # Plot posterior hazard estimates
     # with design vector x0=(1,0) 
 
-      plot(fit1$grid,fit1$hazp.h[1,],type="l",xlab="time",ylab="hazard",lty=2,lwd=2)
+      plot(fit1$grid,fit1$hazp.h[1,],type="l",
+           xlab="time",ylab="hazard",lty=2,lwd=2)
       lines(fit1$grid,fit1$hazp.l[1,],lty=2,lwd=2)
       lines(fit1$grid,fit1$hazp.m[1,],lty=1,lwd=3)
 
     # Plot posterior hazard estimates
     # with design vector x0=(1,1) 
 
-      plot(fit1$grid,fit1$hazp.h[2,],type="l",xlab="time",ylab="survival",lty=2,lwd=2)
+      plot(fit1$grid,fit1$hazp.h[2,],type="l",
+           xlab="time",ylab="survival",lty=2,lwd=2)
       lines(fit1$grid,fit1$hazp.l[2,],lty=2,lwd=2)
       lines(fit1$grid,fit1$hazp.m[2,],lty=1,lwd=3)
-
 
 }
 }
@@ -266,7 +274,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 Alejandro Jara \email{<atjara@uc.cl>}
 
-Peter Mueller \email{<pmueller@mdanderson.org>}
+Peter Mueller \email{<pmueller@math.utexas.edu>}
 
 Gary L. Rosner \email{<grosner@jhmi.edu>}
 

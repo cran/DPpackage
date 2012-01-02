@@ -1,31 +1,39 @@
 
 c=======================================================================
       subroutine lddpcdensity(nrec,p,y,z,
-     &                        ngrid,npred,grid,zpred,
+     &                        ngrid,npred,nroc,grid,rocgrid,zpred,
      &                        a0b0,tau1,taus1,taus2,m0,sbeta0i,nu,
      &                        psiinv,
      &                        ncluster,ss,alpha,betaclus,sigmaclus,
      &                        mub,sb,tau2,
-     &                        cpo,thetasave,randsave,
+     &                        cpo,thetasave,randsave,aucsave,
+     &                        cdfpm,cdfpl,cdfph,
      &                        denspm,denspl,densph,
      &                        meanfpm,meanfpl,meanfph,
+     &                        rocpm,rocpl,rocph,
      &                        mcmc,nsave,seed,
      &                        cstrt,ccluster,iflagp,betam,betawork,
      &                        prob,workmh1,workmh2,workv1,
-     &                        xtx,xtx2,xty,xty2,fs,fm,worksam,workcpo)
+     &                        xtx,xtx2,xty,xty2,fs,fm,worksam,workcpo,
+     &                        rocquan,rocqgrid)
 c=======================================================================
 c
 c     Subroutine `lddpcdensity' to run a Markov chain for a 
 c     Linear Dependent Dirichlet Process prior for 
 c     conditional density estimation.
 c
-c     Copyright: Alejandro Jara, 2008 - 2010.
+c     Copyright: Alejandro Jara, 2008 - 2011.
 c
-c     Version 2.0: 
+c     Version 3.0: 
 c
-c     Last modification: 11-01-2010.
+c     Last modification: 04-11-2011.
 c     
 c     Changes and Bug fixes: 
+c
+c     Version 2.0 to Version 3.0:
+c          - Computation the cdf functions added.
+c          - Now CPO are computed using the epsilon-DP approximation.
+c          - Computation useful for ROC curve estimation added.
 c
 c     Version 1.0 to Version 2.0:
 c          - Save number of clusters, cluster indicators, and cluster
@@ -130,6 +138,12 @@ c        randsave    :  real matrix containing the mcmc samples for
 c                       the regression coeff, randsave(nsave,nrec*p).
 c        thetasave   :  real matrix containing the mcmc samples for
 c                       the parameters, thetasave(nsave,p+p*(p+1)/2+3)
+c        cdfpm       :  real matrix giving the posterior mean of the 
+c                       cdf, cdfpm(npred,ngrid).
+c        cdfpl       :  real matrix giving the lower limit of the 
+c                       HPD of the cdf, cdfpl(npred,ngrid).
+c        cdfph       :  real matrix giving the upper limit of the  
+c                       HPD of the cdf, cdfph(npred,ngrid).
 c        denspm      :  real matrix giving the posterior mean of the 
 c                       density, denspm(npred,ngrid).
 c        denspl      :  real matrix giving the lower limit of the 
@@ -207,8 +221,9 @@ c++++ data
       real*8 z(nrec,p)
 
 c++++ prediction
-      integer cband,ngrid,npred,tband
+      integer cband,ngrid,npred,tband,rocc,nroc
       real*8 grid(ngrid)
+      real*8 rocgrid(ngrid)
       real*8 zpred(npred,p)
 
 c++++ prior
@@ -234,6 +249,10 @@ c++++ output
       real*8 cpo(nrec,2)
       real*8 thetasave(nsave,p+p*(p+1)/2+3)
       real*8 randsave(nsave,p*nrec)
+      real*8 aucsave(nsave,npred)
+      real*8 cdfpm(npred,ngrid)
+      real*8 cdfpl(npred,ngrid)
+      real*8 cdfph(npred,ngrid)
       real*8 denspm(npred,ngrid)
       real*8 denspl(npred,ngrid)
       real*8 densph(npred,ngrid)
@@ -241,8 +260,16 @@ c++++ output
       real*8 meanfpl(npred)
       real*8 meanfph(npred)
 
+      real*8 rocpm(npred,nroc)
+      real*8 rocpl(npred,nroc)
+      real*8 rocph(npred,nroc)
+
 c++++ mcmc
-      integer mcmc(5),nburn,nskip,nsave,ndisplay
+      integer mcmc(6),nburn,nskip,nsave,ndisplay
+
+c++++ roc computation
+      real*8 rocquan(nroc)
+      real*8 rocqgrid(npred,nroc)
   
 c++++ seeds
       integer seed1,seed2,seed(2)
@@ -273,6 +300,7 @@ c++++ internal working space
       integer count
       integer isample
       integer i,ii,j,k,l,ok
+      integer j1,j2,j3,j4
       integer dispcount
       integer evali
       integer iscan
@@ -282,11 +310,13 @@ c++++ internal working space
       integer since
       integer skipcount
       integer sprint
+      real*8 cdfnorm
       real*8 dnrm
       real*8 rgamma
       real*8 muwork
       real*8 sigmawork
-      real*8 tmp1,tmp2,tmp3
+      real*8 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
+      real*8 tmp9,rocacum
    
 c++++ DP (functional parameter)
       real*8 eps,rbeta,weight
@@ -295,10 +325,33 @@ c++++ DP (functional parameter)
 c++++ CPU time
       real*8 sec00,sec0,sec1,sec
 
+c++++++++++++++++++++++++++
+c     initialize variables
+c++++++++++++++++++++++++++
+
+c++++ mcmc, priors and "zipped"
+
+      nburn=mcmc(1)
+      nskip=mcmc(2)
+      ndisplay=mcmc(3)
+      cband=mcmc(4)
+      tband=mcmc(5)
+      rocc=mcmc(6)
+   
+      seed1=seed(1)
+      seed2=seed(2)
+      sigmawork=0.d0
+
+
+c++++ set random number generator
+
+      call setall(seed1,seed2)
+
 c++++ opening files
 
       open(unit=1,file='dppackage1.out',status='unknown',
      &     form='unformatted')
+
       open(unit=2,file='dppackage2.out',status='unknown',
      &     form='unformatted')
 
@@ -317,25 +370,18 @@ c++++ opening files
       open(unit=7,file='dppackage7.out',status='unknown',
      &     form='unformatted')
 
-c++++++++++++++++++++++++++
-c     initialize variables
-c++++++++++++++++++++++++++
 
-c++++ mcmc, priors and "zipped"
+      if(rocc.eq.1)then
+         open(unit=8,file='dppackage8.out',status='unknown',
+     &        form='unformatted')
+       else if(rocc.eq.2)then
+         open(unit=8,file='dppackage8.out',status='old',
+     &        form='unformatted')
+       end if
 
-      nburn=mcmc(1)
-      nskip=mcmc(2)
-      ndisplay=mcmc(3)
-      cband=mcmc(4)
-      tband=mcmc(5)
-   
-      seed1=seed(1)
-      seed2=seed(2)
-      sigmawork=0.d0
+      open(unit=9,file='dppackage9.out',status='unknown',
+     &     form='unformatted')
 
-c++++ set random number generator
-
-      call setall(seed1,seed2)
       
 c++++ start the MCMC algorithm
 
@@ -354,7 +400,7 @@ c++++ cluster structure
          cstrt(ss(i),ccluster(ss(i)))=i
       end do
  
-      write(3) nrec,p
+c      write(3) nrec,p
 
       do iscan=1,nscan
 
@@ -406,7 +452,7 @@ c++++++++++ check if the user has requested an interrupt
 
                tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),1)
                         
-               prob(j)=exp(log(dble(ccluster(j)))+tmp2)
+               prob(j)=dble(ccluster(j))*exp(tmp2)
             end do
 
             if(isample.eq.1)then
@@ -421,14 +467,14 @@ c++++++++++ check if the user has requested an interrupt
 
             sigmawork=sigmaclus(ncluster+1)
 
-            tmp1=0.0
+            tmp1=0.d0
             do k=1,p
                tmp1=tmp1+z(i,k)*betaclus(ncluster+1,k)
             end do               
          
             tmp2=dnrm(y(i),tmp1,sqrt(sigmawork),1)
 
-            prob(ncluster+1)=exp(log(alpha)+tmp2)
+            prob(ncluster+1)=alpha*exp(tmp2)
 
             call simdisc(prob,nrec+100,ncluster+1,evali)
 
@@ -449,13 +495,20 @@ c+++++++++++++++++++++++++++++++++++
 c+++++++ regression coefficients +++
 c+++++++++++++++++++++++++++++++++++
 
-         do k=1,p
-            do l=1,p
-               xtx2(k,l)=sb(k,l)
+         do i=1,p
+            do j=1,p
+               xtx2(i,j)=sb(i,j)
             end do
          end do   
          call inverse(xtx2,p,iflagp)
-         xty2=matmul(xtx2,mub)
+
+         do i=1,p
+            tmp1=0.d0
+            do j=1,p
+               tmp1=tmp1+xtx2(i,j)*mub(j)
+            end do
+            xty2(i)=tmp1
+         end do   
 
          do i=1,ncluster
 
@@ -482,9 +535,16 @@ c+++++++++++++ check if the user has requested an interrupt
                end do
             end do
 
-            call inverse(xtx,p,iflagp)      
-            betam=matmul(xtx,xty)
-      
+            call inverse(xtx,p,iflagp)
+
+            do k=1,p
+               tmp1=0.d0
+               do l=1,p 
+                  tmp1=tmp1+xtx(k,l)*xty(l)
+               end do
+               betam(k)=tmp1
+            end do
+
             call rmvnorm(p,betam,xtx,workmh1,workv1,betawork)
   
 c            call dblepr("betawork",-1,betawork,p)
@@ -505,14 +565,14 @@ c++++++++++ check if the user has requested an interrupt
             call rchkusr()
 
             ns=ccluster(i)
-            tmp2=0.0
+            tmp2=0.d0
             do j=1,ns
 
 c+++++++++++++ check if the user has requested an interrupt
                call rchkusr()
 
                ii=cstrt(i,j)
-               tmp1=0.0
+               tmp1=0.d0
                do k=1,p
                   tmp1=tmp1+z(ii,k)*betaclus(i,k)
                end do
@@ -540,7 +600,13 @@ c+++++++++++++++++++++++++++++++++++
 c+++++++ baseline mean           +++
 c+++++++++++++++++++++++++++++++++++
 
-         xty=matmul(sbeta0i,m0)
+         do i=1,p
+            tmp1=0.d0
+            do j=1,p
+               tmp1=tmp1+sbeta0i(i,j)*m0(j)
+            end do
+            xty(i)=tmp1
+         end do
 
          do i=1,p
             do j=1,p
@@ -560,10 +626,24 @@ c+++++++++++++++++++++++++++++++++++
             do i=1,p
                betawork(i)=betaclus(ii,i)
             end do
-            xty=xty+matmul(xtx2,betawork)
+
+            do i=1,p
+               tmp1=0.d0
+               do j=1,p 
+                  tmp1=tmp1+xtx2(i,j)*betawork(j)
+               end do
+               xty(i)=xty(i)+tmp1
+            end do
          end do
 
-         betawork=matmul(xtx,xty)
+         do i=1,p
+            tmp1=0.d0
+            do j=1,p 
+               tmp1=tmp1+xtx(i,j)*xty(j)
+            end do
+            betawork(i)=tmp1
+         end do
+
          call rmvnorm(p,betawork,xtx,workmh1,workv1,mub)
 
 c         call dblepr("mub",-1,mub,p)
@@ -666,7 +746,16 @@ c+++++++++++++ random effects
                   end do   
                end do
 
-c+++++++++++++ Partially sampling the DP.
+c+++++++++++++ Partially sampling the DP and CPO computation.
+
+               if(rocc.eq.2)then
+                 do i=1,npred
+                     read(8) (rocquan(j),j=1,nroc)
+                    do j=1,nroc
+                        rocqgrid(i,j)=rocquan(j)
+                      end do
+                 end do
+               end if
 
                do i=1,ncluster
                    prob(i)=real(ccluster(i))/(alpha+real(nrec))
@@ -694,12 +783,10 @@ c+++++++++++++ Partially sampling the DP.
                tmp2=tmp1
                weight=(1.d0-tmp1)
     
-c               call dblepr("V1",-1,tmp1,1)
-           
                do i=1,npred  
                   call rchkusr()
      
-                  muwork=0.0
+                  muwork=0.d0
                   do j=1,p
                      muwork=muwork+zpred(i,j)*betawork(j)
                   end do
@@ -708,7 +795,28 @@ c               call dblepr("V1",-1,tmp1,1)
                   do j=1,ngrid  
                      denspl(i,j)=tmp1*dnrm(grid(j),muwork,
      &                           sqrt(sigmawork),0)
+
+                     cdfpl(i,j)=tmp1*cdfnorm(grid(j),muwork,
+     &                          sqrt(sigmawork),1,0)
                   end do 
+
+                  if(rocc.eq.2)then
+                     do j=1,nroc 
+                        rocpl(i,j)=tmp1*cdfnorm(rocqgrid(i,j),
+     &                             muwork,sqrt(sigmawork),1,0)
+                     end do 
+                  end if
+
+               end do
+
+               do i=1,nrec
+                  muwork=0.d0
+                  do j=1,p
+                     muwork=muwork+z(i,j)*betawork(j)
+                  end do           
+
+                  tmp3=dnrm(y(i),muwork,sqrt(sigmawork),0)
+                  workcpo(i)=tmp1*tmp3
                end do
 
                do while((1.0-tmp2).gt.eps)
@@ -750,7 +858,29 @@ c               call dblepr("V1",-1,tmp1,1)
                      do j=1,ngrid  
                         denspl(i,j)=denspl(i,j)+tmp1*dnrm(grid(j),
      &                              muwork,sqrt(sigmawork),0)
+
+                        cdfpl(i,j)=cdfpl(i,j)+tmp1*cdfnorm(grid(j),
+     &                             muwork,sqrt(sigmawork),1,0)
                      end do 
+
+                     if(rocc.eq.2)then
+                        do j=1,nroc 
+                           rocpl(i,j)=rocpl(i,j)+
+     &                             tmp1*cdfnorm(rocqgrid(i,j),
+     &                             muwork,sqrt(sigmawork),1,0)
+                        end do 
+                     end if
+                  end do
+
+
+                  do i=1,nrec
+                     muwork=0.d0
+                     do j=1,p
+                        muwork=muwork+z(i,j)*betawork(j)
+                     end do           
+
+                     tmp3=dnrm(y(i),muwork,sqrt(sigmawork),0)
+                     workcpo(i)=workcpo(i)+tmp1*tmp3
                   end do
 
                   tmp2=tmp2+tmp1
@@ -789,7 +919,29 @@ c               call dblepr("V1",-1,tmp1,1)
                   do j=1,ngrid  
                      denspl(i,j)=denspl(i,j)+tmp1*dnrm(grid(j),
      &                           muwork,sqrt(sigmawork),0)
+
+                     cdfpl(i,j)=cdfpl(i,j)+tmp1*cdfnorm(grid(j),
+     &                          muwork,sqrt(sigmawork),1,0)
+
                   end do 
+
+                  if(rocc.eq.2)then
+                     do j=1,nroc 
+                        rocpl(i,j)=rocpl(i,j)+
+     &                             tmp1*cdfnorm(rocqgrid(i,j),
+     &                             muwork,sqrt(sigmawork),1,0)
+                     end do 
+                  end if
+               end do
+
+               do i=1,nrec
+                  muwork=0.d0
+                  do j=1,p
+                     muwork=muwork+z(i,j)*betawork(j)
+                  end do           
+
+                  tmp3=dnrm(y(i),muwork,sqrt(sigmawork),0)
+                  workcpo(i)=workcpo(i)+tmp1*tmp3
                end do
 
                do i=1,npred
@@ -797,57 +949,132 @@ c               call dblepr("V1",-1,tmp1,1)
                   meanfpm(i)=meanfpm(i)+fm(i)
                   do j=1,ngrid
                      denspm(i,j)=denspm(i,j)+denspl(i,j)
+                     cdfpm(i,j)=cdfpm(i,j)+cdfpl(i,j)
                   end do
                   write(1) (denspl(i,j),j=1,ngrid)
+                  write(3) (cdfpl(i,j),j=1,ngrid)
+
+                  if(rocc.eq.2)then
+
+                     rocacum=0.0
+                     do j=1,nroc 
+                        rocpl(i,j)=1.0-rocpl(i,j)
+                        rocacum=rocacum+rocpl(i,j) 
+                        rocpm(i,j)=rocpm(i,j)+rocpl(i,j)
+                     end do 
+                     aucsave(isave,i)=rocacum/dble(nroc)
+                  end if
+                  write(9) (rocpl(i,j),j=1,nroc)
                end do 
                write(2) (fm(i),i=1,npred)
 
+
+               if(rocc.eq.1)then
+                  do i=1,npred
+                     call rchkusr()
+                     do j=1,nroc
+                        tmp1=1.0-rocgrid(j)
+                        tmp2=cdfpl(i,1)
+                        tmp3=cdfpl(i,ngrid)
+
+                        if(tmp1.le.tmp2)then
+
+                           tmp5=cdfpl(i,1)  
+                           tmp6=cdfpl(i,2) 
+                           ii=2
+                           
+                           do while((tmp5-tmp6).eq.0.0)
+                              ii=ii+1
+                              tmp6=cdfpl(i,ii) 
+                           end do
+
+                           tmp7=grid(ii)+(grid(1)-grid(ii))*
+     &                          (tmp1-tmp6)/(tmp5-tmp6)
+
+                           if(tmp7.gt.grid(1))then
+                              call dblepr("tmp1",-1,tmp1,1)
+                              call dblepr("tmp2",-1,tmp2,1)
+                              call dblepr("tmp3",-1,tmp3,1)
+                              call dblepr("tmp5",-1,tmp5,1)
+                              call dblepr("tmp6",-1,tmp6,1)
+                              call dblepr("tmp7",-1,tmp7,1)
+                              call dblepr("grid1",-1,grid(1),1)
+
+                              do ii=1,ngrid
+                                 call dblepr("cdf",-1,cdfpl(i,ii),1)
+                              end do
+
+                              call rexit("Quantile outside range 1")
+                           end if
+
+                         else if(tmp1.gt.tmp3)then
+
+                           tmp5=cdfpl(i,ngrid-1)  
+                           tmp6=cdfpl(i,ngrid) 
+ 
+                           tmp7=grid(ngrid-1)+
+     &                              (grid(ngrid)-grid(ngrid-1))*
+     &                              (tmp1-tmp5)/(tmp6-tmp5)
+
+                           if(tmp7.lt.grid(ngrid))then
+                              call rexit("Quantile outside range 2")
+                           end if
+
+                         else
+                           j1=1
+                           j2=ngrid
+                           ok=0
+                           do while(ok.eq.0)
+                              j3=(j1+j2)/2
+                              tmp4=cdfpl(i,j3)
+
+                              if(tmp1.le.tmp4)then
+                                 j2=j3
+                                else
+                                 j1=j3
+                              end if
+                              if((j1+1).ge.j2)ok=1
+                           end do
+                           
+                          tmp5=cdfpl(i,j1)  
+                          tmp6=cdfpl(i,j1+1)  
+                          tmp7=grid(j1)+(grid(j1+1)-grid(j1))*
+     &                                  (tmp1-tmp5)/(tmp6-tmp5)
+
+                          if(tmp7.lt.grid(j1))then
+                             call rexit("Quantile outside range 3")
+                          end if
+                          if(tmp7.gt.grid(j1+1))then
+                             call dblepr("tmp1",-1,tmp1,1)  
+                             call dblepr("tmp5",-1,tmp5,1)  
+                             call dblepr("tmp6",-1,tmp6,1)  
+                             call dblepr("tmp7",-1,tmp7,1)  
+                             call dblepr("grid1",-1,grid(j1),1)  
+                             call dblepr("grid2",-1,grid(j1+1),1)  
+                             call rexit("Quantile outside range 4")
+                          end if
+
+                        end if
+                        rocquan(j)=tmp7
+
+c                        call dblepr("quan",-1,tmp7,1)
+                     end do
+
+                     write(8) (rocquan(j),j=1,nroc)
+                  end do
+               end if
+
 c+++++++++++++ save elements in files
 
-               write(4) ncluster
-               write(5) (ss(i),i=1,nrec)
-               do i=1,ncluster 
-                  write(6) (betaclus(i,j),j=1,p)
-               end do
-               write(7) (sigmaclus(i),i=1,ncluster)
+c               write(4) ncluster
+c               write(5) (ss(i),i=1,nrec)
+c               do i=1,ncluster 
+c                  write(6) (betaclus(i,j),j=1,p)
+c               end do
+c               write(7) (sigmaclus(i),i=1,ncluster)
 
-c+++++++++++++ cpo
+c+++++++++++++ lpml
 
-               do i=ncluster+1,ncluster+100
-                  sigmawork=1.0d0/rgamma(0.5d0*tau1,0.5d0*tau2)
-                  sigmaclus(i)=sigmawork
-        
-                  call rmvnorm(p,mub,sb,workmh1,workv1,betawork) 
-                  do k=1,p
-                     betaclus(i,k)=betawork(k)
-                  end do 
-               end do
-               
-               do i=1,nrec
-                  workcpo(i)=0.d0
-               end do   
-         
-               do ii=1,ncluster+100
-   
-                  do i=1,nrec
-                     ns=ccluster(ii)
-                     if(ss(i).eq.ii)ns=ns-1
-                     if(ii.le.ncluster)then
-                        prob(ii)=dble(ns)/(alpha+dble(nrec-1))
-                      else
-                        prob(ii)=alpha/(100.d0*(alpha+dble(nrec-1)))
-                     end if   
-
-                     muwork=0.0
-                     do k=1,p
-                        muwork=muwork+z(i,k)*betaclus(ii,k)
-                     end do                
-                     sigmawork=sigmaclus(ii)
-                     tmp3=dnrm(y(i),muwork,sqrt(sigmawork),0)
-                     workcpo(i)=workcpo(i)+prob(ii)*tmp3
-                  end do   
-               end do
-                
                tmp2=0.d0
                do i=1,nrec
                   tmp3=workcpo(i)
@@ -884,7 +1111,15 @@ c+++++++++++++ print
          meanfpm(i)=meanfpm(i)/dble(nsave)
          do j=1,ngrid
             denspm(i,j)=denspm(i,j)/dble(nsave)
+            cdfpm(i,j)=cdfpm(i,j)/dble(nsave)
          end do
+
+         if(rocc.eq.2)then
+            do j=1,nroc 
+               rocpm(i,j)=rocpm(i,j)/dble(nsave)
+            end do 
+         end if
+
       end do
 
       close(unit=1)
@@ -894,18 +1129,207 @@ c+++++++++++++ print
       close(unit=5)
       close(unit=6)
       close(unit=7)
+      close(unit=8)
+      close(unit=9)
 
       if(cband.eq.1)then
 
          call hpddensreg(nsave,npred,ngrid,0.05d0,tband,worksam,fs,
      &                   denspl,densph)
+
          call hpddensregmf(nsave,npred,0.05d0,tband,worksam,
      &                     meanfpl,meanfph)
+
+         call hpdlddpcdf(nsave,npred,ngrid,0.05d0,tband,worksam,fs,
+     &                   cdfpl,cdfph)
       
       end if
 
+      if(rocc.eq.2)then
+         call hpdlddproc(nsave,npred,nroc,0.05d0,tband,worksam,
+     &                   rocquan,rocpl,rocph)
+      end if
+
+
       return
       end
+
+c=======================================================================      
+      subroutine hpdlddproc(nsave,npred,nroc,alpha,tint,
+     &                      workv1,fs,llower,lupper)
+c=======================================================================
+c     Compute CI for survival functions.
+c
+c     Alejandro Jara, 2009.
+c=======================================================================
+      implicit none 
+c+++++External parameters
+      integer tint
+      integer nsave,npred,nroc
+      real*8 alpha
+
+c+++++External working
+      real*8 fs(nroc)
+      real*8 workv1(nsave)
+
+c+++++Output      
+      real*8 llower(npred,nroc)
+      real*8 lupper(npred,nroc)
+
+c+++++Internal parameters
+      integer maxnsave,maxngrid
+      parameter(maxnsave=30000,maxngrid=300)
+      real*8 aupp(2),alow(2)
+      real*8 workm(maxnsave,maxngrid)
+
+c+++++Internal working
+      integer i,ii,j,l   
+
+c+++++algorithm
+
+      if(maxnsave.lt.nsave)then
+         call rexit("Increase 'maxnsave' in 'hpdslddproc'")
+      end if   
+
+      if(maxngrid.lt.nroc)then
+         call rexit("Increase 'maxngrid' in 'hpdslddproc'")
+      end if   
+
+      open(unit=9,file='dppackage9.out',status='old',
+     &     form='unformatted')
+
+      do ii=1,npred
+         do i=1,nsave 
+            call rchkusr()
+            do j=1,npred
+               read(9) (fs(l),l=1,nroc)
+               if(ii.eq.j)then
+                  do l=1,nroc
+                     workm(i,l)=fs(l) 
+                  end do
+               end if
+            end do
+          end do  
+          rewind(unit=9)
+          
+          do i=1,nroc
+             do j=1,nsave
+                workv1(j)=workm(j,i) 
+             end do
+          
+             call hpd(nsave,alpha,workv1,alow,aupp)
+          
+             if(tint.eq.1)then
+c               (alow(1),aupp(1)): 100(1-alpha)% HPD interval
+c 
+                llower(ii,i)=alow(1)
+                lupper(ii,i)=aupp(1)
+
+              else
+c              (alow(2),aupp(2)): 100(1-alpha)% Bayesian credible 
+c              interval
+
+                llower(ii,i)=alow(2)
+                lupper(ii,i)=aupp(2)
+             end if
+
+          end do
+
+      end do      
+
+      close(unit=9)      
+      return
+      end
+
+
+
+c=======================================================================      
+      subroutine hpdlddpcdf(nsave,npred,ngrid,alpha,tint,
+     &                       workv1,fs,llower,lupper)
+c=======================================================================
+c     Compute CI for survival functions.
+c
+c     Alejandro Jara, 2009.
+c=======================================================================
+      implicit none 
+c+++++External parameters
+      integer tint
+      integer nsave,npred,ngrid 
+      real*8 alpha
+
+c+++++External working
+      real*8 fs(ngrid)
+      real*8 workv1(nsave)
+
+c+++++Output      
+      real*8 llower(npred,ngrid)
+      real*8 lupper(npred,ngrid)
+
+c+++++Internal parameters
+      integer maxnsave,maxngrid
+      parameter(maxnsave=30000,maxngrid=300)
+      real*8 aupp(2),alow(2)
+      real*8 workm(maxnsave,maxngrid)
+
+c+++++Internal working
+      integer i,ii,j,l   
+
+c+++++algorithm
+
+      if(maxnsave.lt.nsave)then
+         call rexit("Increase 'maxnsave' in 'hpdslddpsurv'")
+      end if   
+
+      if(maxngrid.lt.ngrid)then
+         call rexit("Increase 'maxngrid' in 'hpdslddpsurv'")
+      end if   
+
+      open(unit=3,file='dppackage3.out',status='old',
+     &     form='unformatted')
+
+      do ii=1,npred
+         do i=1,nsave 
+            call rchkusr()
+            do j=1,npred
+               read(3) (fs(l),l=1,ngrid)
+               if(ii.eq.j)then
+                  do l=1,ngrid
+                     workm(i,l)=fs(l) 
+                  end do
+               end if
+            end do
+          end do  
+          rewind(unit=3)
+          
+          do i=1,ngrid
+             do j=1,nsave
+                workv1(j)=workm(j,i) 
+             end do
+          
+             call hpd(nsave,alpha,workv1,alow,aupp)
+          
+             if(tint.eq.1)then
+c               (alow(1),aupp(1)): 100(1-alpha)% HPD interval
+c 
+                llower(ii,i)=alow(1)
+                lupper(ii,i)=aupp(1)
+
+              else
+c              (alow(2),aupp(2)): 100(1-alpha)% Bayesian credible 
+c              interval
+
+                llower(ii,i)=alow(2)
+                lupper(ii,i)=aupp(2)
+             end if
+
+          end do
+
+      end do      
+
+      close(unit=3)      
+      return
+      end
+
 
 c=======================================================================
       subroutine readlddpdens(nsave,nrec,p,

@@ -141,7 +141,7 @@ function(fixed,
             x <- matrix(0,nrow=nrec,ncol=1)
          }
          xtx<-t(x)%*%x
-         
+
        #########################################################################################
        # elements for Pseudo Countour Probabilities' computation
        #########################################################################################
@@ -328,6 +328,7 @@ function(fixed,
          thetasave <- matrix(0,nrow=nsave,ncol=q+nfixed+1+q+nuniq+2)
          cpo <- matrix(0,nrow=nrec,ncol=2)
 
+
        #########################################################################################
        # parameters depending on status
        #########################################################################################
@@ -391,9 +392,9 @@ function(fixed,
 			ss <- seq(1,nsubject)
 			sigma2e <- fit0$sigma2e
 			sigmainv <- solve(sigma)
-
 		 }	
-      	 if(status==FALSE)
+
+     	 if(status==FALSE)
 		 {
 	        alpha <- state$alpha
 			b <- state$b 
@@ -420,8 +421,9 @@ function(fixed,
 	        ss <- state$ss
 	        sigmainv <- solve(sigma)
 	        betar <- rep(0,q)
-	 }
-         
+		 }
+
+
        #########################################################################################
        # working space
        #########################################################################################

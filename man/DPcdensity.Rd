@@ -10,8 +10,8 @@
 }
   
 \usage{
-DPcdensity(y,x,xpred,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",
-           prior,mcmc,state,status,
+DPcdensity(y,x,xpred,ngrid=100,grid=NULL,compute.band=FALSE,
+           type.band="PD",prior,mcmc,state,status,
            data=sys.frame(sys.parent()),work.dir=NULL)
 }
 

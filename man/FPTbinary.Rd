@@ -11,8 +11,9 @@
     
 \usage{
 
-FPTbinary(formula,baseline="logistic",prior,mcmc,state,status,misc=NULL,
-          data=sys.frame(sys.parent()),na.action=na.fail)
+FPTbinary(formula,baseline="logistic",prior,mcmc,state,
+          status,misc=NULL,data=sys.frame(sys.parent()),
+          na.action=na.fail)
 }
 
 \arguments{
@@ -157,8 +158,9 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       nsave<-10000
       nskip<-10
       ndisplay<-100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                    tune1=1.1,tune2=1.1)
+      mcmc <- list(nburn=nburn,nsave=nsave,
+                   nskip=nskip,ndisplay=ndisplay,
+                   tune1=1.1,tune2=1.1)
 
     # Prior distribution
       prior <- list(alpha=1, beta0=c(0,rep(0.75,5)),
@@ -166,8 +168,9 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
 
 
     # Fitting the Finite Polya tree model
-      fit1 <-FPTbinary(ssln~age+lacid+xray+size+grade,prior=prior,mcmc=mcmc,
-                       state=state,status=TRUE) 
+      fit1 <- FPTbinary(ssln~age+lacid+xray+size+grade,
+                        prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE) 
       fit1
 
     # Summary with HPD and Credibility intervals
@@ -193,14 +196,15 @@ Lavine, M. (1994) More aspects of Polya tree distributions for statistical
       nsave<-10000
       nskip<-10
       ndisplay<-100
-      mcmc <- list(nburn=nburn,nsave=nsave,nskip=nskip,ndisplay=ndisplay,
-                    tune=1.1)
+      mcmc <- list(nburn=nburn,nsave=nsave,
+                   nskip=nskip,ndisplay=ndisplay,
+                   tune=1.1)
 
-      fit2<-Pbinary(ssln~age+lacid+xray+size+grade,link="probit",
-                    prior=prior,mcmc=mcmc,state=state,status=TRUE)  
+      fit2 <- Pbinary(ssln~age+lacid+xray+size+grade,link="probit",
+                      prior=prior,mcmc=mcmc,state=state,status=TRUE)  
                     
-      fit3<-Pbinary(ssln~age+lacid+xray+size+grade,link="logit",
-                    prior=prior,mcmc=mcmc,state=state,status=TRUE)  
+      fit3 <- Pbinary(ssln~age+lacid+xray+size+grade,link="logit",
+                      prior=prior,mcmc=mcmc,state=state,status=TRUE)  
 
     
     # Model comparison

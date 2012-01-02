@@ -6193,7 +6193,9 @@ C     .. Executable Statements ..
       IF (status.GT.0) GO TO 310
 
       qcond = .NOT. qxmon(small,x,big)
-      IF (qcond) STOP ' SMALL, X, BIG not monotone in INVR'
+      IF (qcond) then
+          call rexit("SMALL, X, BIG not monotone in INVR")
+      end if   
       xsave = x
 C
 C     See that SMALL and BIG bound the zero and set QINCR
@@ -6441,7 +6443,7 @@ C**********************************************************************
       reltol = zrelto
       RETURN
 
-      STOP '*** EXECUTION FLOWING INTO FLECS PROCEDURES ***'
+      call rexit("*** EXECUTION FLOWING INTO FLECS PROCEDURES ***")
 C     TO GET-FUNCTION-VALUE
   300 status = 1
       RETURN
@@ -6517,7 +6519,9 @@ C     ..
 C     .. Executable Statements ..
 
       xx = abs(x)
-      IF (xx.LT.5.0D0) STOP ' Argument too small in DLANOR'
+      IF (xx.LT.5.0D0) then
+        call rexit("Argument too small in DLANOR")
+      end if
 
       approx = -dlsqpi - 0.5D0*xx*xx - log(xx)
 
@@ -6941,7 +6945,10 @@ C            0.347320283765002252252252252252D12
 C            -0.123696021422692744542517103493D14
 C
 
-      IF (z.LE.0.0D0) STOP 'Zero or negative argument in DSTREM'
+      IF(z.LE.0.0D0) then
+        call rexit("Zero or negative argument in DSTREM")
+      end if 
+
       IF (.NOT. (z.GT.6.0D0)) GO TO 10
       dstrem = devlpl(coef,10,1.0D0/z**2)*z
       GO TO 20
@@ -7301,7 +7308,8 @@ C**********************************************************************
       reltol = zreltl
       RETURN
 
-      STOP '*** EXECUTION FLOWING INTO FLECS PROCEDURES ***'
+      call rexit("EXECUTION FLOWING INTO FLECS PROCEDURES")
+
 C     TO GET-FUNCTION-VALUE
   270 status = 1
       RETURN

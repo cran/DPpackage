@@ -13,7 +13,8 @@
 
 LDDPdensity(formula,zpred,prior,mcmc,state,status,ngrid=100,
             grid=NULL,compute.band=FALSE,type.band="PD",
-            data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
+            data=sys.frame(sys.parent()),na.action=na.fail,
+            work.dir=NULL)
 
 }
 
@@ -229,13 +230,17 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
                    ndisplay=ndisplay)
 
     # Fit the model
-      fit1 <- LDDPdensity(y~trt,prior=prior,mcmc=mcmc,state=state,status=TRUE,
-                          ngrid=200,zpred=zpred,compute.band=TRUE,type.band="PD")
+      fit1 <- LDDPdensity(y~trt,prior=prior,mcmc=mcmc,
+                          state=state,status=TRUE,
+                          ngrid=200,zpred=zpred,
+                          compute.band=TRUE,type.band="PD")
 
-    # Plot posterior density estimates
+
+    # Plot posterior density estimate
     # with design vector x0=(1,0) 
 
-      plot(fit1$grid,fit1$densp.h[1,],type="l",xlab="Y",ylab="density",lty=2,lwd=2)
+      plot(fit1$grid,fit1$densp.h[1,],type="l",xlab="Y",
+           ylab="density",lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.l[1,],lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.m[1,],lty=1,lwd=3)
 
@@ -243,10 +248,11 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       p1 <- dnorm(fit1$grid, 3.0, 0.8)
       lines(fit1$grid,p1,lwd=2,lty=1, col="red")
 
-    # Plot posterior density estimates
+    # Plot posterior density estimate
     # with design vector x0=(1,1) 
 
-      plot(fit1$grid,fit1$densp.h[2,],type="l",xlab="Y",ylab="density",lty=2,lwd=2)
+      plot(fit1$grid,fit1$densp.h[2,],type="l",xlab="Y",
+           ylab="density",lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.l[2,],lty=2,lwd=2)
       lines(fit1$grid,fit1$densp.m[2,],lty=1,lwd=3)
 
@@ -254,6 +260,33 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       p2 <- 0.6*dnorm(fit1$grid, 1.5, 0.8) +
             0.4*dnorm(fit1$grid, 4.0, 0.6) 
       lines(fit1$grid,p2,lwd=2,lty=1, col="red")
+
+
+    # Plot posterior CDF estimate
+    # with design vector x0=(1,0) 
+
+      plot(fit1$grid,fit1$cdfp.h[1,],type="l",xlab="Y",
+           ylab="density",lty=2,lwd=2)
+      lines(fit1$grid,fit1$cdfp.l[1,],lty=2,lwd=2)
+      lines(fit1$grid,fit1$cdfp.m[1,],lty=1,lwd=3)
+
+      # add true CDF to the plot
+      p1 <- pnorm(fit1$grid, 3.0, 0.8)
+      lines(fit1$grid,p1,lwd=2,lty=1, col="red")
+
+    # Plot posterior CDF estimate
+    # with design vector x0=(1,1) 
+
+      plot(fit1$grid,fit1$cdfp.h[2,],type="l",xlab="Y",
+           ylab="density",lty=2,lwd=2)
+      lines(fit1$grid,fit1$cdfp.l[2,],lty=2,lwd=2)
+      lines(fit1$grid,fit1$cdfp.m[2,],lty=1,lwd=3)
+
+      # add true density to the plot
+      p2 <- 0.6*pnorm(fit1$grid, 1.5, 0.8) +
+            0.4*pnorm(fit1$grid, 4.0, 0.6) 
+      lines(fit1$grid,p2,lwd=2,lty=1, col="red")
+
 }
 }
 
@@ -261,7 +294,7 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
 
 Alejandro Jara \email{<atjara@uc.cl>}
 
-Peter Mueller \email{<pmueller@mdanderson.org>}
+Peter Mueller \email{<pmueller@math.utexas.edu>}
 
 Gary L. Rosner \email{<grosner@jhmi.edu>}
 

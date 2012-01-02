@@ -233,7 +233,8 @@ West, M. (1985) Generalized linear models: outlier accomodation, scale parameter
                              compute.band=TRUE)
 
     # CDF estimate and true
-      plot(fit1$grid,true.cdf(fit1$grid),type="l",lwd=2,col="red",xlab=expression(theta),ylab="CDF")
+      plot(fit1$grid,true.cdf(fit1$grid),type="l",lwd=2,col="red",
+           xlab=expression(theta),ylab="CDF")
       lines(fit1$grid,fit1$cdf,lwd=2,col="blue")
       lines(fit1$grid,fit1$cdf.l,lwd=2,col="blue",lty=2)
       lines(fit1$grid,fit1$cdf.u,lwd=2,col="blue",lty=2)

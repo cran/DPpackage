@@ -342,7 +342,7 @@ c+++++DP (functional parameter)
       real*8 eps,rbeta,weight
       parameter(eps=0.01)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time

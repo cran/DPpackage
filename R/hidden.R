@@ -1,12 +1,18 @@
 
-.onAttach <- function(...) {
-     cat("##\n## Dirichlet Process Package (DPpackage)\n")
-     cat("## Copyright (C) 2006 - 2010, Alejandro Jara\n")
-     cat("## Department of Statistics \n")
-     cat("## P.U. Catolica de Chile\n")
-     cat("##\n## Support provided by Fondecyt\n")
-	 cat("## 3095003 and 11100144 grants, and NIH/NCI\n")
-	 cat("## R01CA75981 grant.\n##\n")
+
+.onAttach <- function(libname, pkgname) {
+    RFver <- read.dcf(file=system.file("DESCRIPTION", package=pkgname),
+                      fields="Version")
+	packageStartupMessage(" ")
+    packageStartupMessage(paste(pkgname, RFver))
+	packageStartupMessage(" ")
+    packageStartupMessage("Copyright (C) 2006 - 2011, Alejandro Jara")
+    packageStartupMessage("Department of Statistics")
+    packageStartupMessage("P.U. Catolica de Chile")
+    packageStartupMessage(" ")
+    packageStartupMessage("Support provided by Fondecyt")
+    packageStartupMessage("11100144 grant.")
+    packageStartupMessage(" ")
 }
 
 

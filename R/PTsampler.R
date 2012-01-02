@@ -2,9 +2,11 @@
 ### Generates a MCMC sampler from an user-specified unormilized multivariate
 ### density.
 ###
-### Copyright: Alejandro Jara, 2009-2010.
+### Copyright: Alejandro Jara, 2009-2011.
 ###
-### Last modification: 21-01-2010.
+### Last modification: 16-12-2011.
+###
+### In this version an error detected by Davor Cubranic has been corrected.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -131,7 +133,7 @@ PTsampler.default <- function(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.optio
 		# Step 3	
 		#################################
 		  ntint <- 2**(nvar*nlevel)	
-		  detlogl <- determinant(S,log=TRUE)$modulus[1]
+		  detlogl <- determinant(S,logarithm = TRUE)$modulus[1]
 		  kphi <- rep(0,nvar)
 		  kphi2 <- rep(0,nlevel)
 		  kcount <- matrix(0,nrow=ntint,ncol=nlevel)
@@ -219,7 +221,7 @@ PTsampler.default <- function(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.optio
 			  kphi2[j2] <- ind + 1
 			  kphi <- as.integer(kphi/2)
 		  }
-		  kmat[obsmin,1:nvar] <- kphi2[1:nvar]
+		  kmat[obsmin,1:nlevel] <- kphi2[1:nlevel]
 		
 		#################################
 		# Step 7	
@@ -355,7 +357,7 @@ PTsampler.default <- function(ltarget,dim.theta,mcmc=NULL,support=NULL,pts.optio
 	  #################################
 	  # Step 3	
       #################################
-		detlogl <- determinant(S,log=TRUE)$modulus[1]
+		detlogl <- determinant(S,logarithm = TRUE)$modulus[1]
 		ntint <- 2**(nvar*nlevel)
 		eval <- 0	
 		kphi <- rep(0,nvar)

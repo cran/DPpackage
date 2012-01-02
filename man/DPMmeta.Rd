@@ -12,7 +12,8 @@
   
 \usage{
 
-DPMmeta(formula,prior,mcmc,state,status,data=sys.frame(sys.parent()),
+DPMmeta(formula,prior,mcmc,state,status,
+        data=sys.frame(sys.parent()),
         na.action=na.fail)
 }
 

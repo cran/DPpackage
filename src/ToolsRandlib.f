@@ -58,9 +58,7 @@ C     ..
 C     .. Executable Statements ..
 C     Abort unless random number generator initialized
       IF (qrgnin()) GO TO 10
-      WRITE (*,*) ' ADVNST called before random number generator ',
-     +  ' initialized -- abort!'
-      STOP ' ADVNST called before random number generator initialized'
+      call rexit("ADVNST called before RNG initialized")
 
    10 CALL getcgn(g)
 C
@@ -155,9 +153,7 @@ C     .. Executable Statements ..
       IF (qsame) GO TO 20
 C     JJV added small minimum for small log problem in calc of W
       IF (.NOT. (aa.LT.minlog.OR.bb.LT.minlog)) GO TO 10
-      WRITE (*,*) ' AA or BB < ',minlog,' in GENBET - Abort!'
-      WRITE (*,*) ' AA: ',aa,' BB ',bb
-      STOP ' AA or BB too small in GENBET - Abort!'
+      call rexit("AA or BB too small in GENBET - Abort")
 
    10 olda = aa
       oldb = bb
@@ -366,9 +362,7 @@ C      EXTERNAL gengam
 C     ..
 C     .. Executable Statements ..
       IF (.NOT. (df.LE.0.0)) GO TO 10
-      WRITE (*,*) 'DF <= 0 in GENCHI - ABORT'
-      WRITE (*,*) 'Value of DF: ',df
-      STOP 'DF <= 0 in GENCHI - ABORT'
+      call rexit("DF <= 0 in GENCHI - ABORT")
 
 C     JJV changed this to call sgamma directly
 C   10 genchi = 2.0*gengam(1.0,df/2.0)
@@ -428,9 +422,7 @@ C     ..
 C     .. Executable Statements ..
 C     JJV added check to ensure AV >= 0.0 
       IF (av.GE.0.0) GO TO 10
-      WRITE (*,*) 'AV < 0.0 in GENEXP - ABORT'
-      WRITE (*,*) 'Value of AV: ',av
-      STOP 'AV < 0.0 in GENEXP - ABORT'
+      call rexit("AV < 0.0 in GENEXP - ABORT")
 
  10   genexp = sexpo()*av
       RETURN
@@ -483,9 +475,7 @@ C      EXTERNAL genchi
 C     ..
 C     .. Executable Statements ..
       IF (.NOT. (dfn.LE.0.0.OR.dfd.LE.0.0)) GO TO 10
-      WRITE (*,*) 'Degrees of freedom nonpositive in GENF - abort!'
-      WRITE (*,*) 'DFN value: ',dfn,'DFD value: ',dfd
-      STOP 'Degrees of freedom nonpositive in GENF - abort!'
+      call rexit("Degrees of freedom nonpositive in GENF - abort")
 
  10   xnum = 2.0*sgamma(dfn/2.0)/dfn
 
@@ -495,12 +485,9 @@ C     JJV changed constant so that it will not underflow at compile time
 C     JJV while not slowing generator by using double precision or logs.
 C      IF (.NOT. (xden.LE. (1.0E-38*xnum))) GO TO 20
       IF (.NOT. (xden.LE. (1.0E-37*xnum))) GO TO 20
-      WRITE (*,*) ' GENF - generated numbers would cause overflow'
-      WRITE (*,*) ' Numerator ',xnum,' Denominator ',xden
-C     JJV next 2 lines changed to maintain truncation of large deviates.
-C      WRITE (*,*) ' GENF returning 1.0E38'
-C      genf = 1.0E38
-      WRITE (*,*) ' GENF returning 1.0E37'
+
+      call rwarn("GENF - generated numbers would cause overflow")
+      call rwarn("GGENF returning 1.0E37")
       genf = 1.0E37
       GO TO 30
 
@@ -568,10 +555,8 @@ C     .. Executable Statements ..
 
 C     JJV added argument value checker
       IF ( a.GT.0.0 .AND. r.GT.0.0 ) GO TO 10
-      WRITE (*,*) 'In GENGAM - Either (1) Location param A <= 0.0 or'
-      WRITE (*,*) '(2) Shape param R <= 0.0 - ABORT!'
-      WRITE (*,*) 'A value: ',a,'R value: ',r
-      STOP 'Location or shape param out of range in GENGAM - ABORT!'
+      call rexit("Location or shape param out of range in GENGAM")
+
 C     JJV end addition
 
  10   gengam = sgamma(r)/a
@@ -804,9 +789,7 @@ C     ..
 C     JJV changed abort to df < 1, and added case: df = 1 
 C     .. Executable Statements ..
       IF (.NOT. (df.LT.1.0.OR.xnonc.LT.0.0)) GO TO 10
-      WRITE (*,*) 'DF < 1 or XNONC < 0 in GENNCH - ABORT'
-      WRITE (*,*) 'Value of DF: ',df,' Value of XNONC',xnonc
-      STOP 'DF < 1 or XNONC < 0 in GENNCH - ABORT'
+      call rexit("DF < 1 or XNONC < 0 in GENNCH - ABORT")
 
 C     JJV changed this to call SGAMMA and SNORM directly
 C      gennch = genchi(df-1.0) + gennor(sqrt(xnonc),1.0)**2
@@ -879,12 +862,7 @@ C     JJV changed the argument checker to allow DFN = 1.0
 C     JJV in the same way as GENNCH was changed.
       qcond = dfn .LT. 1.0 .OR. dfd .LE. 0.0 .OR. xnonc .LT. 0.0
       IF (.NOT. (qcond)) GO TO 10
-      WRITE (*,*) 'In GENNF - Either (1) Numerator DF < 1.0 or'
-      WRITE (*,*) '(2) Denominator DF <= 0.0 or '
-      WRITE (*,*) '(3) Noncentrality parameter < 0.0'
-      WRITE (*,*) 'DFN value: ',dfn,'DFD value: ',dfd,'XNONC value: ',
-     +  xnonc
-      STOP 'Degrees of freedom or noncent param out of range in GENNF'
+      call rexit("DF or noncent param out of range in GENNF")
 
 C      GENNF = ( GENNCH( DFN, XNONC ) / DFN ) / ( GENCHI( DFD ) / DFD )
 C     JJV changed this to call SGAMMA and SNORM directly
@@ -904,12 +882,9 @@ C     JJV changed constant so that it will not underflow at compile time
 C     JJV while not slowing generator by using double precision or logs.
 C      IF (.NOT. (xden.LE. (1.0E-38*xnum))) GO TO 40
       IF (.NOT. (xden.LE. (1.0E-37*xnum))) GO TO 40
-      WRITE (*,*) ' GENNF - generated numbers would cause overflow'
-      WRITE (*,*) ' Numerator ',xnum,' Denominator ',xden
-C     JJV next 2 lines changed to maintain truncation of large deviates.
-C      WRITE (*,*) ' GENNF returning 1.0E38'
-C      gennf = 1.0E38
-      WRITE (*,*) ' GENNF returning 1.0E37'
+
+      call rwarn("GENNF - generated numbers would cause overflow")
+      call rwarn("GENNF returning 1.0E37")
       gennf = 1.0E37
       GO TO 50
 
@@ -970,9 +945,7 @@ C     ..
 C     .. Executable Statements ..
 C     JJV added check to ensure SD >= 0.0 
       IF (sd.GE.0.0) GO TO 10
-      WRITE (*,*) 'SD < 0.0 in GENNOR - ABORT'
-      WRITE (*,*) 'Value of SD: ',sd
-      STOP 'SD < 0.0 in GENNOR - ABORT'
+      call rexit("SD < 0.0 in GENNOR - ABORT")
 
  10   gennor = sd*snorm() + av
       RETURN
@@ -1052,9 +1025,7 @@ C     .. External Functions ..
 C     ..
 C     .. Executable Statements ..
       IF (.NOT. (low.GT.high)) GO TO 10
-      WRITE (*,*) 'LOW > HIGH in GENUNF: LOW ',low,' HIGH: ',high
-      WRITE (*,*) 'Abort'
-      STOP 'LOW > High in GENUNF - Abort'
+      call rexit("LOW > High in GENUNF - Abort")
 
    10 genunf = low + (high-low)*ranf()
 
@@ -1108,9 +1079,7 @@ C
 C     Abort if generator number out of range
 C
       IF (.NOT. (g.LT.0.OR.g.GT.numg)) GO TO 10
-      WRITE (*,*) ' Generator number out of range in SETCGN:',
-     +  ' Legal range is 1 to ',numg,' -- ABORT!'
-      STOP ' Generator number out of range in SETCGN'
+      call rexit("Generator number out of range in SETCGN")
 
    10 curntg = g
       RETURN
@@ -1178,9 +1147,7 @@ C     ..
 C     .. Executable Statements ..
 C     Abort unless random number generator initialized
       IF (qrgnin()) GO TO 10
-      WRITE (*,*) ' GETSD called before random number generator ',
-     +  ' initialized -- abort!'
-      STOP ' GETSD called before random number generator initialized'
+      call rexit("GETSD called before RNG initialized")
 
    10 CALL getcgn(g)
       iseed1 = cg1(g)
@@ -1377,12 +1344,21 @@ C     JJV added the argument checker - involved only renaming 10
 C     JJV and 20 to the checkers and adding checkers
 C     JJV Only remaining problem - if called initially with the
 C     JJV initial values of psave and nsave, it will hang
- 10   IF (pp.LT.0.0) STOP 'PP < 0.0 in IGNBIN - ABORT!'
-      IF (pp.GT.1.0) STOP 'PP > 1.0 in IGNBIN - ABORT!'
+ 10   IF (pp.LT.0.0) then
+        call rexit("PP < 0.0 in IGNBIN - ABORT")
+      end if
+
+      IF (pp.GT.1.0)then
+        call rexit("PP > 1.0 in IGNBIN - ABORT")
+      end if
+
       psave = pp
       p = amin1(psave,1.-psave)
       q = 1. - p
- 20   IF (n.LT.0) STOP 'N < 0 in IGNBIN - ABORT!'
+ 20   IF (n.LT.0) then
+        call rexit("N < 0 in IGNBIN - ABORT")
+      end if
+
       xnp = n*p
       nsave = n
       IF (xnp.LT.30.) GO TO 140
@@ -1402,11 +1378,7 @@ C     JJV initial values of psave and nsave, it will hang
       p2 = p1* (1.+c+c)
       p3 = p2 + c/xll
       p4 = p3 + c/xlr
-C      WRITE(6,100) N,P,P1,P2,P3,P4,XL,XR,XM,FM
-C  100 FORMAT(I15,4F18.7/5F18.7)
-C
-C*****GENERATE VARIATE
-C
+
    30 u = ranf()*p4
       v = ranf()
 C
@@ -1646,9 +1618,18 @@ C     ..
 C     .. Executable Statements ..
 C     Check Arguments
 C     JJV changed argumnet checker to abort if N <= 0
-      IF (n.LE.0) STOP 'N <= 0 in IGNNBN'
-      IF (p.LE.0.0) STOP 'P <= 0.0 in IGNNBN'
-      IF (p.GE.1.0) STOP 'P >= 1.0 in IGNNBN'
+      IF (n.LE.0)then
+        call rexit("N <= 0 in IGNNBN")
+      end if
+
+      IF (p.LE.0.0)then
+        call rexit("P <= 0.0 in IGNNBN")
+      end if
+
+      IF (p.GE.1.0)then
+        call rexit("P >= 1.0 in IGNNBN")
+      end if
+
 
 C     Generate Y, a random gamma (n,(1-p)/p) variable
 C     JJV Note: the above parametrization is consistent with Devroye,
@@ -1905,9 +1886,8 @@ C     JJV changed MUPREV assignment from 0.0 to initial value
       IF (mu.EQ.muold) GO TO 130
 C     JJV added argument checker here
       IF (mu.GE.0.0) GO TO 125
-      WRITE (*,*) 'MU < 0 in IGNPOI - ABORT'
-      WRITE (*,*) 'Value of MU: ',mu
-      STOP 'MU < 0 in IGNPOI - ABORT'
+      call rexit("MU < 0 in IGNPOI - ABORT")
+
 C     JJV added line label here
  125  muold = mu
       m = max0(1,ifix(mu))
@@ -2034,17 +2014,16 @@ C     integral multiple of the number in 0..RANGE
       RETURN
 
    80 IF (.NOT. (err.EQ.1)) GO TO 90
-      WRITE (*,*) err1
+      call rexit("LOW > HIGH in IGNUIN")
       GO TO 100
 
 C     TO ABORT-PROGRAM
-   90 WRITE (*,*) err2
-  100 WRITE (*,*) ' LOW: ',low,' HIGH: ',high
-      WRITE (*,*) ' Abort on Fatal ERROR'
+   90 continue
+  100 continue
       IF (.NOT. (err.EQ.1)) GO TO 110
-      STOP 'LOW > HIGH in IGNUIN'
+      call rexit("LOW > HIGH in IGNUIN")
 
-  110 STOP ' ( HIGH - LOW ) > 2,147,483,561 in IGNUIN'
+  110 call rexit("( HIGH - LOW ) > 2,147,483,561 in IGNUIN")
 
       END
       SUBROUTINE initgn(isdtyp)
@@ -2113,9 +2092,7 @@ C     ..
 C     .. Executable Statements ..
 C     Abort unless random number generator initialized
       IF (qrgnin()) GO TO 10
-      WRITE (*,*) ' INITGN called before random number generator ',
-     +  ' initialized -- abort!'
-      STOP ' INITGN called before random number generator initialized'
+      call rexit("INITGN called before RNG initialized")
 
    10 CALL getcgn(g)
       IF ((-1).NE. (isdtyp)) GO TO 20
@@ -2132,7 +2109,7 @@ C     do nothing
       lg2(g) = mltmod(a2w,lg2(g),m2)
       GO TO 50
 
-   40 STOP 'ISDTYP NOT IN RANGE'
+   40 call rexit("ISDTYP NOT IN RANGE")
 
    50 cg1(g) = lg1(g)
       cg2(g) = lg2(g)
@@ -2283,10 +2260,7 @@ C     H = 2**((b-2)/2) where b = 32 because we are using a 32 bit
 C      machine. On a different machine recompute H
 C
       IF (.NOT. (a.LE.0.OR.a.GE.m.OR.s.LE.0.OR.s.GE.m)) GO TO 10
-      WRITE (*,*) ' A, M, S out of order in MLTMOD - ABORT!'
-      WRITE (*,*) ' A = ',a,' S = ',s,' M = ',m
-      WRITE (*,*) ' MLTMOD requires: 0 < A < M; 0 < S < M'
-      STOP ' A, M, S out of order in MLTMOD - ABORT!'
+      call rexit("A, M, S out of order in MLTMOD - ABORT")
 
    10 IF (.NOT. (a.LT.h)) GO TO 20
       a0 = a
@@ -2722,9 +2696,7 @@ C     ..
 C     .. Executable Statements ..
 C     Abort unless random number generator initialized
       IF (qrgnin()) GO TO 10
-      WRITE (*,*) ' SETANT called before random number generator ',
-     +  ' initialized -- abort!'
-      STOP ' SETANT called before random number generator initialized'
+      call rexit("SETANT called before RNG initialized")
 
    10 CALL getcgn(g)
       qanti(g) = qvalue
@@ -2799,9 +2771,7 @@ C
 C     TEST THE INPUT
 C
       IF (.NOT. (p.LE.0)) GO TO 10
-      WRITE (*,*) 'P nonpositive in SETGMN'
-      WRITE (*,*) 'Value of P: ',p
-      STOP 'P nonpositive in SETGMN'
+      call rexit("P nonpositive in SETGMN")
 
    10 parm(1) = p
 C
@@ -2816,8 +2786,7 @@ C
 C      CALL spofa(covm,p,p,info)
       CALL spofa(covm,ldcovm,p,info)
       IF (.NOT. (info.NE.0)) GO TO 30
-      WRITE (*,*) ' COVM not positive definite in SETGMN'
-      STOP ' COVM not positive definite in SETGMN'
+      call rexit("COVM not positive definite in SETGMN")
 
    30 icount = p + 1
 C
@@ -2899,9 +2868,7 @@ C     ..
 C     .. Executable Statements ..
 C     Abort unless random number generator initialized
       IF (qrgnin()) GO TO 10
-      WRITE (*,*) ' SETSD called before random number generator ',
-     +  ' initialized -- abort!'
-      STOP ' SETSD called before random number generator initialized'
+      call rexit("SETSD called before RNG initialized")
 
    10 CALL getcgn(g)
       ig1(g) = iseed1

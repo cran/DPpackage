@@ -160,7 +160,8 @@ Petrone, S. and Waserman, L. (2002) Consistency of Bernstein polynomial posterio
 
     # Fitting the model
 
-      fit<-BDPdensity(y=speeds,prior=prior,mcmc=mcmc,state=state,status=TRUE)
+      fit <- BDPdensity(y=speeds,prior=prior,mcmc=mcmc,
+                        state=state,status=TRUE)
       
       plot(fit)
       

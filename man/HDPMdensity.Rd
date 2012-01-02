@@ -11,7 +11,9 @@
 }
    
 \usage{
-HDPMdensity(y,study,ngrid=100,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
+HDPMdensity(y,study,ngrid=100,prior,mcmc,state,
+            status,data=sys.frame(sys.parent()),
+            na.action=na.fail,work.dir=NULL)
 }
 
 \arguments{

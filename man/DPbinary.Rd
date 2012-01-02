@@ -11,8 +11,9 @@
     
 \usage{
 
-DPbinary(formula,inter=TRUE,baseline="logistic",prior,mcmc,state,status,
-         misc=NULL,data=sys.frame(sys.parent()),na.action=na.fail)
+DPbinary(formula,inter=TRUE,baseline="logistic",prior,mcmc,state,
+         status,misc=NULL,data=sys.frame(sys.parent()),
+         na.action=na.fail)
 }
 
 \arguments{
