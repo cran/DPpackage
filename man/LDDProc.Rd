@@ -161,7 +161,7 @@ LDDProc(y.d,z.d,y.nond,z.nond,
 
 \references{
 Inacio, V., Jara, A., Hanson, T.E., de Carvalho, M. (2012) Bayesian nonparametric 
-   ROC regression modeling with application to diabetes diagnosis. Technical report.
+   ROC regression modeling. Technical report.
 }
 
 \examples{

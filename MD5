@@ -1,4 +1,4 @@
-cc709d5c2b675787f76cf14786233d79 *DESCRIPTION
+6a2d97273868fd5037071b8c79f32ae0 *DESCRIPTION
 b6cf929b5aefd1452c72ad7675ac08a3 *LICENSE
 27cc93add33099ca060068a9a40ad8d3 *NAMESPACE
 cd14c3f7bb5f44c690dc9ebc42129b1a *R/BDPdensity.R
@@ -45,7 +45,7 @@ adc9756430cdc76fd2fe4f54ce6adb93 *R/LDTFPsurvival.R
 592604fdc59f5950206e9ed8d38ec3e5 *R/PSgam.R
 4ba1bf1a678c5c709943581c42c775be *R/PTdensity.R
 a3f7f8366b1487556e527b84c0f19b2a *R/PTglmm.R
-006c02bd74db93167cdc14d518a82c74 *R/PTlm.R
+eea81c7cbad24fe9a4e3d04cbcf5a3b0 *R/PTlm.R
 ff9bab9de6eecde0857612006f0d42f5 *R/PTlmm.R
 834b6997c6cba8e74cdfd28f463c2f3f *R/PTmeta.R
 e3dacfd4de0d109cd963aa4dda029cdd *R/PTolmm.R
@@ -113,7 +113,7 @@ dcebb7cc77c8f48e0fdfbd2617627538 *man/DPraschpoisson.Rd
 78cbff8c7c50d6ebcbeab10c76c45334 *man/LDDPdensity.Rd
 6c713441d36ec72a20c0d7fb7e419897 *man/LDDPrasch.Rd
 91a59dc7ec4de1f2af8b4032e459981d *man/LDDPraschpoisson.Rd
-299cdaaf171b9f2fd73e61ffd15fb71d *man/LDDProc.Rd
+9e08182904d49e2ce34c0b1f98481cbb *man/LDDProc.Rd
 b93e612d0d8872c6848ce142ea37d650 *man/LDDPsurvival.Rd
 43768631c7f4a9de9a24c82633a5e82d *man/LDPDdoublyint.Rd
 468b10f911ee59678a0e350bcc1a31a3 *man/LDTFPdensity.Rd

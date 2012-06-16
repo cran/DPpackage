@@ -1,9 +1,9 @@
 ### PTlm.R                   
 ### Fit a semiparametric regression model.
 ###
-### Copyright: Alejandro Jara, 2007-2010.
+### Copyright: Alejandro Jara, 2007-2012.
 ###
-### Last modification: 25-08-2007.
+### Last modification: 13-06-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -226,36 +226,37 @@ function(formula,
                { 
                   stop("Error in the dimension of the covariance of the normal prior for the mean of the centering distribution.\n")     
                }
-            }
-         }
+             }
+           }
 
-  	 if(is.null(prior$tau1))
-  	 {
-  	    sigmarand<-0
-            if(is.null(prior$sigma2))
-            { 
-               stop("The variance *sigma2* must be specified in the prior object when it is not considered as random.\n")     
-            }
-            sigma2<-prior$sigma2
-            tau1<- -1
-            tau2<- -1
-  	 }
-  	 else
-  	 {
-  	    sigmarand<-1
-            tau1<-prior$tau1
-            tau2<-prior$tau2
 
-            if(tau1<=0 || tau2<0)
-            { 
-                stop("The hyperparameter of the gamma prior for the centering variance must be positive")     
-            }
-            sigma2<-tau1/tau2
-         }
+      	   if(is.null(prior$tau1))
+  	       {
+  	          sigmarand <- 0
+              if(is.null(prior$sigma2))
+              { 
+                 stop("The variance *sigma2* must be specified in the prior object when it is not considered as random.\n")     
+              }
+              sigma2 <- prior$sigma2
+              tau1<- -1
+              tau2<- -1
+		   }
+           else
+           {
+              sigmarand <- 1
+              tau1 <- prior$tau1
+              tau2 <- prior$tau2
 
-	 tau<-c(tau1,tau2)
+              if(tau1<=0 || tau2<0)
+              { 
+                 stop("The hyperparameter of the gamma prior for the centering variance must be positive")     
+              }
+              sigma2 <- tau1/tau2
+           }
 
-         maxm <- prior$M
+ 	       tau <- c(tau1,tau2)
+
+           maxm <- prior$M
 	
          #########################################################################################
          # mcmc specification
@@ -352,7 +353,7 @@ function(formula,
                    v <- mu+resid(fit0)
 			  }   
 	        
-			  mcmcad < -c(0.1,0.0,
+			  mcmcad <- c(0.1,0.0,
                           -6.0,1.0,0.0,0.0,0.0,
                           -6.0,1.0,0.0,0.0,0.0,
                           -3.0,1.0,0.0,0.0,0.0,
@@ -365,22 +366,22 @@ function(formula,
 	        
 	           if(alpharand==1)
 	           {
-	              alpha<-state$alpha 
+	              alpha <- state$alpha 
 	           }
 	           if(murand==1)
 	           {
-	              mu<-state$mu
+	              mu <- state$mu
 	           }
 	           if(sigmarand==1)
 	           {
-	              sigma2<-state$sigma2
+	              sigma2 <- state$sigma2
 	           }
 
 	           v <- state$v
 	        
 	           if(is.null(state$mcmcad))
 	           {
-                   mcmcad<-c(0.1,0.0,
+                   mcmcad <- c(0.1,0.0,
                             -6.0,1.0,0.0,0.0,0.0,
                             -6.0,1.0,0.0,0.0,0.0,
                             -3.0,1.0,0.0,0.0,0.0,                            
@@ -395,172 +396,173 @@ function(formula,
          #########################################################################################
          # working space
          #########################################################################################
-           seed<-c(sample(1:29000,1),sample(1:29000,1))
-           mdzero<-0
- 	       iflag<-rep(0,p)
- 	 whicho<-rep(0,nrec)
-	 whichn<-rep(0,nrec)
-	 betac<-rep(0,p)
-	 workm1<-matrix(0,nrow=p,ncol=p)
-	 workm2<-matrix(0,nrow=p,ncol=p)
-	 workmh1<-rep(0,(p*(p+1)/2))
-	 workv1<-rep(0,p)
-	 workv2<-rep(0,p)
- 	 vc<-rep(0,nrec)
-	 xtx<-matrix(0,nrow=p,ncol=p)
+           seed <- c(sample(1:29000,1),sample(1:29000,1))
+           mdzero <- 0
+ 	       iflag <- rep(0,p)
+ 	       whicho <- rep(0,nrec)
+	       whichn <- rep(0,nrec)
+	       betac <- rep(0,p)
+		   workm1 <- matrix(0,nrow=p,ncol=p)
+	       workm2 <- matrix(0,nrow=p,ncol=p)
+		   workmh1 <- rep(0,(p*(p+1)/2))
+	       workv1 <- rep(0,p)
+	       workv2 <- rep(0,p)
+ 	       vc <- rep(0,nrec)
+	       xtx <- matrix(0,nrow=p,ncol=p)
 	
          #########################################################################################
          # calling the fortran code
          #########################################################################################
 
-         if(is.null(prior$M))
-         {
-            foo <- .Fortran("ptlmp",
-				  mdzero    =as.integer(mdzero),
-  	 	ngrid     =as.integer(ngrid),
-	 	nrec      =as.integer(nrec),
-	 	p         =as.integer(p),
-		x         =as.double(x),	 	
-		y         =as.double(y),
-		a0b0      =as.double(a0b0),
-		betapm    =as.double(betapm),		
-		betapv    =as.double(betapv),		
-		tau       =as.double(tau),
-		m0        =as.double(m0),
-		s0        =as.double(s0), 
-		mcmc      =as.integer(mcmcvec),
-		nsave     =as.integer(nsave),
-		propv     =as.double(propv),
- 	 	mcmcad    =as.double(mcmcad),
-                seed      =as.integer(seed),
-		acrate    =as.double(acrate),
-		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),
-                cpo       =as.double(cpo),
-                f         =as.double(f),
-		alpha     =as.double(alpha),		
-		beta      =as.double(beta),
-		mu        =as.double(mu),
-		sigma2    =as.double(sigma2),
-                v         =as.double(v),
-		betac     =as.double(betac),
-		iflag     =as.integer(iflag),
-		vc        =as.double(vc),
-		workm1    =as.double(workm1),
-		workm2    =as.double(workm2),
-		workmh1   =as.double(workmh1),
-		workv1    =as.double(workv1),
-		workv2    =as.double(workv2),
-		grid      =as.double(grid),
-		whicho    =as.integer(whicho),
-		whichn    =as.integer(whichn),
-		xtx       =as.double(xtx),
-		PACKAGE="DPpackage")	                  
+           if(is.null(prior$M))
+           {
+               foo <- .Fortran("ptlm",
+					mdzero    =as.integer(mdzero),
+					ngrid     =as.integer(ngrid),
+					nrec      =as.integer(nrec),
+					p         =as.integer(p),
+					x         =as.double(x),	 	
+					y         =as.double(y),
+					a0b0      =as.double(a0b0),
+					betapm    =as.double(betapm),		
+					betapv    =as.double(betapv),		
+					tau       =as.double(tau),
+					m0        =as.double(m0),
+					s0        =as.double(s0), 
+					mcmc      =as.integer(mcmcvec),
+					nsave     =as.integer(nsave),
+					propv     =as.double(propv),
+					mcmcad    =as.double(mcmcad),
+					seed      =as.integer(seed),
+					acrate    =as.double(acrate),
+					randsave  =as.double(randsave),
+					thetasave =as.double(thetasave),
+					cpo       =as.double(cpo),
+					f         =as.double(f),
+					alpha     =as.double(alpha),		
+					beta      =as.double(beta),
+					mu        =as.double(mu),
+					sigma2    =as.double(sigma2),
+					v         =as.double(v),
+					betac     =as.double(betac),
+					iflag     =as.integer(iflag),
+					vc        =as.double(vc),
+					workm1    =as.double(workm1),
+					workm2    =as.double(workm2),
+					workmh1   =as.double(workmh1),
+					workv1    =as.double(workv1),
+					workv2    =as.double(workv2),
+					grid      =as.double(grid),
+					whicho    =as.integer(whicho),
+					whichn    =as.integer(whichn),
+					xtx       =as.double(xtx),
+					PACKAGE="DPpackage")	                  
          }
          else
          {
             foo <- .Fortran("ptlmp",
-  	 	maxm      =as.integer(maxm),
-  	 	mdzero    =as.integer(mdzero),
-  	 	ngrid     =as.integer(ngrid),
-	 	nrec      =as.integer(nrec),
-	 	p         =as.integer(p),
-		x         =as.double(x),	 	
-		y         =as.double(y),
-		a0b0      =as.double(a0b0),
-		betapm    =as.double(betapm),		
-		betapv    =as.double(betapv),		
-		tau       =as.double(tau),
-		m0        =as.double(m0),
-		s0        =as.double(s0), 
-		mcmc      =as.integer(mcmcvec),
-		nsave     =as.integer(nsave),
-		propv     =as.double(propv),
- 	 	mcmcad    =as.double(mcmcad),
-                seed      =as.integer(seed),
-		acrate    =as.double(acrate),
-		randsave  =as.double(randsave),
-		thetasave =as.double(thetasave),
-                cpo       =as.double(cpo),
-                f         =as.double(f),
-		alpha     =as.double(alpha),		
-		beta      =as.double(beta),
-		mu        =as.double(mu),
-		sigma2    =as.double(sigma2),
-                v         =as.double(v),
-		betac     =as.double(betac),
-		iflag     =as.integer(iflag),
-		vc        =as.double(vc),
-		workm1    =as.double(workm1),
-		workm2    =as.double(workm2),
-		workmh1   =as.double(workmh1),
-		workv1    =as.double(workv1),
-		workv2    =as.double(workv2),
-		grid      =as.double(grid),
-		whicho    =as.integer(whicho),
-		whichn    =as.integer(whichn),
-		xtx       =as.double(xtx),
-		PACKAGE="DPpackage")	         
-         }
+					maxm      =as.integer(maxm),
+					mdzero    =as.integer(mdzero),
+					ngrid     =as.integer(ngrid),
+					nrec      =as.integer(nrec),
+					p         =as.integer(p),
+					x         =as.double(x),	 	
+					y         =as.double(y),
+					a0b0      =as.double(a0b0),
+					betapm    =as.double(betapm),		
+					betapv    =as.double(betapv),		
+					tau       =as.double(tau),
+					m0        =as.double(m0),
+					s0        =as.double(s0), 
+					mcmc      =as.integer(mcmcvec),
+					nsave     =as.integer(nsave),
+					propv     =as.double(propv),
+					mcmcad    =as.double(mcmcad),
+					seed      =as.integer(seed),
+					acrate    =as.double(acrate),
+					randsave  =as.double(randsave),
+					thetasave =as.double(thetasave),
+					cpo       =as.double(cpo),
+					f         =as.double(f),
+					alpha     =as.double(alpha),		
+					beta      =as.double(beta),
+					mu        =as.double(mu),
+					sigma2    =as.double(sigma2),
+					v         =as.double(v),
+					betac     =as.double(betac),
+					iflag     =as.integer(iflag),
+					vc        =as.double(vc),
+					workm1    =as.double(workm1),
+					workm2    =as.double(workm2),
+					workmh1   =as.double(workmh1),
+					workv1    =as.double(workv1),
+					workv2    =as.double(workv2),
+					grid      =as.double(grid),
+					whicho    =as.integer(whicho),
+					whichn    =as.integer(whichn),
+					xtx       =as.double(xtx),
+					PACKAGE="DPpackage")	         
+           }
          
          #########################################################################################
          # save state
          #########################################################################################
 	
- 	 thetasave<-matrix(foo$thetasave,nrow=nsave, ncol=(nfixed+3))
- 	 randsave<-matrix(foo$randsave,nrow=nsave, ncol=(nrec+1))
+ 	       thetasave <- matrix(foo$thetasave,nrow=nsave, ncol=(nfixed+3))
+ 	       randsave <- matrix(foo$randsave,nrow=nsave, ncol=(nrec+1))
  	 
-	 colnames(thetasave)<-c(dimnames(x)[[2]],"mu","sigma2","alpha")
+  	       colnames(thetasave) <- c(dimnames(x)[[2]],"mu","sigma2","alpha")
 
-         qnames<-NULL
-         for(i in 1:nrec){
-             idname<-paste("(Subject",i,sep="=")
-             idname<-paste(idname,")",sep="")
-             qnames<-c(qnames,idname)
-         }
-         qnames<-c(qnames,"Prediction")
+           qnames <- NULL
+           for(i in 1:nrec)
+		   {
+             idname <- paste("(Subject",i,sep="=")
+             idname <- paste(idname,")",sep="")
+             qnames <- c(qnames,idname)
+           }
+           qnames <- c(qnames,"Prediction")
          
-         colnames(randsave)<-qnames
+           colnames(randsave) <- qnames
 
-	 model.name<-"Bayesian Semiparametric Regression Model"
-         coeff<-apply(thetasave,2,mean)		
+  	       model.name <- "Bayesian Semiparametric Regression Model"
+           coeff <- apply(thetasave,2,mean)		
 	
-	 state <- list(alpha=foo$alpha,
-                       beta=foo$beta,
-                       v=foo$v,
-                       mu=foo$mu,
-                       sigma2=foo$sigma2,
-     	               mcmcad=foo$mcmcad)	
+	       state <- list(alpha=foo$alpha,
+                         beta=foo$beta,
+                         v=foo$v,
+                         mu=foo$mu,
+                         sigma2=foo$sigma2,
+     	                 mcmcad=foo$mcmcad)	
 		      
-	 save.state <- list(thetasave=thetasave,randsave=randsave)
+	       save.state <- list(thetasave=thetasave,randsave=randsave)
 
-         if(is.null(prior$a0))
-	 {
-            acrate<-foo$acrate[1:3]
-         }
-         else
-         {
-            acrate<-foo$acrate
-         }   
+           if(is.null(prior$a0))
+	       {
+              acrate <- foo$acrate[1:3]
+		   }
+           else
+           {
+              acrate <- foo$acrate
+           }   
 
-	 z<-list(modelname=model.name,
-                 coefficients=coeff,
-                 acrate=acrate,
-                 call=cl,
-	         prior=prior,
-                 mcmc=mcmc,
-                 state=state,
-                 save.state=save.state,
-                 cpo=foo$cpo,
-	         nrec=nrec,
-                 p=p,
-                 dens=foo$f,
-                 grid=grid,
-                 possiP=possiP)
+	       z <- list(modelname=model.name,
+					 coefficients=coeff,
+					 acrate=acrate,
+					 call=cl,
+				     prior=prior,
+					 mcmc=mcmc,
+					 state=state,
+					 save.state=save.state,
+					 cpo=foo$cpo,
+				     nrec=nrec,
+					 p=p,
+					 dens=foo$f,
+					 grid=grid,
+					 possiP=possiP)
 	
-	 cat("\n\n")
-	 class(z)<-c("PTlm")
-	 z 
+		  cat("\n\n")
+	      class(z) <- c("PTlm")
+	      z 
 }
 
 
