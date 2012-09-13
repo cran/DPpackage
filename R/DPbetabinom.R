@@ -1,7 +1,7 @@
 ### DPbetabinom.R                   
 ### Fit a semiparametric beta binomial model using a DP prior.
 ###
-### Copyright: Alejandro Jara, 2010.
+### Copyright: Alejandro Jara, 2009 - 2012.
 ### Last modification: 09-03-2009.
 ###
 ### This program is free software; you can redistribute it and/or modify

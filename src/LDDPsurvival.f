@@ -22,12 +22,23 @@ c     Subroutine `lddpsurvival' to run a Markov chain for a
 c     Linear Dependent Dirichlet Process prior for 
 c     survival analysis.
 c
-c     Copyright: Alejandro Jara, 2009-2011.
+c     Copyright: Alejandro Jara, 2009-2012.
 c
-c     Version 2.0: 
+c     Version 3.0: 
 c
-c     Last modification: 20-10-2011.
-c     
+c     Last modification: 15-07-2012.
+c
+c     Changes and Bug fixes: 
+c
+c     Version 2.0 to Version 3.0:
+c          - The subject-specific variances are returned in
+c            the randsave object.
+c
+c     Version 1.0 to Version 2.0:
+c          - Computation the cdf functions added.
+c          - Now CPO are computed using the epsilon-DP approximation.
+c          - Computation useful for ROC curve estimation added.
+c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
 c     the Free Software Foundation; either version 2 of the License, or (at
@@ -128,7 +139,8 @@ c---- Output -----------------------------------------------------------
 c
 c        cpo         :  real giving the cpos and fsos, cpo(nrec,2). 
 c        randsave    :  real matrix containing the mcmc samples for
-c                       the regression coeff, randsave(nsave,nrec*p).
+c                       the regression coeff and variance, 
+c                       randsave(nsave,nrec*(p+1)).
 c        survsave    :  real matrix containing the mcmc samples for
 c                       the survival curves, randsave(nsave,npred*ngrid).
 c        thetasave   :  real matrix containing the mcmc samples for
@@ -253,7 +265,7 @@ c++++ current value
 c++++ output
       real*8 cpo(nrec,2)
       real*8 thetasave(nsave,p+p*(p+1)/2+3)
-      real*8 randsave(nsave,p*nrec)
+      real*8 randsave(nsave,nrec*(p+1))
       real*8 survsave(nsave,npred*ngrid)
       real*8 denspm(npred,ngrid)
       real*8 denspl(npred,ngrid)
@@ -774,6 +786,8 @@ c+++++++++++++ random effects
                      count=count+1
                      randsave(isave,count)=betaclus(ss(i),j) 
                   end do   
+                  count=count+1
+                  randsave(isave,count)=sigmaclus(ss(i)) 
                end do
 
 c+++++++++++++ Partially sampling the DP (and CPO).

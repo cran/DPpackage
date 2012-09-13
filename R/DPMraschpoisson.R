@@ -2,7 +2,7 @@
 ### Fit a Rasch Poisson model with a Dirichlet mixture of normals prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 04-09-2009.
 ###

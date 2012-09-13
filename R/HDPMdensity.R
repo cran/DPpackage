@@ -2,7 +2,7 @@
 ### Fit a hierarchical mixture of DPM of normals model for density 
 ### estimation
 ###
-### Copyright: Alejandro Jara and Peter Mueller, 2008-2010.
+### Copyright: Alejandro Jara and Peter Mueller, 2008-2012.
 ###
 ### Last modification: 07-06-2008.
 ###
@@ -33,12 +33,12 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Peter Mueller
-###      Department of Biostatistics
-###      The University of Texas MD Anderson Cancer Center
-###      1515 Holcombe Blvd, Unit 447 
-###      Houston TX 77030-4009, USA
-###      Voice: (713) 563-4296  URL  : http://www.mdanderson.org/departments/biostats
-###      Fax  : (713) 563-4243  Email: pmueller@mdanderson.org
+###      Department of Mathematics
+###      The University of Texas Austin
+###      1, University Station, C1200 
+###      Austin TX 78712, USA
+###      Voice: (512) 471-7168  URL  : http://www.math.utexas.edu/users/pmueller
+###      Fax  : (512) 471-9038  Email: pmueller@math.utexas.edu
 ###
 
 "HDPMdensity"<-function(y,study,ngrid=100,prior,mcmc,state,status,data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)

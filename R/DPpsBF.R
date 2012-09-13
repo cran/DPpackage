@@ -1,7 +1,7 @@
 ### DPpsBF.R                   
 ### Calculates the Pseudo Bayes Factor.
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 01-07-2006.
 ###

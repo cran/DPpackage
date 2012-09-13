@@ -12,7 +12,8 @@
 \usage{
 
 LDDProc(y.d,z.d,y.nond,z.nond,
-        zpred.d,zpred.nond=NULL,prior,mcmc,state,status,ngrid=100,
+        zpred.d,zpred.nond=NULL,prior.d,prior.nond=NULL,
+        mcmc,state,status,ngrid=100,
         grid=NULL,compute.band=FALSE,type.band="PD",
         data=sys.frame(sys.parent()),na.action=na.fail,
         work.dir=NULL)
@@ -35,8 +36,9 @@ LDDProc(y.d,z.d,y.nond,z.nond,
                        density is evaluated for the non-diseased group. By default,
                        zpred.nond=NULL which means that zpred.nond=zpred.d.}
     
-    \item{prior}{    a list giving the prior information. The list includes the following
-                     parameter: \code{a0} and \code{b0} giving the hyperparameters for
+    \item{prior.d}{  a list giving the prior information for the diseased group. 
+                     The list includes the following
+                     parameters: \code{a0} and \code{b0} giving the hyperparameters for
                      prior distribution of the precision parameter of the Dirichlet process
                      prior, \code{alpha} giving the value of the precision parameter (it 
                      must be specified if \code{a0} is missing), \code{m0} and \code{Sbeta0} 
@@ -52,6 +54,11 @@ LDDProc(y.d,z.d,y.nond,z.nond,
                      prior distribution of variance of the normal kernel, and
                      \code{taus1} and \code{taus2} giving th hyperparameters of the gamma
                      distribution for \code{tau2}.}
+
+    \item{prior.nond}{a list giving the prior information for the non-diseased group. The list
+                      includes the same parameters than \code{prior.d}. The default specification 
+                      (prior.nond = NULL) uses \code{prior.nond}=\code{prior.d}.} 
+
 
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
                      the following integers: \code{nburn} giving the number of burn-in 
@@ -106,13 +113,13 @@ LDDProc(y.d,z.d,y.nond,z.nond,
   \deqn{G_i | \alpha_i, G_{0i} \sim DP(\alpha_i G_{0i})}{Gi | alphai, G0i ~ DP(alphai G0i)}
    where, \eqn{G_{0i} = N(\beta | \mu_{bi}, s_{bi})\Gamma(\sigma^2|\tau_{1}/2,\tau_{2i}/2)}{G0 = N(beta| mubi, sbi)Gamma(sigma2|tau1/2,tau2i/2)}.   
    To complete the model specification, independent hyperpriors are assumed,
-  \deqn{\alpha_i | a_0, b_0 \sim Gamma(a_0,b_0)}{alphai | a0, b0 ~ Gamma(a0,b0)}
-  \deqn{\mu_{bi} | m_0, S_{\beta_0} \sim N(m_0,S_{\beta_0})}{mubi | m0, Sbeta0 ~ N(m0,Sbeta0)}
-  \deqn{s_{bi} | \nu, \Psi \sim IW(\nu,\Psi)}{sbi | nu, psi ~ IW(nu,psi)}
-  \deqn{\tau_{2i} | \tau_{s1}, \tau_{s2} \sim Gamma(\tau_{s1}/2,\tau_{s2}/2)}{tau2i ~ Gamma(tau2 | taus1, taus2 ~   Gamma(taus1/2,taus2/2)}
+  \deqn{\alpha_i | a_{0i}, b_{0i} \sim Gamma(a_{0i},b_{0i})}{alphai | a0i, b0i ~ Gamma(a0i,b0i)}
+  \deqn{\mu_{bi} | m_{0i}, S_{\beta_{0i}} \sim N(m_{0i},S_{\beta_{0i}})}{mubi | m0i, Sbeta0i ~ N(m0i,Sbeta0i)}
+  \deqn{s_{bi} | \nu_i, \Psi_i \sim IW(\nu_i,\Psi_i)}{sbi | nui, psii ~ IW(nui,psii)}
+  \deqn{\tau_{2i} | \tau_{s1i}, \tau_{s2i} \sim Gamma(\tau_{s1i}/2,\tau_{s2i}/2)}{tau2i | taus1i, taus2i ~   Gamma(taus1i/2,taus2i/2)}
 
   The precision or total mass parameters, \eqn{\alpha_i}{alphai}, of the \code{DP} prior 
-  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_0,b_0)}{Gamma(a0,b0)}, 
+  can be considered as random, having a \code{gamma} distribution, \eqn{Gamma(a_{0i},b_{0i})}{Gamma(a0i,b0i)}, 
   or fixed at some particular value. 
 
   We refer the reader to the help file associated with the \code{\link{LDDPdensity}} function for more
@@ -161,7 +168,7 @@ LDDProc(y.d,z.d,y.nond,z.nond,
 
 \references{
 Inacio, V., Jara, A., Hanson, T.E., de Carvalho, M. (2012) Bayesian nonparametric 
-   ROC regression modeling. Technical report.
+   ROC regression modeling with application to diabetes diagnosis. Technical report.
 }
 
 \examples{
@@ -312,8 +319,9 @@ Inacio, V., Jara, A., Hanson, T.E., de Carvalho, M. (2012) Bayesian nonparametri
 
       fit1 <- LDDProc(y.d=y.d,z.d=z.d,
                       y.nond=y.nond,z.nond=z.nond,
-                      zpred.d=zpred.d,
-                      prior=prior,
+                      zpred.d=zpred,
+                      prior.d=prior,
+                      prior.nond=prior,
                       mcmc=mcmc,
                       state=state, 
                       status=TRUE,

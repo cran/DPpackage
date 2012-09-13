@@ -1,7 +1,7 @@
 ### LDBDPdensity.R                    
 ### Fit a linear dependent Bernstein-Dirichlet model for conditional density estimation.
 ###
-### Copyright: Felipe Barrientos and Alejandro Jara, 2010.
+### Copyright: Felipe Barrientos and Alejandro Jara, 2010-2012.
 ###
 ### Last modification: 27-08-2010.
 ###

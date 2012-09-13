@@ -1,9 +1,9 @@
 ### LDDPdensity.R                    
 ### Fit a linear dependent DP model for conditional density estimation.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2011.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2008-2012.
 ###
-### Last modification: 08-11-2011.
+### Last modification: 15-07-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -209,7 +209,7 @@ function(formula,
          rocph <- matrix(0,nrow=npred,ncol=nroc)
 
          thetasave <- matrix(0,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
-         randsave <- matrix(0,nrow=nsave,ncol=nrec*p)
+         randsave <- matrix(0,nrow=nsave,ncol=nrec*(p+1))
          aucsave <- matrix(0,nrow=nsave,ncol=npred)
 
        #########################################################################################
@@ -370,7 +370,7 @@ function(formula,
          rocpl <- matrix(foo$rocpl,nrow=npred,ncol=nroc)
          rocph <- matrix(foo$rocph,nrow=npred,ncol=nroc)
 
-         randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*p)
+         randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*(p+1))
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
          aucsave <- matrix(foo$aucsave,nrow=nsave,ncol=npred)
 
@@ -402,6 +402,8 @@ function(formula,
          for(i in 1:nrec)
          {
              tmp <- paste(coeffname,i,sep=":")
+             renames <- c(renames,tmp)
+             tmp <- paste("sigma2",i,sep=":")
              renames <- c(renames,tmp)
          }
          colnames(randsave) <- renames

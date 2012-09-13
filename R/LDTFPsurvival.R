@@ -1,7 +1,7 @@
 ### LDTFPsurvival.R                    
 ### Fit a linear dependent TF process for survival data.
 ###
-### Copyright: Alejandro Jara, 2011
+### Copyright: Alejandro Jara, 2011-2012.
 ### Last modification: 11-11-2011.
 ###
 ### This program is free software; you can redistribute it and/or modify
@@ -253,9 +253,9 @@ function(y,
 
          workm2 <- matrix(0,nrow=ptf,ncol=ptf)
          workvh2 <- rep(0,(ptf*(ptf+1)/2))
-         workv2 <- rep(0,pce)
-         workv3 <- rep(0,pce)
-         workv4 <- rep(0,pce)
+         workv2 <- rep(0,ptf)
+         workv3 <- rep(0,ptf)
+         workv4 <- rep(0,ptf)
  
          k <- rep(0,maxm)
        

@@ -2,7 +2,7 @@
 ### Generates a MCMC sampler from an user-specified unormilized multivariate
 ### density.
 ###
-### Copyright: Alejandro Jara, 2009-2011.
+### Copyright: Alejandro Jara, 2009-2012.
 ###
 ### Last modification: 16-12-2011.
 ###

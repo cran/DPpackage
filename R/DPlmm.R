@@ -1,7 +1,7 @@
 ### DPlmm.R                   
 ### Fit a linear Dirichlet Process mixture of normal model.
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 25-09-2009.
 ###

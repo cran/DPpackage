@@ -64,12 +64,12 @@ export(
         FPTrasch.default,
         FPTraschpoisson,
         FPTraschpoisson.default,
-	HDPMdensity,
-	HDPMdensity.default,
-	HDPMcdensity,
-	HDPMcdensity.default,
-	LDBDPdensity,
-	LDBDPdensity.default,
+        HDPMdensity,
+        HDPMdensity.default,
+        HDPMcdensity,
+        HDPMcdensity.default,
+        LDBDPdensity,
+        LDBDPdensity.default,
         LDDPdensity,
         LDDPdensity.default,
         LDDPsurvival,
@@ -80,8 +80,12 @@ export(
         LDDPraschpoisson.default,
         LDDProc,
         LDDProc.default,
+        LDDPtwopl,
+        LDDPtwopl.default,
         LDTFPdensity,
         LDTFPdensity.default,
+        LDTFPglmm,
+        LDTFPglmm.default,
         LDTFPsurvival,
         LDTFPsurvival.default,
         LDPDdoublyint,
@@ -107,8 +111,8 @@ export(
         PTolmm.default,
         PTrandom,
         PTrandom.default,
-	PTsampler,
-	PTsampler.default,
+        PTsampler,
+        PTsampler.default,
         TDPdensity,
         TDPdensity.default
 )
@@ -307,6 +311,11 @@ S3method(plot, LDDPrasch)
 S3method(summary, LDDPrasch)
 S3method(print, summaryLDDPrasch)
 
+S3method(print, LDDPtwopl)
+S3method(plot, LDDPtwopl)
+S3method(summary, LDDPtwopl)
+S3method(print, summaryLDDPtwopl)
+
 S3method(print, LDDProc)
 S3method(plot, LDDProc)
 S3method(summary, LDDProc)
@@ -396,3 +405,8 @@ S3method(print, LDTFPsurvival)
 S3method(plot, LDTFPsurvival)
 S3method(summary, LDTFPsurvival)
 S3method(print, summaryLDTFPsurvival)
+
+S3method(print, LDTFPglmm)
+S3method(plot, LDTFPglmm)
+S3method(summary, LDTFPglmm)
+S3method(print, summaryLDTFPglmm)

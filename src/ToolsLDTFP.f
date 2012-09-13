@@ -1946,3 +1946,250 @@ c+++++++++++++++++++++++++++++++++++++++
 204   dinvnorm=z
       return
       end
+
+
+c=======================================================================
+      subroutine loglikldtfpre(maxm,ntlr,ntprob,nsubject,ptf,
+     &                         betatf,b,xtf,sigma2b,
+     &                         nobsbc,obsbc,loglik,k)
+c=======================================================================
+c     Alejandro Jara, 2008
+c=======================================================================
+      implicit none
+
+c++++ Input
+      integer maxm,ntlr,ntprob,nsubject,ptf
+      real*8 betatf(ntlr,ptf)
+      real*8 b(nsubject)
+      real*8 sigma2b
+      real*8 xtf(nsubject,ptf)
+
+c++++ Output
+      integer nobsbc(ntprob)
+      integer obsbc(ntprob,nsubject)
+      real*8 loglik
+
+c++++ External working space
+      integer k(maxm)
+
+c++++ Internal working space
+      integer i,j,j1,j2,k1,k2,m,ll
+      integer kphi
+      real*8 cdfnorm
+      real*8 dnrm
+      real*8 tmp1,tmp2,tmp3
+
+c++++ Algorithm
+ 
+      do i=1,maxm
+         k(i)=0
+      end do
+
+      do i=1,ntprob  
+         nobsbc(i)=0
+      end do
+      loglik=0.d0
+   
+      do i=1,nsubject
+ 
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         tmp3=b(i)/dsqrt(sigma2b)
+
+         loglik=loglik+dnrm(b(i),0.d0,sqrt(sigma2b),1)
+
+         if(tmp3.gt.4.0)then
+            tmp2=0.999968
+           else if(tmp3.lt.-4.0)then
+            tmp2=0.000032
+           else 
+            tmp2=cdfnorm(b(i),0.d0,sqrt(sigma2b),1,0)
+         end if
+
+         do j1=1,maxm
+            kphi=int(real(2**j1)*tmp2+1)
+            k(j1)=kphi
+         end do
+
+         j=0
+         m=0
+         tmp1=0.d0
+         do j1=1,maxm
+            if(j1.eq.1)then
+               j2=k(j1)
+               k2=1
+             else 
+               j2=j+k(j1)
+               k2=m+k(j1-1)
+            end if   
+            j=j+2**j1
+            m=m+2**(j1-1)
+
+            nobsbc(j2)=nobsbc(j2)+1
+            obsbc(j2,nobsbc(j2))=i
+
+            if(j1.eq.1)then
+               ll=1
+              else
+               ll=(k(j1-1)-1)*2+1
+            end if
+
+            tmp2=0.d0
+            do k1=1,ptf
+               tmp2=tmp2+xtf(i,k1)*betatf(k2,k1)
+            end do
+            tmp3=exp(tmp2)/(1.0+exp(tmp2))
+
+            if(k(j1).eq.ll)then
+               loglik=loglik+log(tmp3) 
+             else
+               tmp3=1.0-tmp3
+               loglik=loglik+log(tmp3) 
+            end if   
+         end do
+         loglik=loglik+real(maxm)*log(2.0) 
+    
+      end do
+
+      return
+      end
+
+
+c=======================================================================
+      subroutine lpostdtfprepoi(bc,ii,
+     &                          maxm,maxni,nrec,nsubject,
+     &                          ntlr,ntprob,p,
+     &                          datastr,y,
+     &                          beta,x,ptf,betatf,xtf,
+     &                          sigma2b,logpost,k)
+c=======================================================================
+c     Alejandro Jara, 2008
+c=======================================================================
+      implicit none
+c++++ Input
+      integer ii,glmm
+      integer maxm,maxni,nrec,nsubject,ntlr,ntprob,p,ptf
+      integer datastr(nsubject,maxni+1)
+      integer y(nrec)
+      real*8 bc
+      real*8 beta(p)
+      real*8 betatf(ntlr,ptf)
+      real*8 sigma2b
+      real*8 x(nrec,p+1)  
+      real*8 xtf(nsubject,ptf)
+
+c++++ Output
+      real*8 logpost
+
+c++++ External working space
+      integer k(maxm)
+
+c++++ Internal working space
+      integer i,j,j1,j2,k1,k2,m,ni,ll
+      integer kphi
+      integer yij
+      real*8 cdfnorm
+      real*8 dnrm
+      real*8 dpoiss
+      real*8 eta
+      real*8 tmp1,tmp2,tmp3
+      real*8 logprior,loglik
+
+c++++ Algorithm
+
+      logprior=0.d0
+      loglik=0.d0
+
+      do i=1,maxm
+         k(i)=0
+      end do
+
+c++++ check if the user has requested an interrupt
+      call rchkusr()
+  
+c++++ Prior contribution
+
+      logprior=dnrm(bc,0.d0,sqrt(sigma2b),1)
+
+      tmp1=bc/sqrt(sigma2b)
+
+      if(tmp1.gt.4.0)then
+         tmp2=0.999968
+        else if(tmp1.lt.-4.0)then
+         tmp2=0.000032
+        else 
+         tmp2=cdfnorm(bc,0.d0,sqrt(sigma2b),1,0)
+      end if
+
+      do j1=1,maxm
+         kphi=int(real(2**j1)*tmp2+1)
+         k(j1)=kphi
+      end do
+
+      j=0
+      m=0
+      do j1=1,maxm
+          if(j1.eq.1)then
+             j2=k(j1)
+             k2=1
+           else 
+             j2=j+k(j1)
+             k2=m+k(j1-1)
+          end if   
+          j=j+2**j1
+          m=m+2**(j1-1)
+          if(j1.eq.1)then
+             ll=1
+            else
+             ll=(k(j1-1)-1)*2+1
+          end if
+
+          tmp2=0.d0
+          do k1=1,ptf
+             tmp2=tmp2+betatf(k2,k1)*xtf(ii,k1)
+          end do
+          tmp3=exp(tmp2)/(1.0+exp(tmp2))
+
+          if(k(j1).eq.ll)then
+             logprior=logprior+log(tmp3) 
+           else
+             tmp3=1.0-tmp3
+             logprior=logprior+log(tmp3) 
+          end if   
+      end do
+      logprior=logprior+real(maxm)*log(2.0) 
+   
+c++++ check if the user has requested an interrupt
+      call rchkusr()
+  
+c++++ Likelihood contribution
+
+      ni=datastr(ii,1) 
+
+      loglik=0.d0
+            
+      do j=1,ni
+         yij=y(datastr(ii,j+1))            
+            
+         eta=0.d0 
+         do ll=1,p
+            eta=eta+x(datastr(ii,j+1),ll)*beta(ll)
+         end do
+         eta=eta+bc+x(datastr(ii,j+1),p+1)            
+
+         tmp1=dexp(eta)
+
+         loglik=loglik+dpoiss(dble(yij),tmp1,1)
+      end do
+
+c++++ Output
+
+      logpost=loglik+logprior
+
+      return
+      end
+
+
+
+

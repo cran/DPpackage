@@ -1,7 +1,7 @@
 ### DPsurvint.R                    
 ### Fit a semiparametric aft model for interval censored data.
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 22-12-2006.
 ###

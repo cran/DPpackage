@@ -1,8 +1,9 @@
-### LDTFPdensity.R                    
-### Fit a linear dependent TF process for density regression.
+### LDTFPglmm.R                    
+### Fit a linear dependent TF process for the random effects distribution
+### in the context of a GLMM.
 ###
-### Copyright: Alejandro Jara, 2011-2012.
-### Last modification: 11-11-2011.
+### Copyright: Alejandro Jara, 2011 - 2012.
+### Last modification: 29-06-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -31,14 +32,17 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 
-"LDTFPdensity" <-
-function(y,x,xtf,prediction,prior,mcmc,state,status,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",
+"LDTFPglmm" <-
+function(y,x,roffset=NULL,g,family,xtf,prediction,prior,mcmc,state,status,ngrid=100,grid=NULL,compute.band=FALSE,type.band="PD",
 data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
-UseMethod("LDTFPdensity")
+UseMethod("LDTFPglmm")
 
-"LDTFPdensity.default" <-
+"LDTFPglmm.default" <-
 function(y,
          x,
+         roffset=NULL,
+         g,
+         family,
          xtf,
          prediction,
          prior,
@@ -64,9 +68,46 @@ function(y,
        #########################################################################################
 
          nrec <- length(y)
-         xce <- x
-         pce <- ncol(xce)
+         subject <- g
+         nsubject <- length(table(subject))
+
+         nrecx <- nrow(x)
+         nrecg <- length(subject)
+
+         p <- ncol(x)
          ptf <- ncol(xtf)
+
+         nsubjectx <- nrow(xtf)
+
+		 if(nrec != nrecx)
+		 {
+             stop("The response vector must be of the same length than the number of rows of x.\n")      
+		 }
+
+		 if(nrec != nrecg)
+		 {
+             stop("The response vector must be of the same length than the vector of group indicators.\n")      
+		 }
+
+		 if(nsubject != nsubjectx)
+		 {
+             stop("The number of groups must be equal than the number of rows of xtf.\n")      
+		 }
+
+         freqsub <- table(subject)
+         maxni <- max(freqsub)
+         idrec <- seq(1,nrec)
+         datastr <- matrix(0,nrow=nsubject,ncol=maxni+1)
+         datastr[,1] <- freqsub
+         for(i in 1:nsubject)
+         {
+             for(j in 1:freqsub[i])
+             {
+                 datastr[i,(j+1)] <- idrec[subject==i][j] 
+             }
+         }
+
+         if(is.null(roffset)) roffset <- rep(0,nrec)
 
        #########################################################################################
        # change working directory (if requested..)
@@ -82,29 +123,25 @@ function(y,
        # prediction
        #########################################################################################
 
-         xcepred <- prediction$xdenpred
-         xtfpred <- prediction$xtfdenpred
-         npredden <- nrow(xcepred)
+         xpred <- prediction$xpred
+         xtfpred <- prediction$xtfpred
 
-         xcepredm <- prediction$xmedpred
-         xtfpredm <- prediction$xtfmedpred
-         npredmed <- nrow(xcepredm)
+         npred <- nrow(xpred)
+         px <- ncol(xpred)
+         ptfx <- ncol(xtfpred)
+
+		 if(p != px)
+		 {
+             stop("The number of columns in 'x' and 'xpred' must be the same.\n")      
+		 }
+
+		 if(ptf != ptfx)
+		 {
+             stop("The number of columns in 'xtf' and 'xtfpred' must be the same.\n")      
+		 }
 
          quans <- prediction$quans
          if(is.null(quans)) quans <- c(0.03,0.50,0.97)
-
-         if(is.null(grid))
-         {
-			miny <- min(y)
-			maxy <- max(y)
-			sdy <- sqrt(var(y))
-			grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
-		 }
-		 else
-		 {
-			grid <- as.vector(grid)
-			ngrid <- length(grid)
-		 }
 
 		 cband <- 0
 		 if(compute.band)
@@ -119,17 +156,62 @@ function(y,
 		 }
 
        #########################################################################################
-       # MLE analysis
+       # PQL analysis
        #########################################################################################
 
-          fit0 <- lm(formula = y ~ xce-1)
-		  betace <- coefficients(fit0)
-          cgkvar <- vcov(fit0)
-          sigma2 <- summary(fit0)$sigma^2
-         
+		 library(nlme)
+		 library(MASS)
+         if(is.null(roffset))
+         { 
+            fit0 <- glmmPQL(fixed=y~x-1, random=~1 | subject, family=family, verbose = FALSE) 
+         }
+         else
+         {
+            fit0 <- glmmPQL(fixed=y~x-1 + offset(roffset), random=~1 | subject, family=family, verbose = FALSE) 
+         }
+         beta <- fit0$coefficients$fixed
+         b <- as.vector(fit0$coefficients$random$subject)
+         sigma2b <- getVarCov(fit0)[1,1]
+
+         if(is.null(grid))
+         {
+            theta <- beta[1] + b
+			miny <- min(theta)
+			maxy <- max(theta)
+			sdy <- sqrt(var(theta))
+			grid <- seq(miny-0.01*sdy,maxy+0.01*sdy,len=ngrid)
+		 }
+		 else
+		 {
+			grid <- as.vector(grid)
+			ngrid <- length(grid)
+		 }
+
        #########################################################################################
        # Prior information
        #########################################################################################
+
+       # Fixed effects
+
+		 betapm <- prior$mub 
+         prec <- solve(prior$Sb)
+
+         sbt <- prec%*%betapm
+         sb <- cbind(sbt,betapm)
+
+         px <- nrow(prec)
+ 		 if(p != px)
+		 {
+             stop("The dimension of the prior covariance matrix for the fixed effects is not proper.\n")      
+		 }
+
+         px <- length(betapm)
+ 		 if(p != px)
+		 {
+             stop("The dimension of the prior mean vector for the fixed effects is not proper.\n")      
+		 }
+
+       # LTFP parameters
 
          maxm <- prior$maxm
          ntprob <- 0
@@ -151,16 +233,13 @@ function(y,
 	 	    alpha <- 1
 	     }
 
-         betacepm <- prior$mub 
-         precce <- solve(prior$Sb)
-
-		 if(is.null(prior$tau1))
+		 if(is.null(prior$taub1))
 		 {
-			tau <- c(-1,-1)
+			taub <- c(-1,-1)
 		 }
 		 else
 		 {
-            tau <- c(prior$tau1,prior$tau2)
+            taub <- c(prior$taub1,prior$taub2)
 		 }
 
          tfprior <- prior$tfprior
@@ -168,11 +247,11 @@ function(y,
 
          if(tfprior==1)
          {  
-	        gprior <- 2*nrec*solve(t(xtf)%*%xtf)
+	        gprior <- 2*nsubject*solve(t(xtf)%*%xtf)
          }
          if(tfprior==2)
          {
-			gprior <- 2*(1/nrec)*t(xtf)%*%xtf
+			gprior <- 2*(1/nsubject)*t(xtf)%*%xtf
          }
          if(tfprior==3)
          {
@@ -190,20 +269,19 @@ function(y,
        # output
        #########################################################################################
 
+         acrate <- 0 
          cpo <- matrix(0,nrow=nrec,ncol=2)
-         densm <- matrix(0,nrow=npredden,ncol=ngrid)
-         densl <- matrix(0,nrow=npredden,ncol=ngrid)
-         densu <- matrix(0,nrow=npredden,ncol=ngrid)
-         survmm <- matrix(0,nrow=npredden,ncol=ngrid)
-         survml <- matrix(0,nrow=npredden,ncol=ngrid)
-         survmu <- matrix(0,nrow=npredden,ncol=ngrid)
+         densm <- matrix(0,nrow=npred,ncol=ngrid)
+         densl <- matrix(0,nrow=npred,ncol=ngrid)
+         densu <- matrix(0,nrow=npred,ncol=ngrid)
 
-         qmm <- matrix(0,nrow=npredmed,3)
-         qml <- matrix(0,nrow=npredmed,3)
-		 qmu <- matrix(0,nrow=npredmed,3)
+         qmm <- matrix(0,nrow=npred,3)
+         qml <- matrix(0,nrow=npred,3)
+		 qmu <- matrix(0,nrow=npred,3)
 
-		 thetasave <- matrix(0, nrow=nsave, ncol=(pce+2))
-         randsave <- matrix(0, nrow=nsave, ncol=((ntlr-1)*ptf))
+		 thetasave <- matrix(0, nrow=nsave, ncol=(p+2))
+         randsave <- matrix(0, nrow=nsave, ncol=nsubject)
+         tfpsave <- matrix(0, nrow=nsave, ncol=((ntlr-1)*ptf))
 
        #########################################################################################
        # parameters depending on status
@@ -216,8 +294,9 @@ function(y,
       	 else
 	     {
 	       alpha <- state$alpha
-	       betace <- state$betace
-	       sigma2 <- state$sigma2
+           b <- state$b
+	       beta <- state$beta
+	       sigma2b <- state$sigma2b
 	       betatf <- state$betatf
 		 }
 
@@ -227,20 +306,23 @@ function(y,
 
 	     seed <- c(sample(1:29000,1),sample(1:29000,1))
 
-         iflag <- rep(0,pce)
          iflagtf <- rep(0,ptf)
          nobsbc <- rep(0,ntprob)
-         obsbc <- matrix(0,nrow=ntprob,ncol=nrec)
+         obsbc <- matrix(0,nrow=ntprob,ncol=nsubject)
          c0 <- matrix(0,nrow=ptf,ncol=ptf)
 
-         workm1 <- matrix(0,nrow=pce,ncol=pce)
-         workvh1 <- rep(0,(pce*(pce+1)/2))
-         workv1 <- rep(0,pce)
+         iflag <- rep(0,p)
+         betac <- rep(0,p)
+         workm1 <- matrix(0,nrow=p,ncol=p)
+         workmp1 <- matrix(0,nrow=p,ncol=p)
+         workmp2 <- matrix(0,nrow=p,ncol=p)
+         workvh1 <- rep(0,(p*(p+1)/2))
+         workv1 <- rep(0,p)
+         workvp1 <- rep(0,p)
 
          worksam <- rep(0,nsave)
          worksam2 <- matrix(0,nrow=nsave,ncol=ngrid)
-         worksam3 <- matrix(0,nrow=nsave,ncol=npredmed)
-
+         worksam3 <- matrix(0,nrow=nsave,ncol=npred)
          fs <- rep(0,ngrid)
 
          workm2 <- matrix(0,nrow=ptf,ncol=ptf)
@@ -254,38 +336,48 @@ function(y,
          prob <- rep(0,2**maxm)
          probc <- rep(0,2**maxm)
 
+
        #########################################################################################
        # calling the fortran code
        #########################################################################################
 
-         foo <- .Fortran("ldtfpdensity",
+         if(family$family=="poisson")
+         {
+            if(family$link=="log")
+            {
+
+                as <- c(alpha,sigma2b,acrate)
+                z <- cbind(x,roffset)
+
+                foo <- .Fortran("ldtfpglmmpois",
+                          maxni       = as.integer(maxni),
                           nrec        = as.integer(nrec),
+                          nsubject    = as.integer(nsubject),
+                          p           = as.integer(p),
+                          subject     = as.integer(subject),
+                          datastr     = as.integer(datastr),
+                          x           = as.double(z),
+                          y           = as.integer(y),
                           ptf         = as.integer(ptf),
-                          pce         = as.integer(pce),
                           xtf         = as.double(xtf),
-                          xce         = as.double(xce),
-                          y           = as.double(y),
                           ngrid       = as.integer(ngrid),
-                          npredden    = as.integer(npredden),
-                          npredmed    = as.integer(npredmed),
+                          npred       = as.integer(npred),
                           grid        = as.double(grid),
+                          xpred       = as.double(xpred),
                           xtfpred     = as.double(xtfpred),
-                          xcepred     = as.double(xcepred),
-						  xtfpredm    = as.double(xtfpredm),
-                          xcepredm    = as.double(xcepredm),
                           quans       = as.double(quans),
+                          prec        = as.double(prec),
+                          sb          = as.double(sb),
                           maxm        = as.integer(maxm),
                           ntprob      = as.integer(ntprob),
                           ntlr        = as.integer(ntlr),
                           a0b0        = as.double(a0b0),
-                          betacepm    = as.double(betacepm),
                           gprior      = as.double(gprior),
-                          precce      = as.double(precce),
-                          tau         = as.double(tau),
-                          alpha       = as.double(alpha),
-                          betace      = as.double(betace),
+                          taub        = as.double(taub),
+                          as          = as.double(as),
+                          b           = as.double(b),
+                          beta        = as.double(beta),
                           betatf      = as.double(betatf),
-                          sigma2      = as.double(sigma2),
                           mcmc        = as.integer(mcmcvec),
                           nsave       = as.integer(nsave),
                           seed        = as.integer(seed),
@@ -296,11 +388,12 @@ function(y,
                           qmm         = as.double(qmm), 
                           qml         = as.double(qml), 
                           qmu         = as.double(qmu), 
-                          survmm      = as.double(survmm),
-                          survml      = as.double(survml),
-                          survmu      = as.double(survmu),
                           thetasave   = as.double(thetasave),
                           randsave    = as.double(randsave),
+                          tfpsave     = as.double(tfpsave),
+                          betac       = as.double(betac),
+                          workmp1     = as.double(workmp1),
+                          workmp2     = as.double(workmp2),
                           iflag       = as.integer(iflag),
                           iflagtf     = as.integer(iflagtf),
                           nobsbc      = as.integer(nobsbc), 
@@ -309,6 +402,7 @@ function(y,
                           workm1      = as.double(workm1),
                           workvh1     = as.double(workvh1),
                           workv1      = as.double(workv1),
+                          workvp1     = as.double(workvp1),
                           worksam     = as.double(worksam),
                           worksam2    = as.double(worksam2),
 						  worksam3    = as.double(worksam3),
@@ -322,6 +416,14 @@ function(y,
                           prob        = as.double(prob),
                           probc       = as.double(probc),
                           PACKAGE     = "DPpackage")	
+
+                foo$alpha <- foo$as[1]
+                foo$sigma2b <- foo$as[2]
+                foo$acrate <- foo$as[3]
+                acrate <- foo$acrate
+
+            }
+         }
   
        #########################################################################################
        # save state
@@ -333,56 +435,55 @@ function(y,
             setwd(old.dir)
          }
 
-         model.name <- "Linear dependent TF process model for density regression"
-         
+         model.name <- "GLMM using a LDTFP prior for the random effects"
+
          cpom <- matrix(foo$cpo,nrow=nrec,ncol=2)
          cpo <- cpom[,1]
          fso <- cpom[,2]
        
-	     densm <- matrix(foo$densm,nrow=npredden,ncol=ngrid)
+	     densm <- matrix(foo$densm,nrow=npred,ncol=ngrid)
          densl <- NULL
          densu <- NULL
 
-         qmm <- matrix(foo$qmm,nrow=npredmed,3)
+         qmm <- matrix(foo$qmm,nrow=npred,3)
          qml <- NULL
          qmu <- NULL
 
-         survmm <- matrix(foo$survmm,nrow=npredden,ncol=ngrid)
-         survml <- NULL
-         survmu <- NULL
 
          if(compute.band)
          {
-			densl <- matrix(foo$densl,nrow=npredden,ncol=ngrid)
-			densu <- matrix(foo$densu,nrow=npredden,ncol=ngrid)
+			densl <- matrix(foo$densl,nrow=npred,ncol=ngrid)
+			densu <- matrix(foo$densu,nrow=npred,ncol=ngrid)
 
-			qml <- matrix(foo$qml,nrow=npredmed,3)
-			qmu <- matrix(foo$qmu,nrow=npredmed,3)
+			qml <- matrix(foo$qml,nrow=npred,3)
+			qmu <- matrix(foo$qmu,nrow=npred,3)
 
-			survml <- matrix(foo$survml,nrow=npredden,ncol=ngrid)
-			survmu <- matrix(foo$survmu,nrow=npredden,ncol=ngrid)
          }
 
- 	     thetasave <- matrix(foo$thetasave,nrow=mcmc$nsave, ncol=(pce+2))
-         randsave <- matrix(foo$randsave,nrow=mcmc$nsave, ncol=((ntlr-1)*ptf))
+ 	     thetasave <- matrix(foo$thetasave,nrow=mcmc$nsave, ncol=(p+2))
+         randsave <- matrix(foo$randsave,nrow=mcmc$nsave, ncol=nsubject)
+         tfpsave <- matrix(foo$tfpsave,nrow=mcmc$nsave, ncol=((ntlr-1)*ptf))
  	 
-         colnames(thetasave) <- c(colnames(xce),"sigma2","alpha")
+         colnames(thetasave) <- c(colnames(x),"sigma2b","alpha")
          coeff <- apply(thetasave,2,mean)
 
-         colnames(randsave) <- rep(colnames(xtf),(ntlr-1))
+         colnames(tfpsave) <- rep(colnames(xtf),(ntlr-1))
 
 	     state <- list(alpha=foo$alpha,
-	                   betace=foo$betace,
-	                   sigma2=foo$sigma2,
+	                   beta=foo$beta,
+                       b=foo$b,
+	                   sigma2b=foo$sigma2b,
 	                   betatf=matrix(foo$betatf,nrow=ntlr,ncol=ptf),
                        nobsbc=foo$nobsbc,
-                       obsbc=matrix(foo$obsbc,nrow=ntprob,ncol=nrec))
+                       obsbc=matrix(foo$obsbc,nrow=ntprob,ncol=nsubject))
 
    	     save.state <- list(thetasave=thetasave,
-                            randsave=randsave)
+                            randsave=randsave,
+                            tfpsave=tfpsave)
 
 
 	     z <- list(modelname=model.name,
+                   acrate=acrate,
 				   coefficients=coeff,
 	               call=cl,
                    compute.band=compute.band,
@@ -393,40 +494,36 @@ function(y,
                    state=state,
                    save.state=save.state,
                    nrec=foo$nrec,
-                   pce=foo$pce,
+                   nsubject=foo$nsubject,
+                   p=foo$p,
                    ptf=foo$ptf,
                    y=y,
-                   x=xce,
+                   x=x,
                    xtf=xtf,
                    ngrid=ngrid,
-                   npredden=npredden,
-                   npredmed=npredmed,
+                   npred=npred,
                    grid=grid,
                    densm=densm,
                    densl=densl,
                    densu=densu,
                    qmm=qmm,
                    qml=qml,
-                   qmu=qmu,
-                   survmm=survmm,
-                   survml=survml,
-                   survmu=survmu)
+                   qmu=qmu)
 
 	    cat("\n\n")
-	    class(z) <- c("LDTFPdensity")
+	    class(z) <- c("LDTFPglmm")
 	    z 
 }
 
 
 ###
-### Tools for LDTFPdensity: print, summary, plot
+### Tools for LDTFPglmm: print, summary, plot
 ###
 ### Copyright: Alejandro Jara, 2011
 ### Last modification: 11-11-2011.
 
 
-
-"print.LDTFPdensity" <- function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.LDTFPglmm" <- function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -440,15 +537,18 @@ function(y,
     print.default(format(x$coefficients, digits = digits), print.gap = 2, 
             quote = FALSE)
 
-    cat("\nNumber of Observations:",x$nrec)
-    cat("\nNumber of Predictors for the Median:",x$pce)    
-    cat("\nNumber of Predictors for the Tailfree Probabilities:",x$ptf,"\n")    
+    cat("\nAcceptance Rate for Metropolis Steps = ",x$acrate,"\n")    
+
+    cat("\nNumber of groups:",x$nsubject)
+    cat("\nNumber of observations:",x$nrec)
+    cat("\nNumber of predictors for the fixed effects:",x$p)    
+    cat("\nNumber of predictors for the tailfree probabilities:",x$ptf,"\n")    
     cat("\n\n")
     invisible(x)
 }
 
 
-"plot.LDTFPdensity"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
+"plot.LDTFPglmm"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
 {
 
 fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
@@ -521,17 +621,22 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 }
 
 
-   if(is(x, "LDTFPdensity"))
+   if(is(x, "LDTFPglmm"))
    {
         if(is.null(param))
         {
            coef.p <- x$coefficients
            n <- length(coef.p)
            pnames <- names(coef.p)
-           
+           pp <- length(coef.p)
+           if(is.null(x$prior$a0))
+           {
+              pp <- pp - 1
+           }
+
            par(ask = ask)
            layout(matrix(seq(1,nfigr*nfigc,1), nrow=nfigr , ncol=nfigc ,byrow=TRUE))
-           for(i in 1:length(coef.p))
+           for(i in 1:pp)
            {
                title1 <- paste("Trace of",pnames[i],sep=" ")
                title2 <- paste("Density of",pnames[i],sep=" ")       
@@ -539,7 +644,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 			   fancydensplot1(x$save.state$thetasave[,i],hpd=hpd,main=title2,xlab="values", ylab="density",col=col)
            }
 
-           for(i in 1:x$npredden)
+           for(i in 1:x$npred)
            {
                if(x$compute.band)
                {
@@ -584,7 +689,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 		}
 		else
 		{
-			for(i in 1:x$npredden)
+			for(i in 1:x$npred)
 			{
 				if(x$compute.band)
 				{
@@ -606,9 +711,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 }
 
 
-
-
-"summary.LDTFPdensity" <- function(object, hpd=TRUE, ...) 
+"summary.LDTFPglmm" <- function(object, hpd=TRUE, ...) 
 {
     stde<-function(x)
     {
@@ -647,10 +750,9 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 ### CPO
     ans$cpo <- object$cpo
 
-
 ### Median information
  
-    dimen1 <- object$pce
+    dimen1 <- object$p
     if(dimen1==1)
     {
        mat <- matrix(thetasave[,1],ncol=1)
@@ -770,17 +872,19 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 		ans$prec <- coef.table
 	}
 
-
+    ans$acrate <- object$acrate
     ans$nrec <- object$nrec
-    ans$pce <- object$pce
+    ans$p <- object$p
 	ans$ptf <- object$ptf
 
-    class(ans) <- "summaryLDTFPdensity"
+    class(ans) <- "summaryLDTFPglmm"
     return(ans)
 }
 
 
-"print.summaryLDTFPdensity"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+
+
+"print.summaryLDTFPglmm"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -804,12 +908,13 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
             quote = FALSE)
     }
 
-    cat("\nNumber of Observations:",x$nrec)
-    cat("\nNumber of Predictors for the Median:",x$pce)    
-    cat("\nNumber of Predictors for the Tailfree Probabilities:",x$pce,"\n")    
+    cat("\nAcceptance Rate for Metropolis Steps = ",x$acrate,"\n")    
+
+    cat("\nNumber of groups:",x$nsubject)
+    cat("\nNumber of observations:",x$nrec)
+    cat("\nNumber of predictors for the fixed effects:",x$p)    
+    cat("\nNumber of predictors for the tailfree probabilities:",x$ptf,"\n")    
     cat("\n\n")
     invisible(x)
 }
-
-
 

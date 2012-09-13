@@ -2,7 +2,7 @@
 ### Fit a semiparametric aft model for multivariate doubly interval
 ### censored survival data.
 ###
-### Copyright: Alejandro Jara, 2007-2010.
+### Copyright: Alejandro Jara, 2007-2012.
 ###
 ### Last modification: 23-01-2010.
 ###

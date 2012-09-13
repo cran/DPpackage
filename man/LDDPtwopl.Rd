@@ -1,16 +1,16 @@
-\name{LDDPrasch}
-\alias{LDDPrasch}
-\alias{LDDPrasch.default}
+\name{LDDPtwopl}
+\alias{LDDPtwopl}
+\alias{LDDPtwopl.default}
 
-\title{Bayesian analysis for a dependent semiparametric Rasch model}
+\title{Bayesian analysis for a dependent semiparametric two parameters logistic model}
 \description{
     This function generates a posterior density sample for a 
-    semiparametric Rasch model, using a LDDP mixture of normals prior
+    semiparametric two parameters logistic model, using a LDDP mixture of normals prior
     for the distribution of the random effects. 
 }
    
 \usage{
-LDDPrasch(formula,prior,mcmc,offset=NULL,
+LDDPtwopl(formula,prior,mcmc,
           state,status,
           grid=seq(-10,10,length=1000),
           zpred,data=sys.frame(sys.parent()),
@@ -43,7 +43,9 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
                      distribution for \code{tau2},
                      \code{beta0} and \code{Sbeta0} giving the 
                      hyperparameters of the normal prior distribution for the difficulty
-                     parameters.}
+                     parameters, and \code{r1} and \code{r2} giving the 
+                     hyperparameters of the lognormal prior distribution for 
+                     the discrimination parameters.}
 
     \item{mcmc}{     a list giving the MCMC parameters. The list must include
                      the following integers: \code{nburn} giving the number of burn-in 
@@ -52,9 +54,6 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
                      the number of saved scans to be displayed on screen (the function reports 
                      on the screen when every \code{ndisplay} iterations have been carried
                      out).}   
-
-    \item{offset}{   this can be used to specify an a priori known component to
-                     be included in the linear predictor during the fitting.}
 
     \item{state}{    a list giving the current value of the parameters. This list is used
                      if the current analysis is the continuation of a previous analysis.}
@@ -76,10 +75,10 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
 }
 
 \details{
-  This generic function fits a linear dependent semiparametric Rasch model as in
-  Farina et al. (2009), where
-  \deqn{\eta_{ij} = \theta_i - \beta_j, i=1,\ldots,n, j=1,\ldots,k}{etaij = thetai - betaj, i=1,\ldots,n, j=1,\ldots,k}
+  This generic function fits a linear dependent semiparametric two parameters logistic model:
+  \deqn{\eta_{ij} = \gamma_j(\theta_i - \beta_j), i=1,\ldots,n, j=1,\ldots,k}{etaij = gammaj(thetai - betaj), i=1,\ldots,n, j=1,\ldots,k}
   \deqn{\beta | \beta_0, S_{\beta_0} \sim N(\beta_0,S_{\beta_0})}{beta | beta0, Sbeta0 ~ N(beta0,Sbeta0)}
+  \deqn{\gamma_j | r_1, r_2 \sim LN(r_1,r_2), j=2,\ldots,k}{gammaj | r1, r2 ~ LN(r1,r2), j=2,\ldots,k}
   \deqn{\theta_i | f_{X_i} \sim f_{X_i}}{thetai | fXi ~ fXi}
   \deqn{f_{X_i} = \int N(X_i \alpha_c, \sigma^2) G(d \alpha_c d \sigma^2)}{fXi = \int N(Xi alphac, sigma2) G(d alphac d sigma2)}
   \deqn{G | \alpha, G_0 \sim DP(\alpha G_0)}{G | alpha, G0 ~ DP(alpha G0)}
@@ -109,10 +108,10 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
 }
 
 \value{
-  An object of class \code{LDDPrasch} representing the LDDP mixture of normals Rasch model. 
-  Generic functions such as \code{print}, \code{plot},
+  An object of class \code{LDDPtwopl} representing the LDDP mixture of normals two parameters 
+  logistic model. Generic functions such as \code{print}, \code{plot},
   and \code{summary} have methods to show the results of the fit. The results include 
-  \code{beta}, \code{mub}, \code{sb}, \code{tau2}, the precision parameter 
+  \code{beta}, \code{gamma}, \code{mub}, \code{sb}, \code{tau2}, the precision parameter 
   \code{alpha}, and the number of clusters.
   
   The list \code{state} in the output object contains the current value of the parameters 
@@ -124,6 +123,8 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
   for each subject.} 
 
   \item{beta}{ giving the value of the difficulty parameters.}
+
+  \item{gamma}{ giving the value of the discrimination parameters.}
 
   \item{alphaclus}{a matrix of dimension (number of subject + 100) times the 
                     number of columns in the design matrix, giving the 
@@ -148,7 +149,7 @@ LDDPrasch(formula,prior,mcmc,offset=NULL,
 }
 
 \seealso{
-\code{\link{DPrandom}}, \code{\link{DPMrasch}}, \code{\link{DPrasch}}, \code{\link{FPTrasch}}
+\code{\link{LDDPrasch}}
 }
 
 \references{
@@ -204,8 +205,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       rtrue1 <- function(n)
       {
           ind <- sample(x=c(1,2,3),
-                        size=n,replace =TRUE, 
-                        prob =c(0.6,0.3,0.1))
+          size=n,replace =TRUE, 
+          prob =c(0.6,0.3,0.1))
           x1 <- rnorm(n,-1,0.4)
           x2 <- rnorm(n, 0,0.5)
           x3 <- rnorm(n, 1,0.5)
@@ -219,8 +220,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       rtrue2 <- function(n)
       {
           ind <- sample(x=c(1,2),
-                        size=n,replace=TRUE, 
-                        prob =c(0.5,0.5))
+          size=n,replace=TRUE, 
+          prob =c(0.5,0.5))
           x1 <- rnorm(n,-1,0.5)
           x2 <- rnorm(n, 1,0.5)
           x <- rep(0,n)
@@ -232,8 +233,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       rtrue3 <- function(n)
       {
           ind <- sample(x=c(1,2,3),
-                        size=n,replace=TRUE, 
-                        prob =c(0.1,0.3,0.6))
+          size=n,replace=TRUE, 
+          prob =c(0.1,0.3,0.6))
           x1 <- rnorm(n,-1,0.5)
           x2 <- rnorm(n, 0,0.5)
           x3 <- rnorm(n, 1,0.4)
@@ -265,13 +266,14 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
       dimnames(y)<-list(paste("id",seq(1:nsubject)), 
                         paste("item",seq(1,nitem)))
 
-      beta <- c(0,seq(-4,4,length=nitem-1))
+      beta <- c(0,sample(seq(-1.8,1.8,length=nitem-1)))
+      gam <- c(1,sample(seq(0.2,1.4,length=nitem-1)))
 
       for(i in 1:nsubject)
       {
          for(j in 1:nitem)
          {
-            eta <- theta[i]-beta[j]         
+            eta <- gam[j]*(theta[i]-beta[j])         
             prob <- exp(eta)/(1+exp(eta))
             y[i,j] <- rbinom(1,1,prob)
          }
@@ -292,6 +294,8 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
      prior <- list(alpha=1, 
                    beta0=rep(0,nitem-1),
                    Sbeta0=diag(1000,nitem-1),
+                   r1=0,
+                   r2=1,
                    mu0=rep(0,3),
                    S0=diag(100,3),
                    tau1=6.01,
@@ -305,14 +309,14 @@ Neal, R. M. (2000). Markov Chain sampling methods for Dirichlet process mixture 
    ###########################
      mcmc <- list(nburn=5000,
                   nskip=3,
-                  ndisplay=100,
+                  ndisplay=200,
                   nsave=5000)
 
    ###########################
    # fitting the model
    ###########################
  
-     fitLDDP <-  LDDPrasch(formula=y ~ trt,
+     fitLDDP <-  LDDPtwopl(formula=y ~ trt,
                            prior=prior,
                            mcmc=mcmc,
                            state=NULL,

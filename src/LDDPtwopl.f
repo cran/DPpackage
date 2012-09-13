@@ -1,29 +1,29 @@
 c=======================================================================                      
-      subroutine lddpraschpoi(ngrid,npred,nsubject,p,q,y,roffset,
-     &                      grid,z,zpred,     
-     &                      murand,a0b0,b0,prec1,sb,mu0,prec2,smu,tinv,   
-     &                      acrate,cpo,
-     &                      denspm,randsave,thetasave,densave,          
-     &                      ncluster,ss,beta,b,
-     &                      alphaclus,sigmaclus,
-     &                      alpha,mu,sigma,tau2,        
-     &                      mcmc,nsave,
-     &                      iflagp,betac,xtx,xty,workmhp1,workvp1,       
-     &                      cstrt,ccluster,iflagq,
-     &                      alphawork,densw,
-     &                      prob,quadf,sigmainv,            
-     &                      workmhq1,workmhq2,                            
-     &                      workvq1,workvq2,      
-     &                      ztz,zty,                                      
-     &                      seed)                                          
+      subroutine lddptwopl(ngrid,npred,nsubject,p,q,y,
+     &                     grid,z,zpred,     
+     &                     murand,a0b0,b0,prec1,mu0,prec2,smu,tinv,   
+     &                     acrate,cpo,
+     &                     denspm,randsave,thetasave,densave,          
+     &                     ncluster,ss,beta,b,dp,
+     &                     alphaclus,sigmaclus,
+     &                     alpha,mu,sigma,tau2,
+     &                     disprior,        
+     &                     mcmc,nsave,
+     &                     cstrt,ccluster,iflagq,
+     &                     adapt,lsd,alphawork,densw,
+     &                     prob,quadf,sigmainv,            
+     &                     workmhq1,workmhq2,                            
+     &                     workvq1,workvq2,      
+     &                     ztz,zty,                                      
+     &                     seed)                                          
 c=======================================================================                  
-c   # 58 arguments
+c   # 54 arguments
 c
-c     Copyright: Alejandro Jara, 2007-2010.
+c     Copyright: Alejandro Jara, 2012.
 c
 c     Version 1.0:
 c
-c     Last modification: 25-09-2009.
+c     Last modification: 07-09-2012.
 c
 c     This program is free software; you can redistribute it and/or modify
 c     it under the terms of the GNU General Public License as published by
@@ -58,7 +58,6 @@ c=======================================================================
 c+++++Data
       integer ngrid,npred,nsubject,p,q
       integer y(nsubject,p)
-      real*8 roffset(nsubject,p)
       real*8 grid(ngrid),z(nsubject,q),zpred(npred,q)
 
 c+++++Prior
@@ -67,7 +66,6 @@ c+++++Prior
       real*8 aa0,ab0
       real*8 b0(p-1)
       real*8 prec1(p-1,p-1)
-      real*8 sb(p-1)
       real*8 mu0(q)
       real*8 prec2(q,q)
       real*8 smu(q)
@@ -75,22 +73,24 @@ c+++++Prior
       real*8 taus1,taus2
       real*8 nu
       real*8 tinv(q,q) 
-
+      real*8 disprior(2)
+  
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(2)
+      real*8 acrate(p-1)
       real*8 cpo(nsubject,p)
       real*8 denspm(npred,ngrid)
       real*8 randsave(nsave,nsubject+npred)
-      real*8 thetasave(nsave,p+q+(q*(q+1)/2)+2)
+      real*8 thetasave(nsave,2*p-1+q+(q*(q+1)/2)+2)
       real*8 densave(nsave,npred*ngrid)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject) 
       real*8 beta(p-1)
       real*8 b(nsubject)
+      real*8 dp(p-1)
       real*8 alphaclus(nsubject+100,q)
       real*8 sigmaclus(nsubject+100)
       real*8 alpha
@@ -98,17 +98,12 @@ c+++++Current values of the parameters
       real*8 sigma(q,q)
       real*8 tau2
 
-c+++++External Working space - Difficulty parameters
-      integer iflagp(p-1)
-      real*8 betac(p-1)
-      real*8 xtx(p-1,p-1),xty(p-1)
-      real*8 workmhp1((p-1)*p/2)
-      real*8 workvp1(p-1)
-
 c+++++External Working space - DDP part
       integer cstrt(nsubject,nsubject)
       integer ccluster(nsubject)
       integer iflagq(q)
+      real*8 adapt(p-1)
+      real*8 lsd(p-1)
       real*8 alphawork(q)
       real*8 densw(npred,ngrid)
       real*8 prob(nsubject+100)
@@ -119,11 +114,17 @@ c+++++External Working space - DDP part
       real*8 workvq1(q),workvq2(q)
       real*8 ztz(q,q),zty(q)
 
+c+++++Working space slice sampling
+      real*8 rexpo,re,uwork
+      real*8 logy,xx0,xx1,llim,rlim
+      real*8 grlim,gllim,gxx0,gxx1
+
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
 
 c+++++Internal Working space
       integer counter
+      integer counterad
       integer dispcount
       integer evali
       integer i,ii
@@ -135,21 +136,16 @@ c+++++Internal Working space
       integer skipcount
       integer sprint
       integer yij
-      real*8 acrate2
-      real*8 dpoiss,detlog,dnrm
+      real*8 dbin,detlog,dnrm
       real*8 eta,gprime
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
+      real*8 lposto,lpostn
       real*8 mean
       real*8 muwork
-      real*8 offset
       real*8 ratio,rgamma,rnorm,runif
       real*8 ssb
       real*8 thetac
       real*8 tmp1,tmp2,tmp3
       real*8 ytilde
-      real*8 wtw,wtwinv,wty
       real*8 sigmawork
 
 c+++++CPU time
@@ -196,6 +192,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ start the MCMC algorithm
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+      counterad=0
       isave=0
       skipcount=0
       dispcount=0
@@ -216,227 +213,215 @@ c++++++++++++++++++++++++++++++++++
 c+++++++ difficulty parameters
 c++++++++++++++++++++++++++++++++++
 
-         do i=1,p-1
-            do j=1,p-1
-               xtx(i,j)=prec1(i,j)
+         do j=1,p-1
+
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+
+            evali=1
+            xx0=beta(j)
+            call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                     prec1,b0,tmp1)
+
+            re=rexpo(1.d0)
+            logy=tmp1-re
+
+            uwork=dble(runif())  
+            llim=xx0-uwork
+            rlim=llim+1.d0
+
+            evali=evali+1
+            beta(j)=llim
+            call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                     prec1,b0,gllim)
+
+
+            evali=evali+1
+            beta(j)=rlim
+            call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                     prec1,b0,grlim)
+
+
+            do while(gllim.gt.logy)
+               llim=llim-1.d0
+
+               evali=evali+1
+               beta(j)=llim
+               call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                        prec1,b0,gllim)
+
+            end do 
+
+            do while(grlim.gt.logy)
+               rlim=rlim+1.d0
+
+               evali=evali+1
+               beta(j)=rlim
+               call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                        prec1,b0,grlim)
+
+            end do 
+
+            xx1=llim+(rlim-llim)*dble(runif())
+
+            evali=evali+1
+            beta(j)=xx1
+            call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                     prec1,b0,gxx1)
+
+            do while(gxx1.lt.logy)
+               if(xx1.gt.xx0)rlim=xx1
+               if(xx1.lt.xx0)llim=xx1
+
+               xx1=llim+(rlim-llim)*dble(runif())
+
+               evali=evali+1
+               beta(j)=xx1
+               call tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                        prec1,b0,gxx1)
+
             end do
-            xty(i)=sb(i)
+
+            beta(j)=xx1
+
          end do
-         
-         logliko=0.d0
-         
-         do i=1,nsubject
-            do j=1,p-1
-               yij=y(i,j+1)
-               eta=b(i)-beta(j)+roffset(i,j+1) 
-               offset=b(i)+roffset(i,j+1)
-               mean=exp(eta)
-               gprime=exp(-eta)
-
-               ytilde=eta+(dble(yij)-mean)*gprime-offset
-
-               xtx(j,j)=xtx(j,j)+1.d0/gprime
-               xty(j)=xty(j)-ytilde/gprime
-
-               logliko=logliko+dpoiss(dble(yij),mean,1)
-            end do
-         end do
-
-         call inverse(xtx,p-1,iflagp) 
-
-         do i=1,p-1
-            tmp1=0.d0
-            do j=1,p-1
-               tmp1=tmp1+xtx(i,j)*xty(j) 
-            end do
-            workvp1(i)=tmp1
-         end do
-
-         call rmvnorm(p-1,workvp1,xtx,workmhp1,xty,betac)
-
-         call dmvnd(p-1,betac,workvp1,xtx,logcgko,iflagp)
-
-c+++++++ prior ratio
-
-         tmp1=0.d0
-         tmp2=0.d0
-         
-         do i=1,p-1
-            do j=1,p-1
-               tmp1=tmp1+(betac(i)-b0(i))* 
-     &                    prec1(i,j)      *
-     &                   (betac(j)-b0(j))
-
-               tmp2=tmp2+(beta(i) -b0(i))* 
-     &                    prec1(i,j)      *
-     &                   (beta(j) -b0(j))
-            end do
-         end do
-
-         logpriorn=-0.5d0*tmp1
-         logprioro=-0.5d0*tmp2
-
-            
-c+++++++ candidate generating kernel contribution
-
-         do i=1,p-1
-            do j=1,p-1
-               xtx(i,j)=prec1(i,j)
-            end do
-            xty(i)=sb(i)
-         end do
-
-         loglikn=0.d0
-
-         do i=1,nsubject
-            do j=1,p-1
-               yij=y(i,j+1)
-               eta=b(i)-betac(j)+roffset(i,j+1) 
-               offset=b(i)+roffset(i,j+1)
-               mean=exp(eta)
-               gprime=exp(-eta)
-               ytilde=eta+(dble(yij)-mean)*gprime-offset
-
-               loglikn=loglikn+dpoiss(dble(yij),mean,1)               
-
-               xtx(j,j)=xtx(j,j)+1.d0/gprime
-               xty(j)=xty(j)-ytilde/gprime
-            end do
-         end do
-
-         call inverse(xtx,p-1,iflagp)      
-         do i=1,p-1
-            tmp1=0.d0
-            do j=1,p-1
-               tmp1=tmp1+xtx(i,j)*xty(j) 
-            end do
-            workvp1(i)=tmp1
-         end do
-            
-         call dmvnd(p-1,beta,workvp1,xtx,logcgkn,iflagp)
- 
-c+++++++ mh step
-
-         ratio=loglikn-logliko+logcgkn-logcgko+
-     &         logpriorn-logprioro
-
-         if(log(runif()).lt.ratio)then
-            acrate(1)=acrate(1)+1.d0
-            do i=1,p-1
-               beta(i)=betac(i) 
-            end do
-         end if
 
 c         call dblepr("beta",-1,beta,p-1)
 
-c++++++++++++++++++++++++++++++++++         
-c+++++++ random effects 
+
+c++++++++++++++++++++++++++++++++++
+c+++++++ discriminant parameters
 c++++++++++++++++++++++++++++++++++
 
-c+++++++ check if the user has requested an interrupt
-         call rchkusr()
+         counterad=counterad+1
 
-         acrate2=0.d0
+         do j=1,p-1
+
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
+
+            xx0=dp(j)
+            call tartwoplc(j,nsubject,p,y,b,beta,dp,
+     &                     disprior,lposto)
+
+
+            llim=exp(lsd(j))
+            xx1=xx0+rnorm(0.d0,llim)
+            dp(j)=xx1
+            call tartwoplc(j,nsubject,p,y,b,beta,dp,
+     &                     disprior,lpostn)
+
+            tmp1=lpostn-lposto
+            if(log(dble(runif())).lt.tmp1)then
+               acrate(j)=acrate(j)+1.d0
+               adapt(j)=adapt(j)+1.d0
+               dp(j)=xx1
+              else
+               dp(j)=xx0
+            end if
+
+            if(counterad.eq.50)then
+               adapt(j)=adapt(j)/dble(50)
+
+               tmp1=exp(-0.5*log(dble(iscan)))  
+               tmp1=min(0.01,tmp1)
+               if(adapt(j).gt.0.44d0)then
+                    lsd(j)=lsd(j)+tmp1
+                  else
+                    lsd(j)=lsd(j)-tmp1
+                end if
+               
+               adapt(j)=0.d0
+               counterad=0
+            end if
+           
+
+         end do
+
+c         call dblepr("dp",-1,dp,p-1)
+
+
+c++++++++++++++++++++++++++++++++++         
+c+++++++ ability parameters 
+c++++++++++++++++++++++++++++++++++
+
 
          do i=1,nsubject
 
-            tmp1=0.d0
-            do j=1,q
-               tmp1=tmp1+z(i,j)*alphaclus(ss(i),j)
-            end do
-            sigmawork=sigmaclus(ss(i))
 
-            logprioro=dnrm(b(i),tmp1,sqrt(sigmawork),1)
+c++++++++++ check if the user has requested an interrupt
+            call rchkusr()
 
-            wtw=1.d0/sigmawork
-            wty=tmp1/sigmawork
+            evali=1
+            xx0=b(i)
+            call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     xx0,tmp1)
 
-            logliko=0.d0
-            
-            do j=1,p
-               if(j.eq.1)then
-                  eta=b(i)+roffset(i,j)
-                  offset=roffset(i,j)
-                 else
-                  eta=b(i)-beta(j-1)+roffset(i,j)
-                  offset=-beta(j-1)+roffset(i,j)
-               end if
-               
-               yij=y(i,j)
+            re=rexpo(1.d0)
+            logy=tmp1-re
 
-               mean=exp(eta)
-               gprime=exp(-eta)
+            uwork=dble(runif())  
+            llim=xx0-uwork
+            rlim=llim+1.d0
 
-               ytilde=eta+(dble(yij)-mean)*gprime-offset    
+            evali=evali+1
+            call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     llim,gllim)
 
-               logliko=logliko+dpoiss(dble(yij),mean,1)
-               
-               wtw=wtw+1.d0/gprime
-               wty=wty+ytilde/gprime
-            end do
 
-            wtwinv=1.d0/wtw
-            tmp1=wtwinv*wty
- 
-            thetac=rnorm(tmp1,sqrt(wtwinv))
+            evali=evali+1
+            call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     rlim,grlim)
 
-            logcgko=dnrm(thetac,tmp1,sqrt(wtwinv),1)
 
-c++++++++++ candidate generating kernel contribution
+            do while(gllim.gt.logy)
+               llim=llim-1.d0
 
-            tmp1=0.d0
-            do j=1,q
-               tmp1=tmp1+z(i,j)*alphaclus(ss(i),j)
-            end do
-            sigmawork=sigmaclus(ss(i))
+               evali=evali+1
+               call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     llim,gllim)
+            end do 
 
-            logpriorn=dnrm(thetac,tmp1,sqrt(sigmawork),1)
+            do while(grlim.gt.logy)
+               rlim=rlim+1.d0
 
-            wtw=1.d0/sigmawork
-            wty=tmp1/sigmawork
+               evali=evali+1
+               call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     rlim,grlim)
+            end do 
 
-            loglikn=0.d0
-            
-            do j=1,p
-               if(j.eq.1)then
-                  eta=thetac+roffset(i,j)
-                  offset=roffset(i,j)
-                 else
-                  eta=thetac-beta(j-1)+roffset(i,j)
-                  offset=-beta(j-1)+roffset(i,j)
-               end if
-               
-               yij=y(i,j)
-               
-               mean=exp(eta)
-               gprime=exp(-eta)
-               
-               ytilde=eta+(dble(yij)-mean)*gprime-offset    
+            xx1=llim+(rlim-llim)*dble(runif())
 
-               loglikn=loglikn+dpoiss(dble(yij),mean,1)
+            evali=evali+1
+            call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     xx1,gxx1)
 
-               wtw=wtw+1.d0/gprime
-               wty=wty+ytilde/gprime
+
+            do while(gxx1.lt.logy)
+               if(xx1.gt.xx0)rlim=xx1
+               if(xx1.lt.xx0)llim=xx1
+
+               xx1=llim+(rlim-llim)*dble(runif())
+
+               evali=evali+1
+               call tartwopla(i,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     xx1,gxx1)
+
             end do
 
-            wtwinv=1.d0/wtw
-            tmp1=wtwinv*wty
- 
-            logcgkn=dnrm(b(i),tmp1,sqrt(wtwinv),1)
+            b(i)=xx1
 
-c++++++++++ mh step
-            ratio=loglikn-logliko+logcgkn-logcgko+
-     &            logpriorn-logprioro
-
-            if(log(runif()).lt.ratio)then
-               acrate2=acrate2+1.d0
-               b(i)=thetac
-            end if
          end do
 
-         acrate(2)=acrate(2)+acrate2/dble(nsubject)
-
 c         call dblepr("b",-1,b,nsubject)
+
 
 c++++++++++++++++++++++++++++++++++
 c+++++++ clustering structure   +++
@@ -523,6 +508,9 @@ c++++++++++ check if the user has requested an interrupt
      
 c         call intpr("ncluster",-1,ncluster,1)
 c         call intpr("ss",-1,ss,nsubject)
+
+
+100      continue
 
 c+++++++++++++++++++++++++++++++++++
 c+++++++ regression coefficients +++
@@ -723,27 +711,35 @@ c+++++++++++++ difficulty parameters
                   thetasave(isave,i)=beta(i)
                end do
 
+
+c+++++++++++++ discriminant parameters
+
+               do i=1,p-1
+                  thetasave(isave,p-1+i)=exp(dp(i))
+               end do
+
+
 c+++++++++++++ random effects variance
-               thetasave(isave,p)=tau2
+               thetasave(isave,2*p-1)=tau2
 
 c+++++++++++++ baseline information
                
                do i=1,q
-                  thetasave(isave,p+i)=mu(i)
+                  thetasave(isave,2*p-1+i)=mu(i)
                end do   
               
                counter=0
                do i=1,q
                   do j=i,q	
                      counter=counter+1
-                     thetasave(isave,p+q+counter)=sigma(i,j)
+                     thetasave(isave,2*p-1+q+counter)=sigma(i,j)
                   end do   
                end do
 
 c+++++++++++++ cluster information
 
-               thetasave(isave,p+q+counter+1)=ncluster
-               thetasave(isave,p+q+counter+2)=alpha
+               thetasave(isave,2*p-1+q+counter+1)=ncluster
+               thetasave(isave,2*p-1+q+counter+2)=alpha
 
 c+++++++++++++ random effects
 
@@ -918,12 +914,12 @@ c+++++++++++++ cpo
                   do j=1,p
                      yij=y(i,j)
                      if(j.eq.1)then
-                       eta=b(i)+roffset(i,j)
+                       eta=b(i)
                       else
-                       eta=b(i)-beta(j-1)+roffset(i,j)
+                       eta=exp(dp(j-1))*(b(i)-beta(j-1))
                      end if
-                     mean=exp(eta)
-                     tmp1=dpoiss(dble(yij),mean,0)
+                     mean=exp(eta)/(1.d0+dexp(eta))
+                     tmp1=dbin(dble(yij),1.d0,mean,0)
                      cpo(i,j)=cpo(i,j)+1.d0/tmp1
                   end do
                end do
@@ -943,10 +939,11 @@ c+++++++++++++ print
 
       end do
       
-      do i=1,2
-         acrate(i)=acrate(i)/dble(nscan)    
-      end do   
       
+      do i=1,p-1
+         acrate(i)=acrate(i)/dble(nscan)
+      end do
+       
       do i=1,nsubject
          do j=1,p
             cpo(i,j)=dble(nsave)/cpo(i,j)
@@ -961,4 +958,155 @@ c+++++++++++++ print
 
       return
       end
+
+
+c=================================================================================
+      subroutine tartwopld(j,nsubject,p,y,b,beta,dp,
+     &                     prec,b0,out)
+c=================================================================================
+c     A.J., 2012
+c=================================================================================
+      implicit none
+      integer j,nsubject,p
+      integer y(nsubject,p)
+      real*8 b(nsubject)
+      real*8 beta(p-1) 
+      real*8 dp(p-1)
+      real*8 prec(p-1,p-1)
+      real*8 b0(p-1) 
+
+      integer yij,i,ii,jj 
+      real*8 dbin,eta,mean,tmp1
+
+      real*8 out
+
+      out=0.d0         
+         
+      do i=1,nsubject
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         yij=y(i,j+1)            
+         eta=exp(dp(j))*(b(i)-beta(j)) 
+         mean=exp(eta)/(1.d0+exp(eta))
+         out=out+dbin(dble(yij),1.d0,mean,1)
+      end do
+
+      tmp1=0.d0
+      do ii=1,p-1
+         do jj=1,p-1
+            tmp1=tmp1+(beta(ii)-b0(ii))* 
+     &               prec(ii,jj)      *
+     &              (beta(jj)-b0(jj))
+
+         end do
+      end do
+      out=out-0.5d0*tmp1
+   
+      return
+      end
+
+
+c=================================================================================
+      subroutine tartwopla(ind,nsubject,p,q,beta,dp,y,
+     &                     alphaclus,sigmaclus,z,ss,
+     &                     theta,out)
+c=================================================================================
+c     A.J., 2012
+c=================================================================================
+      implicit none
+      integer ind,nsubject,p,q
+      integer y(nsubject,p),ss(nsubject) 
+      real*8 beta(p-1) 
+      real*8 dp(p-1)
+      real*8 alphaclus(nsubject+100,q)
+      real*8 sigmaclus(nsubject+100)
+      real*8 z(nsubject,q)
+      real*8 theta
+
+      integer yij,j
+      real*8 dbin,dnrm,eta,mean,tmp1,tmp2,sigmawork
+
+      real*8 out
+
+      tmp1=0.d0
+      do j=1,q
+         tmp1=tmp1+z(ind,j)*alphaclus(ss(ind),j)
+      end do
+      sigmawork=sigmaclus(ss(ind))
+      tmp2=dnrm(theta,tmp1,sqrt(sigmawork),1)
+
+
+      out=0.d0         
+      do j=1,p
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         yij=y(ind,j)
+         if(j.eq.1)then
+            eta=theta
+          else
+            eta=exp(dp(j-1))*(theta-beta(j-1))
+          end if
+          mean=exp(eta)/(1.d0+dexp(eta))
+          out=out+dbin(dble(yij),1.d0,mean,1)
+      end do
+
+      out=out+tmp2
+   
+      return
+      end
+
+
+c=================================================================================
+      subroutine tartwoplc(j,nsubject,p,y,b,beta,dp,
+     &                     disprior,out)
+c=================================================================================
+c     A.J., 2012
+c=================================================================================
+      implicit none
+      integer j,nsubject,p
+      integer y(nsubject,p)
+      real*8 b(nsubject)
+      real*8 beta(p-1) 
+      real*8 dp(p-1)
+      real*8 disprior(2)
+
+      integer yij,i,ii,jj 
+      real*8 dbin,dnrm,eta,mean,tmp1,tmp2,tmp3,tmp4
+
+      real*8 out
+
+      out=0.d0         
+         
+      do i=1,nsubject
+
+c+++++++ check if the user has requested an interrupt
+         call rchkusr()
+
+         yij=y(i,j+1)
+
+         eta=exp(dp(j))*(b(i)-beta(j))
+
+         tmp4=log(1.d0+exp(eta))
+
+         if(yij.eq.1)then
+            out=out+eta-tmp4
+           else
+            out=out-tmp4
+         end if
+      end do
+
+c      call dblepr("loglik",-1,out,1)
+
+      tmp1=dnrm(dp(j),disprior(1),sqrt(disprior(2)),1)
+
+      out=out+tmp1
+   
+      return
+      end
+
+
 

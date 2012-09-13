@@ -22,13 +22,17 @@ c     Subroutine `lddpcdensity' to run a Markov chain for a
 c     Linear Dependent Dirichlet Process prior for 
 c     conditional density estimation.
 c
-c     Copyright: Alejandro Jara, 2008 - 2011.
+c     Copyright: Alejandro Jara, 2008 - 2012.
 c
-c     Version 3.0: 
+c     Version 4.0: 
 c
-c     Last modification: 04-11-2011.
+c     Last modification: 15-07-2012.
 c     
 c     Changes and Bug fixes: 
+c
+c     Version 3.0 to Version 4.0:
+c          - The subject-specific variances are returned in
+c            the randsave object.
 c
 c     Version 2.0 to Version 3.0:
 c          - Computation the cdf functions added.
@@ -135,7 +139,8 @@ c---- Output -----------------------------------------------------------
 c
 c        cpo         :  real giving the cpos and fsos, cpo(nrec,2). 
 c        randsave    :  real matrix containing the mcmc samples for
-c                       the regression coeff, randsave(nsave,nrec*p).
+c                       the regression coeff and variance, 
+c                       randsave(nsave,nrec*(p+1)).
 c        thetasave   :  real matrix containing the mcmc samples for
 c                       the parameters, thetasave(nsave,p+p*(p+1)/2+3)
 c        cdfpm       :  real matrix giving the posterior mean of the 
@@ -248,7 +253,7 @@ c++++ current value
 c++++ output
       real*8 cpo(nrec,2)
       real*8 thetasave(nsave,p+p*(p+1)/2+3)
-      real*8 randsave(nsave,p*nrec)
+      real*8 randsave(nsave,nrec*(p+1))
       real*8 aucsave(nsave,npred)
       real*8 cdfpm(npred,ngrid)
       real*8 cdfpl(npred,ngrid)
@@ -743,7 +748,9 @@ c+++++++++++++ random effects
                   do j=1,p
                      count=count+1
                      randsave(isave,count)=betaclus(ss(i),j) 
-                  end do   
+                  end do 
+                  count=count+1
+                  randsave(isave,count)=sigmaclus(ss(i)) 
                end do
 
 c+++++++++++++ Partially sampling the DP and CPO computation.

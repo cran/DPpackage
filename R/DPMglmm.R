@@ -2,7 +2,7 @@
 ### Fit a generalized linear mixed model with a Dirichlet Process 
 ### Mixture of Normals prior for the distribution of the random effect 
 ###
-### Copyright: Alejandro Jara, 2007-2010.
+### Copyright: Alejandro Jara, 2007-2012.
 ###
 ### Last modification: 25-09-2009.
 ###

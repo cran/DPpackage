@@ -1,7 +1,7 @@
 ### Plm.R                   
 ### Fit a parametric regression model.
 ###
-### Copyright: Alejandro Jara, 2007-2010.
+### Copyright: Alejandro Jara, 2007-2012.
 ###
 ### Last modification: 15-03-2009.
 ###
@@ -698,6 +698,7 @@ fancydensplot<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#b
     ans$coefficients <- coef.table
     ans$p <- object$p
     ans$cpo <- object$cpo
+    ans$nrec <- object$nrec
 
     class(ans) <- "summaryPlm"
     return(ans)

@@ -2,7 +2,7 @@
 ### Fit a DPM of log-normal models for multivariate interval
 ### censored data.
 ###
-### Copyright: Alejandro Jara, 2010.
+### Copyright: Alejandro Jara, 2010-2012.
 ###
 ### Last modification: 09-07-2010.
 ###

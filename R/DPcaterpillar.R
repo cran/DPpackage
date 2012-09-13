@@ -1,7 +1,7 @@
 ### DPcaterpillar.R
 ### Caterpillar plots for random effects from a DPpackage object.
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 15-12-2006.
 ###

@@ -1,7 +1,7 @@
 ### PTdensity.R                   
 ### Fit a Mixture of Polya trees for density estimation
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2006-2010.
+### Copyright: Alejandro Jara and Tim Hanson, 2006-2012.
 ###
 ### Last modification: 25-01-2010.
 ###
@@ -32,15 +32,13 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Tim Hanson
-###      Division of Biostatistics
-###      University of Minnesota
-###      School of Public Health
-###      A460 Mayo Building, 
-###      MMC 303
-###      420 Delaware St SE
-###      Minneapolis, MN 55455
-###      Voice: 612-626-7075  URL  : http://www.biostat.umn.edu/~hanson/
-###      Fax  : 612-626-0660  Email: hanson@biostat.umn.edu
+###      Department of Statistics
+###      University of South Carolina
+###      216 LeConte College, 
+###      1523 Greene St
+###      Columbia, SC 29208
+###      Voice: 803-777-3853  URL  : http://www.stat.sc.edu/~hansont/
+###      Fax  : 803-777-4048  Email: hansont@stat.sc.edu
 ###
 
 
@@ -916,46 +914,46 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
         if(x$nvar==1)
         {
            title1<-paste("Density of",x$varnames[1],sep=' ')
-	   aa<-hist(x$y[,1],plot=F,)
- 	   maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
-	   miny<-min(x$y[,1])
-	   maxy<-max(x$y[,1])
-	   deltay<-(maxy-miny)*0.2
-	   miny<-miny-deltay
-	   maxy<-maxy+deltay
+	       aa<-hist(x$y[,1],plot=F,)
+		   maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
+		   miny<-min(x$y[,1])
+	       maxy<-max(x$y[,1])
+	       deltay<-(maxy-miny)*0.2
+	       miny<-miny-deltay
+	       maxy<-maxy+deltay
 	      
-	   hist(x$y[,1],probability=T,xlim=c(min(x$grid1),max(x$grid1)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
+	        hist(x$y[,1],probability=T,xlim=c(min(x$grid1),max(x$grid1)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
            lines(x$x1,x$dens,lwd=2)
         }
 
         if(x$nvar==2)
         {
            title1<-paste("Density of",x$varnames[1],sep=' ')
-	   aa<-hist(x$y[,1],plot=F,)
- 	   maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
-	   miny<-min(x$y[,1])
-	   maxy<-max(x$y[,1])
-	   deltay<-(maxy-miny)*0.2
-	   miny<-miny-deltay
-	   maxy<-maxy+deltay
+	       aa<-hist(x$y[,1],plot=F,)
+ 	       maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
+		   miny<-min(x$y[,1])
+	       maxy<-max(x$y[,1])
+	       deltay<-(maxy-miny)*0.2
+	       miny<-miny-deltay
+	       maxy<-maxy+deltay
 	      
-	   hist(x$y[,1],probability=T,xlim=c(min(x$grid1),max(x$grid1)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
+	       hist(x$y[,1],probability=T,xlim=c(min(x$grid1),max(x$grid1)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
            lines(x$grid1,x$fun1,lwd=2)
 
            title1<-paste("Density of",x$varnames[2],sep=' ')
-	   aa<-hist(x$y[,2],plot=F,)
- 	   maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
-	   miny<-min(x$y[,2])
-	   maxy<-max(x$y[,2])
-	   deltay<-(maxy-miny)*0.2
-	   miny<-miny-deltay
-	   maxy<-maxy+deltay
+		   aa<-hist(x$y[,2],plot=F,)
+ 	       maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
+		   miny<-min(x$y[,2])
+	       maxy<-max(x$y[,2])
+	       deltay<-(maxy-miny)*0.2
+	       miny<-miny-deltay
+	       maxy<-maxy+deltay
 	      
-	   hist(x$y[,2],probability=T,xlim=c(min(x$grid2),max(x$grid2)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
+		   hist(x$y[,2],probability=T,xlim=c(min(x$grid2),max(x$grid2)),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
            lines(x$grid2,x$fun2,lwd=2)
 
            varsn<-paste(x$varnames[1],x$varnames[2],sep="-")
-	   title1<-paste("Predictive Density of ",varsn,sep='')
+	       title1<-paste("Predictive Density of ",varsn,sep='')
 
            xx<-matrix(x$grid1,ncol=1)
            yy<-matrix(x$grid2,ncol=1)
@@ -963,45 +961,45 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
            colnames(xx)<-x$varnames[1]
            colnames(yy)<-x$varnames[2]
 
-	   contour(xx,yy,z,main=title1,xlab=x$varnames[1],ylab=x$varnames[2])
-	   persp(xx,yy,z,xlab=x$varnames[1],ylab=x$varnames[2],zlab="density",theta=-30,phi=15,expand = 0.9, ltheta = 120,main=title1)
+	       contour(xx,yy,z,main=title1,xlab=x$varnames[1],ylab=x$varnames[2])
+	       persp(xx,yy,z,xlab=x$varnames[1],ylab=x$varnames[2],zlab="density",theta=-30,phi=15,expand = 0.9, ltheta = 120,main=title1)
         }
 
         if(x$nvar>2)
         {
            for(i in 1:x$nvar)
- 	   {
-	       title1<-paste("Density of",x$varnames[i],sep=' ')
+    	   {
+	           title1<-paste("Density of",x$varnames[i],sep=' ')
 	    
-	       aa<-hist(x$y[,i],plot=F)
-	       maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
-	       miny<-min(x$y[,i])-0.5*sqrt(var(x$y[,i]))
-	       maxy<-max(x$y[,i])+0.5*sqrt(var(x$y[,i]))
-	       deltay<-(maxy-miny)*0.2
-	       miny<-miny-deltay
-	       maxy<-maxy+deltay
-	       hist(x$y[,i],probability=T,xlim=c(miny,maxy),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
-               lines(density(x$save.state$randsave[,(start+i)]),lwd=2)
+	           aa<-hist(x$y[,i],plot=F)
+	           maxx<-max(aa$intensities+aa$density)+0.1*max(aa$intensities+aa$density)
+	           miny<-min(x$y[,i])-0.5*sqrt(var(x$y[,i]))
+	           maxy<-max(x$y[,i])+0.5*sqrt(var(x$y[,i]))
+	           deltay<-(maxy-miny)*0.2
+	           miny<-miny-deltay
+	           maxy<-maxy+deltay
+	           hist(x$y[,i],probability=T,xlim=c(miny,maxy),ylim=c(0,maxx),nclas=25,main=title1,xlab="values", ylab="density")
+               lines(density(x$save.state$randsave[,i]),lwd=2)
 	   }
 	
            for(i in 1:(x$nvar-1))
-	   {
+		   {
 
                vectmp<-x$y[,i]
                xlim<-c(min(vectmp)-0.5*sqrt(var(vectmp)),max(vectmp)+0.125*sqrt(var(vectmp)))
 	   
-   	       for(j in (i+1):x$nvar)
-    	       {
+			   for(j in (i+1):x$nvar)
+			   {
                    vectmp<-x$y[,j]
                    ylim<-c(min(vectmp)-0.5*sqrt(var(vectmp)),max(vectmp)+0.125*sqrt(var(vectmp)))
 
-   	           varsn<-paste(x$varnames[i],x$varnames[j],sep="-")
-	           title1<-paste("Predictive Density of ",varsn,sep='')
+				   varsn<-paste(x$varnames[i],x$varnames[j],sep="-")
+				   title1<-paste("Predictive Density of ",varsn,sep='')
                    xx<-x$save.state$randsave[,i]	    
                    yy<-x$save.state$randsave[,j]	    
-	           est<-bivk(xx,yy,n=200)
-	           contour(est,xlim=xlim,ylim=ylim,main=title1,xlab=x$varnames[i],ylab=x$varnames[j])
-	           persp(est,theta=-30,phi=15,expand = 0.9, ltheta = 120,main=title1,
+	               est<-bivk(xx,yy,n=200)
+	               contour(est,xlim=xlim,ylim=ylim,main=title1,xlab=x$varnames[i],ylab=x$varnames[j])
+	               persp(est,theta=-30,phi=15,expand = 0.9, ltheta = 120,main=title1,
 	                 xlab=x$varnames[i],ylab=x$varnames[j],zlab="density")
 	   	}
 	   }

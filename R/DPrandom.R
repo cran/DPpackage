@@ -1,7 +1,7 @@
 ### DPrandom.R
 ### Extracts random effects from a DPpackage object.
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 15-12-2006.
 ###
@@ -1196,6 +1196,70 @@ function(object,centered=FALSE,predictive=FALSE)
        return(z)
    }
 
+    
+   if(is(object, "LDDPtwopl"))
+   {
+
+       if (centered) 
+       { 
+	   stop("This option is not implemented for LDDPtwopl.\n")
+       }
+
+       random <- matrix(0,nrow=object$nsubject,ncol=1)
+       
+       randommat<-matrix(object$save.state$randsave,
+                  nrow=object$mcmc$nsave,ncol=object$nsubject+object$q)
+      
+       dimnames(randommat)<-dimnames(object$save.state$randsave)
+
+       for(i in 1:object$nsubject){
+           random[i]<-mean(object$save.state$randsave[,i])              
+       }
+      
+       colnames(random)<-"theta"
+
+       type<-2      
+       z<-list(randomm=random,modelname=object$modelname,call=object$call,predictive=predictive,
+               nsubject=object$nsubject,nrandom=1,centered=FALSE,randommat=randommat,
+               type=type,nsave=object$mcmc$nsave)
+
+       if(predictive==TRUE)
+       {
+		  #predp<-mean(object$save.state$randsave[,object$nsubject+object$q])      	     	
+
+          #predm<-median(object$save.state$randsave[,object$nsubject+])      	     	
+
+          #predsd<-sqrt(var(object$save.state$randsave[,object$nsubject+1]))      	     	
+
+          #vec<-object$save.state$randsave[,object$nsubject+1]
+          
+          #n<-length(vec)
+          
+          #alpha<-0.05
+          
+          #alow<-rep(0,2)
+          
+          #aupp<-rep(0,2)
+          
+       
+          #a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+          #            alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+          #predl<-a$alow[1]            
+          #predu<-a$aupp[1]
+          
+          #predse<-predsd/sqrt(n)
+     	 
+      	  #predtable <- cbind(predp, predm, predsd, predse , predl , predu)
+          #dimnames(predtable) <- list("theta", c("Mean", "Median", "Std. Dev.", "Naive Std.Error",
+          #      "95%HPD-Low","95%HPD-Upp"))
+      	 
+      	  #z$prediction<-predtable
+       }
+
+       class(z)<-c("DPrandom") 
+       return(z)
+   }
+    
 
 }
 

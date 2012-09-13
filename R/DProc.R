@@ -2,7 +2,7 @@
 ### Estimates the ROC curve using a Dirichlet process mixture of normals
 ### model for each group
 ###
-### Copyright: Alejandro Jara, 2006-2010.
+### Copyright: Alejandro Jara, 2006-2012.
 ###
 ### Last modification: 22-12-2006.
 ###

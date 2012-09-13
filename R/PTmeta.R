@@ -2,7 +2,7 @@
 ### Fit a semiparametric linear mixed effects meta-analysis using a
 ### Polya tree prior for the distribution of the random effects.
 ###
-### Copyright: Alejandro Jara, 2008-2010.
+### Copyright: Alejandro Jara, 2008-2012.
 ###
 ### Last modification: 23-08-2007.
 ###
@@ -49,18 +49,18 @@ function(formula,
        #########################################################################################
        # call parameters
        #########################################################################################
-	 cl <- match.call()
-	 mf <- match.call(expand.dots = FALSE)
-	 m <- match(c("formula", "data","na.action"), names(mf), 0)
-	 mf <- mf[c(1, m)]
-	 mf$drop.unused.levels <- TRUE
-	 mf[[1]] <- as.name("model.frame")
-	 mf <- eval(mf, parent.frame())
+	     cl <- match.call()
+		 mf <- match.call(expand.dots = FALSE)
+	     m <- match(c("formula", "data","na.action"), names(mf), 0)
+	     mf <- mf[c(1, m)]
+	     mf$drop.unused.levels <- TRUE
+	     mf[[1]] <- as.name("model.frame")
+	     mf <- eval(mf, parent.frame())
 	 
        #########################################################################################
        # data structure
        #########################################################################################
-  	 yy<- model.response(mf,"numeric")
+  	     yy<- model.response(mf,"numeric")
 
          namesre<-rownames(yy)
          nameresp<-colnames(yy)[1]
@@ -70,9 +70,9 @@ function(formula,
             stop("Both effect and variance must be included in the LHS of the formula object")
          }   
 
-  	 y<-yy[,1]
-  	 sigma2e<-yy[,2]
-  	 nrec<-length(y)
+     	 y<-yy[,1]
+     	 sigma2e<-yy[,2]
+  	     nrec<-length(y)
   	 
        #########################################################################################
        # model structure

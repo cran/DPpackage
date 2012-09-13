@@ -1,9 +1,9 @@
 ### LDDProc.R                    
 ### Fit a linear dependent DP model for conditional ROC curve estimation.
 ###
-### Copyright: Alejandro Jara, 2011.
+### Copyright: Alejandro Jara, 2011-2012.
 ###
-### Last modification: 08-11-2011.
+### Last modification: 12-02-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 ###
 
 "LDDProc"<-
-function(y.d,z.d,y.nond,z.nond,zpred.d,zpred.nond=NULL,prior,mcmc,state,status,ngrid=100,grid=NULL,
+function(y.d,z.d,y.nond,z.nond,zpred.d,zpred.nond=NULL,prior.d,prior.nond=NULL,mcmc,state,status,ngrid=100,grid=NULL,
          compute.band=FALSE,type.band="PD",data=sys.frame(sys.parent()),na.action=na.fail,work.dir=NULL)
 UseMethod("LDDProc")
 
@@ -44,7 +44,8 @@ function(y.d,
          z.nond,
          zpred.d,
          zpred.nond=NULL,
-         prior,
+         prior.d,
+         prior.nond=NULL,
          mcmc,
          state,
          status, 
@@ -90,10 +91,16 @@ function(y.d,
 
          cat("\nFitting the model for the non-diseased population ","\n")
 
-         prior$rocc <- 1
-         prior$nroc <- ngrid
+         if(is.null(prior.nond))
+         {
+            prior.nond <-  prior.d
+         }
 
-         fit.nond <- LDDPdensity(y.nond~z.nond-1,prior=prior,mcmc=mcmc,state=state.nond,
+
+         prior.nond$rocc <- 1
+         prior.nond$nroc <- ngrid
+
+         fit.nond <- LDDPdensity(y.nond~z.nond-1,prior=prior.nond,mcmc=mcmc,state=state.nond,
                                  status=status,ngrid=ngrid,grid=grid,
                                  zpred=zpred.nond,compute.band=compute.band,
                                  type.band=type.band)
@@ -101,9 +108,9 @@ function(y.d,
 
          cat("\nFitting the model for the diseased population ","\n")
 
-         prior$rocc <- 2
-         prior$nroc <- ngrid
-         fit.d <- LDDPdensity(y.d~z.d-1,prior=prior,mcmc=mcmc,state=state.d,status=status,
+         prior.d$rocc <- 2
+         prior.d$nroc <- ngrid
+         fit.d <- LDDPdensity(y.d~z.d-1,prior=prior.d,mcmc=mcmc,state=state.d,status=status,
 							  ngrid=ngrid,grid=grid,zpred=zpred.d,compute.band=compute.band,
                               type.band=type.band)
 
@@ -178,7 +185,8 @@ function(y.d,
                     cpo.nond=cpo.nond,
                     fit.d=fit.d,
                     fit.nond=fit.nond,
-					prior=prior,
+					prior.d=prior.d,
+                    prior.nond=prior.nond,
 					mcmc=mcmc,
                     rocgrid=rocgrid,
 					aucp.m=aucp.m,

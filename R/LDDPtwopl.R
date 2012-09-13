@@ -1,10 +1,10 @@
-### LDDPrasch.R                   
-### Fit a Rasch model with a Linear Dependent DP prior
+### LDDPtwopl.R                   
+### Fit a two parameter logistic model with a Linear Dependent DP prior
 ### for the random effect distribution
 ###
-### Copyright: Alejandro Jara, 2006-2012.
+### Copyright: Alejandro Jara, 2012.
 ###
-### Last modification: 04-09-2009.
+### Last modification: 28-08-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -34,15 +34,14 @@
 ###
 
 
-LDDPrasch <- function(formula,prior,mcmc,offset=NULL,state,status,
+LDDPtwopl <- function(formula,prior,mcmc,state,status,
 			          grid=seq(-10,10,length=1000),zpred,data=sys.frame(sys.parent()),compute.band=FALSE)
-UseMethod("LDDPrasch")
+UseMethod("LDDPtwopl")
 
-LDDPrasch.default <-
+LDDPtwopl.default <-
 function(formula,
          prior,
          mcmc,
-         offset=NULL,         
          state,
          status,
          grid=seq(-10,10,length=1000),
@@ -68,7 +67,6 @@ function(formula,
          #########################################################################################
 		   nsubject <- nrow(y)
 	       p <- ncol(y)
-           ywork <- y
 
 		   z <- as.matrix(model.matrix(formula))
 		   q <- ncol(z)
@@ -199,159 +197,125 @@ function(formula,
 			   stop("Error in the dimension of the normal cenetering covariance matrix.\n")     
             }
 
+            r1 <- prior$r1
+            r2 <- prior$r2
+            if(r2 < 0)
+            { 
+			  stop("The scale parameter of the normal prior for the discrimination parameters must be possitive.\n")     
+            }
+            
+ 
             a0b0 <- c(a0b0,tau1,taus1,taus2,nu)
+            disprior <- c(r1,r2)
 
-         #########################################################################################
-         # mcmc specification
-         #########################################################################################
-           if(missing(mcmc))
-           {
-              nburn <- 1000
-              nsave <- 1000
-              nskip <- 0
-              ndisplay <- 100
-              mcmcvec <- c(nburn,nskip,ndisplay)
-           }
-           else
-           {
-              mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
-              nsave <- mcmc$nsave
-           }
+          #########################################################################################
+          # mcmc specification
+          #########################################################################################
+            if(missing(mcmc))
+            {
+               nburn <- 1000
+               nsave <- 1000
+               nskip <- 0
+               ndisplay <- 100
+               mcmcvec <- c(nburn,nskip,ndisplay)
+            }
+            else
+            {
+               mcmcvec <- c(mcmc$nburn,mcmc$nskip,mcmc$ndisplay)
+               nsave <- mcmc$nsave
+            }
 
+            if(is.null(mcmc$lsdv))
+            {
+                lsdv <- -0.7
+            }
+            else
+            {
+                lsdv <- mcmc$lsdv
+            }
+    
+          #########################################################################################
+          # output
+          #########################################################################################
+  		    acrate <- rep(0,p-1)
+ 		    cpo <- matrix(0,nrow=nsubject,ncol=p)
+		    denspm <- matrix(0,nrow=npred,ncol=ngrid)		
+		    randsave <- matrix(0,nrow=nsave,ncol=nsubject+npred)
 
-         #########################################################################################
-         # output
-         #########################################################################################
-		   acrate <- rep(0,2)
-		   cpo <- matrix(0,nrow=nsubject,ncol=p)
-		   denspm <- matrix(0,nrow=npred,ncol=ngrid)		
-		   randsave <- matrix(0,nrow=nsave,ncol=nsubject+npred)
+            thetasave <- matrix(0,nrow=nsave,ncol=2*p-1+q+(q*(q+1)/2)+2)
+            densave <- matrix(0,nrow=nsave,ncol=npred*ngrid)
 
-           thetasave <- matrix(0,nrow=nsave,ncol=p+q+(q*(q+1)/2)+2)
-           densave <- matrix(0,nrow=nsave,ncol=npred*ngrid)
-
-         #########################################################################################
-         # MLE estimation
-         #########################################################################################
-         
-           RaschMLE <- function(y,nitem,nsubject,offset)
-           {
-             ywork2 <- NULL
-             roffset <- NULL
-             id <- NULL
-             x <- NULL
-             count <- 0
-             for(i in 1:nsubject)
-             {
-				 ywork2 <- c(ywork2,y[i,])
-				 roffset <- c(roffset,offset[i,])
-				 id <- c(id,rep(i,nitem))
-
-                 aa <- diag(-1,nitem)
-				 aa[,1] <- 1
-                 x <- rbind(x,aa)
-             }
-             out <- NULL
-             library(nlme)
-			 library(MASS)
-             fit0 <- glmmPQL(ywork2~x-1+offset(roffset),random = ~ 1 | id,family=binomial(logit), verbose = FALSE) 
-
-             beta <- as.vector(fit0$coeff$fixed[2:nitem])
-             b <- as.vector(fit0$coeff$fixed[1]+fit0$coeff$random$id)
-			 out$beta <- beta
-			 out$b <- b
-             out$mu <- fit0$coeff$fixed[1]
-             out$sigma2 <- getVarCov(fit0)[1]
-             return(out)
-		   }
-	 
-		   if(is.null(offset))
-	       {
-			  roffset <- matrix(0,nrow=nsubject,ncol=p)
-		   }
-  	       else
-		   {
-			  roffset <- offset
-		   }
-	 
-		   fit0 <- RaschMLE(ywork,p,nsubject,roffset)
-
-         #########################################################################################
-         # parameters depending on status
-         #########################################################################################
+          #########################################################################################
+          # parameters depending on status
+          #########################################################################################
        
-     	   if(status==TRUE)
-	       {
-              beta <- fit0$beta
-              b <- fit0$b
+      	    if(status==TRUE)
+	        {
+               beta <- rep(0,p-1)
+               b <- rep(0,nsubject)
+               dp <- rep(0,p-1)
 
-			  ncluster <- 1
-			  ss <- rep(1,nsubject)
+			   ncluster <- 1
+			   ss <- rep(1,nsubject)
 
-              alphaclus <- matrix(0,nrow=nsubject+100,ncol=q)
-              sigmaclus <- rep(0,nsubject+100)
-              alphaclus[1,1] <- fit0$mu
-              sigmaclus[1] <- fit0$sigma2
+               alphaclus <- matrix(0,nrow=nsubject+100,ncol=q)
+               sigmaclus <- rep(0,nsubject+100)
+               sigmaclus[1] <- 1
 
-   	       }
-      	   if(status==FALSE)
-	       {
-              beta <- state$beta
-              b <- state$b
+   	        }
+      	    if(status==FALSE)
+	        {
+               beta <- state$beta
+               b <- state$b
+               db <- log(state$gamma)
 
-			  alpha <- state$alpha
-              ncluster <- state$ncluster
-              ss <- state$ss
-              alphaclus <- state$alphaclus   
-              sigmaclus <- state$sigmaclus
+			   alpha <- state$alpha
+               ncluster <- state$ncluster
+               ss <- state$ss
+               alphaclus <- state$alphaclus   
+               sigmaclus <- state$sigmaclus
 
-              mu <- state$mub
-              sigma <- state$sb
-              tau2 <- state$tau2
-           }
+               mu <- state$mub
+               sigma <- state$sb
+               tau2 <- state$tau2
+            }
 
-         #########################################################################################
-         # working space
-         #########################################################################################
+          #########################################################################################
+          # working space
+          #########################################################################################
 
-           seed1 <- sample(1:29000,1)
-           seed2 <- sample(1:29000,1)
-           seed <- c(seed1,seed2)
+            seed1 <- sample(1:29000,1)
+            seed2 <- sample(1:29000,1)
+            seed <- c(seed1,seed2)
 
-		   iflagp <- rep(0,(p-1))
-           betac <- rep(0,(p-1))
-           xtx <- matrix(0,nrow=(p-1),ncol=(p-1))
-           xty <- rep(0,(p-1))
-           workmhp1	<- rep(0,(p-1)*p/2)
-           workvp1 <- rep(0,p-1)
+            adapt <- rep(0,p-1)
+            lsd <- rep(lsdv,p-1)
+  		    cstrt <- matrix(0,nrow=nsubject,ncol=nsubject)
+		    ccluster <- rep(0,nsubject)
+		    iflagq <- rep(0,q)
+		    alphawork <- rep(0,q)
+            densw <- matrix(0,nrow=npred,ncol=ngrid)
+		    prob <- rep(0,nsubject+100) 
+		    quadf <- matrix(0,nrow=q,ncol=q)
+		    sigmainv <- matrix(0,nrow=q,ncol=q)
+		    workmhq1 <- rep(0,q*(q+1)/2)
+		    workmhq2 <- rep(0,q*(q+1)/2)
+		    workvq1 <- rep(0,q)
+		    workvq2 <- rep(0,q)
+		    ztz <- matrix(0,nrow=q,ncol=q)
+		    zty <- rep(0,q)
 
-		   cstrt <- matrix(0,nrow=nsubject,ncol=nsubject)
-		   ccluster <- rep(0,nsubject)
-		   iflagq <- rep(0,q)
-		   alphawork <- rep(0,q)
-           densw <- matrix(0,nrow=npred,ncol=ngrid)
-		   prob <- rep(0,nsubject+100) 
-		   quadf <- matrix(0,nrow=q,ncol=q)
-		   sigmainv <- matrix(0,nrow=q,ncol=q)
-		   workmhq1 <- rep(0,q*(q+1)/2)
-		   workmhq2 <- rep(0,q*(q+1)/2)
-		   workvq1 <- rep(0,q)
-		   workvq2 <- rep(0,q)
-		   ztz <- matrix(0,nrow=q,ncol=q)
-		   zty <- rep(0,q)
+          #########################################################################################
+          # calling the Fortran code
+          #########################################################################################
 
-         #########################################################################################
-         # calling the Fortran code
-         #########################################################################################
-
-           foo <- .Fortran("lddprasch",
+             foo <- .Fortran("lddptwopl",
 							ngrid		=as.integer(ngrid),
 							npred		=as.integer(npred),
 							nsubject	=as.integer(nsubject),
 							p			=as.integer(p),
 							q			=as.integer(q),
 							y			=as.integer(y),
-							roffset		=as.double(roffset),
 							grid		=as.double(grid),
 							z			=as.double(z),
 							zpred		=as.double(zpred),
@@ -359,12 +323,11 @@ function(formula,
 							a0b0		=as.double(a0b0),
 							b0			=as.double(b0),
 							prec1		=as.double(prec1),
-							sb			=as.double(sb),
 							mu0			=as.double(mu0),
 							prec2		=as.double(prec2),	
 							smu			=as.double(smu),
 							tinv		=as.double(tinv),
-							acrate		=as.double(acrate),
+                            acrate      =as.double(acrate),
 							cpo			=as.double(cpo),
 							denspm		=as.double(denspm),
 							randsave	=as.double(randsave),
@@ -374,23 +337,21 @@ function(formula,
 							ss			=as.integer(ss),
 							beta		=as.double(beta),
 							b			=as.double(b),
+                            dp          =as.double(dp),
 							alphaclus	=as.double(alphaclus),
 							sigmaclus	=as.double(sigmaclus),
 							alpha    	=as.double(alpha),
 							mu			=as.double(mu),
 							sigma		=as.double(sigma),
 							tau2		=as.double(tau2),
+                            disprior    =as.double(disprior),
 							mcmc		=as.integer(mcmcvec),	
 							nsave		=as.integer(nsave),
-							iflagp		=as.integer(iflagp),
-							betac		=as.double(betac),
-							xtx			=as.double(xtx),
-							xty			=as.double(xty),
-							workmhp1	=as.double(workmhp1),
-							workvp1		=as.double(workvp1),
 							cstrt		=as.integer(cstrt),
 							ccluster	=as.integer(ccluster),
 							iflagq		=as.integer(iflagq),
+                            adapt       =as.double(adapt),
+                            lsd         =as.double(lsd),
 							alphawork	=as.double(alphawork),
 							densw		=as.double(densw),
 							prob		=as.double(prob),
@@ -417,8 +378,8 @@ function(formula,
                 n <- length(x)         
                 alow <- rep(0,2)
                 aupp <- rep(0,2)
-                a <-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                           alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                a <- .Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                               alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
                 return(c(a$alow[1],a$aupp[1]))
            }
     
@@ -429,16 +390,17 @@ function(formula,
                 n <- length(x)         
                 alow<-rep(0,2)
                 aupp<-rep(0,2)
-                a<-.Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
-                          alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
-              return(c(a$alow[2],a$aupp[2]))
+                a <- .Fortran("hpd",n=as.integer(n),alpha=as.double(alpha),x=as.double(vec),
+                               alow=as.double(alow),aupp=as.double(aupp),PACKAGE="DPpackage")
+                return(c(a$alow[2],a$aupp[2]))
            }
 
-           model.name<-"Bayesian Semiparametric Rasch Model using a LDDP prior"		
+           model.name<-"Bayesian Semiparametric Two Parameter Logistic Model using a LDDP prior"		
 
            state <- list(alpha=foo$alpha,
 	                     b=foo$b,
 	                     beta=foo$beta,
+                         dp=foo$dp,
                          ncluster=foo$ncluster,
                          ss=foo$ss,
 						 alphaclus=matrix(foo$alphaclus,nrow=nsubject+100,ncol=q),
@@ -449,7 +411,7 @@ function(formula,
 
            cpo <- matrix(foo$cpo,nrow=nsubject,ncol=p)
            randsave <- matrix(foo$randsave,nrow=nsave,ncol=nsubject+npred)
-           thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=p+q+(q*(q+1)/2)+2)
+           thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=2*p-1+q+(q*(q+1)/2)+2)
            densave <- matrix(foo$densave,nrow=nsave,ncol=npred*ngrid)
 
            dens.m <- matrix(foo$denspm,nrow=npred,ncol=ngrid)		
@@ -465,6 +427,7 @@ function(formula,
            }
 
            pnames <- paste("beta",2:p,sep="")
+		   pnames <- c(pnames,paste("gamma",2:p,sep=""))
 		   pnames <- c(pnames,"tau2",paste("mub",seq(1,q),sep="-"))
            for(i in 1:q)
            {
@@ -494,10 +457,8 @@ function(formula,
 							  randsave=randsave,
 							  densave=densave)
          
-		   acrate <- foo$acrate
-         
 	       z <- list(call=cl,
-                     y=ywork,
+                     acrate=foo$acrate,
                      modelname=model.name,
                      cpo=cpo,
                      prior=prior,
@@ -509,7 +470,6 @@ function(formula,
 					 q=q,
 					 npred=npred,
 					 zpred=zpred,
-                     acrate=acrate,
 					 coefficients=coeff,
                      dens.m=dens.m,
                      dens.l=dens.l,
@@ -522,7 +482,7 @@ function(formula,
 					 compute.band=compute.band)
                  
            cat("\n\n")
- 	       class(z) <- c("LDDPrasch")
+ 	       class(z) <- c("LDDPtwopl")
   	       return(z)
 }
 
@@ -536,7 +496,7 @@ function(formula,
 ###
 
 
-"print.LDDPrasch" <- function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.LDDPtwopl" <- function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -550,11 +510,6 @@ function(formula,
     }
     else cat("No coefficients\n")
 
-    if(!is.null(x$acrate))
-    {
-       cat("\nAcceptance Rate for Metropolis Steps = ",x$acrate,"\n")    
-    }   
-   
     cat("\nNumber of subjects:",x$nsubject)
     cat("\nNumber of items:",x$p)
     cat("\n\n")
@@ -562,7 +517,7 @@ function(formula,
 }
 
 
-"summary.LDDPrasch"<-function(object, hpd=TRUE, ...) 
+"summary.LDDPtwopl"<-function(object, hpd=TRUE, ...) 
 {
     stde<-function(x)
     {
@@ -596,9 +551,9 @@ function(formula,
 
     thetasave <- object$save.state$thetasave
 
-### Difficulty parameters
+### Difficulty and discrimination parameters
 
-    dimen1 <- object$p-1
+    dimen1 <- 2*object$p-2
 
     if(dimen1>1)
     {
@@ -648,6 +603,7 @@ function(formula,
     ans <- c(object[c("call", "modelname")])
 
     ans$coefficients <- coef.table
+
 
 ### CPO
     ans$cpo<-object$cpo
@@ -740,12 +696,12 @@ function(formula,
     ans$q <- object$q
     ans$acrate <- object$acrate
 
-    class(ans) <- "summaryLDDPrasch"
+    class(ans) <- "summaryLDDPtwopl"
     return(ans)
 }
 
 
-"print.summaryLDDPrasch"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
+"print.summaryLDDPtwopl"<-function (x, digits = max(3, getOption("digits") - 3), ...) 
 {
     cat("\n",x$modelname,"\n\nCall:\n", sep = "")
     print(x$call)
@@ -774,11 +730,6 @@ function(formula,
             quote = FALSE)
     }
 
-    if(!is.null(x$acrate))
-    {
-       cat("\nAcceptance Rate for Metropolis Steps = ",x$acrate,"\n")    
-    }   
-
     cat("\nNumber of subjects:",x$nsubject)
     cat("\nNumber of items:",x$p,"\n")
     cat("\nNumber of predictors:",x$q,"\n")
@@ -787,7 +738,7 @@ function(formula,
 }
 
 
-"plot.LDDPrasch"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
+"plot.LDDPtwopl"<-function(x, hpd=TRUE, ask=TRUE, nfigr=2, nfigc=2, param=NULL, col="#bdfcc9", ...)
 {
 
 fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#bdfcc9", ...)
@@ -859,7 +810,7 @@ fancydensplot1<-function(x, hpd=TRUE, npts=200, xlab="", ylab="", main="",col="#
 }
 
 
-   if(is(x, "LDDPrasch"))
+   if(is(x, "LDDPtwopl"))
    {
         if(is.null(param))
         {

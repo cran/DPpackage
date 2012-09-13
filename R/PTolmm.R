@@ -2,7 +2,7 @@
 ### Fit a ordinal linear mixed model with a Polya Tree prior
 ### for the random effect distribution.
 ###
-### Copyright: Alejandro Jara and Tim Hanson, 2007-2010.
+### Copyright: Alejandro Jara and Tim Hanson, 2007-2012.
 ###
 ### Last modification: 01-07-2008.
 ###
@@ -33,15 +33,13 @@
 ###      Fax  : +56-2-3547729  Email: atjara@uc.cl
 ###
 ###      Tim Hanson
-###      Division of Biostatistics
-###      University of Minnesota
-###      School of Public Health
-###      A460 Mayo Building, 
-###      MMC 303
-###      420 Delaware St SE
-###      Minneapolis, MN 55455
-###      Voice: 612-626-7075  URL  : http://www.biostat.umn.edu/~hanson/
-###      Fax  : 612-626-0660  Email: hanson@biostat.umn.edu
+###      Department of Statistics
+###      University of South Carolina
+###      216 LeConte College, 
+###      1523 Greene St
+###      Columbia, SC 29208
+###      Voice: 803-777-3853  URL  : http://www.stat.sc.edu/~hansont/
+###      Fax  : 803-777-4048  Email: hansont@stat.sc.edu
 ###
 
 "PTolmm"<-

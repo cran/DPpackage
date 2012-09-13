@@ -6,7 +6,7 @@
 	packageStartupMessage(" ")
     packageStartupMessage(paste(pkgname, RFver))
 	packageStartupMessage(" ")
-    packageStartupMessage("Copyright (C) 2006 - 2011, Alejandro Jara")
+    packageStartupMessage("Copyright (C) 2006 - 2012, Alejandro Jara")
     packageStartupMessage("Department of Statistics")
     packageStartupMessage("P.U. Catolica de Chile")
     packageStartupMessage(" ")

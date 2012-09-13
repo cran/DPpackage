@@ -1,9 +1,9 @@
 ### LDDPsurvival.R                    
 ### Fit a linear dependent DP model for survival modelling.
 ###
-### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009-2011.
+### Copyright: Alejandro Jara, Peter Mueller and Gary Rosner, 2009-2012.
 ###
-### Last modification: 20-10-2011.
+### Last modification: 15-07-2012.
 ###
 ### This program is free software; you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -205,7 +205,7 @@ function(formula,
          survph <- matrix(0,nrow=npred,ncol=ngrid)
 
          thetasave <- matrix(0,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
-         randsave <- matrix(0,nrow=nsave,ncol=nrec*p)
+         randsave <- matrix(0,nrow=nsave,ncol=nrec*(p+1))
          survsave <- matrix(0,nrow=nsave,ncol=npred*ngrid)
 
        #########################################################################################
@@ -360,7 +360,7 @@ function(formula,
          survpl <- matrix(foo$survpl,nrow=npred,ncol=ngrid)
          survph <- matrix(foo$survph,nrow=npred,ncol=ngrid)
 
-         randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*p)
+         randsave <- matrix(foo$randsave,nrow=nsave,ncol=nrec*(p+1))
          thetasave <- matrix(foo$thetasave,nrow=nsave,ncol=(p+(p*(p+1)/2)+3))
          survsave <- matrix(foo$survsave,nrow=nsave,ncol=(npred*ngrid))
 
@@ -395,6 +395,8 @@ function(formula,
          for(i in 1:nrec)
          {
              tmp <- paste(coeffname,i,sep=":")
+             renames <- c(renames,tmp)
+             tmp <- paste("sigma2",i,sep=":")
              renames <- c(renames,tmp)
          }
          colnames(randsave) <- renames
