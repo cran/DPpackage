@@ -399,7 +399,7 @@ c+++++++ check if the user has requested an interrupt
                tt4=1.d0-tt3
                call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
                if(status.ne.0)then
-                  call rexit("Error in ´tdpdensity´")      
+                  call rexit("Error in 'tdpdensity'")      
                end if
                tmp1=tt1
 
@@ -413,7 +413,7 @@ c+++++++ check if the user has requested an interrupt
                tt4=1.d0-tt3
                call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
                if(status.ne.0)then
-                  call rexit("Error in ´tdpdensity´")      
+                  call rexit("Error in 'tdpdensity'")      
                end if
                tmp2=tt1
  
@@ -422,7 +422,7 @@ c+++++++ check if the user has requested an interrupt
                call cdfbet(2,tmp3,1.d0-tmp3,yrand,yrand2,a0,b0,
      &                     status,bound)
                if(status.ne.0)then
-                  call rexit("Error in ´sampleytd´")      
+                  call rexit("Error in 'sampleytd'")      
                end if
             end if
             

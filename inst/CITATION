@@ -29,11 +29,11 @@ citEntry(entry = "Article",
   volume       = "7",
   number       = "3",
   pages        = "17--26",
-  url	       = "http://CRAN.R-project.org/doc/Rnews/",
+  url	       = "https://CRAN.R-project.org/doc/Rnews/",
   
   textVersion  = 
   paste("Alejandro Jara (2007).", 
   	"Applied Bayesian Non- and Semi-parametric Inference Using DPpackage.",
   	"R News 7(3), 17-26.",
-  	"URL http://CRAN.R-project.org/doc/Rnews/")
+  	"URL https://CRAN.R-project.org/doc/Rnews/")
 )

@@ -809,7 +809,7 @@ c        s -  matrix of SS/CP sampled from the Wishart distr. This matrix
 c             is halfstored (upper triangle)
 
       implicit none
-      integer*4 maxvar,nv,n,nv1,i,j,k,ndf,jk,cnt,maxn
+      integer maxvar,nv,n,nv1,i,j,k,ndf,jk,cnt,maxn
       parameter(maxvar=70)
       real*8 l,s,z,v,b,acc,chi(1)
       dimension l(maxn*(maxn+1)/2),s(maxn*(maxn+1)/2)
@@ -1266,7 +1266,7 @@ c+++++Working
 c+++++Algorithm
 
       if(maxn.lt.n)then
-         call rexit("Increase ´maxn´ in ´rtmvn´")
+         call rexit("Increase 'maxn' in 'rtmvn'")
       end if   
 
       logcgko=0.d0 

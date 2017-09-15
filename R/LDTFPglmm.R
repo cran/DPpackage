@@ -159,8 +159,8 @@ function(y,
        # PQL analysis
        #########################################################################################
 
-		 library(nlme)
-		 library(MASS)
+		 #library(nlme)
+		 #library(MASS)
          if(is.null(roffset))
          { 
             fit0 <- glmmPQL(fixed=y~x-1, random=~1 | subject, family=family, verbose = FALSE) 

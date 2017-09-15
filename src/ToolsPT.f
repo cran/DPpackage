@@ -2527,7 +2527,7 @@ c=======================================================================
       
       narea=2**nvar 
       if(narea.gt.maxarea)then
-        call rexit("Error in ´sprobpt´")      
+        call rexit("Error in 'sprobpt'")      
       end if
       
 c++++ First level probabilities
@@ -4839,7 +4839,7 @@ c=======================================================================
       real*8 x
       
       if(m.gt.n)then
-        call rexit("Error in ´locationpt´")
+        call rexit("Error in 'locationpt'")
       end if
 
       quan=mu
@@ -5094,7 +5094,7 @@ c++++ Algorithm
       covs=0.d0 
       
       if(nsets.gt.ntotals)then
-         call rexit("Error in ´mompt´: nsets > ntotals")            
+         call rexit("Error in 'mompt': nsets > ntotals")            
       end if
       
       tmass=0.d0
@@ -5151,11 +5151,11 @@ c++++ parameters
       end do
 
       if(mwork.lt.1)then
-        call rexit("Error in ´samplefuncupt´: maxm < 1")      
+        call rexit("Error in 'samplefuncupt': maxm < 1")      
       end if
       
       if(mwork.gt.maxm)then
-        call rexit("Error in ´samplefuncupt´: increase maxm")      
+        call rexit("Error in 'samplefuncupt': increase maxm")      
       end if
 
       nr=0

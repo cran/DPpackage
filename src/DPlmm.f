@@ -308,7 +308,7 @@ c+++++DP
 c+++++Residuals
       real*8 res(nrec)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 mc(5)
       real*8 betasave(p+1),bsave(nsubject,q)
       
@@ -333,7 +333,7 @@ c+++++DP
       real*8 eps,rbeta,weight
       parameter(eps=0.01)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time

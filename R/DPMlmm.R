@@ -315,8 +315,8 @@ function(fixed,
        #########################################################################################
 		 startlmm <- function(fixed,random,family,q)
          {
-			 library(nlme)
-			 library(MASS)
+			 #library(nlme)
+			 #library(MASS)
 			 fit0 <- glmmPQL(fixed=fixed, random=random, family=family, verbose = FALSE) 
 			 beta <- fit0$coeff$fixed
 			 b <- fit0$coeff$random$newid

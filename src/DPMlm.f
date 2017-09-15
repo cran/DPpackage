@@ -88,7 +88,7 @@ c+++++Regression
       real*8 workmhp1(p*(p+1)/2)
       real*8 workvp1(p)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 mc(5)
       real*8 betasave(p+1),bsave(nrec)
 
@@ -114,7 +114,7 @@ c+++++CPU time
 c+++++RNG and distributions
       real*8 dnrm,rnorm,rgamma
 
-c++++ model´s performance
+c++++ model's performance
       real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++DP (functional parameter)

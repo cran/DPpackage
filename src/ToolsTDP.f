@@ -44,33 +44,33 @@ c          if(y.gt.1.d0/dble(2*k))then
 c             call dblepr("y",-1,y,1)
 c             call intpr("k",-1,k,1)
 c             call intpr("j",-1,j,1)          
-c             call rexit("Error in ´jcomponentt´")      
+c             call rexit("Error in 'jcomponentt'")      
 c          end if
 c        else if(j.eq.k)then
 c          if(y.gt.1.d0)then
 c             call dblepr("y",-1,y,1)
 c             call intpr("k",-1,k,1)
 c             call intpr("j",-1,j,1)          
-c             call rexit("Error in ´jcomponentt´")      
+c             call rexit("Error in 'jcomponentt'")      
 c          end if
 c          if(y.lt.dble(2*j-1)/dble(2*k))then
 c             call dblepr("y",-1,y,1)
 c             call intpr("k",-1,k,1)
 c             call intpr("j",-1,j,1)                    
-c             call rexit("Error in ´jcomponentt´")      
+c             call rexit("Error in 'jcomponentt'")      
 c          end if
 c        else
 c          if(y.lt.dble(2*j-1)/dble(2*k))then
 c             call dblepr("y",-1,y,1)
 c             call intpr("k",-1,k,1)
 c             call intpr("j",-1,j,1)                    
-c             call rexit("Error in ´jcomponentt´")      
+c             call rexit("Error in 'jcomponentt'")      
 c          end if
 c          if(y.gt.dble(2*j+1)/dble(2*k))then
 c             call dblepr("y",-1,y,1)
 c             call intpr("k",-1,k,1)
 c             call intpr("j",-1,j,1)                    
-c             call rexit("Error in ´jcomponentt´")      
+c             call rexit("Error in 'jcomponentt'")      
 c          end if
 c       end if  
       
@@ -288,7 +288,7 @@ c=======================================================================
           tt4=1.d0-tt3
           call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
           tmp1=tt1
 
@@ -302,7 +302,7 @@ c=======================================================================
           tt4=1.d0-tt3
           call cdfbet(1,tt1,tt2,tt3,tt4,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
           tmp2=tt1
  
@@ -310,7 +310,7 @@ c=======================================================================
        
           call cdfbet(2,tmp3,1.d0-tmp3,y,y2,a0,b0,status,bound)
           if(status.ne.0)then
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
 
        end if
@@ -320,33 +320,33 @@ c=======================================================================
              call dblepr("y",-1,y,1)
              call intpr("k",-1,k,1)
              call intpr("j",-1,j,1)          
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
         else if(j.eq.k)then
           if(y.gt.1.d0)then
              call dblepr("y",-1,y,1)
              call intpr("k",-1,k,1)
              call intpr("j",-1,j,1)          
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
           if(y.lt.dble(2*j-1)/dble(2*k))then
              call dblepr("y",-1,y,1)
              call intpr("k",-1,k,1)
              call intpr("j",-1,j,1)                    
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
         else
           if(y.lt.dble(2*j-1)/dble(2*k))then
              call dblepr("y",-1,y,1)
              call intpr("k",-1,k,1)
              call intpr("j",-1,j,1)                    
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
           if(y.gt.dble(2*j+1)/dble(2*k))then
              call dblepr("y",-1,y,1)
              call intpr("k",-1,k,1)
              call intpr("j",-1,j,1)                    
-             call rexit("Error in ´sampleytd´")      
+             call rexit("Error in 'sampleytd'")      
           end if
        end if  
       

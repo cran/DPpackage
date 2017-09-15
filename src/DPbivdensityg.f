@@ -12,7 +12,7 @@ c
 c     Subroutine `bivspdeng' to run a Markov chain in the DP mixture of  
 c     bivariate normals model. In this routine, inference is based on the 
 c     Polya urn representation of the Dirichlet process. The no-gaps
-c     algorithm is used. The difference with respect to ´spdeng` is that 
+c     algorithm is used. The difference with respect to 'spdeng` is that 
 c     this includes a grid of points where the density
 c     estimate is evaluated. This fucntion can be used only for dimension
 c     <=2.

@@ -5,116 +5,79 @@ import(nlme)
 import(splines)
 import(survival)
 
-export( 
+importFrom("grDevices", "gray")
+importFrom("graphics", "abline", "arrows", "axis", "box", "contour",
+     "grid", "hist", "layout", "legend", "lines", "mtext", "par",
+     "persp", "points", "polygon", "rug", "segments")
+importFrom("methods", "is")
+importFrom("stats", "as.formula", "binomial", "coefficients",
+     "density", "dnorm", "formula", "gaussian", "glm", "glm.fit",
+     "lm", "median", "model.frame", "model.matrix",
+     "model.offset", "model.response", "na.fail", "na.omit",
+     "optim", "pcauchy", "plnorm", "plogis", "pnorm", "poisson",
+     "printCoefmat", "qnorm", "quantile", "rbeta", "rbinom",
+     "reformulate", "resid", "residuals", "rgamma", "rlnorm",
+     "rnorm", "rpois", "runif", "sd", "terms", "terms.formula",
+     "ts", "var", "vcov")
+
+
+export(
         BDPdensity,
-        BDPdensity.default,
         CSDPbinary,
-        CSDPbinary.default,
         DPbetabinom,
-        DPbetabinom.default,        
         DPbinary,
-        DPbinary.default,
         DPcaterpillar,
         DPcdensity,
-        DPcdensity.default,        
         DPdensity,
-        DPdensity.default,        
         DPelicit,
-        DPelicit.default,        
         DPglmm,
-        DPglmm.default,
         DPlmm,
-        DPlmm.default,
         DPmeta,
-        DPmeta.default,
         DPmultmeta,
-        DPmultmeta.default,
         DPMdencens,
-        DPMdencens.default,
         DPMglmm,
-        DPMglmm.default,
         DPMlmm,
-        DPMlmm.default,
         DPMmeta,
-        DPMmeta.default,
         DPMrandom,
-        DPMrandom.default,
         DPMolmm,
-        DPMolmm.default,
         DPMrasch,
-        DPMrasch.default,
         DPMraschpoisson,
-        DPMraschpoisson.default,
         DPolmm,
-        DPolmm.default,
-        DPpsBF,        
+        DPpsBF,
         DPrandom,
-        DPrandom.default,
         DPrasch,
-        DPrasch.default,
         DPraschpoisson,
-        DPraschpoisson.default,
         DProc,
-        DProc.default,
         DPsurvint,
-        DPsurvint.default,
         FPTbinary,
-        FPTbinary.default,
         FPTrasch,
-        FPTrasch.default,
         FPTraschpoisson,
-        FPTraschpoisson.default,
         HDPMdensity,
-        HDPMdensity.default,
         HDPMcdensity,
-        HDPMcdensity.default,
         LDBDPdensity,
-        LDBDPdensity.default,
         LDDPdensity,
-        LDDPdensity.default,
         LDDPsurvival,
-        LDDPsurvival.default,
         LDDPrasch,
-        LDDPrasch.default,
         LDDPraschpoisson,
-        LDDPraschpoisson.default,
         LDDProc,
-        LDDProc.default,
         LDDPtwopl,
-        LDDPtwopl.default,
         LDTFPdensity,
-        LDTFPdensity.default,
         LDTFPglmm,
-        LDTFPglmm.default,
         LDTFPsurvival,
-        LDTFPsurvival.default,
         LDPDdoublyint,
-        LDPDdoublyint.default,
         Pbinary,
-        Pbinary.default,
         Plm,
-        Plm.default,
         ps,
         PSgam,
-        PSgam.default,
         PTdensity,
-        PTdensity.default,
         PTlm,
-        PTlm.default,
         PTmeta,
-        PTmeta.default,
         PTglmm,
-        PTglmm.default,
         PTlmm,
-        PTlmm.default,
         PTolmm,
-        PTolmm.default,
         PTrandom,
-        PTrandom.default,
         PTsampler,
-        PTsampler.default,
-        TDPdensity,
-        TDPdensity.default
+        TDPdensity
 )
 
 
@@ -410,3 +373,57 @@ S3method(print, LDTFPglmm)
 S3method(plot, LDTFPglmm)
 S3method(summary, LDTFPglmm)
 S3method(print, summaryLDTFPglmm)
+
+S3method(BDPdensity, default)
+S3method(CSDPbinary, default)
+S3method(DPbetabinom, default)
+S3method(DPbinary, default)
+S3method(DPcdensity, default)
+S3method(DPdensity, default)
+S3method(DPelicit, default)
+S3method(DPglmm, default)
+S3method(DPlmm, default)
+S3method(DPmeta, default)
+S3method(DPmultmeta, default)
+S3method(DPMdencens, default)
+S3method(DPMglmm, default)
+S3method(DPMlmm, default)
+S3method(DPMmeta, default)
+S3method(DPMrandom, default)
+S3method(DPMolmm, default)
+S3method(DPMrasch, default)
+S3method(DPMraschpoisson, default)
+S3method(DPolmm, default)
+S3method(DPrandom, default)
+S3method(DPrasch, default)
+S3method(DPraschpoisson, default)
+S3method(DProc, default)
+S3method(DPsurvint, default)
+S3method(FPTbinary, default)
+S3method(FPTrasch, default)
+S3method(FPTraschpoisson, default)
+S3method(HDPMdensity, default)
+S3method(HDPMcdensity, default)
+S3method(LDBDPdensity, default)
+S3method(LDDPdensity, default)
+S3method(LDDPsurvival, default)
+S3method(LDDPrasch, default)
+S3method(LDDPraschpoisson, default)
+S3method(LDDProc, default)
+S3method(LDDPtwopl, default)
+S3method(LDTFPdensity, default)
+S3method(LDTFPglmm, default)
+S3method(LDTFPsurvival, default)
+S3method(LDPDdoublyint, default)
+S3method(Pbinary, default)
+S3method(Plm, default)
+S3method(PSgam, default)
+S3method(PTdensity, default)
+S3method(PTlm, default)
+S3method(PTmeta, default)
+S3method(PTglmm, default)
+S3method(PTlmm, default)
+S3method(PTolmm, default)
+S3method(PTrandom, default)
+S3method(PTsampler, default)
+S3method(TDPdensity, default)

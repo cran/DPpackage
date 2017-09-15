@@ -466,7 +466,7 @@ c+++++Working
 c+++++Algorithm
 
       if(maxn.lt.n)then
-         call rexit("Increase ´maxn´ in ´dtmvn´")
+         call rexit("Increase 'maxn' in 'dtmvn'")
       end if   
 
       logcgkn=0.d0 

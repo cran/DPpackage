@@ -252,8 +252,8 @@ function(formula,
                  x <- rbind(x,aa)
              }
              out <- NULL
-             library(nlme)
-			 library(MASS)
+             #library(nlme)
+	#		 library(MASS)
              fit0 <- glmmPQL(ywork2~x-1+offset(roffset),random = ~ 1 | id,family=poisson(log), verbose = FALSE) 
 
              beta <- as.vector(fit0$coeff$fixed[2:nitem])

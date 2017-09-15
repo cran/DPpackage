@@ -103,7 +103,7 @@ function(formula,
           ymat2[ymat2[,2]==-999,2] <- 10^10
           ll <- ymat2[,1]
           rr <- ymat2[,2]
-          library(survival)
+          #library(survival)
           fit0 <- survreg(formula = Surv(time=ll,time2=rr,type="interval2") ~ z-1, dist = "lognormal")
 
 		  betaw <- coefficients(fit0)

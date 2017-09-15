@@ -207,7 +207,7 @@ c+++++fixed effects
 c+++++PT
       integer whicho(nrec),whichn(nrec)
 
-c++++ model´s performance
+c++++ model's performance
       real*8 mc(5)
       real*8 betasave(p),bsave(nrec)
 
@@ -240,7 +240,7 @@ c+++++RNG and distributions
       real*8 dnrm,dlnrm,rnorm
       real runif
 
-c++++ model´s performance
+c++++ model's performance
       real*8 dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time

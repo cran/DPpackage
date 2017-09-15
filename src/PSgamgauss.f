@@ -292,7 +292,7 @@ c+++++CPU time
 c+++++RNG and distributions
       real*8 rgamma,dnrm
 
-c++++ model´s performance
+c++++ model's performance
       real*8 dbarc,dbar,dhat,pd,lpml
 
 c++++ parameters

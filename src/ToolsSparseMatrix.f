@@ -25,8 +25,8 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer j1,k1,m,nr
-      real*8 y,ind(m,3)
-      integer*4 iaddr
+      double precision y,ind(m,3)
+      integer iaddr
       integer ie,ieq,izer,iaddress,k,j
       data ie/641/
 
@@ -77,7 +77,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer nhash,n,m,ia(n+1),ja(m),tmp(n)
-      real*8 x(nhash,3),a(m)
+      double precision x(nhash,3),a(m)
       integer i,imin,imax,j,k,maxcol,maxrow,size
 
 c++++ count the number of entries in each column of a
@@ -136,14 +136,14 @@ c++++ sort columns
 c=======================================================================
       subroutine sortjsp(ja,xa,n)
 c=======================================================================
-c     sorts intger vector ja in ascending order, and orders the real*8 
+c     sorts intger vector ja in ascending order, and orders the double precision 
 c     vector a accordingly
 c
 c     A.J.V. 2007
 c=======================================================================
       integer i,j,s,l,r,j1,a1,n,x
       integer ja(n),stack(50,2)
-      real*8 xa(n),xb
+      double precision xa(n),xb
 
       s=1
       stack(1,1)=1
@@ -197,8 +197,8 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer ia(1),ja(1),ibeg,iend,ivbeg,i,j
-      real*8 qaq
-      real*8 a(1),q(1)
+      double precision qaq
+      double precision a(1),q(1)
       
       qaq=0
       do 10 i=ibeg,iend
@@ -221,7 +221,7 @@ c=======================================================================
       parameter(storfull=1,storhalf=2)
       integer ia(1),ja(1),i1,i2,ib(1),jb(1),j1,stora,storb,i,j,rowb,
      $ rowb1 
-      real*8 a(1),b(1),mult
+      double precision a(1),b(1),mult
       
       if (stora.ne.storhalf.or.storb.ne.storfull) then
          call rexit("adjadd: option not implemented")
@@ -252,7 +252,7 @@ c     matrix must already contain (k,l) location
 c
 c     A.J.V. 2007
 c=======================================================================
-      real*8 a(1),x
+      double precision a(1),x
       integer ia(1),ja(1),k,l,i
       
       do 10 i=ia(k),ia(k+1)-1
@@ -276,7 +276,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer nhash,i,j,isize,id
-      real*8 h(id,3),x(12,12)
+      double precision h(id,3),x(12,12)
 
       isize=0
       do 10 i=1,12
@@ -312,7 +312,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer nh,isize
-      real*8 x(12,12),h(nh,3)
+      double precision x(12,12),h(nh,3)
       integer i,j,ii,jj
       
       if(isize.gt.12)then
@@ -350,7 +350,7 @@ c     prints a small sparse  matrix (a,ia,ja) of rank isize<=12
 c
 c     A.J.V. 2007
 c=======================================================================
-      real*8 a(1),x(12,12)
+      double precision a(1),x(12,12)
       integer ia(1),ja(1),isize,i,j
 
       if(isize.gt.12) then
@@ -388,7 +388,7 @@ c     prints a small sparse  matrix (a,ia,ja) of rank isize<=12
 c
 c     A.J.V. 2007
 c=======================================================================
-      real*8 a(1),x(12,12)
+      double precision a(1),x(12,12)
       integer ia(1),ju(1),iju(1),isize,i,j
 
       if(isize.gt.12) then
@@ -463,7 +463,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer n,ia(1),ja(1),i,j,inddiag
-      real*8 a(1)
+      double precision a(1)
 
       do i=1,n
          inddiag=0
@@ -490,7 +490,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer n,ia(1),ja(1),l1,l2,i,j,msglev
-      real*8 tracediag,a(1)
+      double precision tracediag,a(1)
       data msglev/0/
 
       tracediag=0
@@ -532,7 +532,7 @@ c
 c     A.J.V. 2007
 c=======================================================================
       integer n,ia(1),ja(1),n1,ib(1),jb(1),ix,iy,i,j,msglev
-      real*8 tracematrix,a(1),b(1),tmp(1),tl,td,tu
+      double precision tracematrix,a(1),b(1),tmp(1),tl,td,tu
       data msglev/0/
 
       do i=1,n

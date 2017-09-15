@@ -1474,7 +1474,7 @@ c+++++Internal working
 c+++++algorithm
 
       if(maxnsave.lt.nsave)then
-         call rexit("Increase ´maxnsave´ in ´hpdspy´")
+         call rexit("Increase 'maxnsave' in 'hpdspy'")
       end if   
 
       if(maxngrid.lt.ngrid)then
