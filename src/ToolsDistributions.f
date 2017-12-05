@@ -21,8 +21,8 @@ c=======================================================================
 c=======================================================================
 c     return the log of a gamma distribution
 c     A.J.V., 2006
-      real*8 y,mu,v,eval
-      real*8 dgamlog
+      double precision y,mu,v,eval
+      double precision dgamlog
       eval=(v-1)*log(y)-y*(v/mu)-v*log(mu/v)-dgamlog(v)
       return
       end
@@ -33,8 +33,8 @@ c=======================================================================
 c=======================================================================
 c     return the log of a gamma distribution
 c     A.J.V., 2006
-      real*8 y,alpha,beta,eval
-      real*8 dgamlog
+      double precision y,alpha,beta,eval
+      double precision dgamlog
       eval=alpha*log(beta)+(alpha-1.d0)*log(y) - beta*y - dgamlog(alpha)
       return
       end
@@ -45,8 +45,8 @@ c=======================================================================
 c=======================================================================
 c     return the log of a inverted gamma distribution
 c     A.J.V., 2006
-      real*8 y,alpha,beta,eval
-      real*8 dgamlog
+      double precision y,alpha,beta,eval
+      double precision dgamlog
       eval=alpha*log(beta)-(alpha+1.d0)*log(y) - beta/y - dgamlog(alpha)
       return
       end
@@ -58,8 +58,8 @@ c=======================================================================
 c     This function evaluate the cdf of a standard logistic distribution.
 c     A.J.V., 2005
       implicit none 
-      real*8 x
-      real*8 cdflogis
+      double precision x
+      double precision cdflogis
       cdfslogistic=cdflogis(x,0.d0,1.d0,1,0)
       return
       end
@@ -70,8 +70,8 @@ c=======================================================================
 c     This function evaluate the cdf of a standard logistic distribution.
 c     A.J.V., 2005
       implicit none 
-      real*8 p
-      real*8 invcdflogis
+      double precision p
+      double precision invcdflogis
       invcdfslogistic=invcdflogis(p,0.d0,1.d0,1,0)
       return
       end
@@ -84,8 +84,8 @@ c=======================================================================
 c     This function evaluate the cdf of a Beta(alpha,beta) distribution.
 c     A.J.V., 2005
       implicit none 
-      real*8 x,alpha,beta
-      real*8 cdfbetas
+      double precision x,alpha,beta
+      double precision cdfbetas
       cdfbeta=cdfbetas(x,alpha,beta,1,0)
       return
       end
@@ -97,8 +97,8 @@ c=======================================================================
 c     This function evaluate the cdf of a Beta(alpha,beta) distribution.
 c     A.J.V., 2005
       implicit none 
-      real*8 p,alpha,beta
-      real*8 invcdfbetas
+      double precision p,alpha,beta
+      double precision invcdfbetas
       invcdfbeta=invcdfbetas(p,alpha,beta,1,0)
       return
       end
@@ -160,10 +160,10 @@ c     return the log of a multivariate normal density
 c     A.J.V., 2005
       implicit none
       integer n,i,j
-      real*8 mu(n),sigma(n,n),x(n),vv(n)
-      real*8 a(n,n),sigma2(n,n),res(n),det,sse,eval
+      double precision mu(n),sigma(n,n),x(n),vv(n)
+      double precision a(n,n),sigma2(n,n),res(n),det,sse,eval
       integer iflag(n)
-      real*8 work1,work2,work3,tpi
+      double precision work1,work2,work3,tpi
      
       work1=0.d0
       work2=0.d0
@@ -212,10 +212,10 @@ c     return the log of a multivariate normal density
 c     A.J.V., 2005
       implicit none
       integer n,i,j
-      real*8 mu(n),sigma(n,n),x(n),vv(n)
-      real*8 a(n,n),sigma2(n,n),det,sse,eval
+      double precision mu(n),sigma(n,n),x(n),vv(n)
+      double precision a(n,n),sigma2(n,n),det,sse,eval
       integer iflag(n)
-      real*8 work1,work2,work3,tpi
+      double precision work1,work2,work3,tpi
      
       work1=0.d0
       work2=0.d0
@@ -264,10 +264,10 @@ c     return the log of a multivariate normal density
 c     A.J.V., 2005
       implicit none
       integer nr,n,i,j
-      real*8 mu(nr),sigma(nr,nr),x(nr),vv(nr)
-      real*8 a(nr,nr),sigma2(nr,nr),det,sse,eval
+      double precision mu(nr),sigma(nr,nr),x(nr),vv(nr)
+      double precision a(nr,nr),sigma2(nr,nr),det,sse,eval
       integer iflag(nr)
-      real*8 work1,work2,work3,tpi
+      double precision work1,work2,work3,tpi
      
       work1=0.d0
       work2=0.d0
@@ -321,20 +321,20 @@ c     A.J.V., 2007
       implicit none
 c-----input      
       integer kk,nu
-      real*8 sigma(kk,kk),tinv(kk,kk)
+      double precision sigma(kk,kk),tinv(kk,kk)
 
 c-----output      
-      real*8 eval
+      double precision eval
       
 c-----input-working       
       integer iflag(kk)      
-      real*8 workm1(kk,kk),workm2(kk,kk)
-      real*8 workv(kk)
+      double precision workm1(kk,kk),workm2(kk,kk)
+      double precision workv(kk)
 
 c-----working
       integer i,j,k  
-      real*8 detlogt,detlogs
-      real*8 trace,tmp1
+      double precision detlogt,detlogs
+      double precision trace,tmp1
 
       do i=1,kk
          do j=1,kk
@@ -388,10 +388,10 @@ c     in this routine sigma is destroyed!!!.
 c     A.J.V., 2007
       implicit none
       integer n,i,j
-      real*8 mu(n),sigma(n,n),x(n)
-      real*8 det,sse,eval
+      double precision mu(n),sigma(n,n),x(n)
+      double precision det,sse,eval
       integer iflag(n)
-      real*8 work1,work2,work3,tpi
+      double precision work1,work2,work3,tpi
      
       work1=0.d0
       work2=0.d0
@@ -443,24 +443,24 @@ c=======================================================================
 c+++++Input
       integer n
       integer typeint(n)
-      real*8 mu(n),sigma(n,n)
-      real*8 lower(n),upper(n)
-      real*8 work1(n,n),work2(n,n)
-      real*8 ynew(n),yold(n)
+      double precision mu(n),sigma(n,n)
+      double precision lower(n),upper(n)
+      double precision work1(n,n),work2(n,n)
+      double precision ynew(n),yold(n)
 
 c+++++Output
-      real*8 logcgkn
+      double precision logcgkn
 
 c+++++Working
       integer i,j,k,maxn
       parameter(maxn=50)
-      real*8 dnrm,cdfnorm
-      real*8 muv(maxn)
-      real*8 muc,sigmac
-      real*8 tmp1
-      real*8 slow,supp
-      real*8 yv(maxn)
-      real*8 yt(maxn)
+      double precision dnrm,cdfnorm
+      double precision muv(maxn)
+      double precision muc,sigmac
+      double precision tmp1
+      double precision slow,supp
+      double precision yv(maxn)
+      double precision yt(maxn)
       logical ainf,binf      
 
 c+++++Algorithm
@@ -548,8 +548,8 @@ c     c = mode
 c     A.J.V., 2007
 c=======================================================================
       implicit none
-      real*8 a,b,c,x
-      real*8 dens
+      double precision a,b,c,x
+      double precision dens
       
       dens=0.d0
       if(a.le.x.and.x.le.c)then

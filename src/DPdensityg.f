@@ -210,28 +210,29 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
 c+++++Prior 
       integer nuvec(2),nu1,nu2,m1rand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 psiinv2(nvar,nvar)
-      real*8 tau(2),tau1,tau2
-      real*8 s2inv(nvar,nvar),s2invm2(nvar)
+      double precision aa0,ab0,a0b0(2)
+      double precision psiinv2(nvar,nvar)
+      double precision tau(2),tau1,tau2
+      double precision s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec)
-      real*8 randsave(nsave,(nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
+      double precision cpo(nrec)
+      double precision randsave(nsave,
+     1  (nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,k0,m1(nvar),muclus(nrec+100,nvar)
-      real*8 psi1(nvar,nvar),psiinv1(nvar,nvar)
-      real*8 sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision alpha,k0,m1(nvar),muclus(nrec+100,nvar)
+      double precision psi1(nvar,nvar),psiinv1(nvar,nvar)
+      double precision sigmaclus(nrec+100,nvar*(nvar+1)/2)
       
 c+++++Working space
       integer ccluster(nrec),count,dispcount,evali
@@ -239,19 +240,20 @@ c+++++Working space
       integer j,k,l
       integer ns,nscan,nuniqs,nuwork,sprint
       integer seed(3),seed1,seed2,seed3,since,skipcount
-      real*8 detlog
-      real*8 muwork(nvar),prob(nrec+100),rgamma
-      real*8 s1(nvar,nvar)
-      real*8 sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
-      real*8 theta(nvar),tmp1,tmp2
-      real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
-      real*8 workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
-      real*8 workv1(nvar),workv2(nvar),workv3(nvar)
-      real*8 ywork(nvar)
-      real*8 workcpo(nrec)
+      double precision detlog
+      double precision muwork(nvar),prob(nrec+100),rgamma
+      double precision s1(nvar,nvar)
+      double precision sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
+      double precision theta(nvar),tmp1,tmp2
+      double precision workm1(nvar,nvar),workm2(nvar,nvar),
+     1  workm3(nvar,nvar)
+      double precision workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
+      double precision workv1(nvar),workv2(nvar),workv3(nvar)
+      double precision ywork(nvar)
+      double precision workcpo(nrec)
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ Define parameters
 
@@ -956,8 +958,9 @@ c     A.J.V., 2006
       integer dimen,i,ihmssf,j
       integer ind,since,nrec,nvar,ncluster,ccluster(nrec)
       integer ss(nrec)
-      real*8 muclus(nrec+2,nvar),sigmaclus(nrec+2,nvar*(nvar+1)/2)
-      real*8 muwork(nvar),sigmawork(nvar,nvar)
+      double precision muclus(nrec+2,nvar),
+     1  sigmaclus(nrec+2,nvar*(nvar+1)/2)
+      double precision muwork(nvar),sigmawork(nvar,nvar)
 
       dimen=nvar*(nvar+1)/2
 
@@ -1009,8 +1012,9 @@ c     A.J.V., 2006
       integer dimen,i,ihmssf,j
       integer ind,since,nrec,nvar,ncluster,ccluster(nrec)
       integer ss(nrec)
-      real*8 muclus(nrec+100,nvar),sigmaclus(nrec+100,nvar*(nvar+1)/2)
-      real*8 muwork(nvar),sigmawork(nvar,nvar)
+      double precision muclus(nrec+100,nvar),
+     1  sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision muwork(nvar),sigmawork(nvar,nvar)
 
       dimen=nvar*(nvar+1)/2
 

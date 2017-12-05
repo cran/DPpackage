@@ -183,59 +183,59 @@ c=======================================================================
 
 c+++++Data
       integer ngrid,nrec
-      real*8 y(nrec)
+      double precision y(nrec)
 
 c+++++Prior information
-      real*8 ab(2),ca,cb
+      double precision ab(2),ca,cb
       integer murand,sigmarand,jfr(2)
-      real*8 m0,s0
-      real*8 tau(2)
+      double precision m0,s0
+      double precision tau(2)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2,tune3
+      double precision tune1,tune2,tune3
 
 c+++++Stored output
-      real*8 acrate(3),f(ngrid)
-      real*8 thetasave(nsave,3)
-      real*8 cpo(nrec)
+      double precision acrate(3),f(ngrid)
+      double precision thetasave(nsave,3)
+      double precision cpo(nrec)
 
 c+++++Current values of the parameters
-      real*8 cpar,mu,sigma
+      double precision cpar,mu,sigma
 
 c+++++Working space - CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - Density
-      real*8 grid(ngrid)
+      double precision grid(ngrid)
       
 c+++++Working space - Distributions
-      real*8 dnrm,dlnrm
-      real*8 invcdfnorm
+      double precision dnrm,dlnrm
+      double precision invcdfnorm
 
 c+++++Working space - General
       integer countero,countern
       integer i,j,je2,k,k1,k2,l
       integer nint,ok,parti,pprn,sprint
       integer whicho(nrec),whichn(nrec)
-      real*8 prob
-      real*8 quan
-      real*8 s,tmp1,tmp2,ybar
+      double precision prob
+      double precision quan
+      double precision s,tmp1,tmp2,ybar
 
 c+++++Working space - MCMC scans
       integer dispcount,isave,iscan,nscan,skipcount
 
 c+++++Working space - MH steps
-      real*8 cparc
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 muc,sigma2,sigmac,sigma2c
-      real*8 ratio
+      double precision cparc
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision muc,sigma2,sigmac,sigma2c
+      double precision ratio
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      real*8 rnorm,rtlnorm
+      double precision rnorm,rtlnorm
       real runif
 
 c++++ initialize variables

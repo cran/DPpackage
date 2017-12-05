@@ -28,20 +28,20 @@ c=======================================================================
 
 c+++++Input
       integer maxm,n,maxnsi
-      real*8 alpha,linf,lsup
+      double precision alpha,linf,lsup
 
 c+++++External working space
-      real*8 theta(maxm) 
-      real*8 v(maxm),w(maxm),workv(maxm+1)
-      real*8 u(maxnsi)
+      double precision theta(maxm) 
+      double precision v(maxm),w(maxm),workv(maxm+1)
+      double precision u(maxnsi)
 
 c+++++Output
-      real*8 y(maxnsi)
+      double precision y(maxnsi)
 
 c+++++Internal working space
       integer i,i1,mrand,ok
-      real*8 mass,maxu
-      real*8 tmp1,tmp2
+      double precision mass,maxu
+      double precision tmp1,tmp2
       real runif 
 
       if(lsup.le.linf)then
@@ -105,21 +105,21 @@ c=======================================================================
 
 c+++++Input
       integer maxm,n,nso,maxnsi
-      real*8 alpha,linf,lsup
+      double precision alpha,linf,lsup
 
 c+++++External working space
-      real*8 theta(maxm) 
-      real*8 v(maxm),w(maxm),workv(maxm+1)
-      real*8 u(maxnsi)
-      real*8 yo(maxnsi)
+      double precision theta(maxm) 
+      double precision v(maxm),w(maxm),workv(maxm+1)
+      double precision u(maxnsi)
+      double precision yo(maxnsi)
 
 c+++++Output
-      real*8 y(maxnsi)
+      double precision y(maxnsi)
 
 c+++++Internal working space
       integer i,i1,mrand,ok
-      real*8 mass,mass2,maxu
-      real*8 tmp1,tmp2
+      double precision mass,mass2,maxu
+      double precision tmp1,tmp2
       real runif 
 
       if(lsup.le.linf)then
@@ -188,16 +188,16 @@ c=======================================================================
 
 c+++++Input
       integer indi,nr,n
-      real*8 alpha
+      double precision alpha
 
 c+++++Output
-      real*8 accsum,accsumw
-      real*8 v(nr),w(nr),workv(nr+1)
+      double precision accsum,accsumw
+      double precision v(nr),w(nr),workv(nr+1)
 
 c+++++Internal working space
       integer i 
-      real*8 rbeta
-      real*8 tmp1
+      double precision rbeta
+      double precision tmp1
 
 c+++++Algorihtm
 
@@ -242,11 +242,11 @@ c+++++Input
       integer countv1(maxkk),countv2(maxkk)
       integer countm1(maxkk,maxint),countm2(maxkk,maxint) 
       integer countiv(maxkk*maxint),countim(maxkk*maxint,maxnsi)  
-      real*8 endp(maxint),z(nrec)
+      double precision endp(maxint),z(nrec)
 
 c+++++Output
       integer zindi(nrec)
-      real*8 probbig(maxkk,maxint) 
+      double precision probbig(maxkk,maxint) 
 
 c+++++Internal working space
       integer i,iceil,j,k,l,ll,ok
@@ -340,7 +340,7 @@ c+++++External working space
 
 c+++++Output
       integer npoints
-      real*8 endp(maxint)
+      double precision endp(maxint)
       integer countv1(maxkk),countv2(maxkk)
       integer countm1(maxkk,maxint),countm2(maxkk,maxint) 
       integer intprob(maxint,2)
@@ -349,7 +349,7 @@ c+++++Internal working space
       integer count,count1,count2,countc
       integer i,j,ok,okc
       integer iceil
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++Body
 

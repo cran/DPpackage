@@ -31,33 +31,33 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
 c+++++Prediction 
       integer ngrid
-      real*8 grid(ngrid,2)
+      double precision grid(ngrid,2)
 
 c+++++Prior information
       integer frstl
       integer maxm
-      real*8 a0b0(2)
+      double precision a0b0(2)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2
+      double precision tune1,tune2
 
 c+++++Stored output
-      real*8 acrate(2)
-      real*8 cpo(nrec)
-      real*8 f(ngrid,ngrid)
-      real*8 randsave(nsave,nvar)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+1)
+      double precision acrate(2)
+      double precision cpo(nrec)
+      double precision f(ngrid,ngrid)
+      double precision randsave(nsave,nvar)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+1)
 
 c+++++Current values of the parameters
-      real*8 alpha
-      real*8 mu(nvar)
-      real*8 sigma(nvar,nvar)
-      real*8 ortho(nvar,nvar)
+      double precision alpha
+      double precision mu(nvar)
+      double precision sigma(nvar,nvar)
+      double precision ortho(nvar,nvar)
 
 c+++++Random number generator
       integer seed(2),seed1,seed2
@@ -67,60 +67,60 @@ c+++++External working space
       integer kmat(nrec,maxm)
       integer kphi(nvar)
       integer kvec(maxm)
-      real*8 omat(nvar,nvar)
-      real*8 propvr(nvar,nvar)
-      real*8 sigmac(nvar,nvar) 
-      real*8 sigmachol(nvar,nvar) 
-      real*8 sigmacholc(nvar,nvar) 
-      real*8 uinv(nvar,nvar)
-      real*8 uinvc(nvar,nvar)
-      real*8 workm(nvar,nvar) 
-      real*8 workm2(nvar,nvar) 
-      real*8 workmh(nvar*(nvar+1)/2)
-      real*8 workmh2(nvar*(nvar+1)/2)
-      real*8 workv(nvar)
+      double precision omat(nvar,nvar)
+      double precision propvr(nvar,nvar)
+      double precision sigmac(nvar,nvar) 
+      double precision sigmachol(nvar,nvar) 
+      double precision sigmacholc(nvar,nvar) 
+      double precision uinv(nvar,nvar)
+      double precision uinvc(nvar,nvar)
+      double precision workm(nvar,nvar) 
+      double precision workm2(nvar,nvar) 
+      double precision workmh(nvar*(nvar+1)/2)
+      double precision workmh2(nvar*(nvar+1)/2)
+      double precision workv(nvar)
 
 c+++++Working space - CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - Distributions
-      real*8 dnrm,dlnrm,rtlnorm 
+      double precision dnrm,dlnrm,rtlnorm 
 
 c+++++Working space - General
       integer i,i1,j,j1,k,k1
       integer ihmssf
       integer pprn,sprint
-      real*8 alphac
-      real*8 ldet,ldetc
-      real*8 tmp1      
+      double precision alphac
+      double precision ldet,ldetc
+      double precision tmp1      
 
 c+++++Working space - MCMC scans
       integer dispcount,isave,iscan,nscan,skipcount
 
 c+++++Working space - MH steps
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 ratio
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision ratio
 
 c+++++Working space - Random numbers
       real runif
 
 c++++ Working space - slice sampling
       integer evali
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c+++++Adaptive MH for sigma
       integer nadaptive,nu
       parameter(nadaptive=2000)
       integer adaptives,sigmaskip
-      real*8 aratesigma
+      double precision aratesigma
 
 c+++++Adaptive MH for c
       integer adaptivec,cskip
-      real*8 aratec
+      double precision aratec
 
 c++++ initialize variables
       nburn=mcmc(1)
@@ -302,18 +302,18 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                   if(nvar.eq.1)then
                      if(aratesigma.lt.0.44)then
                         tune1=exp(log(tune1)+
-     &                    min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                    min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                        else
                         tune1=exp(log(tune1)-
-     &                    min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                    min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                      end if  
                     else
                      if(aratesigma.lt.0.234)then
                         tune1=exp(log(tune1)+
-     &                   min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                   min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                        else
                         tune1=exp(log(tune1)-
-     &                   min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                   min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                      end if  
                   end if  
                end if
@@ -661,10 +661,10 @@ c++++++++++ Addaptive MH
                    else 
                      if(aratec.gt.0.44)then
                         tune2=exp(log(tune2)+
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                        else
                         tune2=exp(log(tune2)-
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                      end if 
                   end if    
                   cskip=0
@@ -782,27 +782,27 @@ c=======================================================================
       implicit none
 c+++++Input
       integer nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
       integer maxm
       integer frstl
-      real*8 alpha
-      real*8 mu(nvar)
-      real*8 uinv(nvar,nvar)
-      real*8 ldet       
+      double precision alpha
+      double precision mu(nvar)
+      double precision uinv(nvar,nvar)
+      double precision ldet       
 
 c+++++External working space
       integer kphi(nvar)
 
 c+++++Output
       integer kmat(nrec,maxm)
-      real*8 out
+      double precision out
 
 c+++++Internal working space
       integer i,j,j1,j2,k,k1,ind
       integer n1,n2
-      real*8 cdfnorm,dnrm
-      real*8 tmp1,tmp2
+      double precision cdfnorm,dnrm
+      double precision tmp1,tmp2
    
 c+++++Algorithm
 
@@ -881,23 +881,23 @@ c=======================================================================
       implicit none
 c+++++Input
       integer nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
       integer maxm
       integer frstl
-      real*8 alpha
+      double precision alpha
 
       integer kmat(nrec,maxm)
       
-      real*8 a0b0(2)
+      double precision a0b0(2)
  
 c+++++Output
-      real*8 out
+      double precision out
 
 c+++++Internal working space
       integer i,j,j1,j2,k,k1,ind
       integer n1,n2
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
    
 c+++++Algorithm
 
@@ -943,30 +943,30 @@ c+++++Input
       integer nrec,nvar
       integer maxm
       integer frstl
-      real*8 alpha
-      real*8 mu(nvar)
-      real*8 uinv(nvar,nvar)
-      real*8 ldet       
+      double precision alpha
+      double precision mu(nvar)
+      double precision uinv(nvar,nvar)
+      double precision ldet       
 
       integer kmat(nrec,maxm)
 
       integer ngrid
-      real*8 grid(ngrid,nvar)
+      double precision grid(ngrid,nvar)
 
 c+++++External working space
       integer kphi(nvar)
       integer kvec(maxm)
 
 c+++++Output
-      real*8 f(ngrid,ngrid)
+      double precision f(ngrid,ngrid)
 
 c+++++Internal working space
       integer i,j,j1,j2,k,k1,ind,l1,l2
       integer n1,n2
-      real*8 cdfnorm,dnrm
-      real*8 tmp1,tmp2 
-      real*8 out
-      real*8 ywork(2)
+      double precision cdfnorm,dnrm
+      double precision tmp1,tmp2 
+      double precision out
+      double precision ywork(2)
    
 c+++++Algorithm
 

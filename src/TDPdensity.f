@@ -145,27 +145,27 @@ c=======================================================================
 
 c+++++Data
       integer nrec
-      real*8 jacob
-      real*8 x(nrec)
+      double precision jacob
+      double precision x(nrec)
 
 c+++++Prior 
       integer kmax
-      real*8 aa0,ab0,a0b0(2),a0,b0
+      double precision aa0,ab0,a0b0(2),a0,b0
 
 c+++++Current values of the parameters
       integer k,ncluster,ss(nrec)
-      real*8 alpha
-      real*8 yclus(nrec)
+      double precision alpha
+      double precision yclus(nrec)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
       integer ngrid
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,nrec+1)
-      real*8 thetasave(nsave,3)
-      real*8 grid(ngrid),fun(ngrid)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,nrec+1)
+      double precision thetasave(nsave,3)
+      double precision grid(ngrid),fun(ngrid)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -177,11 +177,11 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++DP
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
-      real*8 prob(nrec+1)
+      double precision prob(nrec+1)
       
 c+++++K
-      real*8 probk(kmax+1)
-      real*8 y(nrec)
+      double precision probk(kmax+1)
+      double precision y(nrec)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -190,20 +190,20 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++General
       integer evali,i,ii,j,l,ns,ok
       integer since,sprint,status  
-      real*8 a,b,bound,c
-      real*8 tmp1,tmp2,tmp3
-      real*8 tt1,tt2,tt3,tt4
-      real*8 yrand,yrand2
+      double precision a,b,bound,c
+      double precision tmp1,tmp2,tmp3
+      double precision tt1,tt2,tt3,tt4
+      double precision yrand,yrand2
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++RNG and distributions
-      real*8 cdfbetas
-      real*8 rbeta
+      double precision cdfbetas
+      double precision rbeta
       real runif
 
 c++++ parameters

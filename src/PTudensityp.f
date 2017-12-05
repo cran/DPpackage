@@ -228,42 +228,42 @@ c=======================================================================
 
 c+++++Data
       integer ngrid,nrec
-      real*8 y(nrec)
+      double precision y(nrec)
 
 c+++++Prior information
       integer nlevel,ninter
-      real*8 ab(2),ca,cb
+      double precision ab(2),ca,cb
       integer murand,sigmarand,jfr(2)
-      real*8 m0,s0
-      real*8 tau(2)
+      double precision m0,s0
+      double precision tau(2)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2,tune3
+      double precision tune1,tune2,tune3
 
 c+++++Stored output
-      real*8 acrate(3),f(ngrid)
-      real*8 thetasave(nsave,3)
-      real*8 cpo(nrec)
+      double precision acrate(3),f(ngrid)
+      double precision thetasave(nsave,3)
+      double precision cpo(nrec)
 
 c+++++Current values of the parameters
-      real*8 cpar,mu,sigma
+      double precision cpar,mu,sigma
 
 c+++++Working space - CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - Density
-      real*8 grid(ngrid)
+      double precision grid(ngrid)
       
 c+++++Working space - Distributions
-      real*8 dbet,dnrm,dlnrm
-      real*8 invcdfnorm
+      double precision dbet,dnrm,dlnrm
+      double precision invcdfnorm
 
 c+++++Working space - General
       integer i,j,je2,k,k1,k2
       integer nint,npoints,pprn,sprint
-      real*8 quan
-      real*8 s,tmp1,tmp2,tmp3,ybar
+      double precision quan
+      double precision s,tmp1,tmp2,tmp3,ybar
 
 c+++++Working space - MCMC scans
       integer dispcount,isave,iscan,nscan,skipcount
@@ -271,24 +271,24 @@ c+++++Working space - MCMC scans
 c+++++Working space - MH steps
       integer intlp
       integer intpn(nrec),intpo(nrec)
-      real*8 cparc
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 muc,sigma2,sigmac,sigma2c
-      real*8 ratio
+      double precision cparc
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision muc,sigma2,sigmac,sigma2c
+      double precision ratio
 
 c+++++Working space - Polya tree parameters
       integer assign(nrec,nlevel)
       integer counter(nlevel,ninter)
-      real*8 accums(nlevel,ninter)
-      real*8 endp(ninter-1)
-      real*8 prob(ninter)
-      real*8 rvecs(nlevel,ninter)
+      double precision accums(nlevel,ninter)
+      double precision endp(ninter-1)
+      double precision prob(ninter)
+      double precision rvecs(nlevel,ninter)
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      real*8 rbeta,rnorm,rtlnorm
+      double precision rbeta,rnorm,rtlnorm
       real runif
 
 c++++ initialize variables

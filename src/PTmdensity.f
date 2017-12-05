@@ -262,37 +262,37 @@ c=======================================================================
 
 c+++++Data
       integer ngrid,nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
 c+++++Prior information
-      real*8 ab(2),ca,cb
+      double precision ab(2),ca,cb
       integer murand,sigmarand,jfr(2),nu0
-      real*8 m0(nvar),s0(nvar,nvar)
-      real*8 tinv(nvar,nvar)
+      double precision m0(nvar),s0(nvar,nvar)
+      double precision tinv(nvar,nvar)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2,tune3
+      double precision tune1,tune2,tune3
 
 c+++++Stored output
-      real*8 acrate(3)
-      real*8 cpo(nrec)
-      real*8 f(ngrid,ngrid)
-      real*8 randsave(nsave,nvar)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+1)
+      double precision acrate(3)
+      double precision cpo(nrec)
+      double precision f(ngrid,ngrid)
+      double precision randsave(nsave,nvar)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+1)
 
 c+++++Current values of the parameters
-      real*8 cpar,mu(nvar),sigma(nvar,nvar)
+      double precision cpar,mu(nvar),sigma(nvar,nvar)
 
 c+++++Working space - CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - Density
-      real*8 grid1(ngrid),grid2(ngrid)
+      double precision grid1(ngrid),grid2(ngrid)
 
 c+++++Working space - Distributions
-      real*8 dnrm,dlnrm
-      real*8 invcdfnorm
+      double precision dnrm,dlnrm
+      double precision invcdfnorm
 
 c+++++Working space - General
       integer binaryrep
@@ -307,38 +307,39 @@ c+++++Working space - General
       integer parti(nvar)
       integer pprn,sprint
       integer whicho(nrec),whichn(nrec)
-      real*8 detlogl,detloglc,detlog1,detlog2,detlog3
-      real*8 limw(nvar),linf(nvar),lsup(nvar)
-      real*8 mass(narea)
-      real*8 prob
-      real*8 quan
-      real*8 s(nvar,nvar)
-      real*8 sigmainv(nvar,nvar),sigmainvc(nvar,nvar)
-      real*8 tmp1,tmp2
-      real*8 ybar(nvar)
-      real*8 z(nrec,nvar),zc(nrec,nvar)
-      real*8 zwork(nvar)
-      real*8 vv(nvar)
-      real*8 workmh(nvar*(nvar+1)/2)
-      real*8 workh1(nvar*(nvar+1)/2),workh2(nvar*(nvar+1)/2)
-      real*8 workm1(nvar,nvar)
-      real*8 workm2(nvar,nvar)
+      double precision detlogl,detloglc,detlog1,detlog2,detlog3
+      double precision limw(nvar),linf(nvar),lsup(nvar)
+      double precision mass(narea)
+      double precision prob
+      double precision quan
+      double precision s(nvar,nvar)
+      double precision sigmainv(nvar,nvar),sigmainvc(nvar,nvar)
+      double precision tmp1,tmp2
+      double precision ybar(nvar)
+      double precision z(nrec,nvar),zc(nrec,nvar)
+      double precision zwork(nvar)
+      double precision vv(nvar)
+      double precision workmh(nvar*(nvar+1)/2)
+      double precision workh1(nvar*(nvar+1)/2),workh2(nvar*(nvar+1)/2)
+      double precision workm1(nvar,nvar)
+      double precision workm2(nvar,nvar)
       
 c+++++Working space - MCMC scans
       integer dispcount,isave,iscan,nscan,skipcount
 
 c+++++Working space - MH steps
-      real*8 cparc
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 muc(nvar),sigmac(nvar,nvar)
-      real*8 propv(nvar,nvar),propv1(nvar,nvar),propv2(nvar,nvar)
-      real*8 ratio,nu
+      double precision cparc
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision muc(nvar),sigmac(nvar,nvar)
+      double precision propv(nvar,nvar),propv1(nvar,nvar),
+     1  propv2(nvar,nvar)
+      double precision ratio,nu
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      real*8 rtnorm,rtlnorm,rnorm
+      double precision rtnorm,rtlnorm,rnorm
       real runif
 
 c++++ initialize variables

@@ -37,22 +37,22 @@ c=======================================================================
 
 c+++++Data
       integer nfixed,nrec,p
-      real*8 x(nrec,p),y(nrec)
+      double precision x(nrec,p),y(nrec)
 
 c+++++Prior 
       integer murand,sigmarand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 sb(p),prec(p,p)
-      real*8 smu,psiinv
-      real*8 tau(4),tau01,tau02,tau11,tau12
+      double precision aa0,ab0,a0b0(2)
+      double precision sb(p),prec(p,p)
+      double precision smu,psiinv
+      double precision tau(4),tau01,tau02,tau11,tau12
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha
-      real*8 beta(p)
-      real*8 sigma
-      real*8 mub,sigmab
-      real*8 mu(nrec)
+      double precision alpha
+      double precision beta(p)
+      double precision sigma
+      double precision mub,sigmab
+      double precision mu(nrec)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
@@ -60,11 +60,11 @@ c+++++MCMC parameters
 c+++++Output
       integer ngrid
       integer clustsave(nsave,nrec) 
-      real*8 cpo(nrec,2)
-      real*8 grid(ngrid),fun(ngrid)
-      real*8 musave(nsave,nrec)
-      real*8 randsave(nsave,nrec+1)
-      real*8 thetasave(nsave,nfixed+6)
+      double precision cpo(nrec,2)
+      double precision grid(ngrid),fun(ngrid)
+      double precision musave(nsave,nrec)
+      double precision randsave(nsave,nrec+1)
+      double precision thetasave(nsave,nfixed+6)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -76,21 +76,21 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++DP
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
-      real*8 prob(nrec+1)
+      double precision prob(nrec+1)
       
 c+++++Residuals
-      real*8 res(nrec)
+      double precision res(nrec)
 
 c+++++Regression
       integer iflagp(p) 
-      real*8 xtx(p,p)
-      real*8 xty(p)
-      real*8 workmhp1(p*(p+1)/2)
-      real*8 workvp1(p)
+      double precision xtx(p,p)
+      double precision xty(p)
+      double precision workmhp1(p*(p+1)/2)
+      double precision workvp1(p)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p+1),bsave(nrec)
+      double precision mc(5)
+      double precision betasave(p+1),bsave(nrec)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -100,25 +100,25 @@ c+++++General
       integer evali,ii,i,j,k,l,ns 
       integer ok
       integer since,sprint 
-      real*8 betar
-      real*8 theta,tmp1,tmp2,tmp3
-      real*8 ztz,zty
-      real*8 sigmainv,sigmabinv
+      double precision betar
+      double precision theta,tmp1,tmp2,tmp3
+      double precision ztz,zty
+      double precision sigmainv,sigmabinv
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++RNG and distributions
-      real*8 dnrm,rnorm,rgamma
+      double precision dnrm,rnorm,rgamma
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ parameters

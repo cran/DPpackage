@@ -144,29 +144,29 @@ c=======================================================================
       implicit none
 
 c+++++Constants
-      real*8 zero,one
+      double precision zero,one
       parameter(zero=0.d0)
       parameter(one =1.d0)
 
 c+++++Observed variables
       integer link,nrec,p,yobs(nrec)
-      real*8 sens(nrec),spec(nrec)
-      real*8 x(nrec,p)
+      double precision sens(nrec),spec(nrec)
+      double precision x(nrec,p)
 
 c+++++Prior information
-      real*8 betapm(p),betapv(p,p)
+      double precision betapm(p),betapv(p,p)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 propv(p,p)
+      double precision propv(p,p)
 
 c+++++Stored output
-      real*8 acrate
-      real*8 thetasave(nsave,p)
-      real*8 cpo(nrec)
+      double precision acrate
+      double precision thetasave(nsave,p)
+      double precision cpo(nrec)
 
 c+++++Current values of the parameters
-      real*8 beta(p)
+      double precision beta(p)
   
 c+++++Working space
       integer dispcount
@@ -180,19 +180,19 @@ c+++++Working space
       integer seed1,seed2
       integer skipcount
       
-      real*8 betac(p)
-      real*8 cdfcauchy,cdfnorm
-      real*8 eta(nrec),etan(nrec)
-      real*8 logliko,loglikn,logprioro,logpriorn
-      real*8 ratio
-      real*8 tmp1,tmp2
-      real*8 workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p)
+      double precision betac(p)
+      double precision cdfcauchy,cdfnorm
+      double precision eta(nrec),etan(nrec)
+      double precision logliko,loglikn,logprioro,logpriorn
+      double precision ratio
+      double precision tmp1,tmp2
+      double precision workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p)
 
       real runif
       
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ initialize variables
 

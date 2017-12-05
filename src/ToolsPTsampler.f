@@ -23,7 +23,7 @@ c=======================================================================
  
 c++++ input
       integer np,nvar,nlevel,ntint
-      real*8 cpar,detlogl,z(np,nvar)
+      double precision cpar,detlogl,z(np,nvar)
 
 c++++ external working
       integer kphi(nvar)
@@ -36,9 +36,9 @@ c++++ output
 c++++ internal workspace
       integer n1,n2,dnrm
       integer i,ind,j,j1,j2,k1
-      real*8 loglikn
-      real*8 cdfnorm
-      real*8 tmp1,tmp2
+      double precision loglikn
+      double precision cdfnorm
+      double precision tmp1,tmp2
 
 c++++ algorithm
 
@@ -95,18 +95,18 @@ c=======================================================================
  
 c++++ input
       integer np,nvar,nlevel,ntint
-      real*8 cpar,z(np,nvar),detlogl
+      double precision cpar,z(np,nvar),detlogl
       integer kcount(ntint,nlevel)
       integer kmat(np,nlevel)
 
 c++++ output
-      real*8 lgw(np)
+      double precision lgw(np)
 
 c++++ internal workspace
       integer n1,n2,dnrm
       integer i,j
-      real*8 loglikn
-      real*8 tmp1,tmp2
+      double precision loglikn
+      double precision tmp1,tmp2
 
 c++++ algorithm
 
@@ -149,17 +149,17 @@ c=======================================================================
  
 c++++ input
       integer np,nvar,nlevel,ntint
-      real*8 cpar
+      double precision cpar
       integer kmat(np,nlevel)
 
 c++++ output
-      real*8 eval
+      double precision eval
 
 c++++ internal workspace
       integer n1,n2,dnrm
       integer i,j
-      real*8 loglikn
-      real*8 tmp1,tmp2
+      double precision loglikn
+      double precision tmp1,tmp2
 
 c++++ algorithm
 
@@ -198,7 +198,7 @@ c=======================================================================
 
 c++++ input
       integer narea,nvar,np,nlevel
-      real*8 cpar,m(nvar),u(nvar,nvar),z(np,nvar)
+      double precision cpar,m(nvar),u(nvar,nvar),z(np,nvar)
 
 c++++ external working space
       integer massi(narea)
@@ -207,9 +207,9 @@ c++++ external working space
       integer patterns(nvar)
       integer whicho(np),whichn(np)
 
-      real*8 mass(narea)
-      real*8 linf(nvar),lsup(nvar),limw(nvar)
-      real*8 zwork(nvar),xwork(nvar)
+      double precision mass(narea)
+      double precision linf(nvar),lsup(nvar),limw(nvar)
+      double precision zwork(nvar),xwork(nvar)
 
 c++++ internal working space
       integer binaryrep
@@ -218,9 +218,9 @@ c++++ internal working space
       integer nint
       integer i,j,je2,k,k1,k2,l,final
 
-      real*8 invcdfnorm
-      real*8 prob,quan,rtnorm
-      real*8 tmp1
+      double precision invcdfnorm
+      double precision prob,quan,rtnorm
+      double precision tmp1
 
 c++++ algorithm
       nint=2
@@ -400,8 +400,8 @@ c=======================================================================
  
 c++++ input
       integer np,nvar,nlevel,ntint
-      real*8 cpar,detlogl,x(np,nvar),m(nvar),uinv(nvar,nvar)
-      real*8 theta(nvar)
+      double precision cpar,detlogl,x(np,nvar),m(nvar),uinv(nvar,nvar)
+      double precision theta(nvar)
 
 c++++ external working
       integer kcount(ntint,nlevel)
@@ -414,9 +414,9 @@ c++++ output
 c++++ internal workspace
       integer n1,n2,dnrm
       integer i,ind,j,j1,j2,k,k1
-      real*8 loglikn
-      real*8 cdfnorm
-      real*8 tmp1,tmp2
+      double precision loglikn
+      double precision cdfnorm
+      double precision tmp1,tmp2
 
 c++++ algorithm
 

@@ -209,30 +209,30 @@ c+++++Data
       integer starts(nsmooths),ends(nsmooths)
       integer possfp(nsmooths)
       integer yr(nrec)
-      real*8 roffset(nrec),x(nrec,p),z(nrec,q),znew(ngrid,q)
-      real*8 xreal(ngrid,nsmooths)
+      double precision roffset(nrec),x(nrec,p),z(nrec,q),znew(ngrid,q)
+      double precision xreal(ngrid,nsmooths)
       
 c+++++Prior 
       integer nznh,iapm(q+1),japm(nznh)
-      real*8 prec(p,p),sb(p)
-      real*8 taub(2),taub1,taub2
-      real*8 apm(nznh)
-      real*8 pordv(nsmooths)
+      double precision prec(p,p),sb(p)
+      double precision taub(2),taub1,taub2
+      double precision apm(nznh)
+      double precision pordv(nsmooths)
       
 c+++++Current values of the parameters
-      real*8 y(nrec) 
-      real*8 beta(p)
-      real*8 b(q)
-      real*8 sigmab(nsmooths)
+      double precision y(nrec) 
+      double precision beta(p)
+      double precision b(q)
+      double precision sigmab(nsmooths)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,q)
-      real*8 thetasave(nsave,p+nsmooth)
-      real*8 pssave(ngrid*nsmooths,2)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,q)
+      double precision thetasave(nsave,p+nsmooth)
+      double precision pssave(ngrid*nsmooths,2)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -243,24 +243,24 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++Fixed effects
       integer iflagp(p) 
-      real*8 workmp1(p,p),workmp2(p,p)
-      real*8 workmhp1(p*(p+1)/2)
-      real*8 workvp1(p)
-      real*8 xtx(p,p),xty(p)
+      double precision workmp1(p,p),workmp2(p,p)
+      double precision workmhp1(p*(p+1)/2)
+      double precision workvp1(p)
+      double precision xtx(p,p),xty(p)
 
 c+++++Smoothers
       integer iflagq(maxq) 
-      real*8 bc(maxq)
-      real*8 theta(maxq)
-      real*8 workmhq1(maxq*(maxq+1)/2)
-      real*8 workvq1(maxq)
-      real*8 ztz(maxq,maxq),zty(maxq)
-      real*8 ztzinv(maxq,maxq)
-      real*8 workvps(ngrid*nsmooths)
+      double precision bc(maxq)
+      double precision theta(maxq)
+      double precision workmhq1(maxq*(maxq+1)/2)
+      double precision workvq1(maxq)
+      double precision ztz(maxq,maxq),zty(maxq)
+      double precision ztzinv(maxq,maxq)
+      double precision workvps(ngrid*nsmooths)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p),bsave(q)
+      double precision mc(5)
+      double precision betasave(p),bsave(q)
       
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -269,27 +269,27 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++General
       integer i,ii,j,jj,l,ll
       integer sprint
-      real*8 detlog
-      real*8 disp      
-      real*8 eta,gprime
-      real*8 mean
-      real*8 offset
-      real*8 tmp1,tmp2
-      real*8 ytilde
-      real*8 yij
+      double precision detlog
+      double precision disp      
+      double precision eta,gprime
+      double precision mean
+      double precision offset
+      double precision tmp1,tmp2
+      double precision ytilde
+      double precision yij
       logical ainf,asup
       
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++RNG and distributions
-      real*8 rgamma,cdfnorm,dbin,rtnorm
+      double precision rgamma,cdfnorm,dbin,rtnorm
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c++++ parameters
       nburn=mcmc(1)
@@ -600,7 +600,7 @@ c+++++++++++++ smoothers
                         pssave(ll,2)=tmp1-tmp2
                      end do
                   end do
-                  write(unit=1)(pssave(j,2),j=1,nsmooth*ngrid)
+c                  write(unit=1)(pssave(j,2),j=1,nsmooth*ngrid)
                end if
 
 c+++++++++++++ cpo

@@ -53,52 +53,52 @@ c=======================================================================
 c+++++Data
       integer imiss,nmissing,nsubject,p
       integer datastrm(nmissing,2),y(nsubject,p)
-      real*8 roffset(nsubject,p)
+      double precision roffset(nsubject,p)
 
 c+++++Density estimation
       integer ngrid
-      real*8 grid(ngrid)
+      double precision grid(ngrid)
 
 c+++++Prior 
       integer maxn
-      real*8 aa0,ab0,a0b0(2),sb(p-1,2),prec(p-1,p-1)
-      real*8 m0,s0
-      real*8 tau(5),tauk1,taub1,taub2,taus1,taus2
+      double precision aa0,ab0,a0b0(2),sb(p-1,2),prec(p-1,p-1)
+      double precision m0,s0
+      double precision tau(5),tauk1,taub1,taub2,taus1,taus2
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate
-      real*8 cpo(nsubject,p)
-      real*8 cpov(nsubject)
-      real*8 randsave(nsave,nsubject+1)
-      real*8 thetasave(nsave,p+6)
-      real*8 densave(nsave,ngrid)
-      real*8 cdfsave(nsave,ngrid)
+      double precision acrate
+      double precision cpo(nsubject,p)
+      double precision cpov(nsubject)
+      double precision randsave(nsave,nsubject+1)
+      double precision thetasave(nsave,p+6)
+      double precision densave(nsave,ngrid)
+      double precision cdfsave(nsave,ngrid)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)     
-      real*8 alpha,beta(p-1),b(nsubject)
-      real*8 muclus(maxn),sigmaclus(maxn)
-      real*8 mub,sigmab
-      real*8 tauk2
-      real*8 wdp(maxn),vdp(maxn)
+      double precision alpha,beta(p-1),b(nsubject)
+      double precision muclus(maxn),sigmaclus(maxn)
+      double precision mub,sigmab
+      double precision tauk2
+      double precision wdp(maxn),vdp(maxn)
 
 c+++++Working space - General
       integer i,ii,j,k
       integer sprint
       integer ns,ok
-      real*8 ztz,zty
-      real*8 dpoiss,dnrm,cdfnorm
-      real*8 tmp1,tmp2,tmp3
-      real*8 muwork,sigmawork
-      real*8 mureal,sigma2real
+      double precision ztz,zty
+      double precision dpoiss,dnrm,cdfnorm
+      double precision tmp1,tmp2,tmp3
+      double precision muwork,sigmawork
+      double precision mureal,sigma2real
 
 c+++++Working space - RNG
       integer evali,seed(2),seed1,seed2
       integer rpois
-      real*8 rnorm,rgamma
+      double precision rnorm,rgamma
       real runif
 
 c+++++Working space - MCMC
@@ -107,34 +107,34 @@ c+++++Working space - MCMC
 
 c+++++Working space - Difficulty parameters
       integer iflagp(p-1)
-      real*8 betac(p-1)
-      real*8 xtx(p-1,p-1)
-      real*8 xty(p-1)
-      real*8 workmhp((p-1)*p/2)
-      real*8 workvp(p-1)
+      double precision betac(p-1)
+      double precision xtx(p-1,p-1)
+      double precision xty(p-1)
+      double precision workmhp((p-1)*p/2)
+      double precision workvp(p-1)
 
 c+++++DPM
       integer cstrt(maxn,nsubject)
       integer ccluster(maxn)
-      real*8 prob(maxn)
-      real*8 workv(maxn+1)
+      double precision prob(maxn)
+      double precision workv(maxn+1)
 
 c+++++Working space - GLM part
       integer yij
-      real*8 acrate2
-      real*8 eta,offset,gprime,ytilde,mean
+      double precision acrate2
+      double precision eta,offset,gprime,ytilde,mean
        
 c+++++Working space - MH 
-      real*8 bc,logcgkn,logcgko,logliko,loglikn,ratio
-      real*8 logpriorn,logprioro 
+      double precision bc,logcgkn,logcgko,logliko,loglikn,ratio
+      double precision logpriorn,logprioro 
 
 c+++++Working space slice sampling
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)

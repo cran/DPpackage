@@ -200,37 +200,38 @@ c+++++Partially specified Polya Trees parameter
      
 c+++++Observed variables
       integer ngrid,nrec,p  
-      real*8 x(nrec,p),y(nrec)
+      double precision x(nrec,p),y(nrec)
 
 c+++++Prior information
-      real*8 a0b0(2),aa0,ab0,betapm(p),betapv(p,p)
-      real*8 tau(2),tau1,tau2
-      real*8 m0,s0
+      double precision a0b0(2),aa0,ab0,betapm(p),betapv(p,p)
+      double precision tau(2),tau1,tau2
+      double precision m0,s0
       
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 propv(p,p)
-      real*8 mcmcad(18)
+      double precision propv(p,p)
+      double precision mcmcad(18)
 
 c+++++Random numbers
       integer seed(2),seed1,seed2
 
 c+++++Stored output
-      real*8 acrate(4),randsave(nsave,nrec+1),thetasave(nsave,p+3)
-      real*8 cpo(nrec),f(ngrid)
+      double precision acrate(4),randsave(nsave,nrec+1),
+     1 thetasave(nsave,p+3)
+      double precision cpo(nrec),f(ngrid)
       
 c+++++Current values of the parameters
-      real*8 alpha,beta(p),mu,sigma2,v(nrec)
+      double precision alpha,beta(p),mu,sigma2,v(nrec)
       
 c+++++External Working space
       integer iflag(p)
       integer whicho(nrec),whichn(nrec)
-      real*8 betac(p)
-      real*8 grid(ngrid)
-      real*8 vc(nrec)
-      real*8 workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p)
-      real*8 xtx(p,p)
+      double precision betac(p)
+      double precision grid(ngrid)
+      double precision vc(nrec)
+      double precision workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p)
+      double precision xtx(p,p)
 
 c+++++Internal Working space
       integer dispcount
@@ -241,54 +242,54 @@ c+++++Internal Working space
       integer nscan
       integer sprint
       integer skipcount
-      real*8 alphac
-      real*8 dlnrm
-      real*8 dnrm
-      real*8 logcgkn,logcgko
-      real*8 loglikec,loglikeo
-      real*8 logpriorc,logprioro
-      real*8 muc
-      real*8 ratio
-      real*8 rnorm
-      real*8 sd,sdc
-      real*8 theta,thetac
-      real*8 tmp1
-      real*8 vpred
+      double precision alphac
+      double precision dlnrm
+      double precision dnrm
+      double precision logcgkn,logcgko
+      double precision loglikec,loglikeo
+      double precision logpriorc,logprioro
+      double precision muc
+      double precision ratio
+      double precision rnorm
+      double precision sd,sdc
+      double precision theta,thetac
+      double precision tmp1
+      double precision vpred
       
       real runif
 
 c+++++Adaptive MH
       integer acceptb
-      real*8 logval
-      real*8 maxa,maxb
-      real*8 nscanp
+      double precision logval
+      double precision maxa,maxb
+      double precision nscanp
 
 c+++++Adaptive MH for beta
       integer skipb
-      real*8 arateb
-      real*8 counterb
-      real*8 tune1
+      double precision arateb
+      double precision counterb
+      double precision tune1
 
 c+++++Adaptive MH for mu
       integer skipm
-      real*8 aratemu(5),counterm
-      real*8 pilogestmu(2)
-      real*8 tune2(2)
+      double precision aratemu(5),counterm
+      double precision pilogestmu(2)
+      double precision tune2(2)
 
 c+++++Adaptive MH for sigma2
       integer skips
-      real*8 aratesig(5),counters
-      real*8 pilogestsig(2)
-      real*8 tune3(2)
+      double precision aratesig(5),counters
+      double precision pilogestsig(2)
+      double precision tune3(2)
 
 c+++++Adaptive MH for alpha
       integer skipa
-      real*8 aratea(5),countera
-      real*8 pilogesta(2)
-      real*8 tune4(2)
+      double precision aratea(5),countera
+      double precision pilogesta(2)
+      double precision tune4(2)
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ initialize variables
 

@@ -243,63 +243,63 @@ c=======================================================================
       implicit none 
 
 c+++++Constants
-      real*8 zero,one
+      double precision zero,one
       parameter(zero=0.d0)
       parameter(one =1.d0)
 
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)
-      real*8 sens(nrec),spec(nrec)      
-      real*8 x(nrec,p)
+      double precision sens(nrec),spec(nrec)      
+      double precision x(nrec,p)
 
 c+++++Link information
       integer nlink 
-      real*8 xlink(nlink)
+      double precision xlink(nlink)
       
 c+++++Prior information
       integer ninter,nlevel
-      real*8 a0b0(2),aa0,ab0
-      real*8 betapm(p),betapv(p,p)
+      double precision a0b0(2),aa0,ab0
+      double precision betapm(p),betapv(p,p)
 
 c+++++MCMC parameters
       integer mcmcvec(3),nburn,nskip,nsave,ndisplay
-      real*8 propv(p,p),tune2
+      double precision propv(p,p),tune2
 
 c+++++Stored output
-      real*8 acrate(2),fsave(nsave,nlink)
-      real*8 ppsave(nsave,ninter)
-      real*8 randsave(nsave,nrec+1),thetasave(nsave,p+1)
-      real*8 cpo(nrec)
+      double precision acrate(2),fsave(nsave,nlink)
+      double precision ppsave(nsave,ninter)
+      double precision randsave(nsave,nrec+1),thetasave(nsave,p+1)
+      double precision cpo(nrec)
 
 c+++++Current values of the parameters
       integer y(nrec)
-      real*8 alpha,beta(p),v(nrec)
+      double precision alpha,beta(p),v(nrec)
 
 c+++++Working space - CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - Distributions
-      real*8 cdflogis
-      real*8 dbet,dlnrm
-      real*8 invcdflogis 
+      double precision cdflogis
+      double precision dbet,dlnrm
+      double precision invcdflogis 
 
 c+++++Working space - General
       integer i,j,je2,k,k1,k2
       integer nint,npoints,pprn,sprint
-      real*8 mu,quan,sd
-      real*8 tmp1,tmp2,tmp3
-      real*8 vpred
+      double precision mu,quan,sd
+      double precision tmp1,tmp2,tmp3
+      double precision vpred
 
 c+++++Working space - Linear predictor
-      real*8 eta(nrec),etan(nrec)
+      double precision eta(nrec),etan(nrec)
 
 c+++++Working space - Link
       integer assign(nrec,nlevel)
       integer counter(nlevel,ninter)
-      real*8 accums(nlevel,ninter)
-      real*8 endp(ninter-1)
-      real*8 prob(ninter)
-      real*8 rvecs(nlevel,ninter)
+      double precision accums(nlevel,ninter)
+      double precision endp(ninter-1)
+      double precision prob(ninter)
+      double precision rvecs(nlevel,ninter)
 
 c+++++Working space - MCMC
       integer dispcount,isave,iscan,nscan,skipcount
@@ -310,19 +310,19 @@ c+++++Working space - MH regression coefficients
       integer intlp
       integer intpn(nrec),intpo(nrec)
       integer ok
-      real*8 betac(p)
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 ratio
-      real*8 workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p)
+      double precision betac(p)
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision ratio
+      double precision workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p)
 
 c+++++Working space - MH precision parameter
-      real*8 alphac,logcgkn,logcgko
+      double precision alphac,logcgkn,logcgko
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      real*8 rbeta,rtlnorm,uni
+      double precision rbeta,rtlnorm,uni
       real runif
 
 c+++++Working space - True Binary Variable
@@ -995,8 +995,9 @@ c=======================================================================
       integer imin,imax
       integer ninter,nlevel,npred,nsave
       integer intlp,nint
-      real*8 lp(npred,nsave),out(npred,nsave),ppsave(nsave,ninter)
-      real*8 cdflogis,invcdflogis,quan,tmp1,tmp2
+      double precision lp(npred,nsave),out(npred,nsave),
+     1  ppsave(nsave,ninter)
+      double precision cdflogis,invcdflogis,quan,tmp1,tmp2
       
       do i=1,npred
          do j=1,nsave

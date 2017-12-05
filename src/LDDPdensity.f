@@ -222,59 +222,60 @@ c=======================================================================
 
 c++++ data
       integer nrec,p
-      real*8 y(nrec)
-      real*8 z(nrec,p)
+      double precision y(nrec)
+      double precision z(nrec,p)
 
 c++++ prediction
       integer cband,ngrid,npred,tband,rocc,nroc
-      real*8 grid(ngrid)
-      real*8 rocgrid(ngrid)
-      real*8 zpred(npred,p)
+      double precision grid(ngrid)
+      double precision rocgrid(ngrid)
+      double precision zpred(npred,p)
 
 c++++ prior
       integer nu  
-      real*8 a0b0(2)
-      real*8 tau1
-      real*8 taus1,taus2
-      real*8 m0(p)
-      real*8 sbeta0i(p,p)
-      real*8 psiinv(p,p)
+      double precision a0b0(2)
+      double precision tau1
+      double precision taus1,taus2
+      double precision m0(p)
+      double precision sbeta0i(p,p)
+      double precision psiinv(p,p)
 
 c++++ current value
       integer ncluster
       integer ss(nrec)
-      real*8 alpha
-      real*8 betaclus(nrec+100,p)
-      real*8 sigmaclus(nrec+100)
-      real*8 mub(p)
-      real*8 sb(p,p)
-      real*8 tau2
+      double precision alpha
+      double precision betaclus(nrec+100,p)
+      double precision sigmaclus(nrec+100)
+      double precision mub(p)
+      double precision sb(p,p)
+      double precision tau2
 
 c++++ output
-      real*8 cpo(nrec,2)
-      real*8 thetasave(nsave,p+p*(p+1)/2+3)
-      real*8 randsave(nsave,nrec*(p+1))
-      real*8 aucsave(nsave,npred)
-      real*8 cdfpm(npred,ngrid)
-      real*8 cdfpl(npred,ngrid)
-      real*8 cdfph(npred,ngrid)
-      real*8 denspm(npred,ngrid)
-      real*8 denspl(npred,ngrid)
-      real*8 densph(npred,ngrid)
-      real*8 meanfpm(npred)
-      real*8 meanfpl(npred)
-      real*8 meanfph(npred)
+      integer nsave
+      double precision cpo(nrec,2)
+      double precision thetasave(nsave,p+p*(p+1)/2+3)
+      double precision randsave(nsave,nrec*(p+1))
+      double precision aucsave(nsave,npred)
+      double precision cdfpm(npred,ngrid)
+      double precision cdfpl(npred,ngrid)
+      double precision cdfph(npred,ngrid)
+      double precision denspm(npred,ngrid)
+      double precision denspl(npred,ngrid)
+      double precision densph(npred,ngrid)
+      double precision meanfpm(npred)
+      double precision meanfpl(npred)
+      double precision meanfph(npred)
 
-      real*8 rocpm(npred,nroc)
-      real*8 rocpl(npred,nroc)
-      real*8 rocph(npred,nroc)
+      double precision rocpm(npred,nroc)
+      double precision rocpl(npred,nroc)
+      double precision rocph(npred,nroc)
 
 c++++ mcmc
-      integer mcmc(6),nburn,nskip,nsave,ndisplay
+      integer mcmc(6),nburn,nskip,ndisplay
 
 c++++ roc computation
-      real*8 rocquan(nroc)
-      real*8 rocqgrid(npred,nroc)
+      double precision rocquan(nroc)
+      double precision rocqgrid(npred,nroc)
   
 c++++ seeds
       integer seed1,seed2,seed(2)
@@ -283,23 +284,23 @@ c++++ external working space
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
       integer iflagp(p)
-      real*8 betam(p)
-      real*8 betawork(p)
-      real*8 prob(nrec+100)
-      real*8 workmh1(p*(p+1)/2)
-      real*8 workmh2(p*(p+1)/2)
-      real*8 workv1(p) 
-      real*8 xtx(p,p)
-      real*8 xtx2(p,p)
-      real*8 xty(p)
-      real*8 xty2(p)
+      double precision betam(p)
+      double precision betawork(p)
+      double precision prob(nrec+100)
+      double precision workmh1(p*(p+1)/2)
+      double precision workmh2(p*(p+1)/2)
+      double precision workv1(p) 
+      double precision xtx(p,p)
+      double precision xtx2(p,p)
+      double precision xty(p)
+      double precision xty2(p)
 
-      real*8 fs(ngrid) 
-      real*8 fm(npred) 
+      double precision fs(ngrid) 
+      double precision fm(npred) 
  
-      real*8 worksam(nsave) 
+      double precision worksam(nsave) 
 
-      real*8 workcpo(nrec)
+      double precision workcpo(nrec)
       
 c++++ internal working space
       integer count
@@ -315,20 +316,20 @@ c++++ internal working space
       integer since
       integer skipcount
       integer sprint
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 rgamma
-      real*8 muwork
-      real*8 sigmawork
-      real*8 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
-      real*8 tmp9,rocacum
+      double precision cdfnorm
+      double precision dnrm
+      double precision rgamma
+      double precision muwork
+      double precision sigmawork
+      double precision tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
+      double precision tmp9,rocacum
    
 c++++ DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++++++++++++++++++++++++
 c     initialize variables
@@ -958,8 +959,8 @@ c+++++++++++++ Partially sampling the DP and CPO computation.
                      denspm(i,j)=denspm(i,j)+denspl(i,j)
                      cdfpm(i,j)=cdfpm(i,j)+cdfpl(i,j)
                   end do
-                  write(1) (denspl(i,j),j=1,ngrid)
-                  write(3) (cdfpl(i,j),j=1,ngrid)
+c                  write(1) (denspl(i,j),j=1,ngrid)
+c                  write(3) (cdfpl(i,j),j=1,ngrid)
 
                   if(rocc.eq.2)then
 
@@ -971,9 +972,9 @@ c+++++++++++++ Partially sampling the DP and CPO computation.
                      end do 
                      aucsave(isave,i)=rocacum/dble(nroc)
                   end if
-                  write(9) (rocpl(i,j),j=1,nroc)
+c                  write(9) (rocpl(i,j),j=1,nroc)
                end do 
-               write(2) (fm(i),i=1,npred)
+c               write(2) (fm(i),i=1,npred)
 
 
                if(rocc.eq.1)then
@@ -1067,7 +1068,7 @@ c+++++++++++++ Partially sampling the DP and CPO computation.
 c                        call dblepr("quan",-1,tmp7,1)
                      end do
 
-                     write(8) (rocquan(j),j=1,nroc)
+c                     write(8) (rocquan(j),j=1,nroc)
                   end do
                end if
 
@@ -1173,21 +1174,21 @@ c=======================================================================
 c+++++External parameters
       integer tint
       integer nsave,npred,nroc
-      real*8 alpha
+      double precision alpha
 
 c+++++External working
-      real*8 fs(nroc)
-      real*8 workv1(nsave)
+      double precision fs(nroc)
+      double precision workv1(nsave)
 
 c+++++Output      
-      real*8 llower(npred,nroc)
-      real*8 lupper(npred,nroc)
+      double precision llower(npred,nroc)
+      double precision lupper(npred,nroc)
 
 c+++++Internal parameters
       integer maxnsave,maxngrid
       parameter(maxnsave=30000,maxngrid=300)
-      real*8 aupp(2),alow(2)
-      real*8 workm(maxnsave,maxngrid)
+      double precision aupp(2),alow(2)
+      double precision workm(maxnsave,maxngrid)
 
 c+++++Internal working
       integer i,ii,j,l   
@@ -1262,21 +1263,21 @@ c=======================================================================
 c+++++External parameters
       integer tint
       integer nsave,npred,ngrid 
-      real*8 alpha
+      double precision alpha
 
 c+++++External working
-      real*8 fs(ngrid)
-      real*8 workv1(nsave)
+      double precision fs(ngrid)
+      double precision workv1(nsave)
 
 c+++++Output      
-      real*8 llower(npred,ngrid)
-      real*8 lupper(npred,ngrid)
+      double precision llower(npred,ngrid)
+      double precision lupper(npred,ngrid)
 
 c+++++Internal parameters
       integer maxnsave,maxngrid
       parameter(maxnsave=30000,maxngrid=300)
-      real*8 aupp(2),alow(2)
-      real*8 workm(maxnsave,maxngrid)
+      double precision aupp(2),alow(2)
+      double precision workm(maxnsave,maxngrid)
 
 c+++++Internal working
       integer i,ii,j,l   
@@ -1351,14 +1352,14 @@ c++++ input
 
 c++++ working
       integer ss(nrec)
-      real*8 betaw(p)
-      real*8 sigmaw(nrec)
+      double precision betaw(p)
+      double precision sigmaw(nrec)
 
 c++++ output
       integer nclus(nsave)
       integer clusind(nsave,nrec)
-      real*8 clusreg(nsave,nrec*p)
-      real*8 clussig(nsave,nrec)
+      double precision clusreg(nsave,nrec*p)
+      double precision clussig(nsave,nrec)
 
 c++++ internal working
       integer count,i,j,k,ncluster
@@ -1421,10 +1422,10 @@ c=======================================================================
       implicit none
       integer i,j,ind,since,nsubject,q,ncluster,ccluster(nsubject)
       integer ss(nsubject),cstrt(nsubject,nsubject)
-      real*8 betaclus(nsubject+100,q)
-      real*8 betawork(q)
-      real*8 sigmaclus(nsubject+100)
-      real*8 sigmawork
+      double precision betaclus(nsubject+100,q)
+      double precision betawork(q)
+      double precision sigmaclus(nsubject+100)
+      double precision sigmawork
 
       integer ns,ii
       

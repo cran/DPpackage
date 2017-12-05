@@ -224,45 +224,45 @@ c=======================================================================
 
 c+++++Data
       integer nrec,p
-      real*8 x(nrec,p)
-      real*8 y(nrec)
+      double precision x(nrec,p)
+      double precision y(nrec)
 
 c+++++Predictions
       integer cband,npred,ngrid,tband
-      real*8  grid(ngrid),xpred(npred,p)
+      double precision  grid(ngrid),xpred(npred,p)
 
 c+++++Prior 
       integer maxn,nu
-      real*8 alpha
-      real*8 lambda
-      real*8 tau1,tau2
-      real*8 psiinv(p,p)
-      real*8 s0invm(p)
-      real*8 s0inv(p,p)
+      double precision alpha
+      double precision lambda
+      double precision tau1,tau2
+      double precision psiinv(p,p)
+      double precision s0invm(p)
+      double precision s0inv(p,p)
       
 c+++++Current values of the parameters
       integer kk
-      real*8 gp
-      real*8 beta(maxn,p)
-      real*8 mub(p)
-      real*8 sb(p,p)
-      real*8 v(maxn)
+      double precision gp
+      double precision beta(maxn,p)
+      double precision mub(p)
+      double precision sb(p,p)
+      double precision v(maxn)
 
 c+++++MCMC parameters
       integer mcmc(5),nburn,nskip,nsave,ndisplay
-      real*8 slice(3),betaw,gw,vw
+      double precision slice(3),betaw,gw,vw
 
 c+++++Output
-      real*8 acrate(2)
-      real*8 thetasave(nsave,1+p+p*(p+1)/2+1)
-      real*8 randsave(nsave,p*maxn+maxn)
-      real*8 fmean(npred,ngrid)
-      real*8 flow(npred,ngrid)
-      real*8 fupp(npred,ngrid)
-      real*8 meanfpm(npred)
-      real*8 meanfpl(npred)
-      real*8 meanfph(npred)
-      real*8 cpo(nrec,2)
+      double precision acrate(2)
+      double precision thetasave(nsave,1+p+p*(p+1)/2+1)
+      double precision randsave(nsave,p*maxn+maxn)
+      double precision fmean(npred,ngrid)
+      double precision flow(npred,ngrid)
+      double precision fupp(npred,ngrid)
+      double precision meanfpm(npred)
+      double precision meanfpl(npred)
+      double precision meanfph(npred)
+      double precision cpo(nrec,2)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -273,35 +273,35 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c++++ Inversion
       integer iflag(p)
-      real*8 sbinv(p,p)
-      real*8 workm1(p,p)
-      real*8 workv1(p)
-      real*8 workv2(p)
-      real*8 workmh1(p*(p+1)/2)
-      real*8 workmh2(p*(p+1)/2)
+      double precision sbinv(p,p)
+      double precision workm1(p,p)
+      double precision workv1(p)
+      double precision workv2(p)
+      double precision workmh1(p*(p+1)/2)
+      double precision workmh2(p*(p+1)/2)
 
 c++++ Slice sampler
-      real*8 betal(maxn,p)
-      real*8 betar(maxn,p)
-      real*8 beta1(maxn,p)
-      real*8 vl(maxn)
-      real*8 vr(maxn)
-      real*8 v1(maxn) 
+      double precision betal(maxn,p)
+      double precision betar(maxn,p)
+      double precision beta1(maxn,p)
+      double precision vl(maxn)
+      double precision vr(maxn)
+      double precision v1(maxn) 
 
 c++++ DP
-      real*8 workdpw(maxn+1)
-      real*8 weight(maxn)
+      double precision workdpw(maxn+1)
+      double precision weight(maxn)
 
 c++++ CPO
-      real*8 fw(nrec)
+      double precision fw(nrec)
 
 c++++ predictions
-      real*8 fw2(npred,ngrid)
+      double precision fw2(npred,ngrid)
 
 c++++ credible bands
-      real*8 fs(ngrid)
-      real*8 fm(npred) 
-      real*8 worksam(nsave)
+      double precision fs(ngrid)
+      double precision fm(npred) 
+      double precision worksam(nsave)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -310,23 +310,23 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++General
       integer count,i,i1,ii,j,j1,k
       integer sprint
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++Distributions
-      real*8 dbet,dpoiss
+      double precision dbet,dpoiss
       
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++Slice sampler
       integer kk1
-      real*8 evaly,evalf,aux
-      real*8 gl
-      real*8 gr
-      real*8 g1
+      double precision evaly,evalf,aux
+      double precision gl
+      double precision gr
+      double precision g1
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++RNG and distributions
       real runif
@@ -665,10 +665,10 @@ c+++++++++++++ predictions
 
                   meanfpm(i1)=meanfpm(i1)+fm(i1)
 
-                  write(1) (fw2(i1,j1),j1=1,ngrid)
+c                  write(1) (fw2(i1,j1),j1=1,ngrid)
                end do
 
-               write(2) (fm(i),i=1,npred)
+c               write(2) (fm(i),i=1,npred)
 
 c+++++++++++++ print
                skipcount = 0
@@ -727,18 +727,18 @@ c=======================================================================
 
 c+++++ Input
        integer kk,maxn,nrec,p
-       real*8 beta(maxn,p)
-       real*8 y(nrec),x(nrec,p),v(maxn)         
+       double precision beta(maxn,p)
+       double precision y(nrec),x(nrec,p),v(maxn)         
 
 c+++++ External working space
-       real*8 workv(maxn+1),weight(maxn)
+       double precision workv(maxn+1),weight(maxn)
 
 c+++++ Internal working space
        integer i,j,k
-       real*8 dbet,tmp1,tmp2
+       double precision dbet,tmp1,tmp2
 
 c+++++ Output
-       real*8 eval
+       double precision eval
 
 c+++++ Algorithm
 
@@ -774,15 +774,15 @@ c=======================================================================
 
 c+++++ Input
        integer kk,maxn,p
-       real*8 alpha,beta(maxn,p),gp,lambda,tau1,tau2,v(maxn)
-       real*8 mb(p),sbinv(p,p)
+       double precision alpha,beta(maxn,p),gp,lambda,tau1,tau2,v(maxn)
+       double precision mb(p),sbinv(p,p)
 
 c+++++ Output 
-       real*8 eval
+       double precision eval
 
 c+++++ Internal working space
        integer i,j,k
-       real*8 dpoiss,dgamm,dbet,tmp1
+       double precision dpoiss,dgamm,dbet,tmp1
 
 c+++++ Algorithm
 
@@ -828,21 +828,21 @@ c=======================================================================
 
 c+++++ Input
        integer kk,maxn,nrec,p
-       real*8 alpha
-       real*8 beta(maxn,p),gp,v(maxn)
-       real*8 lambda,tau1,tau2
-       real*8 mb(p)
-       real*8 sbinv(p,p)
-       real*8 x(nrec,p),y(nrec)
+       double precision alpha
+       double precision beta(maxn,p),gp,v(maxn)
+       double precision lambda,tau1,tau2
+       double precision mb(p)
+       double precision sbinv(p,p)
+       double precision x(nrec,p),y(nrec)
 
 c+++++ External working space
-       real*8 workv(maxn+1),weight(maxn)
+       double precision workv(maxn+1),weight(maxn)
 
 c+++++ Internal working space
-       real*8 tmp1
+       double precision tmp1
 
 c+++++ Output
-       real*8 eval
+       double precision eval
 
 c+++++ Algorithm
 
@@ -868,10 +868,10 @@ c=======================================================================
 
 c+++++ Input
        integer limit
-       real*8 x0,w
+       double precision x0,w
 
 c+++++ Output
-       real*8 l,r
+       double precision l,r
 
 c+++++ Internal working space
        real runif
@@ -901,10 +901,10 @@ c=======================================================================
        implicit none
 
 c+++++ Input
-       real*8 l,r
+       double precision l,r
 
 c+++++ Output
-       real*8 x1
+       double precision x1
 
 c+++++ Internal working space
        real runif
@@ -926,10 +926,10 @@ c=======================================================================
 
 c+++++ Input
        integer limit
-       real*8 x0,x1
+       double precision x0,x1
 
 c+++++ Output
-       real*8 l,r
+       double precision l,r
 
 c+++++ Algorithm
 

@@ -62,42 +62,42 @@ c=======================================================================
 
 c+++++Data
       integer nsubject,nvar,p,q,ngrid,npred
-      real*8 x(nsubject,nvar*(p+q))
-      real*8 xpred(npred,nvar*(p+q))
-      real*8 llower(nsubject,2*nvar)
-      real*8 lupper(nsubject,2*nvar)
-      real*8 grid(2*nvar,ngrid)
+      double precision x(nsubject,nvar*(p+q))
+      double precision xpred(npred,nvar*(p+q))
+      double precision llower(nsubject,2*nvar)
+      double precision lupper(nsubject,2*nvar)
+      double precision grid(2*nvar,ngrid)
 
 c+++++Prior 
       integer maxm,nu01,nu02,nu(2) 
-      real*8 aa0,ab0,mubp,sigmabp,qq,a0b0(7) 
-      real*8 tinv1(2*nvar,2*nvar)
-      real*8 smu(nvar*(p+q)),psiinv(nvar*(p+q),nvar*(p+q))
-      real*8 tinv2(nvar*(p+q),nvar*(p+q))
+      double precision aa0,ab0,mubp,sigmabp,qq,a0b0(7) 
+      double precision tinv1(2*nvar,2*nvar)
+      double precision smu(nvar*(p+q)),psiinv(nvar*(p+q),nvar*(p+q))
+      double precision tinv2(nvar*(p+q),nvar*(p+q))
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2
+      double precision tune1,tune2
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)
-      real*8 alpha(2),ap,bp
-      real*8 b(maxm,nvar*(p+q))
-      real*8 sigma(2*nvar,2*nvar),sigmainv(2*nvar,2*nvar)
-      real*8 mub(nvar*(p+q))
-      real*8 sigmab(nvar*(p+q),nvar*(p+q))
-      real*8 sigmabinv(nvar*(p+q),nvar*(p+q))
-      real*8 y(nsubject,2*nvar)
+      double precision alpha(2),ap,bp
+      double precision b(maxm,nvar*(p+q))
+      double precision sigma(2*nvar,2*nvar),sigmainv(2*nvar,2*nvar)
+      double precision mub(nvar*(p+q))
+      double precision sigmab(nvar*(p+q),nvar*(p+q))
+      double precision sigmabinv(nvar*(p+q),nvar*(p+q))
+      double precision y(nsubject,2*nvar)
 
 c+++++Output
-      real*8 acrate(2)
-      real*8 dptest
-      real*8 f(npred*2*nvar,ngrid)
-      real*8 h(npred*2*nvar,ngrid)
-      real*8 thetasave(nsave,2*nvar*(2*nvar+1)/2+ 
+      double precision acrate(2)
+      double precision dptest
+      double precision f(npred*2*nvar,ngrid)
+      double precision h(npred*2*nvar,ngrid)
+      double precision thetasave(nsave,2*nvar*(2*nvar+1)/2+ 
      &                 nvar*(p+q)+nvar*(p+q)*(nvar*(p+q)+1)/2+3)
 
-      real*8 randsave(nsave,npred*2*nvar)
+      double precision randsave(nsave,npred*2*nvar)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -114,34 +114,34 @@ c+++++Model Specification
 c+++++Clusters (maxm)
       integer cstrt(maxm,nsubject)
       integer ccluster(maxm)
-      real*8 prob(maxm)
-      real*8 prob2(maxm)
-      real*8 weights(maxm)
+      double precision prob(maxm)
+      double precision prob2(maxm)
+      double precision weights(maxm)
 
 c+++++Locations
       integer iflagc(nvar*(p+q))
-      real*8 theta(nvar*(p+q))
-      real*8 workmc(nvar*(p+q),nvar*(p+q))
-      real*8 workmc2(nvar*(p+q),nvar*(p+q))
-      real*8 workmc3(nvar*(p+q),nvar*(p+q))
-      real*8 workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
-      real*8 workmhc2(nvar*(p+q)*(nvar*(p+q)+1)/2)
-      real*8 workvc(nvar*(p+q))
+      double precision theta(nvar*(p+q))
+      double precision workmc(nvar*(p+q),nvar*(p+q))
+      double precision workmc2(nvar*(p+q),nvar*(p+q))
+      double precision workmc3(nvar*(p+q),nvar*(p+q))
+      double precision workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
+      double precision workmhc2(nvar*(p+q)*(nvar*(p+q)+1)/2)
+      double precision workvc(nvar*(p+q))
 
       integer iflagn(2*nvar)
-      real*8 workmn(2*nvar,2*nvar)      
-      real*8 workmn2(2*nvar,2*nvar)      
-      real*8 workmn3(2*nvar,2*nvar)      
-      real*8 workmhn(2*nvar*(2*nvar+1)/2)
-      real*8 workmhn2(2*nvar*(2*nvar+1)/2)
-      real*8 workvn(2*nvar)
-      real*8 workvn2(2*nvar)
-      real*8 workvn3(2*nvar)
-      real*8 ztz(nvar*(p+q),nvar*(p+q))
-      real*8 zty(nvar*(p+q))
+      double precision workmn(2*nvar,2*nvar)      
+      double precision workmn2(2*nvar,2*nvar)      
+      double precision workmn3(2*nvar,2*nvar)      
+      double precision workmhn(2*nvar*(2*nvar+1)/2)
+      double precision workmhn2(2*nvar*(2*nvar+1)/2)
+      double precision workvn(2*nvar)
+      double precision workvn2(2*nvar)
+      double precision workvn3(2*nvar)
+      double precision ztz(nvar*(p+q),nvar*(p+q))
+      double precision zty(nvar*(p+q))
       
-      real*8 fw(ngrid)
-      real*8 fw2(ngrid)
+      double precision fw(ngrid)
+      double precision fw2(ngrid)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -149,30 +149,30 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++General
       integer i,ii,j,k,l,sprint
-      real*8 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,ratio
-      real*8 astar,astarc
-      real*8 bpc
+      double precision tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,ratio
+      double precision astar,astarc
+      double precision bpc
 
-      real*8 acan,bcan,uni
-      real*8 logpn,logpo,logcgkn,logcgko
+      double precision acan,bcan,uni
+      double precision logpn,logpo,logcgkn,logcgko
 
 c+++++Latent variables
-      real*8 slow,supp  
+      double precision slow,supp  
       logical ainf,binf
 
 c+++++DP
-      real*8 lsweight
+      double precision lsweight
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,dlnrm,cdfnorm
-      real*8 cdflnorm,rtnorm,rbeta,dbet
+      double precision dnrm,dlnrm,cdfnorm
+      double precision cdflnorm,rtnorm,rbeta,dbet
       real runif
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)
@@ -626,11 +626,11 @@ c++++++++++++++++++++++++++++++++++
 
 c+++++++++++++ random effects (in a file)
                do i=1,maxm
-                  write(1) (b(i,j),j=1,nvar*(p+q))
+c                  write(1) (b(i,j),j=1,nvar*(p+q))
                end do   
 
 c+++++++++++++ configurations (in a file)
-               write(2) (ss(i),i=1,nsubject) 
+c               write(2) (ss(i),i=1,nsubject) 
 
 c+++++++++++++ predictive survival information
 
@@ -675,8 +675,8 @@ c+++++++++++++ predictive survival information
                      call fmedian_sba(j,nvar,ngrid,fw,grid,tmp1)
                      randsave(isave,ii)=tmp1
 
-                     write(3) (fw(k),k=1,ngrid)
-                     write(4) (fw2(k),k=1,ngrid)
+c                     write(3) (fw(k),k=1,ngrid)
+c                     write(4) (fw2(k),k=1,ngrid)
 
                   end do
                end do   
@@ -719,7 +719,7 @@ c+++++++++++++ PY informartion
                end if
 
 c+++++++++++++ parameters (in a file)
-               write(5)(thetasave(isave,j),j=1,k)
+c               write(5)(thetasave(isave,j),j=1,k)
 
 c+++++++++++++ print
                skipcount = 0
@@ -768,16 +768,16 @@ c=======================================================================
 
 c+++++Parameters
       integer maxm
-      real*8 weights(maxm)
-      real*8 mub,sigmab
-      real*8 qq,a,b,logp
-      real*8 aa0,ab0
+      double precision weights(maxm)
+      double precision mub,sigmab
+      double precision qq,a,b,logp
+      double precision aa0,ab0
 
 c+++++Working internal
       integer i
-      real*8 tmp1,tmp2,tmp3
+      double precision tmp1,tmp2,tmp3
       
-      real*8 dbet,dnrm,cdfnorm
+      double precision dbet,dnrm,cdfnorm
 
 c+++++algorithm
      
@@ -828,28 +828,28 @@ c+++++Parameters
       integer cstrt(maxm,nsubject)
       integer varind(nvar*(p+q))
       
-      real*8 y(nsubject,2*nvar)
-      real*8 x(nsubject,nvar*(p+q))
+      double precision y(nsubject,2*nvar)
+      double precision x(nsubject,nvar*(p+q))
       
-      real*8 b(maxm,nvar*(p+q))
-      real*8 sigmainv(2*nvar,2*nvar)            
-      real*8 mub(nvar*(p+q))
-      real*8 sigmab(nvar*(p+q),nvar*(p+q))
-      real*8 sigmabinv(nvar*(p+q),nvar*(p+q))
+      double precision b(maxm,nvar*(p+q))
+      double precision sigmainv(2*nvar,2*nvar)            
+      double precision mub(nvar*(p+q))
+      double precision sigmab(nvar*(p+q),nvar*(p+q))
+      double precision sigmabinv(nvar*(p+q),nvar*(p+q))
 
 c+++++Working external
       integer iflagc(nvar*(p+q))
-      real*8 theta(nvar*(p+q))
-      real*8 workvc(nvar*(p+q))
-      real*8 workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
-      real*8 ztz(nvar*(p+q),nvar*(p+q))
-      real*8 zty(nvar*(p+q))
+      double precision theta(nvar*(p+q))
+      double precision workvc(nvar*(p+q))
+      double precision workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
+      double precision ztz(nvar*(p+q),nvar*(p+q))
+      double precision zty(nvar*(p+q))
 
 c+++++Working internal
       integer ii,j,jj,k,l,m
       integer ns
       integer pos1,pos2
-      real*8 tmp1
+      double precision tmp1
 
 c+++++Algorithm
 
@@ -931,13 +931,13 @@ c=======================================================================
 
 c+++++Parameters 
       integer ii,nvar,ngrid
-      real*8 grid(2*nvar,ngrid)
-      real*8 f(ngrid)
-      real*8 meds
+      double precision grid(2*nvar,ngrid)
+      double precision f(ngrid)
+      double precision meds
 
 c+++++Working internal
       integer i
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++Algorithm
 
@@ -977,15 +977,15 @@ c=======================================================================
 
 c+++++Parameters
       integer maxm
-      real*8 weights(maxm)
-      real*8 mub,sigmab
-      real*8 a,b,loglik
+      double precision weights(maxm)
+      double precision mub,sigmab
+      double precision a,b,loglik
 
 c+++++Working internal
       integer i
-      real*8 tmp1,tmp2,tmp3
+      double precision tmp1,tmp2,tmp3
       
-      real*8 dbet,dnrm,cdfnorm
+      double precision dbet,dnrm,cdfnorm
 
 c+++++algorithm
      
@@ -1020,13 +1020,13 @@ c=======================================================================
 
 c+++++Parameters
       integer maxm
-      real*8 weights(maxm)
-      real*8 a,b,loglik
+      double precision weights(maxm)
+      double precision a,b,loglik
 
 c+++++Working internal
       integer i
-      real*8 tmp1,tmp2,tmp3
-      real*8 dbet
+      double precision tmp1,tmp2,tmp3
+      double precision dbet
 
 c+++++algorithm
      
@@ -1061,16 +1061,16 @@ c=======================================================================
 c+++++Parameters
       integer maxm
       integer ccluster(maxm)
-      real*8 prob(maxm)
-      real*8 weights(maxm)
-      real*8 a,b,lsweight
+      double precision prob(maxm)
+      double precision weights(maxm)
+      double precision a,b,lsweight
 
 c+++++Working internal
       integer i,j
-      real*8 tmp1,tmp2,tmp3
-      real*8 lweight1
+      double precision tmp1,tmp2,tmp3
+      double precision lweight1
       
-      real*8 rbeta
+      double precision rbeta
 
 c+++++algorithm
      
@@ -1133,22 +1133,22 @@ c+++++Parameters
       integer model(2*nvar,p+q)
       integer possi(2*nvar,p+q)
       
-      real*8 y(nsubject,2*nvar)
-      real*8 x(nsubject,nvar*(p+q))
-      real*8 b(maxm,nvar*(p+q))
-      real*8 sigma(2*nvar,2*nvar)      
-      real*8 prob(maxm)
+      double precision y(nsubject,2*nvar)
+      double precision x(nsubject,nvar*(p+q))
+      double precision b(maxm,nvar*(p+q))
+      double precision sigma(2*nvar,2*nvar)      
+      double precision prob(maxm)
 
 c+++++Working external
       integer iflagn(2*nvar)
-      real*8 prob2(maxm)
-      real*8 workmn(2*nvar,2*nvar)      
-      real*8 workvn(2*nvar)
+      double precision prob2(maxm)
+      double precision workmn(2*nvar,2*nvar)      
+      double precision workvn(2*nvar)
 
 c+++++Working internal
       integer i,j,k,l,evali
-      real*8 detlog,tmp1
-      real*8 tpi,work1,work2,work3,sse
+      double precision detlog,tmp1
+      double precision tpi,work1,work2,work3,sse
 
 c+++++Algorithm
 
@@ -1239,28 +1239,28 @@ c+++++Parameters
       integer model(2*nvar,p+q)
       integer possi(2*nvar,p+q)
       
-      real*8 y(nsubject,2*nvar)
-      real*8 x(nsubject,nvar*(p+q))
+      double precision y(nsubject,2*nvar)
+      double precision x(nsubject,nvar*(p+q))
       
-      real*8 b(maxm,nvar*(p+q))
-      real*8 sigmainv(2*nvar,2*nvar)            
-      real*8 mub(nvar*(p+q))
-      real*8 sigmab(nvar*(p+q),nvar*(p+q))
-      real*8 sigmabinv(nvar*(p+q),nvar*(p+q))
+      double precision b(maxm,nvar*(p+q))
+      double precision sigmainv(2*nvar,2*nvar)            
+      double precision mub(nvar*(p+q))
+      double precision sigmab(nvar*(p+q),nvar*(p+q))
+      double precision sigmabinv(nvar*(p+q),nvar*(p+q))
 
 c+++++Working external
       integer iflagc(nvar*(p+q))
-      real*8 theta(nvar*(p+q))
-      real*8 workvc(nvar*(p+q))
-      real*8 workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
-      real*8 ztz(nvar*(p+q),nvar*(p+q))
-      real*8 zty(nvar*(p+q))
+      double precision theta(nvar*(p+q))
+      double precision workvc(nvar*(p+q))
+      double precision workmhc(nvar*(p+q)*(nvar*(p+q)+1)/2)
+      double precision ztz(nvar*(p+q),nvar*(p+q))
+      double precision zty(nvar*(p+q))
 
 c+++++Working internal
       integer ii,j,jj,k,l,m
       integer ns
       integer pos1,pos2
-      real*8 tmp1
+      double precision tmp1
 
 c+++++Algorithm
 
@@ -1357,25 +1357,25 @@ c+++++Parameters
       integer possi(2*nvar,p+q)
       integer nu01
 
-      real*8 y(nsubject,2*nvar)
-      real*8 x(nsubject,nvar*(p+q))
-      real*8 b(maxm,nvar*(p+q))
-      real*8 tinv1(2*nvar,2*nvar)
-      real*8 sigma(2*nvar,2*nvar)      
-      real*8 sigmainv(2*nvar,2*nvar)            
+      double precision y(nsubject,2*nvar)
+      double precision x(nsubject,nvar*(p+q))
+      double precision b(maxm,nvar*(p+q))
+      double precision tinv1(2*nvar,2*nvar)
+      double precision sigma(2*nvar,2*nvar)      
+      double precision sigmainv(2*nvar,2*nvar)            
 
 c+++++Working external
       integer iflagn(2*nvar)
-      real*8 workvn(2*nvar)      
-      real*8 workmn(2*nvar,2*nvar)      
-      real*8 workmn2(2*nvar,2*nvar)      
-      real*8 workmn3(2*nvar,2*nvar)      
-      real*8 workmhn(2*nvar*(2*nvar+1)/2)
-      real*8 workmhn2(2*nvar*(2*nvar+1)/2)
+      double precision workvn(2*nvar)      
+      double precision workmn(2*nvar,2*nvar)      
+      double precision workmn2(2*nvar,2*nvar)      
+      double precision workmn3(2*nvar,2*nvar)      
+      double precision workmhn(2*nvar*(2*nvar+1)/2)
+      double precision workmhn2(2*nvar*(2*nvar+1)/2)
 
 c+++++Working internal
       integer i,j,k,l
-      real*8 tmp1
+      double precision tmp1
 
 c++++ check if the user has requested an interrupt
       call rchkusr()
@@ -1449,23 +1449,23 @@ c=======================================================================
 c+++++External parameters
       integer tint
       integer nsave,npred,nvar,ngrid 
-      real*8 alpha
+      double precision alpha
 
 c+++++External working
-      real*8 workv1(nsave),workv2(ngrid)
+      double precision workv1(nsave),workv2(ngrid)
 
 c+++++Output      
-      real*8 llower(npred*2*nvar,ngrid)
-      real*8 lupper(npred*2*nvar,ngrid)
-      real*8 llower2(npred*2*nvar,ngrid)
-      real*8 lupper2(npred*2*nvar,ngrid)
+      double precision llower(npred*2*nvar,ngrid)
+      double precision lupper(npred*2*nvar,ngrid)
+      double precision llower2(npred*2*nvar,ngrid)
+      double precision lupper2(npred*2*nvar,ngrid)
 
 c+++++Internal parameters
       integer maxnsave,maxngrid
       parameter(maxnsave=30000,maxngrid=300)
-      real*8 aupp(2),alow(2)
-      real*8 workm(maxnsave,maxngrid)
-      real*8 workm2(maxnsave,maxngrid)
+      double precision aupp(2),alow(2)
+      double precision workm(maxnsave,maxngrid)
+      double precision workm2(maxnsave,maxngrid)
 
 c+++++Internal working
       integer i,ii,j,jj,k,l   

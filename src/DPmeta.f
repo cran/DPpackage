@@ -186,27 +186,27 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nfixed,p
-      real*8 y(nrec),x(nrec,p),sigma2e(nrec)
+      double precision y(nrec),x(nrec,p),sigma2e(nrec)
      
 c+++++Prior 
       integer murand,sigmarand
-      real*8 aa0,ab0,a0b0(2),prec(p,p),psiinv
-      real*8 sb(p),smu
-      real*8 tau1,tau2,tau(2)
+      double precision aa0,ab0,a0b0(2),prec(p,p),psiinv
+      double precision sb(p),smu
+      double precision tau1,tau2,tau(2)
 
 c+++++MCMC parameters
       integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,nrec+1)
-      real*8 thetasave(nsave,nfixed+5)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,nrec+1)
+      double precision thetasave(nsave,nfixed+5)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,beta(p),b(nrec)
-      real*8 betar,bclus(nrec)
-      real*8 mu,sigma
+      double precision alpha,beta(p),b(nrec)
+      double precision betar,bclus(nrec)
+      double precision mu,sigma
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -217,22 +217,22 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++fixed effects
       integer iflag(p)
-      real*8 work1(p,p)
-      real*8 workmh1(p*(p+1)/2)
-      real*8 workv1(p)
-      real*8 xty(p)
+      double precision work1(p,p)
+      double precision workmh1(p*(p+1)/2)
+      double precision workv1(p)
+      double precision xty(p)
 
 c+++++DP
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
-      real*8 prob(nrec+1)
+      double precision prob(nrec+1)
 
 c+++++Residuals
-      real*8 res(nrec)
+      double precision res(nrec)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p),bsave(nrec)
+      double precision mc(5)
+      double precision betasave(p),bsave(nrec)
       
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -241,25 +241,25 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++General
       integer evali,ii,i,j,k,ns,ok 
       integer since,sprint 
-      real*8 sigmainv,sse,theta
-      real*8 tmp1,tmp2,tmp3
-      real*8 ztz,zty
+      double precision sigmainv,sse,theta
+      double precision tmp1,tmp2,tmp3
+      double precision ztz,zty
       
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,rgamma,rnorm
+      double precision dnrm,rgamma,rnorm
 
 c+++++DP
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)

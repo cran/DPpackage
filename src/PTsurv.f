@@ -50,8 +50,8 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer datastr(nsubject,maxni+1)
       integer type(nrec,nvar)
       integer subject(nrec)
-      real*8 left(nrec,nvar),right(nrec,nvar)
-      real*8 x(nrec,p)
+      double precision left(nrec,nvar),right(nrec,nvar)
+      double precision x(nrec,p)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Options
@@ -62,30 +62,30 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Prior 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer m1,m2
-      real*8 prec(p*nvar,p*nvar),sb(p*nvar,2)
-      real*8 nu0b,tinvb(nvar,nvar)
-      real*8 tauv(nvar,2)
-      real*8 priorv(3)
+      double precision prec(p*nvar,p*nvar),sb(p*nvar,2)
+      double precision nu0b,tinvb(nvar,nvar)
+      double precision tauv(nvar,2)
+      double precision priorv(3)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++MCMC
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer mcmc(5),nburn,nskip,nsave,ndisplay
-      real*8 tune1,tune2
+      double precision tune1,tune2
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Output
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      real*8 acrate(5)
-      real*8 randsave(nsave,nsubject*nvar+2*nvar)
-      real*8 thetasave(nsave,p*nvar+nvar+(nvar*(nvar+1))/2+2)
+      double precision acrate(5)
+      double precision randsave(nsave,nsubject*nvar+2*nvar)
+      double precision thetasave(nsave,p*nvar+nvar+(nvar*(nvar+1))/2+2)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Current values of the parameters
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      real*8 cpar(2),cparb,cparv,beta(p*nvar),b(nsubject,nvar)
-      real*8 sigmab(nvar,nvar),sigmav(nvar,nvar)
-      real*8 y(nrec,nvar)
+      double precision cpar(2),cparb,cparv,beta(p*nvar),b(nsubject,nvar)
+      double precision sigmab(nvar,nvar),sigmav(nvar,nvar)
+      double precision y(nrec,nvar)
       
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ External working space
@@ -97,29 +97,30 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer typeint(nvar)
       integer whicho(nrec),whichn(nrec)      
 
-      real*8 betac(p*nvar)
-      real*8 linf(nvar),lsup(nvar)
-      real*8 linf2(nvar),lsup2(nvar)
-      real*8 sigmainvb(nvar,nvar)
-      real*8 sigmainvv(nvar,nvar)
-      real*8 sigmainvvc(nvar,nvar)
-      real*8 sigmabc(nvar,nvar)      
-      real*8 sigmavc(nvar,nvar)
-      real*8 ssb(nsubject)
-      real*8 ssbc(nsubject)      
-      real*8 theta(nvar)
-      real*8 thetac(nvar)
-      real*8 vz(nrec,nvar),vzc(nrec,nvar)
-      real*8 workmr(nvar,nvar),workmr2(nvar,nvar)
-      real*8 workmhp(p*nvar*(p*nvar+1)/2)
-      real*8 workmhr(nvar*(nvar+1)/2),workmhr2(nvar*(nvar+1)/2)
-      real*8 workvp(p*nvar)
-      real*8 workvr(nvar)
-      real*8 xtx(p*nvar,p*nvar)
-      real*8 xty(p*nvar)
-      real*8 yvec(nvar),yvecc(nvar)
-      real*8 ztz(nvar,nvar)
-      real*8 zty(nvar)
+      double precision betac(p*nvar)
+      double precision linf(nvar),lsup(nvar)
+      double precision linf2(nvar),lsup2(nvar)
+      double precision sigmainvb(nvar,nvar)
+      double precision sigmainvv(nvar,nvar)
+      double precision sigmainvvc(nvar,nvar)
+      double precision sigmabc(nvar,nvar)      
+      double precision sigmavc(nvar,nvar)
+      double precision ssb(nsubject)
+      double precision ssbc(nsubject)      
+      double precision theta(nvar)
+      double precision thetac(nvar)
+      double precision vz(nrec,nvar),vzc(nrec,nvar)
+      double precision workmr(nvar,nvar),workmr2(nvar,nvar)
+      double precision workmhp(p*nvar*(p*nvar+1)/2)
+      double precision workmhr(nvar*(nvar+1)/2),
+     1  workmhr2(nvar*(nvar+1)/2)
+      double precision workvp(p*nvar)
+      double precision workvr(nvar)
+      double precision xtx(p*nvar,p*nvar)
+      double precision xty(p*nvar)
+      double precision yvec(nvar),yvecc(nvar)
+      double precision ztz(nvar,nvar)
+      double precision zty(nvar)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Working space - RNG
@@ -145,28 +146,28 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++
       integer skipcount
       integer sprint
 
-      real*8 acrate2      
-      real*8 detlogb,detlogbc,detlogv,detlogvc
-      real*8 logcgkn,logcgko
-      real*8 loglikn,loglikn2,logliko,logliko2
-      real*8 logpriorn,logprioro
-      real*8 mass(marea)
-      real*8 ratio
-      real*8 sd,sdc
-      real*8 ssevaln,ssevalo
-      real*8 tmp1,tmp2
+      double precision acrate2      
+      double precision detlogb,detlogbc,detlogv,detlogvc
+      double precision logcgkn,logcgko
+      double precision loglikn,loglikn2,logliko,logliko2
+      double precision logpriorn,logprioro
+      double precision mass(marea)
+      double precision ratio
+      double precision sd,sdc
+      double precision ssevaln,ssevalo
+      double precision tmp1,tmp2
       
       integer maxp
       parameter(maxp=200)
-      real*8 mumh(maxp),sigmamh(maxp,maxp)
+      double precision mumh(maxp),sigmamh(maxp,maxp)
       
-      real*8 dlnrm,rtlnorm
+      double precision dlnrm,rtlnorm
       real runif
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++CPU time
 c+++++++++++++++++++++++++++++++++++++++++++++++++
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++
 c++++ Initialize variables
@@ -917,18 +918,18 @@ c-----Input
       integer parti(nvar),poss(nvar,p)
       integer subject(nrec)
       integer whicho(nrec),whichn(nrec)
-      real*8 beta(nvar*p),b(nsubject,nvar),x(nrec,p)
-      real*8 yc(nvar),tvec(nvar),vz(nrec,nvar),cpar,detlogl
-      real*8 linf(nvar),lsup(nvar)
-      real*8 theta(nvar),sigmainv(nvar,nvar)
+      double precision beta(nvar*p),b(nsubject,nvar),x(nrec,p)
+      double precision yc(nvar),tvec(nvar),vz(nrec,nvar),cpar,detlogl
+      double precision linf(nvar),lsup(nvar)
+      double precision theta(nvar),sigmainv(nvar,nvar)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 
@@ -1074,18 +1075,18 @@ c-----Input
       integer parti(nvar),poss(nvar,p)
       integer subject(nrec)
       integer whicho(nrec),whichn(nrec)
-      real*8 betac(nvar*p),b(nsubject,nvar),x(nrec,p)
-      real*8 y(nrec,nvar),vzc(nrec,nvar),cpar,detlogl
-      real*8 linf(nvar),lsup(nvar)
-      real*8 theta(nvar),sigmainv(nvar,nvar)
+      double precision betac(nvar*p),b(nsubject,nvar),x(nrec,p)
+      double precision y(nrec,nvar),vzc(nrec,nvar),cpar,detlogl
+      double precision linf(nvar),lsup(nvar)
+      double precision theta(nvar),sigmainv(nvar,nvar)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 
@@ -1240,18 +1241,18 @@ c-----Input
       integer parti(nvar),poss(nvar,p)
       integer subject(nrec)
       integer whicho(nrec),whichn(nrec)
-      real*8 beta(nvar*p),b(nsubject,nvar),x(nrec,p)
-      real*8 y(nrec,nvar),vzc(nrec,nvar),cpar,detlogl
-      real*8 linf(nvar),lsup(nvar)
-      real*8 muc(nvar),sigmainv(nvar,nvar)
+      double precision beta(nvar*p),b(nsubject,nvar),x(nrec,p)
+      double precision y(nrec,nvar),vzc(nrec,nvar),cpar,detlogl
+      double precision linf(nvar),lsup(nvar)
+      double precision muc(nvar),sigmainv(nvar,nvar)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 

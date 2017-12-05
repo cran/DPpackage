@@ -243,32 +243,32 @@ c=======================================================================
       implicit none
 c++++ input
       integer nrec,ptf,pce
-      real*8 xtf(nrec,ptf)
-      real*8 xce(nrec,pce)
-      real*8 y(nrec)
+      double precision xtf(nrec,ptf)
+      double precision xce(nrec,pce)
+      double precision y(nrec)
 
 c++++ prediction
       integer ngrid,npredden,npredmed
-      real*8 grid(ngrid)
-      real*8 xtfpred(npredden,ptf)
-      real*8 xcepred(npredden,pce)
-      real*8 xtfpredm(npredmed,ptf)
-      real*8 xcepredm(npredmed,pce)
-      real*8 quans(3)
+      double precision grid(ngrid)
+      double precision xtfpred(npredden,ptf)
+      double precision xcepred(npredden,pce)
+      double precision xtfpredm(npredmed,ptf)
+      double precision xcepredm(npredmed,pce)
+      double precision quans(3)
 
 c++++ prior
       integer maxm,ntprob,ntlr
-      real*8 a0b0(2)
-      real*8 betacepm(pce)
-      real*8 gprior(ptf,ptf)
-      real*8 precce(pce,pce)
-      real*8 tau(2),tau1,tau2
+      double precision a0b0(2)
+      double precision betacepm(pce)
+      double precision gprior(ptf,ptf)
+      double precision precce(pce,pce)
+      double precision tau(2),tau1,tau2
 
 c++++ current value
-      real*8 alpha
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2
+      double precision alpha
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2
 
 c++++ mcmc
       integer mcmc(5),nburn,nskip,nsave,ndisplay
@@ -280,46 +280,46 @@ c++++ seeds
       integer seed1,seed2,seed(2)
 
 c++++ output
-      real*8 cpo(nrec,2)
-      real*8 densm(npredden,ngrid)
-      real*8 densl(npredden,ngrid)
-      real*8 densu(npredden,ngrid)
-      real*8 survmm(npredden,ngrid)
-      real*8 survml(npredden,ngrid)
-      real*8 survmu(npredden,ngrid)
+      double precision cpo(nrec,2)
+      double precision densm(npredden,ngrid)
+      double precision densl(npredden,ngrid)
+      double precision densu(npredden,ngrid)
+      double precision survmm(npredden,ngrid)
+      double precision survml(npredden,ngrid)
+      double precision survmu(npredden,ngrid)
 
-      real*8 qmm(npredmed,3)
-      real*8 qml(npredmed,3)
-      real*8 qmu(npredmed,3)
+      double precision qmm(npredmed,3)
+      double precision qml(npredmed,3)
+      double precision qmu(npredmed,3)
 
-      real*8 thetasave(nsave,pce+2)
-      real*8 randsave(nsave,(ntlr-1)*ptf)
+      double precision thetasave(nsave,pce+2)
+      double precision randsave(nsave,(ntlr-1)*ptf)
 
 c++++ external working space - vector and matrices
       integer iflag(pce)
       integer iflagtf(ptf)
       integer nobsbc(ntprob)
       integer obsbc(ntprob,nrec)
-      real*8 c0(ptf,ptf)
-      real*8 workm1(pce,pce)
-      real*8 workvh1(pce*(pce+1)/2)
-      real*8 workv1(pce)
+      double precision c0(ptf,ptf)
+      double precision workm1(pce,pce)
+      double precision workvh1(pce*(pce+1)/2)
+      double precision workv1(pce)
 
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,ngrid)
-      real*8 worksam3(nsave,npredden)
-      real*8 fs(ngrid)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,ngrid)
+      double precision worksam3(nsave,npredden)
+      double precision fs(ngrid)
 
-      real*8 workm2(ptf,ptf)
-      real*8 workvh2(ptf*(ptf+1)/2)
-      real*8 workv2(ptf)
-      real*8 workv3(ptf)
-      real*8 workv4(ptf)
+      double precision workm2(ptf,ptf)
+      double precision workvh2(ptf*(ptf+1)/2)
+      double precision workv2(ptf)
+      double precision workv3(ptf)
+      double precision workv4(ptf)
 
       integer k(maxm)
 
-      real*8 prob(2**maxm)
-      real*8 probc(2**maxm)
+      double precision prob(2**maxm)
+      double precision probc(2**maxm)
  
 c++++ internal working space
       integer accept,acceptt
@@ -329,39 +329,39 @@ c++++ internal working space
       integer ntot,n1,n2
       integer nscan,skipcount
       integer sprint
-      real*8 alnorm
-      real*8 alphac
-      real*8 dnrm
-      real*8 dinvnorm
-      real*8 liminf
-      real*8 limsup
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 logcgkn,logcgko
-      real*8 luni,lratio
-      real*8 qqnum
-      real*8 rbeta
-      real*8 rgamma
-      real*8 rtnorm
-      real*8 rnorm
+      double precision alnorm
+      double precision alphac
+      double precision dnrm
+      double precision dinvnorm
+      double precision liminf
+      double precision limsup
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision logcgkn,logcgko
+      double precision luni,lratio
+      double precision qqnum
+      double precision rbeta
+      double precision rgamma
+      double precision rtnorm
+      double precision rnorm
       real runif
-      real*8 sigma2c
-      real*8 tmp1,tmp2,tmp3
-      real*8 uni
-      real*8 ya
-      real*8 yc
+      double precision sigma2c
+      double precision tmp1,tmp2,tmp3
+      double precision uni
+      double precision ya
+      double precision yc
   
       logical ainf
       logical asup
   
 c++++ CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ Working space slice sampling
       integer evali
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c++++ initializing variables
 
@@ -790,7 +790,7 @@ c++++++++++++ density
      &                       sigma2,densl,densm,k)
 
               do i=1,npredden
-                 write(1) (densl(i,j),j=1,ngrid)
+c                 write(1) (densl(i,j),j=1,ngrid)
               end do   
 
 c++++++++++++ survival function
@@ -805,7 +805,7 @@ c++++++++++++ survival function
                     survmm(i,j)=survmm(i,j)+1.d0-tmp3
                     survml(i,j)=1.d0-tmp3
                  end do
-                 write(2) (survml(i,j),j=1,ngrid) 
+c                 write(2) (survml(i,j),j=1,ngrid) 
               end do   
 
 
@@ -832,9 +832,9 @@ c++++++++++++ quantiles
      &                           sigma2,xtfpredm,xcepredm,
      &                           qmm,qml,k,prob,probc,quans)
 
-              write(3) (qml(j,1),j=1,npredmed)
-              write(4) (qml(j,2),j=1,npredmed)
-              write(5) (qml(j,3),j=1,npredmed)
+c              write(3) (qml(j,1),j=1,npredmed)
+c              write(4) (qml(j,2),j=1,npredmed)
+c              write(5) (qml(j,3),j=1,npredmed)
 
 c++++++++++++ print
               skipcount = 0

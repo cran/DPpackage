@@ -310,60 +310,60 @@ c=======================================================================
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1)
-      real*8 x(nrec,p+1),z(nrec,q),xtx(p,p),y(nrec)
+      double precision x(nrec,p+1),z(nrec,q),xtx(p,p),y(nrec)
       
 c+++++Prior 
       integer fixed,m,murand,sigmarand,typepr
-      real*8 aa0,ab0,a0b0(10),mu0(q),nu0,prec1(p,p),prec2(q,q)
-      real*8 sb(p,2)
-      real*8 tau1,tau2,tinv(q,q)      
+      double precision aa0,ab0,a0b0(10),mu0(q),nu0,prec1(p,p),prec2(q,q)
+      double precision sb(p,2)
+      double precision tau1,tau2,tinv(q,q)      
 
 c+++++MCMC parameters
       integer mcmc(12),nburn,nskip,nsave,ndisplay,nbase,samplef
-      real*8 tune1,tune2,tune3,tune4,tune5
+      double precision tune1,tune2,tune3,tune4,tune5
 
 c+++++Output
-      real*8 acrate(7),cpo(nrec,2)
-      real*8 randsave(nsave,q*(nsubject+1))
-      real*8 thetasave(nsave,q+nfixed+q+(q*(q+1))+2+q*q)
+      double precision acrate(7),cpo(nrec,2)
+      double precision randsave(nsave,q*(nsubject+1))
+      double precision thetasave(nsave,q+nfixed+q+(q*(q+1))+2+q*q)
 
 c+++++Current values of the parameters
-      real*8 cpar,curr(7),disp,beta(p),b(nsubject,q)
-      real*8 betar(q)
-      real*8 mu(q),sigma(q,q)
-      real*8 ortho(q,q)
+      double precision cpar,curr(7),disp,beta(p),b(nsubject,q)
+      double precision betar(q)
+      double precision mu(q),sigma(q,q)
+      double precision ortho(q,q)
 
 c+++++Working space - External
       integer iflagp(p) 
-      real*8 betac(p)
-      real*8 workmp1(p,p),workmp2(p,p)
-      real*8 workmhp1(p*(p+1)/2)
-      real*8 workvp1(p)
-      real*8 xty(p)
+      double precision betac(p)
+      double precision workmp1(p,p),workmp2(p,p)
+      double precision workmhp1(p*(p+1)/2)
+      double precision workvp1(p)
+      double precision xty(p)
 
       integer iflagr(q) 
       integer parti(q)
       integer whicho(nsubject),whichn(nsubject)      
-      real*8 bz(nsubject,q),bzc(nsubject,q)
-      real*8 limw(q),linf(q),lsup(q)
-      real*8 propvr(q,q)
-      real*8 sigmainv(q,q)
-      real*8 theta(q),thetac(q)
-      real*8 workmhr(q*(q+1)/2)
-      real*8 workmr(q,q)
-      real*8 workmr1(q,q),workmr2(q,q)
-      real*8 workvr(q)
-      real*8 ybar(2**q)
+      double precision bz(nsubject,q),bzc(nsubject,q)
+      double precision limw(q),linf(q),lsup(q)
+      double precision propvr(q,q)
+      double precision sigmainv(q,q)
+      double precision theta(q),thetac(q)
+      double precision workmhr(q*(q+1)/2)
+      double precision workmr(q,q)
+      double precision workmr1(q,q),workmr2(q,q)
+      double precision workvr(q)
+      double precision ybar(2**q)
       
-      real*8 sigmac(q,q),sigmainvc(q,q)
-      real*8 workmhr2(q*(q+1)/2)
+      double precision sigmac(q,q),sigmainvc(q,q)
+      double precision workmhr2(q*(q+1)/2)
 
       integer massi(2**q)
       integer pattern(q)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p+1),bsave(nsubject,q)
+      double precision mc(5)
+      double precision betasave(p+1),bsave(nsubject,q)
 
 c+++++Working space - RNG
       integer seed1,seed2
@@ -377,44 +377,44 @@ c+++++Working space - Internal
       integer narea,ni,nscan,nu
       integer skipcount
       integer sprint
-      real*8 acrate2,cparc
-      real*8 detlogl,detloglc,dispnew,dlnrm
-      real*8 eta,gprime
-      real*8 mean
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 offset
-      real*8 ratio,rnorm,rtlnorm,runif
-      real*8 slogmu,slogy,symu
-      real*8 targetp
-      real*8 tmp1,tmp2
-      real*8 trigamm
-      real*8 yij,ytilde
+      double precision acrate2,cparc
+      double precision detlogl,detloglc,dispnew,dlnrm
+      double precision eta,gprime
+      double precision mean
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision offset
+      double precision ratio,rnorm,rtlnorm,runif
+      double precision slogmu,slogy,symu
+      double precision targetp
+      double precision tmp1,tmp2
+      double precision trigamm
+      double precision yij,ytilde
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Adaptive MH for mu
       integer countermh
-      real*8 mumh(100),sigmamh(100,100)
+      double precision mumh(100),sigmamh(100,100)
 
 c+++++Adaptive MH for sigma
       integer nadaptive
       parameter(nadaptive=2000)
       integer adaptives,sigmaskip
-      real*8 aratesigma
+      double precision aratesigma
 
 c+++++Adaptive MH for c
       integer adaptivec,cskip
-      real*8 aratec
+      double precision aratec
 
 c+++++Adaptive MH for partition
       integer adaptivep,pskip
-      real*8 aratep
+      double precision aratep
 
 c++++ parameters
       nburn=mcmc(1)
@@ -1130,18 +1130,18 @@ c++++++++++ Addaptive MH
                      if(q.eq.1)then
                         if(aratesigma.lt.0.44)then
                            tune2=exp(log(tune2)+
-     &                      min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                 min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                           else
                            tune2=exp(log(tune2)-
-     &                      min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                 min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                         end if  
                        else
                         if(aratesigma.lt.0.234)then
                            tune2=exp(log(tune2)+
-     &                      min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                 min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                           else
                            tune2=exp(log(tune2)-
-     &                      min(0.01,1.d0/sqrt(dble(iscan-nadaptive))))
+     &                 min(0.01d0,1.d0/sqrt(dble(iscan-nadaptive))))
                         end if  
                      end if  
                   end if
@@ -1256,10 +1256,10 @@ c++++++++++ Addaptive MH
                    else 
                      if(aratec.gt.0.44)then
                         tune3=exp(log(tune3)+
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                        else
                         tune3=exp(log(tune3)-
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                      end if 
                   end if    
                   cskip=0
@@ -1328,10 +1328,10 @@ c++++++++++ Addaptive MH
                    else 
                      if(aratep.gt.0.234)then
                         tune4=exp(log(tune4)+
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                        else
                         tune4=exp(log(tune4)-
-     &                        min(0.01,1.d0/sqrt(dble(iscan))))
+     &                        min(0.01d0,1.d0/sqrt(dble(iscan))))
                      end if 
                   end if    
                   pskip=0

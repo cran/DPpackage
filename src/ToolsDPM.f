@@ -105,18 +105,19 @@ c+++++Input
       integer ngrid,nsave,nsubject,q
       integer clustsave(nsave,nsubject),nclusvec(nsave)
       integer seed1,seed2
-      real*8 grid(ngrid)
-      real*8 sigmakmat(nsave,q*(q+1)/2)
-      real*8 alphavec(nsave),mubmat(nsave,q),sigmabmat(nsave,q*(q+1)/2)
-      real*8 musave(nsave,q*nsubject)
+      double precision grid(ngrid)
+      double precision sigmakmat(nsave,q*(q+1)/2)
+      double precision alphavec(nsave),mubmat(nsave,q),
+     1  sigmabmat(nsave,q*(q+1)/2)
+      double precision musave(nsave,q*nsubject)
       
 c+++++Output
-      real*8 fs(ngrid)
+      double precision fs(ngrid)
       
 c+++++Working
       integer i,j,k,ncluster,ns 
-      real*8 alpha,denom,dnrm,meanc,meanb,meanw,rnorm,sdb,sdk
-      real*8 tmp1
+      double precision alpha,denom,dnrm,meanc,meanb,meanw,rnorm,sdb,sdk
+      double precision tmp1
 
 c++++ Set the random number generator
       call setall(seed1,seed2)
@@ -172,27 +173,29 @@ c+++++Input
       integer clustsave(nsave,nsubject)
       integer nclusvec(nsave)
       integer seed1,seed2
-      real*8 grid1(ngrid1),grid2(ngrid2)
-      real*8 sigmakmat(nsave,q*(q+1)/2)
-      real*8 alphavec(nsave),mubmat(nsave,q),sigmabmat(nsave,q*(q+1)/2)
-      real*8 musave(nsave,q*nsubject)
+      double precision grid1(ngrid1),grid2(ngrid2)
+      double precision sigmakmat(nsave,q*(q+1)/2)
+      double precision alphavec(nsave),mubmat(nsave,q),
+     1  sigmabmat(nsave,q*(q+1)/2)
+      double precision musave(nsave,q*nsubject)
       
       integer iflagr(q)
-      real*8 meanc(q),meanb(q),meanw(q),sigmab(q,q),sigmak(q,q),theta(q)
-      real*8 workmhr(q*(q+1)/2),workvr(q)
+      double precision meanc(q),meanb(q),meanw(q),sigmab(q,q),
+     1  sigmak(q,q),theta(q)
+      double precision workmhr(q*(q+1)/2),workvr(q)
       
 c+++++Output
-      real*8 fs(ngrid1,ngrid2),f1(ngrid1),f2(ngrid2)
+      double precision fs(ngrid1,ngrid2),f1(ngrid1),f2(ngrid2)
       
 c+++++Working
       integer counter,i,ii,j,jj,k,l,m,ncluster,ns 
-      real*8 alpha,denom,det,dnrm
-      real*8 meanuc1,meanuc2
-      real*8 meanub1,meanub2
-      real*8 meanuw1,meanuw2
-      real*8 sdb1,sdb2
-      real*8 sdk1,sdk2
-      real*8 tmp1,tpi,work1,work2,work3
+      double precision alpha,denom,det,dnrm
+      double precision meanuc1,meanuc2
+      double precision meanub1,meanub2
+      double precision meanuw1,meanuw2
+      double precision sdb1,sdb2
+      double precision sdk1,sdk2
+      double precision tmp1,tpi,work1,work2,work3
 
 c++++ Set the random number generator
       call setall(seed1,seed2)

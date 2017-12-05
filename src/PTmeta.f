@@ -167,28 +167,28 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nfixed,p
-      real*8 y(nrec),x(nrec,p),sigma2e(nrec)
+      double precision y(nrec),x(nrec,p),sigma2e(nrec)
 
 c+++++Prior 
       integer maxm,mdzero
-      real*8 aa0,ab0,a0b0(2),prec(p,p)
-      real*8 sb(p)
-      real*8 tau1,tau2,tau(2)
-      real*8 m0,s0
+      double precision aa0,ab0,a0b0(2),prec(p,p)
+      double precision sb(p)
+      double precision tau1,tau2,tau(2)
+      double precision m0,s0
       
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 mcmcad(16)
+      double precision mcmcad(16)
 
 c+++++Output
-      real*8 acrate(4)
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,nrec+1)
-      real*8 thetasave(nsave,nfixed+4)
+      double precision acrate(4)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,nrec+1)
+      double precision thetasave(nsave,nfixed+4)
 
 c+++++Current values of the parameters
-      real*8 alpha,beta(p),b(nrec)
-      real*8 mu,sigma
+      double precision alpha,beta(p),b(nrec)
+      double precision mu,sigma
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -199,17 +199,17 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++fixed effects
       integer iflagp(p)
-      real*8 workmp(p,p)
-      real*8 workmhp(p*(p+1)/2)
-      real*8 workvp(p)
-      real*8 xty(p)
+      double precision workmp(p,p)
+      double precision workmhp(p*(p+1)/2)
+      double precision workvp(p)
+      double precision xty(p)
 
 c+++++PT
       integer whicho(nrec),whichn(nrec)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p),bsave(nrec)
+      double precision mc(5)
+      double precision betasave(p),bsave(nrec)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -219,56 +219,56 @@ c+++++General
       integer ii,i,j,k
       integer sprint 
 
-      real*8 acrate2 
-      real*8 alphac
-      real*8 betar      
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 muc
-      real*8 ratio
-      real*8 sdc
-      real*8 sigmainv
-      real*8 theta,thetac
-      real*8 tmp1,tmp2
-      real*8 ztz,zty
+      double precision acrate2 
+      double precision alphac
+      double precision betar      
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision muc
+      double precision ratio
+      double precision sdc
+      double precision sigmainv
+      double precision theta,thetac
+      double precision tmp1,tmp2
+      double precision ztz,zty
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,dlnrm,rnorm
+      double precision dnrm,dlnrm,rnorm
       real runif
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Adaptive MH
       integer acceptb
-      real*8 logval
-      real*8 maxa,maxb
-      real*8 nscanp
+      double precision logval
+      double precision maxa,maxb
+      double precision nscanp
 
 c+++++Adaptive MH for mu
       integer skipm
-      real*8 aratemu(5),counterm
-      real*8 pilogestmu(2)
-      real*8 tune1(2)
+      double precision aratemu(5),counterm
+      double precision pilogestmu(2)
+      double precision tune1(2)
 
 c+++++Adaptive MH for sigma2
       integer skips
-      real*8 aratesig(5),counters
-      real*8 pilogestsig(2)
-      real*8 tune2(2)
+      double precision aratesig(5),counters
+      double precision pilogestsig(2)
+      double precision tune2(2)
 
 c+++++Adaptive MH for alpha
       integer skipa
-      real*8 aratea(5),countera
-      real*8 pilogesta(2)
-      real*8 tune3(2)
+      double precision aratea(5),countera
+      double precision pilogesta(2)
+      double precision tune3(2)
 
 c++++ parameters
       nburn=mcmc(1)

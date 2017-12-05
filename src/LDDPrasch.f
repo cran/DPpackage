@@ -58,66 +58,66 @@ c=======================================================================
 c+++++Data
       integer ngrid,npred,nsubject,p,q
       integer y(nsubject,p)
-      real*8 roffset(nsubject,p)
-      real*8 grid(ngrid),z(nsubject,q),zpred(npred,q)
+      double precision roffset(nsubject,p)
+      double precision grid(ngrid),z(nsubject,q),zpred(npred,q)
 
 c+++++Prior
       integer murand
-      real*8 a0b0(6)
-      real*8 aa0,ab0
-      real*8 b0(p-1)
-      real*8 prec1(p-1,p-1)
-      real*8 sb(p-1)
-      real*8 mu0(q)
-      real*8 prec2(q,q)
-      real*8 smu(q)
-      real*8 tau1
-      real*8 taus1,taus2
-      real*8 nu
-      real*8 tinv(q,q) 
+      double precision a0b0(6)
+      double precision aa0,ab0
+      double precision b0(p-1)
+      double precision prec1(p-1,p-1)
+      double precision sb(p-1)
+      double precision mu0(q)
+      double precision prec2(q,q)
+      double precision smu(q)
+      double precision tau1
+      double precision taus1,taus2
+      double precision nu
+      double precision tinv(q,q) 
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(2)
-      real*8 cpo(nsubject,p)
-      real*8 denspm(npred,ngrid)
-      real*8 randsave(nsave,nsubject+npred)
-      real*8 thetasave(nsave,p+q+(q*(q+1)/2)+2)
-      real*8 densave(nsave,npred*ngrid)
+      double precision acrate(2)
+      double precision cpo(nsubject,p)
+      double precision denspm(npred,ngrid)
+      double precision randsave(nsave,nsubject+npred)
+      double precision thetasave(nsave,p+q+(q*(q+1)/2)+2)
+      double precision densave(nsave,npred*ngrid)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject) 
-      real*8 beta(p-1)
-      real*8 b(nsubject)
-      real*8 alphaclus(nsubject+100,q)
-      real*8 sigmaclus(nsubject+100)
-      real*8 alpha
-      real*8 mu(q)
-      real*8 sigma(q,q)
-      real*8 tau2
+      double precision beta(p-1)
+      double precision b(nsubject)
+      double precision alphaclus(nsubject+100,q)
+      double precision sigmaclus(nsubject+100)
+      double precision alpha
+      double precision mu(q)
+      double precision sigma(q,q)
+      double precision tau2
 
 c+++++External Working space - Difficulty parameters
       integer iflagp(p-1)
-      real*8 betac(p-1)
-      real*8 xtx(p-1,p-1),xty(p-1)
-      real*8 workmhp1((p-1)*p/2)
-      real*8 workvp1(p-1)
+      double precision betac(p-1)
+      double precision xtx(p-1,p-1),xty(p-1)
+      double precision workmhp1((p-1)*p/2)
+      double precision workvp1(p-1)
 
 c+++++External Working space - DDP part
       integer cstrt(nsubject,nsubject)
       integer ccluster(nsubject)
       integer iflagq(q)
-      real*8 alphawork(q)
-      real*8 densw(npred,ngrid)
-      real*8 prob(nsubject+100)
-      real*8 quadf(q,q)
-      real*8 sigmainv(q,q)
-      real*8 workmhq1(q*(q+1)/2)
-      real*8 workmhq2(q*(q+1)/2)
-      real*8 workvq1(q),workvq2(q)
-      real*8 ztz(q,q),zty(q)
+      double precision alphawork(q)
+      double precision densw(npred,ngrid)
+      double precision prob(nsubject+100)
+      double precision quadf(q,q)
+      double precision sigmainv(q,q)
+      double precision workmhq1(q*(q+1)/2)
+      double precision workmhq2(q*(q+1)/2)
+      double precision workvq1(q),workvq2(q)
+      double precision ztz(q,q),zty(q)
 
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
@@ -135,28 +135,28 @@ c+++++Internal Working space
       integer skipcount
       integer sprint
       integer yij
-      real*8 acrate2
-      real*8 dbin,detlog,dnrm
-      real*8 eta,gprime
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 mean
-      real*8 muwork
-      real*8 offset
-      real*8 ratio,rgamma,rnorm,runif
-      real*8 ssb
-      real*8 thetac
-      real*8 tmp1,tmp2,tmp3
-      real*8 ytilde
-      real*8 wtw,wtwinv,wty
-      real*8 sigmawork
+      double precision acrate2
+      double precision dbin,detlog,dnrm
+      double precision eta,gprime
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision mean
+      double precision muwork
+      double precision offset
+      double precision ratio,rgamma,rnorm,runif
+      double precision ssb
+      double precision thetac
+      double precision tmp1,tmp2,tmp3
+      double precision ytilde
+      double precision wtw,wtwinv,wty
+      double precision sigmawork
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ parameters

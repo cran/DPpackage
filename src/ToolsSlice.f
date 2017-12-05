@@ -36,11 +36,11 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu,zz
-      real*8 tau1,tau2
+      double precision x0,b(nsubject),z(nsubject),mu,zz
+      double precision tau1,tau2
 
 c+++++Slice sampling working variables
-      real*8 eval,rexp
+      double precision eval,rexp
 
 c+++++Algorithm      
 
@@ -64,13 +64,13 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu,tau1,tau2
+      double precision x0,b(nsubject),z(nsubject),mu,tau1,tau2
 
 c+++++Slice sampling working variables
       integer p,k
-      real*8 zz,w
-      real*8 u,v,l,r,tl,tr
-      real*8 ml
+      double precision zz,w
+      double precision u,v,l,r,tl,tr
+      double precision ml
       real runif
 
 c+++++Algorithm
@@ -123,13 +123,13 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu
-      real*8 tau1,tau2
+      double precision x0,b(nsubject),z(nsubject),mu
+      double precision tau1,tau2
 
 c+++++Slice sampling working variables
       integer accept,out
-      real*8 zz,l,r,w,u
-      real*8 x1,lbar,rbar,tmp1
+      double precision zz,l,r,w,u
+      double precision x1,lbar,rbar,tmp1
       real runif
 
 c+++++Algorithm
@@ -179,13 +179,13 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk,out
-      real*8 x0,x1,b(nsubject),z(nsubject),mu
-      real*8 tau1,tau2
-      real*8 zz,l,r,w
+      double precision x0,x1,b(nsubject),z(nsubject),mu
+      double precision tau1,tau2
+      double precision zz,l,r,w
 
 c+++++Slice sampling working variables
       integer out2 
-      real*8 m,lbar,rbar,tmp1,tmp2
+      double precision m,lbar,rbar,tmp1,tmp2
 
 c+++++Algorithm
       lbar=l
@@ -233,11 +233,11 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk,p
-      real*8 sigma2,b(nsubject),z(nsubject),mu,tau1,tau2,w
-      real*8 l,r
+      double precision sigma2,b(nsubject),z(nsubject),mu,tau1,tau2,w
+      double precision l,r
 
 c+++++Slice sampling working variables
-      real*8 x0,zz
+      double precision x0,zz
  
 c+++++Algorithm
       x0=sigma2
@@ -265,10 +265,10 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu,zz
+      double precision x0,b(nsubject),z(nsubject),mu,zz
 
 c+++++Slice sampling working variables
-      real*8 eval,rexp
+      double precision eval,rexp
 
 c+++++Algorithm      
 
@@ -291,13 +291,13 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu,maxsigma
+      double precision x0,b(nsubject),z(nsubject),mu,maxsigma
 
 c+++++Slice sampling working variables
       integer p,k
-      real*8 zz,w
-      real*8 u,v,l,r,tl,tr
-      real*8 ml,mr
+      double precision zz,w
+      double precision u,v,l,r,tl,tr
+      double precision ml,mr
       real runif
 
 c+++++Algorithm
@@ -361,12 +361,12 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk
-      real*8 x0,b(nsubject),z(nsubject),mu
+      double precision x0,b(nsubject),z(nsubject),mu
 
 c+++++Slice sampling working variables
       integer accept,out
-      real*8 zz,l,r,w,u
-      real*8 x1,lbar,rbar,tmp1
+      double precision zz,l,r,w,u
+      double precision x1,lbar,rbar,tmp1
       real runif
 
 c+++++Algorithm
@@ -405,12 +405,12 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk,out
-      real*8 x0,x1,b(nsubject),z(nsubject),mu
-      real*8 zz,l,r,w
+      double precision x0,x1,b(nsubject),z(nsubject),mu
+      double precision zz,l,r,w
 
 c+++++Slice sampling working variables
       integer out2 
-      real*8 m,lbar,rbar,tmp1,tmp2
+      double precision m,lbar,rbar,tmp1,tmp2
 
 
 c+++++Algorithm
@@ -456,11 +456,11 @@ c=======================================================================
 
 c+++++Arguments function
       integer nsubject,kk,p
-      real*8 sigma,b(nsubject),z(nsubject),mu,maxsigma,w
-      real*8 l,r
+      double precision sigma,b(nsubject),z(nsubject),mu,maxsigma,w
+      double precision l,r
 
 c+++++Slice sampling working variables
-      real*8 x0,zz
+      double precision x0,zz
  
 c+++++Algorithm
       x0=sigma

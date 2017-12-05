@@ -280,38 +280,38 @@ c=======================================================================
 c+++++Data
       integer nrec,nx,nvar,nmissi,nmiss
       integer missp(nmiss,2)  
-      real*8 z(nrec,nvar)
+      double precision z(nrec,nvar)
 
 c+++++Prediction
       integer cband,npred,ngrid,tband
-      real*8 xpred(npred,nx)   
-      real*8 grid(ngrid) 
+      double precision xpred(npred,nx)   
+      double precision grid(ngrid) 
 
 c+++++Prior 
       integer nuvec(3),nu1,nu2,m1rand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 psiinv2(nvar,nvar)
-      real*8 tau(2),tau1,tau2
-      real*8 s2inv(nvar,nvar),s2invm2(nvar)
+      double precision aa0,ab0,a0b0(2)
+      double precision psiinv2(nvar,nvar)
+      double precision tau(2),tau1,tau2
+      double precision s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
       integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec,2)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
-      real*8 denspm(npred,ngrid)
-      real*8 denspl(npred,ngrid)
-      real*8 densph(npred,ngrid)
-      real*8 meanfpm(npred)
-      real*8 meanfpl(npred)
-      real*8 meanfph(npred)
+      double precision cpo(nrec,2)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
+      double precision denspm(npred,ngrid)
+      double precision denspl(npred,ngrid)
+      double precision densph(npred,ngrid)
+      double precision meanfpm(npred)
+      double precision meanfpl(npred)
+      double precision meanfph(npred)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,k0,m1(nvar),muclus(nrec+100,nvar)
-      real*8 psi1(nvar,nvar),psiinv1(nvar,nvar)
-      real*8 sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision alpha,k0,m1(nvar),muclus(nrec+100,nvar)
+      double precision psi1(nvar,nvar),psiinv1(nvar,nvar)
+      double precision sigmaclus(nrec+100,nvar*(nvar+1)/2)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -323,26 +323,27 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer cstrt(nrec,nrec)
       integer iflag(nvar)
       integer iflagx(nx)
-      real*8 muwork(nvar),prob(nrec+100)
-      real*8 s1(nvar,nvar)
-      real*8 sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
-      real*8 theta(nvar)
-      real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
-      real*8 workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
-      real*8 workv1(nvar),workv2(nvar),workv3(nvar)
-      real*8 ywork(nvar)
+      double precision muwork(nvar),prob(nrec+100)
+      double precision s1(nvar,nvar)
+      double precision sigmawork(nvar,nvar),sigworkinv(nvar,nvar)
+      double precision theta(nvar)
+      double precision workm1(nvar,nvar),workm2(nvar,nvar)
+      double precision  workm3(nvar,nvar)
+      double precision workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
+      double precision workv1(nvar),workv2(nvar),workv3(nvar)
+      double precision ywork(nvar)
 
-      real*8 workvx(nx) 
-      real*8 workmx(nx,nx) 
+      double precision workvx(nx) 
+      double precision workmx(nx,nx) 
 
-      real*8 num(npred,ngrid)
-      real*8 denom(npred) 
-      real*8 fs(ngrid) 
-      real*8 fm(npred) 
+      double precision num(npred,ngrid)
+      double precision denom(npred) 
+      double precision fs(ngrid) 
+      double precision fm(npred) 
 
-      real*8 worksam(nsave) 
+      double precision worksam(nsave) 
 
-      real*8 numcpo(nrec),denomcpo(nrec)
+      double precision numcpo(nrec),denomcpo(nrec)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -354,25 +355,25 @@ c+++++General
       integer since,sprint
       integer isample
 
-      real*8 detlog,detlogx
-      real*8 muc,sigmac  
-      real*8 tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
-      real*8 tpi
-      real*8 cpotest
+      double precision detlog,detlogx
+      double precision muc,sigmac  
+      double precision tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
+      double precision tpi
+      double precision cpotest
       parameter(tpi=6.283185307179586476925286766559d0)
       
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,rnorm,rgamma
+      double precision dnrm,rnorm,rgamma
 
 c+++++DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ Define parameters
 
@@ -1077,9 +1078,9 @@ c+++++++++++++ Partially sampling the DP and computing the cond. dist.
                      fs(j)=num(i,j)/denom(i)
                      denspm(i,j)=denspm(i,j)+fs(j)
                   end do
-                  write(1) (fs(j),j=1,ngrid)
+c                  write(1) (fs(j),j=1,ngrid)
                end do 
-               write(2) (fm(j),j=1,npred)
+c               write(2) (fm(j),j=1,npred)
  
 c+++++++++++++ cpo
 
@@ -1232,20 +1233,20 @@ c=======================================================================
 c+++++External parameters
       integer tint
       integer nsave,npred
-      real*8 alpha
+      double precision alpha
 
 c+++++External working
-      real*8 worksam(nsave)
+      double precision worksam(nsave)
 
 c+++++Output      
-      real*8 llower(npred)
-      real*8 lupper(npred)
+      double precision llower(npred)
+      double precision lupper(npred)
 
 c+++++Internal working
       integer maxnsave,maxnpred
       parameter(maxnsave=30000,maxnpred=500)
-      real*8 aupp(2),alow(2)
-      real*8 workm(maxnsave,maxnpred)
+      double precision aupp(2),alow(2)
+      double precision workm(maxnsave,maxnpred)
 
 c+++++Internal working
       integer i,ii,j   
@@ -1307,21 +1308,21 @@ c=======================================================================
 c+++++External parameters
       integer tint
       integer nsave,npred,ngrid 
-      real*8 alpha
+      double precision alpha
 
 c+++++External working
-      real*8 fs(ngrid)
-      real*8 workv1(nsave)
+      double precision fs(ngrid)
+      double precision workv1(nsave)
 
 c+++++Output      
-      real*8 llower(npred,ngrid)
-      real*8 lupper(npred,ngrid)
+      double precision llower(npred,ngrid)
+      double precision lupper(npred,ngrid)
 
 c+++++Internal parameters
       integer maxnsave,maxngrid
       parameter(maxnsave=30000,maxngrid=500)
-      real*8 aupp(2),alow(2)
-      real*8 workm(maxnsave,maxngrid)
+      double precision aupp(2),alow(2)
+      double precision workm(maxnsave,maxngrid)
 
 c+++++Internal working
       integer i,ii,j,l   
@@ -1394,8 +1395,9 @@ c     A.J.V., 2006
       integer ind,since,nrec,nvar,ncluster,ccluster(nrec)
       integer cstrt(nrec,nrec)
       integer ss(nrec)
-      real*8 muclus(nrec+100,nvar),sigmaclus(nrec+100,nvar*(nvar+1)/2)
-      real*8 muwork(nvar),sigmawork(nvar,nvar)
+      double precision muclus(nrec+100,nvar),
+     1  sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision muwork(nvar),sigmawork(nvar,nvar)
 
       integer ns,ii  
       dimen=nvar*(nvar+1)/2

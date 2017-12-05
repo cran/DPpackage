@@ -16,9 +16,9 @@ c      output:
 c            (alow(1),aupp(1)): 100(1-alpha)% HPD interval
 c            (alow(2),aupp(2)): 100(1-alpha)% Bayesian credible interval
 c
-       implicit real*8 (a-h,o-z)
-       real*8 x(n)
-       real*8 aupp(2),alow(2)
+       implicit double precision (a-h,o-z)
+       double precision x(n)
+       double precision aupp(2),alow(2)
 
        whpd=0.d0
        aupp1=0.d0

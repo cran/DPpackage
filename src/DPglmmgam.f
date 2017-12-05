@@ -273,30 +273,30 @@ c=======================================================================
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1)
-      real*8 y(nrec),roffset(nrec),x(nrec,p),z(nrec,q)
+      double precision y(nrec),roffset(nrec),x(nrec,p),z(nrec,q)
       
 c+++++Prior 
       integer nu0,murand,sigmarand
-      real*8 aa0,ab0,a0b0(2),b0(p),prec(p,p),psiinv(q,q)
-      real*8 sb(p),smu(q)
-      real*8 tau1,tau2,tau(4)
-      real*8 tinv(q,q)      
+      double precision aa0,ab0,a0b0(2),b0(p),prec(p,p),psiinv(q,q)
+      double precision sb(p),smu(q)
+      double precision tau1,tau2,tau(4)
+      double precision tinv(q,q)      
 
 c+++++MCMC parameters
       integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(3)
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,q*(nsubject+1))
-      real*8 thetasave(nsave,q+nfixed+1+q+(q*(q+1)/2)+2)
+      double precision acrate(3)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,q*(nsubject+1))
+      double precision thetasave(nsave,q+nfixed+1+q+(q*(q+1)/2)+2)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)
-      real*8 alpha,beta(p),b(nsubject,q)
-      real*8 betar(q),bclus(nsubject,q)
-      real*8 mu(q),sigma(q,q),sigmainv(q,q)
-      real*8 v
+      double precision alpha,beta(p),b(nsubject,q)
+      double precision betar(q),bclus(nsubject,q)
+      double precision mu(q),sigma(q,q),sigmainv(q,q)
+      double precision v
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -307,31 +307,31 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++fixed effects
       integer iflag(p)
-      real*8 betac(p)
-      real*8 xtx(p,p),xty(p)
-      real*8 workmh1(p*(p+1)/2)
-      real*8 workv1(p)
+      double precision betac(p)
+      double precision xtx(p,p),xty(p)
+      double precision workmh1(p*(p+1)/2)
+      double precision workv1(p)
 
 c+++++random effects
       integer iflagb(q)
-      real*8 theta(q)      
-      real*8 thetac(q)
-      real*8 zty(q),ztz(q,q)
-      real*8 workb1(q,q),workb2(q,q)
-      real*8 workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
-      real*8 workvb1(q),workvb2(q)
+      double precision theta(q)      
+      double precision thetac(q)
+      double precision zty(q),ztz(q,q)
+      double precision workb1(q,q),workb2(q,q)
+      double precision workmh2(q*(q+1)/2),workmh3(q*(q+1)/2)
+      double precision workvb1(q),workvb2(q)
 
 c+++++DP
       integer cstrt(nsubject,nsubject)
       integer ccluster(nsubject)
-      real*8 prob(nsubject+1)
+      double precision prob(nsubject+1)
 
 c+++++Centering variance
-      real*8 quadf(q,q)
+      double precision quadf(q,q)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p+1),bsave(nsubject,q)
+      double precision mc(5)
+      double precision betasave(p+1),bsave(nsubject,q)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -341,42 +341,42 @@ c+++++General
       integer evali,ii,i,j,jj,k,l,ni,ns 
       integer ok
       integer since,sprint 
-      real*8 acrate2
-      real*8 eta,gprime
-      real*8 mean
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 offset
-      real*8 ratio
-      real*8 tmp1,tmp2,tmp3,tmp4
-      real*8 yij   
-      real*8 ytilde
+      double precision acrate2
+      double precision eta,gprime
+      double precision mean
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision offset
+      double precision ratio
+      double precision tmp1,tmp2,tmp3,tmp4
+      double precision yij   
+      double precision ytilde
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dlnrm,rtlnorm,rnorm
+      double precision dlnrm,rtlnorm,rnorm
       real runif
 
 c+++++dispersion parameter
-      real*8 logp
-      real*8 slogy,symu,slogmu
-      real*8 targetp
-      real*8 trigamm 
-      real*8 tune4
-      real*8 vnew
+      double precision logp
+      double precision slogy,symu,slogmu
+      double precision targetp
+      double precision trigamm 
+      double precision tune4
+      double precision vnew
 
 c+++++DP
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
       
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)
@@ -1360,8 +1360,8 @@ c     of the precision parameter in a gamma model.
 c     A.J.V., 2006
       implicit none
       integer nrec
-      real*8 tau1,tau2,v,slogy,symu,slogmu
-      real*8 dgamlog
+      double precision tau1,tau2,v,slogy,symu,slogmu
+      double precision dgamlog
 
       
       targetp= (dble(nrec)*v+0.5d0*tau1-1.d0)*log(v) +

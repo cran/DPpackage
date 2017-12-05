@@ -27,7 +27,7 @@ c=======================================================================
       integer function ifloor(x)
 c=======================================================================      
       implicit none
-      real*8 x
+      double precision x
       ifloor=x
       if(ifloor.gt.x) ifloor=ifloor-1
       end  
@@ -44,10 +44,10 @@ c=======================================================================
       implicit none
       integer i,j,l
       integer nsteps,nsubject,kk
-      real*8 betar,b(nsubject),z(nsubject),sigma2,mu,mu0,s0
-      real*8 meancg,varcg,tmp1,tt1,tt2,q1,q2,q3,q4,q5,q6
-      real*8 first,second
-      real*8 cdfnorm,dnrm
+      double precision betar,b(nsubject),z(nsubject),sigma2,mu,mu0,s0
+      double precision meancg,varcg,tmp1,tt1,tt2,q1,q2,q3,q4,q5,q6
+      double precision first,second
+      double precision cdfnorm,dnrm
       
       tmp1=mu
 
@@ -135,7 +135,7 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer iceil,k,j
-       real*8 y
+       double precision y
 c       j=int(y*dble(k))+1
        
        j=iceil(y*k)
@@ -168,7 +168,7 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer i,k
-       real*8 a0,b0,cdfbetas,dbet,x,eval
+       double precision a0,b0,cdfbetas,dbet,x,eval
 
        eval=0.d0
        do i=1,k
@@ -190,7 +190,7 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer j,k
-       real*8 dbet,x,y,eval
+       double precision dbet,x,y,eval
 
        call jcomponentbd(y,k,j)       
        eval=dbet(x,dble(j),dble(k-j+1),0) 
@@ -209,7 +209,7 @@ c      Alejandro Jara, 2007.
 c=======================================================================
        implicit none
        integer i,j,kmax,k,nrec
-       real*8 eval,prob(kmax),y(nrec),x(nrec),tmp1
+       double precision eval,prob(kmax),y(nrec),x(nrec),tmp1
 
        do i=1,kmax
           tmp1=0.d0         
@@ -236,10 +236,10 @@ c      Alejandro Jara, 2007.
 c=======================================================================
        implicit none
        integer i,j,kmax,k,status
-       real*8 a0,b0,bound,dbet,prob(kmax),tmp1,tmp2,tmp3,x
-       real*8 y,y2
-       real*8 tt1,tt2,tt3,tt4
-       real*8 cdfbetas
+       double precision a0,b0,bound,dbet,prob(kmax),tmp1,tmp2,tmp3,x
+       double precision y,y2
+       double precision tt1,tt2,tt3,tt4
+       double precision cdfbetas
        real runif
 
        do i=1,k
@@ -308,8 +308,8 @@ c=======================================================================
       implicit none
       integer i
       integer nsubject,kk,l
-      real*8 b(nsubject),z(nsubject),mu,sigma,loglikn
-      real*8 dnrm,cdfnorm
+      double precision b(nsubject),z(nsubject),mu,sigma,loglikn
+      double precision dnrm,cdfnorm
       
       loglikn=0.d0
       do i=1,nsubject
@@ -335,8 +335,8 @@ c=======================================================================
       implicit none
       integer i
       integer nsubject,kk,l
-      real*8 b(nsubject),z(nsubject),mu,sigma2,loglikn
-      real*8 dnrm,cdfnorm,sigma,tau1,tau2
+      double precision b(nsubject),z(nsubject),mu,sigma2,loglikn
+      double precision dnrm,cdfnorm,sigma,tau1,tau2
       
       sigma=sqrt(sigma2)
       loglikn=0.d0

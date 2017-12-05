@@ -281,23 +281,24 @@ c=======================================================================
 
 c+++++Data
       integer nrec,p,interind(nrec)  
-      real*8 x(nrec,p),y(nrec,2)
+      double precision x(nrec,p),y(nrec,2)
 
 c+++++MCMC parameters
       integer extra,mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 propv(p,p)
+      double precision propv(p,p)
 
 c+++++Prior information
-      real*8 a0b0(2),aa0,ab0,betapm(p),betapv(p,p),m0,s0
-      real*8 tau(2),tau1,tau2
+      double precision a0b0(2),aa0,ab0,betapm(p),betapv(p,p),m0,s0
+      double precision tau(2),tau1,tau2
 
 c+++++Output
-      real*8 acrate,randsave(nsave,nrec+1),thetasave(nsave,p+4)
-      real*8 cpo(nrec)
+      double precision acrate,randsave(nsave,nrec+1),
+     1  thetasave(nsave,p+4)
+      double precision cpo(nrec)
       
 c+++++Current values of the parameters
       integer ncluster
-      real*8 alpha,beta(p),mu,sigma2,v(nrec)
+      double precision alpha,beta(p),mu,sigma2,v(nrec)
 
 c+++++Working space
       integer maxint 
@@ -316,26 +317,28 @@ c+++++Working space
       integer s(nrec),seed(3),seed1,seed2
       integer skipcount
       
-      real*8 area,betac(p),cdflnorm
-      real*8 eta(nrec),etan(nrec)
-      real*8 endp(maxend),endp2(maxend)
-      real*8 keepbeta
-      real*8 limr(nrec,2)      
-      real*8 liminf,limsup,linfs(nrec),linfsc(nrec)
-      real*8 logliko,loglikn,logprioro,logpriorn
-      real*8 lsups(nrec),lsupsc(nrec)
-      real*8 mass(maxint),maxu,prob(maxint),nclusw
-      real*8 ratio,rbeta,rgamma,rnorm,rtlnorm
-      real*8 sigma,swork,tmp1,tmp2
-      real*8 uvec(maxm),workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p),wvec(maxm),vbar,vvec(maxm),vnew(nrec+1)
-      real*8 vpred
+      double precision area,betac(p),cdflnorm
+      double precision eta(nrec),etan(nrec)
+      double precision endp(maxend),endp2(maxend)
+      double precision keepbeta
+      double precision limr(nrec,2)      
+      double precision liminf,limsup,linfs(nrec),linfsc(nrec)
+      double precision logliko,loglikn,logprioro,logpriorn
+      double precision lsups(nrec),lsupsc(nrec)
+      double precision mass(maxint),maxu,prob(maxint),nclusw
+      double precision ratio,rbeta,rgamma,rnorm,rtlnorm
+      double precision sigma,swork,tmp1,tmp2
+      double precision uvec(maxm),workm1(p,p),workm2(p,p),
+     1  workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p),wvec(maxm),
+     1  vbar,vvec(maxm),vnew(nrec+1)
+      double precision vpred
       integer sprint
       logical ainf,binf
       real runif
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ initialize variables
 

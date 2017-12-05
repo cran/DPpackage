@@ -237,30 +237,31 @@ c=======================================================================
 
 c+++++Data
       integer ngrid,nrec,nvar
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
 c+++++Prior 
       integer nuvec(2),nu1,nu2,m1rand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 psiinv2(nvar,nvar)
-      real*8 tau(2),tau1,tau2
-      real*8 s2inv(nvar,nvar),s2invm2(nvar)
+      double precision aa0,ab0,a0b0(2)
+      double precision psiinv2(nvar,nvar)
+      double precision tau(2),tau1,tau2
+      double precision s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec)
-      real*8 f(ngrid,ngrid),fun1(ngrid),fun2(ngrid)
-      real*8 randsave(nsave,(nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
+      double precision cpo(nrec)
+      double precision f(ngrid,ngrid),fun1(ngrid),fun2(ngrid)
+      double precision randsave(nsave,
+     1  (nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,k0,m1(nvar)
-      real*8 muclus(nrec+100,nvar)
-      real*8 psi1(nvar,nvar),psiinv1(nvar,nvar)
-      real*8 sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision alpha,k0,m1(nvar)
+      double precision muclus(nrec+100,nvar)
+      double precision psi1(nvar,nvar),psiinv1(nvar,nvar)
+      double precision sigmaclus(nrec+100,nvar*(nvar+1)/2)
       
 c+++++Working space
       integer ccluster(nrec),count,dispcount,evali
@@ -268,23 +269,24 @@ c+++++Working space
       integer j,k,l,l1,l2
       integer ns,nscan,nuniqs,nuwork,sprint
       integer seed(3),seed1,seed2,seed3,since,skipcount
-      real*8 detlog,dnrm
-      real*8 muwork(nvar),muwork2(nvar),prob(nrec+100),rgamma
-      real*8 s1(nvar,nvar)
-      real*8 sigmawork(nvar,nvar),sigmawork2(nvar,nvar)
-      real*8 sigworkinv(nvar,nvar)
-      real*8 theta(nvar),tmp1,tmp2
-      real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
-      real*8 workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
-      real*8 workv1(nvar),workv2(nvar),workv3(nvar)
-      real*8 ywork(nvar)
-      real*8 workcpo(nrec)
+      double precision detlog,dnrm
+      double precision muwork(nvar),muwork2(nvar),prob(nrec+100),rgamma
+      double precision s1(nvar,nvar)
+      double precision sigmawork(nvar,nvar),sigmawork2(nvar,nvar)
+      double precision sigworkinv(nvar,nvar)
+      double precision theta(nvar),tmp1,tmp2
+      double precision workm1(nvar,nvar),workm2(nvar,nvar),
+     1  workm3(nvar,nvar)
+      double precision workmh1(nvar*(nvar+1)/2),workmh2(nvar*(nvar+1)/2)
+      double precision workv1(nvar),workv2(nvar),workv3(nvar)
+      double precision ywork(nvar)
+      double precision workcpo(nrec)
 
 c+++++Working space - Density
-      real*8 grid1(ngrid),grid2(ngrid)
+      double precision grid1(ngrid),grid2(ngrid)
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ Define parameters
 

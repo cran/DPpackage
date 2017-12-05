@@ -34,7 +34,7 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer iceil,k,j
-       real*8 y
+       double precision y
 
        j=iceil(y*dble(2*k))
        j=iceil(dble(j-1)/2.d0)
@@ -88,8 +88,8 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer i,k
-       real*8 a0,b0,cdfbetas,x,eval
-       real*8 a,b,c,tmp1
+       double precision a0,b0,cdfbetas,x,eval
+       double precision a,b,c,tmp1
 
        eval=0.d0
        do i=0,k
@@ -146,8 +146,8 @@ c      Alejandro Jara, 2007
 c=======================================================================
        implicit none
        integer j,k
-       real*8 x,y,eval
-       real*8 a,b,c,tmp1
+       double precision x,y,eval
+       double precision a,b,c,tmp1
 
        call jcomponenttd(y,k,j)       
 
@@ -182,7 +182,7 @@ c      Alejandro Jara, 2007.
 c=======================================================================
        implicit none
        integer i,j,kmax,k,nrec
-       real*8 eval,prob(kmax+1),y(nrec),x(nrec),tmp1
+       double precision eval,prob(kmax+1),y(nrec),x(nrec),tmp1
 
        do i=1,kmax
           tmp1=0.d0         
@@ -216,11 +216,11 @@ c      Alejandro Jara, 2007.
 c=======================================================================
        implicit none
        integer i,j,kmax,k,status
-       real*8 a0,b0,bound,prob(kmax+1),tmp1,tmp2,tmp3,x
-       real*8 y,y2
-       real*8 tt1,tt2,tt3,tt4
-       real*8 cdfbetas
-       real*8 a,b,c
+       double precision a0,b0,bound,prob(kmax+1),tmp1,tmp2,tmp3,x
+       double precision y,y2
+       double precision tt1,tt2,tt3,tt4
+       double precision cdfbetas
+       double precision a,b,c
        real runif
 
        do i=0,k

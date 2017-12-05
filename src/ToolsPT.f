@@ -36,18 +36,19 @@ c-----Input
       integer fixed,m,nrand,nsubject
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,nrand),bzc(nsubject,nrand),cpar,detlogl
-      real*8 linf(nrand),lsup(nrand)
-      real*8 muc(nrand),sigmainv(nrand,nrand)
-      real*8 vec(nrand)
+      double precision b(nsubject,nrand),bzc(nsubject,nrand),
+     1  cpar,detlogl
+      double precision linf(nrand),lsup(nrand)
+      double precision muc(nrand),sigmainv(nrand,nrand)
+      double precision vec(nrand)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 
@@ -206,16 +207,16 @@ c=======================================================================
 c-----Input
       integer fixed,ind,nrand,nsubject,parti(nrand),m
       integer whicho(nsubject),whichn(nsubject)
-      real*8 bz(nsubject,nrand),cpar,detlogl
-      real*8 linf(nrand),lsup(nrand)
-      real*8 vec(nrand)
+      double precision bz(nsubject,nrand),cpar,detlogl
+      double precision linf(nrand),lsup(nrand)
+      double precision vec(nrand)
 
 c-----Output
-      real*8 logprior
+      double precision logprior
 
 c-----Working
       integer countero,countern,final,i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan
+      double precision dnrm,invcdfnorm,prob,quan
 
 c-----Routine
       
@@ -354,16 +355,16 @@ c-----Input
       integer fixed,ind,m,nrand,nsubject
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 bz(nsubject,nrand),cpar,detlogl
-      real*8 linf(nrand),lsup(nrand)
+      double precision bz(nsubject,nrand),cpar,detlogl
+      double precision linf(nrand),lsup(nrand)
 
 c-----Input/Output
-      real*8 logliko
+      double precision logliko
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan
+      double precision dnrm,invcdfnorm,prob,quan
 
 c-----Routine
 
@@ -510,16 +511,16 @@ c-----Input
       integer fixed,m,nrand,nsubject
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 bz(nsubject,nrand),cpar,detlogl
-      real*8 linf(nrand),lsup(nrand)
+      double precision bz(nsubject,nrand),cpar,detlogl
+      double precision linf(nrand),lsup(nrand)
 
 c-----Output
-      real*8 logliko
+      double precision logliko
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan
+      double precision dnrm,invcdfnorm,prob,quan
 
 c-----Routine
 
@@ -668,21 +669,23 @@ c-----Input
       integer iflagr(nrand)
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,nrand),bzc(nsubject,nrand),cpar,detloglc
-      real*8 linf(nrand),lsup(nrand)
-      real*8 mu(nrand),sigmac(nrand,nrand),sigmainvc(nrand,nrand)
-      real*8 vec(nrand)
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workmr1(nrand,nrand),workmr2(nrand,nrand)
-      real*8 workvr(nrand)
+      double precision b(nsubject,nrand),bzc(nsubject,nrand),
+     1  cpar,detloglc
+      double precision linf(nrand),lsup(nrand)
+      double precision mu(nrand),sigmac(nrand,nrand),
+     1  sigmainvc(nrand,nrand)
+      double precision vec(nrand)
+      double precision workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
+      double precision workmr1(nrand,nrand),workmr2(nrand,nrand)
+      double precision workvr(nrand)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 
@@ -924,17 +927,17 @@ c-----Input
       integer iflagr(nrand)
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 bz(nsubject,nrand),cparc,detlogl
-      real*8 linf(nrand),lsup(nrand)
-      real*8 vec(nrand)
+      double precision bz(nsubject,nrand),cparc,detlogl
+      double precision linf(nrand),lsup(nrand)
+      double precision vec(nrand)
 
 c-----Output
-      real*8 loglikn
+      double precision loglikn
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan
+      double precision dnrm,invcdfnorm,prob,quan
 
 c-----Routine
 
@@ -1085,21 +1088,21 @@ c-----Input
       integer fixed,marea,narea,nrand,nsubject,parti(nrand)
       integer m,massi(marea),pattern(nrand),patterns(nrand)
       integer whicho(nsubject),whichn(nsubject)      
-      real*8 bz(nsubject,nrand),cpar
-      real*8 limw(nrand),linf(nrand),lsup(nrand) 
-      real*8 mu(nrand),sigma(nrand,nrand)
-      real*8 mass(marea),rtnorm
+      double precision bz(nsubject,nrand),cpar
+      double precision limw(nrand),linf(nrand),lsup(nrand) 
+      double precision mu(nrand),sigma(nrand,nrand)
+      double precision mass(marea),rtnorm
 
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 workvr(nrand)
+      double precision workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
+      double precision workvr(nrand)
       
 c-----Output
-      real*8 vec(nrand)
+      double precision vec(nrand)
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
       integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok 
-      real*8 invcdfnorm,prob,quan,tmp1
+      double precision invcdfnorm,prob,quan,tmp1
 
 c-----Routine
         
@@ -1328,17 +1331,17 @@ c-----Input
       integer fixed,marea,narea,nrand,nsubject,parti(nrand)
       integer m,massi(marea),pattern(nrand),patterns(nrand)
       integer whicho(nsubject),whichn(nsubject)      
-      real*8 bz(nsubject,nrand),cpar
-      real*8 limw(nrand),linf(nrand),lsup(nrand) 
-      real*8 mass(marea),rtnorm
+      double precision bz(nsubject,nrand),cpar
+      double precision limw(nrand),linf(nrand),lsup(nrand) 
+      double precision mass(marea),rtnorm
 
 c-----Output
-      real*8 vec(nrand)
+      double precision vec(nrand)
 
 c-----Working
       integer binaryrep,countero,countern,evali,evali2,final
       integer i,j,je2,k,k1,k2,l,nint,ok 
-      real*8 invcdfnorm,prob,quan
+      double precision invcdfnorm,prob,quan
 
 c-----Routine
         
@@ -1540,17 +1543,17 @@ c-----Input
       integer fixed,m,nrand,nsubject
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 bz(nsubject,nrand),cpar,detlogl
-      real*8 linf(nrand),lsup(nrand)
-      real*8 vec(nrand)
+      double precision bz(nsubject,nrand),cpar,detlogl
+      double precision linf(nrand),lsup(nrand)
+      double precision vec(nrand)
 
 c-----Output
-      real*8 logliko
+      double precision logliko
 
 c-----Working
       integer countero,countern,final
       integer i,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan
+      double precision dnrm,invcdfnorm,prob,quan
 
 c-----Routine
 
@@ -1700,31 +1703,31 @@ c=======================================================================
 
 c++++ input
       integer fixed,m,ngrid1,ngrid2,nsubject,nsave,q,typepvec(nsave)
-      real*8 cparvec(nsave),randsave(nsave,q*(nsubject+1))
-      real*8 mumat(nsave,q)
-      real*8 sigmamat(nsave,q*(q+1)/2)
-      real*8 grid1(ngrid1),grid2(ngrid2)
+      double precision cparvec(nsave),randsave(nsave,q*(nsubject+1))
+      double precision mumat(nsave,q)
+      double precision sigmamat(nsave,q*(q+1)/2)
+      double precision grid1(ngrid1),grid2(ngrid2)
 
 c++++ output
-      real*8 fs(ngrid1,ngrid2)
+      double precision fs(ngrid1,ngrid2)
 
 c++++ external working space
       integer iflagr(q),parti(q)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,q),bz(nsubject,q)
-      real*8 linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
-      real*8 theta(q),thetaz(q)
-      real*8 workmr(q,q),workmr1(q,q),workmr2(q,q)
-      real*8 workmhr(q*(q+1)/2)
-      real*8 workvr(q),workvr1(q)
+      double precision b(nsubject,q),bz(nsubject,q)
+      double precision linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
+      double precision theta(q),thetaz(q)
+      double precision workmr(q,q),workmr1(q,q),workmr2(q,q)
+      double precision workmhr(q*(q+1)/2)
+      double precision workvr(q),workvr1(q)
 
 c++++ internal working space
       integer countero,countern
       integer final,i,ii,ihmssf,j,jj,je2,k,kk,k1,k2,l
       integer nint,ok
-      real*8 cpar,detlogl,dnrm
-      real*8 invcdfnorm
-      real*8 loglik,prob,quan,tmp1
+      double precision cpar,detlogl,dnrm
+      double precision invcdfnorm
+      double precision loglik,prob,quan,tmp1
 
 c++++ algorithm      
       if(q.gt.2)then
@@ -2012,31 +2015,31 @@ c=======================================================================
 
 c++++ input
       integer fixed,m,ngrid,nsubject,nsave,q,typep
-      real*8 cparvec(nsave),randsave(nsave,q*(nsubject+1))
-      real*8 mumat(nsave,q)
-      real*8 sigmamat(nsave,q*(q+1)/2)
-      real*8 grid(ngrid)
+      double precision cparvec(nsave),randsave(nsave,q*(nsubject+1))
+      double precision mumat(nsave,q)
+      double precision sigmamat(nsave,q*(q+1)/2)
+      double precision grid(ngrid)
 
 c++++ output
-      real*8 fs(ngrid)
+      double precision fs(ngrid)
 
 c++++ external working space
       integer iflagr(q),parti(q)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,q),bz(nsubject,q)
-      real*8 linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
-      real*8 theta(q),thetaz(q)
-      real*8 workmr(q,q),workmr1(q,q),workmr2(q,q)
-      real*8 workmhr(q*(q+1)/2)
-      real*8 workvr(q),workvr1(q)
+      double precision b(nsubject,q),bz(nsubject,q)
+      double precision linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
+      double precision theta(q),thetaz(q)
+      double precision workmr(q,q),workmr1(q,q),workmr2(q,q)
+      double precision workmhr(q*(q+1)/2)
+      double precision workvr(q),workvr1(q)
 
 c++++ internal working space
       integer countero,countern
       integer final,i,ii,ihmssf,j,jj,je2,k,k1,k2,l
       integer nint,ok
-      real*8 cpar,detlogl,dnrm
-      real*8 invcdfnorm
-      real*8 loglik,prob,quan,tmp1
+      double precision cpar,detlogl,dnrm
+      double precision invcdfnorm
+      double precision loglik,prob,quan,tmp1
 
 c++++ algorithm      
       if(q.gt.1)then
@@ -2330,7 +2333,7 @@ c     Alejandro Jara, 2006-2007-2008
       integer i,nvar,evali,tmp1
       integer pattern(nvar)
       integer evali2
-      real*8 tmp2
+      double precision tmp2
       
       evali2=evali-1
       do i=1,nvar
@@ -2358,9 +2361,9 @@ c=======================================================================
       implicit none
       integer m,n,loca(n)
       integer i,k,k1,k2,nint
-      real*8 invcdfnorm
-      real*8 prob,quan
-      real*8 x
+      double precision invcdfnorm
+      double precision prob,quan
+      double precision x
       
       if(m.gt.n)then
         call rexit("Error in 'locationpt'")
@@ -2402,9 +2405,9 @@ c=======================================================================
       implicit none
       integer m,maxm,nvar,loca(maxm),parti(nvar),pattern(nvar)
       integer evali,i,j,k1,k2,nint,binaryrep
-      real*8 invcdfnorm
-      real*8 prob,quan
-      real*8 x(nvar)
+      double precision invcdfnorm
+      double precision prob,quan
+      double precision x(nvar)
       
       if(m.gt.maxm)then
         call rexit("Error in 'locationptm'")
@@ -2478,13 +2481,13 @@ c=======================================================================
       integer i,j
       integer m,nsubject,nvar,maxm
       integer loca(maxm),parti(nvar),pattern(nvar)
-      real*8 z(nsubject,nvar),theta(nvar),one
+      double precision z(nsubject,nvar),theta(nvar),one
       parameter(one=1.d0)
       
       integer nhash,maxnzr,nr
-      real*8 counts(nhash,3)
+      double precision counts(nhash,3)
       integer ntotals,ia(ntotals+1),ja(maxnzr),tmp(ntotals)
-      real*8 a(maxnzr)
+      double precision a(maxnzr)
 
       nr=0
       do i=1,nsubject
@@ -2516,14 +2519,14 @@ c=======================================================================
       integer fixed,i,j,k,l,ista,iend
       integer m,maxarea,narea,nvar,ntotals,nhash,maxnzr
       integer ia(ntotals+1),ja(maxnzr)
-      real*8 a(maxnzr)
-      real*8 cpar
-      real*8 mass(maxarea)
-      real*8 rvecs(maxarea)
-      real*8 tmp1(ntotals),tmp2(ntotals)
+      double precision a(maxnzr)
+      double precision cpar
+      double precision mass(maxarea)
+      double precision rvecs(maxarea)
+      double precision tmp1(ntotals),tmp2(ntotals)
 
       integer ngroup
-      real*8 je2
+      double precision je2
       
       narea=2**nvar 
       if(narea.gt.maxarea)then
@@ -2605,9 +2608,9 @@ c     interval (linf,lsup)
 c     Alejandro Jara, 2007-2008 
 c=======================================================================
       implicit none
-      real*8 linf,lsup
-      real*8 invcdfnorm,cdfnorm,x
-      real*8 tmp1,tmp2,tmp3
+      double precision linf,lsup
+      double precision invcdfnorm,cdfnorm,x
+      double precision tmp1,tmp2,tmp3
       
       tmp1=cdfnorm(linf,0.d0,1.d0,1,0)
       tmp2=cdfnorm(lsup,0.d0,1.d0,1,0)
@@ -2628,10 +2631,10 @@ c=======================================================================
       implicit none
       integer maxvar,nvar,m,ntotals
       integer pattern(nvar)
-      real*8 liminf1(ntotals,maxvar),liminf2(ntotals,maxvar)
-      real*8 limsup1(ntotals,maxvar),limsup2(ntotals,maxvar)
+      double precision liminf1(ntotals,maxvar),liminf2(ntotals,maxvar)
+      double precision limsup1(ntotals,maxvar),limsup2(ntotals,maxvar)
       integer i,j,k,l,ngroup,ista,narea
-      real*8 linf,lsup,quan
+      double precision linf,lsup,quan
 
 c++++ Algorithm
 
@@ -2706,16 +2709,16 @@ c     Alejandro Jara, 2007-2008
 c=======================================================================
       implicit none
       integer maxvar,nvar,m,ntotals
-      real*8 liminf(ntotals,maxvar)
-      real*8 limsup(ntotals,maxvar)
-      real*8 probs(ntotals)
-      real*8 means(nvar),covs(nvar,nvar)
+      double precision liminf(ntotals,maxvar)
+      double precision limsup(ntotals,maxvar)
+      double precision probs(ntotals)
+      double precision means(nvar),covs(nvar,nvar)
       
       integer i,j,k,nsets
-      real*8 linf,lsup,muwork1,muwork2
-      real*8 cdfnorm,dnrm
-      real*8 tmp1,tmp2,tmp3,tmp4
-      real*8 tmass
+      double precision linf,lsup,muwork1,muwork2
+      double precision cdfnorm,dnrm
+      double precision tmp1,tmp2,tmp3,tmp4
+      double precision tmass
 
 c++++ Algorithm
 
@@ -2779,8 +2782,8 @@ c=======================================================================
       integer i,j
       integer fixed,m,nrand,nsubject
       integer parti(nrand),pattern(nrand)
-      real*8 cpar,bz(nsubject,nrand),theta(nrand)
-      real*8 means(nrand),covs(nrand,nrand)
+      double precision cpar,bz(nsubject,nrand),theta(nrand)
+      double precision means(nrand),covs(nrand,nrand)
 
 c++++ parameters
       integer maxrand,maxm,maxarea,ntotals,ntotalp,nhash,maxnzr
@@ -2790,13 +2793,13 @@ c++++ parameters
       integer loca(maxm),mwork,nr
       integer ia(ntotals+1),ja(maxnzr),tmp(ntotals)
 
-      real*8 a(maxnzr)    
-      real*8 counts(nhash,3)
-      real*8 mass(maxarea)
-      real*8 rvecs(maxarea)
-      real*8 probw1(ntotals),probw2(ntotals)
-      real*8 liminf1(ntotals,maxrand),liminf2(ntotals,maxrand)
-      real*8 limsup1(ntotals,maxrand),limsup2(ntotals,maxrand)
+      double precision a(maxnzr)    
+      double precision counts(nhash,3)
+      double precision mass(maxarea)
+      double precision rvecs(maxarea)
+      double precision probw1(ntotals),probw2(ntotals)
+      double precision liminf1(ntotals,maxrand),liminf2(ntotals,maxrand)
+      double precision limsup1(ntotals,maxrand),limsup2(ntotals,maxrand)
       
       if(nrand.gt.maxrand)then
         call rexit("Error in 'samplefuncpt': increase maxrand")      
@@ -2871,20 +2874,22 @@ c-----Input
       integer iflagr(nrand)
       integer parti(nrand)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,nrand),bzc(nsubject,nrand),cpar,detloglc
-      real*8 linf(nrand),lsup(nrand)
-      real*8 mu(nrand),sigmac(nrand,nrand),sigmainvc(nrand,nrand)
-      real*8 vec(nrand)
-      real*8 workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
-      real*8 ortho(nrand,nrand)
+      double precision b(nsubject,nrand),bzc(nsubject,nrand),
+     1  cpar,detloglc
+      double precision linf(nrand),lsup(nrand)
+      double precision mu(nrand),sigmac(nrand,nrand),
+     1  sigmainvc(nrand,nrand)
+      double precision vec(nrand)
+      double precision workmhr(nrand*(nrand+1)/2),workmr(nrand,nrand)
+      double precision ortho(nrand,nrand)
 
 c-----Output
-      real*8 loglikc
+      double precision loglikc
 
 c-----Working
       integer countero,countern,final
       integer i,ihmssf,j,je2,k,k1,k2,l,nint,ok
-      real*8 dnrm,invcdfnorm,prob,quan,tmp1
+      double precision dnrm,invcdfnorm,prob,quan,tmp1
 
 c-----Routine
 
@@ -3076,32 +3081,32 @@ c=======================================================================
 
 c++++ input
       integer fixed,m,ngrid1,ngrid2,nsubject,nsave,q
-      real*8 cparvec(nsave),randsave(nsave,q*(nsubject+1))
-      real*8 mumat(nsave,q)
-      real*8 sigmamat(nsave,q*(q+1)/2)
-      real*8 typepmat(nsave,q*q)
-      real*8 grid1(ngrid1),grid2(ngrid2)
+      double precision cparvec(nsave),randsave(nsave,q*(nsubject+1))
+      double precision mumat(nsave,q)
+      double precision sigmamat(nsave,q*(q+1)/2)
+      double precision typepmat(nsave,q*q)
+      double precision grid1(ngrid1),grid2(ngrid2)
 
 c++++ output
-      real*8 fs(ngrid1,ngrid2)
+      double precision fs(ngrid1,ngrid2)
 
 c++++ external working space
       integer iflagr(q),parti(q)
       integer whicho(nsubject),whichn(nsubject)
-      real*8 b(nsubject,q),bz(nsubject,q)
-      real*8 linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
-      real*8 theta(q),thetaz(q)
-      real*8 workmr(q,q),ortho(q,q)
-      real*8 workmhr(q*(q+1)/2)
+      double precision b(nsubject,q),bz(nsubject,q)
+      double precision linf(q),lsup(q),mu(q),sigma(q,q),sigmainv(q,q)
+      double precision theta(q),thetaz(q)
+      double precision workmr(q,q),ortho(q,q)
+      double precision workmhr(q*(q+1)/2)
 
 c++++ internal working space
       integer count 
       integer countero,countern
       integer final,i,ii,ihmssf,j,jj,je2,k,kk,k1,k2,l
       integer nint,ok
-      real*8 cpar,detlogl,dnrm
-      real*8 invcdfnorm
-      real*8 loglik,prob,quan,tmp1
+      double precision cpar,detlogl,dnrm
+      double precision invcdfnorm
+      double precision loglik,prob,quan,tmp1
 
 c++++ algorithm      
       if(q.gt.2)then
@@ -3338,9 +3343,10 @@ c=======================================================================
 c+++++Input 
       integer nrec,nsubject,nrand,m
       integer whicho(nrec),whichn(nrec)
-      real*8 cparb,ssb(nsubject),b(nrand)
-      real*8 workm(nrand,nrand),workmh(nrand*(nrand+1)/2),workv(nrand)
-      real*8 mub(nrand),sigmab(nrand,nrand)
+      double precision cparb,ssb(nsubject),b(nrand)
+      double precision workm(nrand,nrand),workmh(nrand*(nrand+1)/2),
+     1  workv(nrand)
+      double precision mub(nrand),sigmab(nrand,nrand)
 
 c+++++internal working variables
       integer countero,countern 
@@ -3350,14 +3356,14 @@ c+++++internal working variables
       integer ok
       integer parti
       
-      real*8 ellip
-      real*8 invcdfchisq
-      real*8 linf,lsup
-      real*8 prob
-      real*8 quan
-      real*8 rnorm
-      real*8 rtchisq
-      real*8 tmp1,tmp2
+      double precision ellip
+      double precision invcdfchisq
+      double precision linf,lsup
+      double precision prob
+      double precision quan
+      double precision rnorm
+      double precision rtchisq
+      double precision tmp1,tmp2
       
       real runif
       
@@ -3557,17 +3563,17 @@ c=======================================================================
 c-----Input
       integer m,nrand,nrec,nsubject
       integer whicho(nrec),whichn(nrec)
-      real*8 cparb,detlogsbc,b(nsubject,nrand)
-      real*8 ssb(nsubject)
-      real*8 sigmainvbc(nrand,nrand)
+      double precision cparb,detlogsbc,b(nsubject,nrand)
+      double precision ssb(nsubject)
+      double precision sigmainvbc(nrand,nrand)
        
 c-----Output
-      real*8 loglikc,sseval
+      double precision loglikc,sseval
 
 c-----Working
       integer i,j,je2,k,k1,k2,l
       integer countero,countern,parti,nint,ok
-      real*8 invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
+      double precision invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
 
 c-----Routine
 
@@ -3732,17 +3738,17 @@ c=======================================================================
 c-----Input
       integer ind,m,nrand,nrec,nsubject
       integer whicho(nrec),whichn(nrec)
-      real*8 cparb,detlogsb,theta(nrand)
-      real*8 ssb(nsubject)
-      real*8 sigmainvb(nrand,nrand)
+      double precision cparb,detlogsb,theta(nrand)
+      double precision ssb(nsubject)
+      double precision sigmainvb(nrand,nrand)
        
 c-----Output
-      real*8 logprior,sseval
+      double precision logprior,sseval
 
 c-----Working
       integer i,j,je2,k,k1,k2,l
       integer countero,countern,parti,nint,ok
-      real*8 invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
+      double precision invcdfchisq,prob,quan,tmp1,tmp2,tmp3,tpi
 
 c-----Routine
       logprior=0.d0
@@ -3891,9 +3897,9 @@ c=======================================================================
 
 c++++ Input
       integer mdzero,maxm,nsubject
-      real*8 alpha
-      real*8 mu,sigma 
-      real*8 b(nsubject)
+      double precision alpha
+      double precision mu,sigma 
+      double precision b(nsubject)
 
 c++++ Working External
       integer whicho(nsubject),whichn(nsubject)
@@ -3902,13 +3908,13 @@ c++++ Working Internal
       integer countero,countern
       integer i,j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logliko
+      double precision logliko
 
       logliko=0.d0
       do i=1,nsubject
@@ -4033,9 +4039,9 @@ c=======================================================================
 
 c++++ Input
       integer mdzero,nsubject
-      real*8 alpha
-      real*8 mu,sigma 
-      real*8 b(nsubject)
+      double precision alpha
+      double precision mu,sigma 
+      double precision b(nsubject)
 
 c++++ Working External
       integer whicho(nsubject),whichn(nsubject)
@@ -4044,13 +4050,13 @@ c++++ Working Internal
       integer countero,countern
       integer i,j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logliko
+      double precision logliko
 
       logliko=0.d0
       do i=1,nsubject
@@ -4177,7 +4183,7 @@ c=======================================================================
 
 c++++ Input
       integer maxm,mdzero,nsubject,ii
-      real*8 alpha,mu,sigma,b(nsubject),theta
+      double precision alpha,mu,sigma,b(nsubject),theta
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -4186,13 +4192,13 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logprioro
+      double precision logprioro
       
       logprioro=0.d0
       
@@ -4321,7 +4327,7 @@ c=======================================================================
 
 c++++ Input
       integer mdzero,nsubject,ii
-      real*8 alpha,mu,sigma,b(nsubject),theta
+      double precision alpha,mu,sigma,b(nsubject),theta
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -4330,13 +4336,13 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logprioro
+      double precision logprioro
       
       logprioro=0.d0
       
@@ -4465,7 +4471,7 @@ c=======================================================================
 
 c++++ Input
       integer maxm,mdzero,nsubject
-      real*8 alpha,mu,sigma,b(nsubject)
+      double precision alpha,mu,sigma,b(nsubject)
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -4474,18 +4480,18 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint
       integer ok
-      real*8 invcdfnorm,rtnorm
-      real*8 linf,lsup
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2,tmp3
+      double precision invcdfnorm,rtnorm
+      double precision linf,lsup
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2,tmp3
       
       logical ainf,binf
 
       real runif
       
 c++++ Output
-      real*8 theta
+      double precision theta
 
       quan=mu
       countern=0
@@ -4651,7 +4657,7 @@ c=======================================================================
 
 c++++ Input
       integer mdzero,nsubject
-      real*8 alpha,mu,sigma,b(nsubject)
+      double precision alpha,mu,sigma,b(nsubject)
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -4660,18 +4666,18 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint
       integer ok
-      real*8 invcdfnorm,rtnorm
-      real*8 linf,lsup
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2,tmp3
+      double precision invcdfnorm,rtnorm
+      double precision linf,lsup
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2,tmp3
       
       logical ainf,binf
 
       real runif
       
 c++++ Output
-      real*8 theta
+      double precision theta
 
       quan=mu
       countern=0
@@ -4833,10 +4839,10 @@ c=======================================================================
       implicit none
       integer m,n,loca(n)
       integer i,k,k1,k2,nint
-      real*8 invcdfnorm
-      real*8 prob,quan
-      real*8 mu,sigma
-      real*8 x
+      double precision invcdfnorm
+      double precision prob,quan
+      double precision mu,sigma
+      double precision x
       
       if(m.gt.n)then
         call rexit("Error in 'locationpt'")
@@ -4881,14 +4887,14 @@ c=======================================================================
       integer i,j
       integer m,nsubject,maxm
       integer loca(maxm)
-      real*8 mu,sigma
-      real*8 b(nsubject),theta,one
+      double precision mu,sigma
+      double precision b(nsubject),theta,one
       parameter(one=1.d0)
       
       integer nhash,maxnzr,nr
-      real*8 counts(nhash,3)
+      double precision counts(nhash,3)
       integer ntotals,ia(ntotals+1),ja(maxnzr),tmp(ntotals)
-      real*8 a(maxnzr)
+      double precision a(maxnzr)
 
       nr=0
       do i=1,nsubject
@@ -4916,14 +4922,14 @@ c=======================================================================
       integer mdzero,i,j,k,l,ista,iend
       integer m,narea,ntotals,maxnzr
       integer ia(ntotals+1),ja(maxnzr)
-      real*8 a(maxnzr)
-      real*8 cpar
-      real*8 mass(2)
-      real*8 rvecs(2)
-      real*8 tmp1(ntotals),tmp2(ntotals)
+      double precision a(maxnzr)
+      double precision cpar
+      double precision mass(2)
+      double precision rvecs(2)
+      double precision tmp1(ntotals),tmp2(ntotals)
 
       integer ngroup,nvar
-      real*8 je2
+      double precision je2
       
       narea=2 
       nvar=1
@@ -5003,10 +5009,10 @@ c=======================================================================
       implicit none
       integer m,ntotals
       integer pattern(1)
-      real*8 liminf1(ntotals),liminf2(ntotals)
-      real*8 limsup1(ntotals),limsup2(ntotals)
+      double precision liminf1(ntotals),liminf2(ntotals)
+      double precision limsup1(ntotals),limsup2(ntotals)
       integer i,j,k,ngroup,ista,narea,nvar
-      real*8 linf,lsup,quan
+      double precision linf,lsup,quan
 
 c++++ Algorithm
       nvar=1
@@ -5076,16 +5082,16 @@ c     Alejandro Jara, 2007
 c=======================================================================
       implicit none
       integer m,ntotals
-      real*8 liminf(ntotals)
-      real*8 limsup(ntotals)
-      real*8 probs(ntotals)
-      real*8 means,covs
+      double precision liminf(ntotals)
+      double precision limsup(ntotals)
+      double precision probs(ntotals)
+      double precision means,covs
       
       integer i,nsets,nvar
-      real*8 linf,lsup,muwork1,muwork2
-      real*8 cdfnorm,dnrm
-      real*8 tmp1,tmp2,tmp3,tmp4
-      real*8 tmass
+      double precision linf,lsup,muwork1,muwork2
+      double precision cdfnorm,dnrm
+      double precision tmp1,tmp2,tmp3,tmp4
+      double precision tmass
 
 c++++ Algorithm
       nvar=1
@@ -5127,9 +5133,9 @@ c=======================================================================
       implicit none
       integer i,j
       integer mdzero,m,nsubject
-      real*8 cpar,b(nsubject)
-      real*8 mu,sigma
-      real*8 means,covs
+      double precision cpar,b(nsubject)
+      double precision mu,sigma
+      double precision means,covs
 
 c++++ parameters
       integer maxm,ntotals,ntotalp,nhash,maxnzr
@@ -5139,11 +5145,11 @@ c++++ parameters
       integer loca(maxm),mwork,nr
       integer ia(ntotals+1),ja(maxnzr),tmp(ntotals)
 
-      real*8 a(maxnzr)    
-      real*8 counts(nhash,3)
-      real*8 probw1(ntotals),probw2(ntotals)
-      real*8 liminf1(ntotals),liminf2(ntotals)
-      real*8 limsup1(ntotals),limsup2(ntotals)
+      double precision a(maxnzr)    
+      double precision counts(nhash,3)
+      double precision probw1(ntotals),probw2(ntotals)
+      double precision liminf1(ntotals),liminf2(ntotals)
+      double precision limsup1(ntotals),limsup2(ntotals)
       
       mwork=m
       do while(ntotals.lt.(2**mwork))
@@ -5204,7 +5210,7 @@ c=======================================================================
 
 c++++ Input
       integer maxm,mdzero,nsubject
-      real*8 alpha,mu,sigma,b(nsubject),theta
+      double precision alpha,mu,sigma,b(nsubject),theta
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -5213,13 +5219,13 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logprioro
+      double precision logprioro
       
       logprioro=0.d0
       
@@ -5345,7 +5351,7 @@ c=======================================================================
 
 c++++ Input
       integer mdzero,nsubject
-      real*8 alpha,mu,sigma,b(nsubject),theta
+      double precision alpha,mu,sigma,b(nsubject),theta
 
 c++++ Working Externals
       integer whicho(nsubject),whichn(nsubject)
@@ -5354,13 +5360,13 @@ c++++ Working Internals
       integer countero,countern
       integer j,je2,k,k1,k2,l,nint,parti
       integer ok
-      real*8 dnrm,invcdfnorm
-      real*8 prob
-      real*8 quan
-      real*8 tmp1,tmp2
+      double precision dnrm,invcdfnorm
+      double precision prob
+      double precision quan
+      double precision tmp1,tmp2
 
 c++++ Output
-      real*8 logprioro
+      double precision logprioro
       
       logprioro=0.d0
       

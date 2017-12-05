@@ -33,7 +33,7 @@ c=======================================================================
 c     This function generates a exp(lambda) random variable  
 c     A.J.V., 2005
       implicit none
-      real*8 lambda
+      double precision lambda
       real runif
       rexpo=-log(1.d0-dble(runif()))/lambda
       return
@@ -61,7 +61,7 @@ c     This function generates a random gamma value.
 c     The parametrization is such that E(X)=alpha/beta
 c     A.J.V., 2006 
 c      implicit none 
-c      real*8 beta,alpha
+c      double precision beta,alpha
 c      real a,r,gengam
 c      a=beta
 c      r=alpha
@@ -80,7 +80,7 @@ c     gamdv(alpha)  ~ gamma(alpha,1)
 c     rangam(alpha,beta) = gamdv(alpha)/beta ~ gamma(alpha,beta)
 c     A.J.V., 2005 
       implicit none 
-      real*8 beta,alpha,gamdv
+      double precision beta,alpha,gamdv
       rgamma = gamdv(alpha)
       rgamma = rgamma/beta
       return
@@ -96,7 +96,7 @@ c     ix : random seed
 c     requires uniform random generator, runif
 c     A.J.V., 2005
       implicit none
-      real*8 a,aa,ea,u0,u1,u2,c1,c2,c3,c4,c5,w
+      double precision a,aa,ea,u0,u1,u2,c1,c2,c3,c4,c5,w
       real runif
       
       aa=a
@@ -149,7 +149,7 @@ c=======================================================================
 c     This function generates a beta random variable  
 c     A.J.V., 2006
       implicit none
-      real*8 a0,b0
+      double precision a0,b0
       real genbet,a,b
       a=a0
       b=b0
@@ -158,7 +158,7 @@ c     A.J.V., 2006
       end         
 
 c======================================================================      
-      real*8 function rtbeta(alpha,beta,a,b,ainf,binf)
+      double precision function rtbeta(alpha,beta,a,b,ainf,binf)
 c=======================================================================            
 c     generate truncated(a,b) Beta(alpha,beta)
 c     a,b  = end points of interval (ainf = binf = .false.)   
@@ -166,9 +166,9 @@ c     ainf = true, if left endpoint is 0; otherwise = false
 c     binf = true, if right endpoint is 1; otherwise = false      
 c     A.J.V., 2006
       implicit none
-      real*8 alpha,beta,a,b
-      real*8 rbeta,invcdfbetas,cdfbetas
-      real*8 uni,tmp,tmp1,tmp2
+      double precision alpha,beta,a,b
+      double precision rbeta,invcdfbetas,cdfbetas
+      double precision uni,tmp,tmp1,tmp2
       logical ainf,binf
       real runif
 
@@ -212,15 +212,15 @@ c     A.J.V., 2006
       end      
       
 c======================================================================      
-      real*8 function rtbeta2(alpha,beta,a,b)
+      double precision function rtbeta2(alpha,beta,a,b)
 c=======================================================================            
 c     generate truncated(a,b) Beta(alpha,beta) using a AR
 c     a,b  = end points of interval
 c     A.J.V., 2006
       implicit none
       integer exit
-      real*8 alpha,beta,a,b
-      real*8 rbeta
+      double precision alpha,beta,a,b
+      double precision rbeta
 
       exit=0
       do while(exit.eq.0)
@@ -239,7 +239,7 @@ c     This subroutine generates a dirichlet random vector x
 c     A.J.V., 2005
       implicit none
       integer i,k,kreal
-      real*8 alpha(kreal),x(kreal),tmp,rgamma,a0
+      double precision alpha(kreal),x(kreal),tmp,rgamma,a0
 
       tmp=0.d0
 
@@ -267,7 +267,7 @@ c     m= used dimension
 c     A.J.V., 2006
       implicit none 
       integer n,m,val,i1,ok
-      real*8 prob(n),temp1,u,total
+      double precision prob(n),temp1,u,total
       real runif
       
       total=0.d0
@@ -307,7 +307,7 @@ c     m= used dimension
 c     A.J.V., 2006
       implicit none 
       integer n,val,i1,ok,imin,imax
-      real*8 prob(n),temp1,u,total
+      double precision prob(n),temp1,u,total
       real runif
       
       total=0.d0
@@ -348,7 +348,7 @@ c     (eta,+Inf) if ind=0.
 c     A.J.V., 2005
       implicit none 
       integer ind
-      real*8 uni,eta,cdfslogistic,invcdfslogistic
+      double precision uni,eta,cdfslogistic,invcdfslogistic
       real runif
       uni=runif()
       rtslogistic=0.d0
@@ -371,7 +371,7 @@ c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
 c     A.J.V., 2005
       implicit none 
-      real*8 uni,cdfslogistic,invcdfslogistic,a,b
+      double precision uni,cdfslogistic,invcdfslogistic,a,b
       real runif
       logical ainf,binf
       
@@ -412,7 +412,7 @@ c=======================================================================
 c     This function generates a N(mu,sd^2) random values.
 c     A.J.V., 2006
       implicit none
-      real*8 mu,sd
+      double precision mu,sd
       real gennor,av0,sd0
       
       av0=mu
@@ -422,7 +422,7 @@ c     A.J.V., 2006
       end
 
 c======================================================================      
-      real*8 function rtnorm(mu,sd,a,b,ainf,binf)
+      double precision function rtnorm(mu,sd,a,b,ainf,binf)
 c=======================================================================            
 c     generate truncated(a,b) Normal(mu,sd**2) using the Geweke's 
 c     algorithm.
@@ -433,7 +433,7 @@ c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
 c     A.J.V., 2006
       implicit none
-      real*8 mu,sd,a,b,a1,b1,rtsnorm
+      double precision mu,sd,a,b,a1,b1,rtsnorm
       logical ainf,binf
       a1=(a-mu)/sd
       b1=(b-mu)/sd
@@ -442,7 +442,7 @@ c     A.J.V., 2006
       end      
       
 c======================================================================            
-      real*8 function rtsnorm(a,b,la,lb)
+      double precision function rtsnorm(a,b,la,lb)
 c======================================================================            
 c     generates a N(0,1) random variable
 c     subject to the constraint that it be in an interval
@@ -453,10 +453,10 @@ c             case A is ignored.
 c     lb      .true. if right endpoint is + infinity; in this
 c             case B is ignored.
 c     A.J.V., 2006
-      implicit real*8 (a-h,o-z)
+      implicit double precision (a-h,o-z)
       logical la,lb,lflip
       real runif
-      real*8 dexpone,rnorm
+      double precision dexpone,rnorm
       data eps,t1,t2,t3,t4/2.0d0,.375d0,2.18d0,.725d0,.45d0/
 
       if(la.and.lb)go to 160
@@ -536,12 +536,12 @@ c  ***** Singleton
       end
 
 c=======================================================================                        
-      real*8 function dexpone(x)
+      double precision function dexpone(x)
 c=======================================================================                       
 c     evaluate a exponential function
 c     A.J.V., 2006
       implicit none
-      real*8 x,expin
+      double precision x,expin
       expin=-.5d0*x**2
       if (expin .le. -50.0d0) then
         dexpone=0.0d0
@@ -559,7 +559,7 @@ c     mean = MEAN and variance = SIGMA
 c     A.J.V., 2006
       implicit none
       integer n
-      real*8 mean(n),sigma(n,n),work1(n*(n+1)/2),work2(n),y(n)
+      double precision mean(n),sigma(n,n),work1(n*(n+1)/2),work2(n),y(n)
 
       call cholesky(n,sigma,work1)
       call mvnchol(n,work1,mean,work2,y)
@@ -579,7 +579,7 @@ c     MEAN + L*WORK.
 c     A.J.V., 2006
       implicit none
       integer n,i,j,jj
-      real*8 l(n*(n+1)/2),mean(n),work(n),y(n)
+      double precision l(n*(n+1)/2),mean(n),work(n),y(n)
       
       call normalvec(n,work)
       
@@ -606,7 +606,8 @@ c     mean = MEAN and variance = SIGMA
 c     A.J.V., 2007
       implicit none
       integer nr,n
-      real*8 mean(nr),sigma(nr,nr),work1(nr*(nr+1)/2),work2(nr),y(nr)
+      double precision mean(nr),sigma(nr,nr),work1(nr*(nr+1)/2),
+     1  work2(nr),y(nr)
 
       call cholesky2(nr,n,sigma,work1)
       call mvnchol2(nr,n,work1,mean,work2,y)
@@ -626,8 +627,8 @@ c     MEAN + L*WORK.
 c     A.J.V., 2007
       implicit none
       integer nr,n,i,j,jj
-      real*8 l(nr*(nr+1)/2),mean(nr),work(nr),y(nr)
-      real*8 rnorm
+      double precision l(nr*(nr+1)/2),mean(nr),work(nr),y(nr)
+      double precision rnorm
       
       do i=1,n
          work(i)=rnorm(0.d0,1.d0)
@@ -656,7 +657,7 @@ c     generates a vector of normal variables
 c     A.J.V., 2006
       implicit none
       integer i,n
-      real*8 work(n),rnorm
+      double precision work(n),rnorm
       
       do i=1,n
          work(i)=rnorm(0.d0,1.d0)
@@ -672,7 +673,7 @@ c     This subroutine generates a Binomial(n,p) random variable
 c     A.J.V., 2006
       implicit none 
       integer n,evali,ignbin
-      real*8 p
+      double precision p
       real pp
       
       pp=p
@@ -683,7 +684,7 @@ c     A.J.V., 2006
       end        
 
 c======================================================================      
-      real*8 function rtlnorm(mu,sd,a,b,ainf,binf)
+      double precision function rtlnorm(mu,sd,a,b,ainf,binf)
 c=======================================================================            
 c     generate truncated(a,b) LogNormal(mu,sd**2) using the Geweke's 
 c     algorithm.
@@ -694,7 +695,7 @@ c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
 c     A.J.V., 2006
       implicit none
-      real*8 mu,sd,a,b,a1,b1,rtsnorm,x
+      double precision mu,sd,a,b,a1,b1,rtsnorm,x
       logical ainf,binf
       
       if(ainf)then
@@ -721,8 +722,8 @@ c=======================================================================
 c     This function generates a random chi2 value.
 c     A.J.V., 2006
       implicit none 
-      real*8 nu
-      real*8 rgamma
+      double precision nu
+      double precision rgamma
       rchisq=rgamma(0.5d0*nu,0.5d0)
       return
       end            
@@ -749,8 +750,8 @@ c
 c     A.J.V., 2005
       implicit none
       integer i,j,n,nu0,iflag(n),ihmssf
-      real*8 K0(n,n),workm1(n,n),workm2(n,n),workv1(n)
-      real*8 workhs1(n*(n+1)/2),workhs2(n*(n+1)/2),detlog
+      double precision K0(n,n),workm1(n,n),workm2(n,n),workv1(n)
+      double precision workhs1(n*(n+1)/2),workhs2(n*(n+1)/2),detlog
 
       do i=1,n
          do j=1,n
@@ -811,10 +812,10 @@ c             is halfstored (upper triangle)
       implicit none
       integer maxvar,nv,n,nv1,i,j,k,ndf,jk,cnt,maxn
       parameter(maxvar=70)
-      real*8 l,s,z,v,b,acc,chi(1)
+      double precision l,s,z,v,b,acc,chi(1)
       dimension l(maxn*(maxn+1)/2),s(maxn*(maxn+1)/2)
       dimension z(maxvar,maxvar),v(maxvar),b(maxvar,maxvar)
-      real*8 rnorm,rchisq
+      double precision rnorm,rchisq
 
       if(nv.gt.maxvar)then
            call rexit("wishrt: routine dimension exceeded")
@@ -943,7 +944,7 @@ c     ndis: the number of clusters.
 c     k   : Sample size
 c     A.J.V., 2006
       integer ndis,k
-      real*8 alpha, aa0, ab0, xalp,s,e,rgamma
+      double precision alpha, aa0, ab0, xalp,s,e,rgamma
       real runif
 
       xalp=rgamma(1.d0+alpha,1.d0)
@@ -968,7 +969,7 @@ c     ainf = true, if left endpoint is infinite; otherwise = false
 c     binf = true, if right endpoint is infinite; otherwise = false      
 c     A.J.V., 2006
       implicit none 
-      real*8 uni,mu,sd,cdfcauchy,invcdfcauchy,a,b
+      double precision uni,mu,sd,cdfcauchy,invcdfcauchy,a,b
       real runif
       logical ainf,binf
       
@@ -1011,7 +1012,7 @@ c=======================================================================
 c     This function gerenates a Poisson(mu) random variable. 
 c     A.J.V., 2006
       integer ignpoi
-      real*8  mu
+      double precision  mu
       real mean
 
       mean=mu
@@ -1035,7 +1036,7 @@ c     A.J.V., 2007
 
 
 c======================================================================      
-      real*8 function rtchisq(nu,a,b,ainf,binf)
+      double precision function rtchisq(nu,a,b,ainf,binf)
 c=======================================================================            
 c     generate truncated(a,b) Chisq(nu)
 c     a,b  = end points of interval (ainf = binf = .false.)   
@@ -1043,9 +1044,9 @@ c     ainf = true, if left endpoint is 0; otherwise = false
 c     binf = true, if right endpoint is 1; otherwise = false      
 c     A.J.V., 2007
       implicit none
-      real*8 nu,a,b
-      real*8 rchisq,invcdfchisq,cdfchisq
-      real*8 uni,tmp
+      double precision nu,a,b
+      double precision rchisq,invcdfchisq,cdfchisq
+      double precision uni,tmp
       logical ainf,binf
       real runif
 
@@ -1092,7 +1093,7 @@ c     generate a random permutation of the first n integers
 c     A.J.V., 2007
       implicit none
       integer n,nl,p(nl),i,j,k,ipj,itemp,m
-      real*8 u(100)
+      double precision u(100)
       real runif
 
       do i=1,n
@@ -1135,16 +1136,16 @@ c     typeint=3 (right)
 c     typeint=4 (unconstrained support)    
 
       integer n,typeint(n)
-      real*8 mu(n),sigma(n,n),lower(n),upper(n),l(n*(n+1)/2)
+      double precision mu(n),sigma(n,n),lower(n),upper(n),l(n*(n+1)/2)
 
 c+++++Output  
-      real*8 y(n)
+      double precision y(n)
 
 c+++++Working      
       integer i,j,maxn,ihmssf
       parameter(maxn=50)
-      real*8 a(maxn,maxn),slow,supp,tmp1,z(maxn)
-      real*8 rtnorm
+      double precision a(maxn,maxn),slow,supp,tmp1,z(maxn)
+      double precision rtnorm
       logical ainf,binf      
 
 c+++++Check dimenions
@@ -1215,7 +1216,7 @@ c=======================================================================
 c     This function generates a poisson random variable  
 c     A.J.V., 2006
       implicit none
-      real*8 mu
+      double precision mu
       integer ignpoi
       real mur
       
@@ -1244,23 +1245,23 @@ c=======================================================================
 c+++++Input
       integer n
       integer typeint(n)
-      real*8 mu(n),sigma(n,n)
-      real*8 lower(n),upper(n)
-      real*8 work1(n,n),work2(n,n)
+      double precision mu(n),sigma(n,n)
+      double precision lower(n),upper(n)
+      double precision work1(n,n),work2(n,n)
 
 c+++++Output
-      real*8 y(n),logcgko
+      double precision y(n),logcgko
 
 c+++++Working
       integer i,j,k,maxn
       parameter(maxn=50)
-      real*8 dnrm,cdfnorm
-      real*8 muv(maxn)
-      real*8 muc,sigmac
-      real*8 rtnorm
-      real*8 tmp1
-      real*8 slow,supp
-      real*8 yv(maxn)
+      double precision dnrm,cdfnorm
+      double precision muv(maxn)
+      double precision muc,sigmac
+      double precision rtnorm
+      double precision tmp1
+      double precision slow,supp
+      double precision yv(maxn)
       logical ainf,binf      
 
 c+++++Algorithm
@@ -1343,7 +1344,7 @@ c     A.J.V., 2007
 c======================================================================
       implicit none
       integer i
-      real*8 mu,uni,p,f
+      double precision mu,uni,p,f
       real runif
 
       i=0
@@ -1372,11 +1373,11 @@ c     ainf = true, if left endpoint is 0; otherwise = false
 c     binf = true, if right endpoint is 1; otherwise = false      
 c     A.J.V., 2006
       implicit none
-      real*8 alpha,beta,a,b
-      real*8 bound      
-      real*8 rbeta
-      real*8 val
-      real*8 uni,tmp,tmp1,tmp2,tmp3,tmp4
+      double precision alpha,beta,a,b
+      double precision bound      
+      double precision rbeta
+      double precision val
+      double precision uni,tmp,tmp1,tmp2,tmp3,tmp4
       logical ainf,binf
       real runif
       integer status
@@ -1458,7 +1459,7 @@ c======================================================================
       SAVE  S, T, A, B, R1, R2
       INTEGER N, emme, mu
       REAL U(2), S, T, A, B, R1, R2
-      real*8 RMAT(N,N)
+      double precision RMAT(N,N)
       REAL V, X, Y, Q, DEVIAT, VARIANCE
       real ranf
       DATA  S, T, A, B / 0.449871, -0.386595, 0.19600, 0.25472/
@@ -1574,7 +1575,7 @@ c
 c======================================================================      
       INTEGER n
       REAL dk,ck
-      real*8 a(n,n),Q(n,n),sum
+      double precision a(n,n),Q(n,n),sum
       REAL VARIANCE,sigma,tau
       INTEGER i,j,k
 
@@ -1649,11 +1650,11 @@ c     A.J.V., 2008
 c======================================================================      
       implicit none
       integer n
-      real*8 x(n,n),q(n,n)
-      real*8 xwork(n,n)
+      double precision x(n,n),q(n,n)
+      double precision xwork(n,n)
   
       integer i,j,k
-      real*8 ck,dk,scale,sigma,sums,tau   
+      double precision ck,dk,scale,sigma,sums,tau   
 
       do i=1,n
          do j=1,n

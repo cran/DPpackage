@@ -46,36 +46,36 @@ c++++ input - glmm
       integer datastr(nsubject,maxni+1)
       integer y(nrec)
 
-      real*8 x(nrec,p+1) 
+      double precision x(nrec,p+1) 
 
 c++++ input - ldtfp
       integer ptf
-      real*8 xtf(nsubject,ptf)
+      double precision xtf(nsubject,ptf)
 
 c++++ prediction
       integer ngrid,npred
-      real*8 grid(ngrid)
-      real*8 xpred(npred,p)
-      real*8 xtfpred(npred,ptf)
-      real*8 quans(3)
+      double precision grid(ngrid)
+      double precision xpred(npred,p)
+      double precision xtfpred(npred,ptf)
+      double precision quans(3)
 
 c++++ prior - glmm
-      real*8 prec(p,p)
-      real*8 sb(p,2)
+      double precision prec(p,p)
+      double precision sb(p,2)
 
 c++++ prior - ldtfp
       integer maxm,ntprob,ntlr
-      real*8 a0b0(2)
-      real*8 gprior(ptf,ptf)
-      real*8 taub(2),taub1,taub2
+      double precision a0b0(2)
+      double precision gprior(ptf,ptf)
+      double precision taub(2),taub1,taub2
 
 c++++ current value
-      real*8 as(3)
-      real*8 alpha
-      real*8 b(nsubject)
-      real*8 beta(p)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2b
+      double precision as(3)
+      double precision alpha
+      double precision b(nsubject)
+      double precision beta(p)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2b
 
 c++++ mcmc
       integer mcmc(5),nburn,nskip,nsave,ndisplay
@@ -87,49 +87,49 @@ c++++ seeds
       integer seed1,seed2,seed(2)
 
 c++++ output
-      real*8 cpo(nrec,2)
-      real*8 densm(npred,ngrid)
-      real*8 densl(npred,ngrid)
-      real*8 densu(npred,ngrid)
+      double precision cpo(nrec,2)
+      double precision densm(npred,ngrid)
+      double precision densl(npred,ngrid)
+      double precision densu(npred,ngrid)
 
-      real*8 qmm(npred,3)
-      real*8 qml(npred,3)
-      real*8 qmu(npred,3)
+      double precision qmm(npred,3)
+      double precision qml(npred,3)
+      double precision qmu(npred,3)
 
-      real*8 thetasave(nsave,p+2)
-      real*8 randsave(nsave,nsubject)
-      real*8 tfpsave(nsave,(ntlr-1)*ptf)
+      double precision thetasave(nsave,p+2)
+      double precision randsave(nsave,nsubject)
+      double precision tfpsave(nsave,(ntlr-1)*ptf)
 
 c++++ external working space - vector and matrices
       integer iflagtf(ptf)
       integer nobsbc(ntprob)
       integer obsbc(ntprob,nsubject)
-      real*8 c0(ptf,ptf)
+      double precision c0(ptf,ptf)
 
       integer iflag(p)
-      real*8 betac(p)
-      real*8 workm1(p,p)
-      real*8 workmp1(p,p)
-      real*8 workmp2(p,p)
-      real*8 workvh1(p*(p+1)/2)
-      real*8 workv1(p)
-      real*8 workvp1(p)
+      double precision betac(p)
+      double precision workm1(p,p)
+      double precision workmp1(p,p)
+      double precision workmp2(p,p)
+      double precision workvh1(p*(p+1)/2)
+      double precision workv1(p)
+      double precision workvp1(p)
 
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,ngrid)
-      real*8 worksam3(nsave,npred)
-      real*8 fs(ngrid)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,ngrid)
+      double precision worksam3(nsave,npred)
+      double precision fs(ngrid)
 
-      real*8 workm2(ptf,ptf)
-      real*8 workvh2(ptf*(ptf+1)/2)
-      real*8 workv2(ptf)
-      real*8 workv3(ptf)
-      real*8 workv4(ptf)
+      double precision workm2(ptf,ptf)
+      double precision workvh2(ptf*(ptf+1)/2)
+      double precision workv2(ptf)
+      double precision workv3(ptf)
+      double precision workv4(ptf)
 
       integer k(maxm)
 
-      real*8 prob(2**maxm)
-      real*8 probc(2**maxm)
+      double precision prob(2**maxm)
+      double precision probc(2**maxm)
  
 c++++ internal working space
       integer accept
@@ -139,43 +139,43 @@ c++++ internal working space
       integer ntot,n1,n2
       integer nscan,skipcount
       integer sprint
-      real*8 acrate
-      real*8 alnorm
-      real*8 alphac
-      real*8 dnrm
-      real*8 dinvnorm
-      real*8 liminf
-      real*8 limsup
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 logcgkn,logcgko
-      real*8 luni,lratio
-      real*8 qqnum
-      real*8 ratio
-      real*8 rgamma
-      real*8 rnorm
+      double precision acrate
+      double precision alnorm
+      double precision alphac
+      double precision dnrm
+      double precision dinvnorm
+      double precision liminf
+      double precision limsup
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision logcgkn,logcgko
+      double precision luni,lratio
+      double precision qqnum
+      double precision ratio
+      double precision rgamma
+      double precision rnorm
       real runif
-      real*8 tmp1,tmp2,tmp3
-      real*8 uni
-      real*8 ya
-      real*8 yc
+      double precision tmp1,tmp2,tmp3
+      double precision uni
+      double precision ya
+      double precision yc
   
       integer yij
-      real*8 dpoiss
-      real*8 eta
-      real*8 offset
-      real*8 mean
-      real*8 gprime
-      real*8 ytilde
+      double precision dpoiss
+      double precision eta
+      double precision offset
+      double precision mean
+      double precision gprime
+      double precision ytilde
 
 c++++ CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ Working space slice sampling
       integer evali
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c++++ initializing variables
 
@@ -791,7 +791,7 @@ c++++++++++++ density
      &                       sigma2b,densl,densm,k)
 
               do i=1,npred
-                 write(1) (densl(i,j),j=1,ngrid)
+c                 write(1) (densl(i,j),j=1,ngrid)
               end do   
 
 c++++++++++++ cpo
@@ -823,9 +823,9 @@ c++++++++++++ quantiles
      &                           sigma2b,xtfpred,xpred,
      &                           qmm,qml,k,prob,probc,quans)
 
-              write(3) (qml(j,1),j=1,npred)
-              write(4) (qml(j,2),j=1,npred)
-              write(5) (qml(j,3),j=1,npred)
+c              write(3) (qml(j,1),j=1,npred)
+c              write(4) (qml(j,2),j=1,npred)
+c              write(5) (qml(j,3),j=1,npred)
 
 c++++++++++++ print
               skipcount = 0

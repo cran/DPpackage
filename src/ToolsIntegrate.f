@@ -1,11 +1,11 @@
       subroutine gauher2(x,w,n)
       implicit none
       integer n,maxit
-      real*8 w(n),x(n)
-      real*8 eps,pim4
+      double precision w(n),x(n)
+      double precision eps,pim4
       parameter(eps=3.d-14,pim4=.7511255444649425d0,maxit=10)
       integer i,its,j,m
-      real*8 p1,p2,p3,pp,z,z1
+      double precision p1,p2,p3,pp,z,z1
       
       m=(n+1)/2
       z=0.d0

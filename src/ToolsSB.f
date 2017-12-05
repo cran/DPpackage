@@ -27,18 +27,18 @@ c=======================================================================
 
 c+++++Input
       integer nr,n
-      real*8 alpha(nr),beta(nr)
+      double precision alpha(nr),beta(nr)
 
 c+++++External working space
-      real*8 workv(nr+1)
+      double precision workv(nr+1)
 
 c+++++Output
-      real*8 w(nr),v(nr)
+      double precision w(nr),v(nr)
 
 c+++++Internal working space
       integer i 
-      real*8 rbeta
-      real*8 tmp1,tmp2
+      double precision rbeta
+      double precision tmp1,tmp2
 
 c+++++Algorihtm
 
@@ -80,21 +80,21 @@ c=======================================================================
 c+++++Input
       integer n
       integer ccluster(n)
-      real*8 alpha
+      double precision alpha
 
 c+++++External working space
-      real*8 workv(n+1)
+      double precision workv(n+1)
 
 c+++++Output
-      real*8 w(n),v(n)
+      double precision w(n),v(n)
 
 c+++++Internal working space
       integer i,j,ns 
-      real*8 rbeta
-      real*8 tmp1,tmp2
-      real*8 tmp3
-      real*8 tmp5,tmp6
-      real*8 tmpv
+      double precision rbeta
+      double precision tmp1,tmp2
+      double precision tmp3
+      double precision tmp5,tmp6
+      double precision tmpv
 
 c+++++Algorihtm
 
@@ -139,17 +139,17 @@ c=======================================================================
 
 c+++++Input
       integer n
-      real*8 v(n)
+      double precision v(n)
 
 c+++++External working space
-      real*8 workv(n+1)
+      double precision workv(n+1)
 
 c+++++Output
-      real*8 w(n)
+      double precision w(n)
 
 c+++++Internal working space
       integer i 
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++Algorihtm
     

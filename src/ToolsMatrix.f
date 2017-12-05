@@ -20,7 +20,7 @@ c sorts matrix of reals by icol columns given by col, in ascending
 c order. matrix a is n x m, only first ix rows and iy columns are sorted
       integer n,m,ix,iy,icol
       integer i,j,j1,j2,k,l,r,s,col(icol)
-      real*8 a(n,m),x(20),a1,a2
+      double precision a(n,m),x(20),a1,a2
       integer stack(50,2)
       s=1
       stack(1,1)=1
@@ -83,7 +83,7 @@ c      A.J.V. 2007
 c=======================================================================
        implicit none
        integer i,n 
-       real*8 x(n),y(n)
+       double precision x(n),y(n)
        
        inprod=0.d0
        do i=1,n
@@ -100,7 +100,7 @@ c     endp (of dimension maxend) using a binary search. The search is
 c     performed in the first npoints elements.
 c     A.J.V., 2006
       integer maxend,i,j,k
-      real*8 x,endp(maxend)
+      double precision x,endp(maxend)
       
       i=1
       j=npoints
@@ -139,7 +139,7 @@ c     A.J.V., 2006
       integer n,i1,i2
       integer index(n)
       integer i
-      real*8 vec1(n),vec2(n),vwork(10000000)
+      double precision vec1(n),vec2(n),vwork(10000000)
 
       if(n.gt.10000000)then
          call rexit("increase dimension subroutine sortvecind")
@@ -171,7 +171,7 @@ c
 c     A.J.V., 2005
       implicit none
       integer n,i1,i2
-      real*8 vec(n)
+      double precision vec(n)
       
       if(i1.ge.i2)then
          call rexit("i1 >= i2 in subroutine sortvec")
@@ -248,7 +248,7 @@ c     see numerical recipies pages 35-37.
 c     A.J.V., 2005
       implicit none   
       integer i,j,n,indx(n)
-      real*8 a(n,n),ainv(n,n),vv(n),detlog
+      double precision a(n,n),ainv(n,n),vv(n),detlog
 c
 c  set up identity matrix
 c
@@ -300,9 +300,9 @@ c
 c     A.J.V., 2005
       implicit none 
       integer i,j,k,n,np
-      real*8 tiny
+      double precision tiny
       parameter (tiny=1.0d-20)
-      real*8 a(np,np),vv(np),d,aamax,sum,dum
+      double precision a(np,np),vv(np),d,aamax,sum,dum
       integer indx(np),iimax
 
       iimax=1
@@ -376,9 +376,9 @@ c     with DLUBDSB to solve linear equatoin or invert a matrix.
 c     A.J.V., 2005
       implicit none 
       integer i,j,k,n
-      real*8 tiny
+      double precision tiny
       parameter (tiny=1.0d-20)
-      real*8 a(n,n), vv(n),d,aamax,sum,dum
+      double precision a(n,n), vv(n),d,aamax,sum,dum
       integer indx(n),iimax
       
       iimax=1
@@ -459,7 +459,7 @@ c
 c      A.J.V., 2005
        implicit none
        integer n,np,i,j,ii,ll
-       real*8 a(np,np), b(np), sum
+       double precision a(np,np), b(np), sum
        integer indx(np)
 
        ii=0
@@ -506,7 +506,7 @@ c      in matrix inversion.
 c      A.J.V., 2005
        implicit none
        integer n,i,j,ii,ll
-       real*8 a(n,n), b(n), sum
+       double precision a(n,n), b(n), sum
        integer indx(n)
 
        ii=0
@@ -544,8 +544,8 @@ c     l is the output.
 c     A.J.V., 2005
       implicit none
       integer n,i,ii,j,jj,k,kk
-      real*8 a(n,n),l(n*(n+1)/2)
-      real*8 aii,scal,rtemp
+      double precision a(n,n),l(n*(n+1)/2)
+      double precision aii,scal,rtemp
 
       jj=0
       do i=1,n
@@ -600,7 +600,7 @@ c=======================================================================
 c     A.J.V., 2007
       integer lwork,n,ipiv(n),info
       parameter(lwork=6400)
-      real*8 ainv(n,n),work(lwork)
+      double precision ainv(n,n),work(lwork)
 
       if(n.gt.100)then
          call rexit("error in inversion, increase n")         
@@ -625,7 +625,7 @@ c     A.J.V., 2007
       implicit none
       integer i,lwork,n,ipiv(n),info
       parameter(lwork=6400)
-      real*8 ainv(n,n),detlog,work(lwork)
+      double precision ainv(n,n),detlog,work(lwork)
 
       if(n.gt.100)then
          call rexit("error in inversion, increase n")         
@@ -668,9 +668,9 @@ C             Obtained from PVR's EM-REML sire program
 C
 C    NOTE AJV: This will be used provisorily       
 C-----------------------------------------------------------------------
-      REAL*8 A(NM,N),D(N),E(N),Z(NM,N)
-      REAL*8 C,C2,C3,DL1,EL1,F,G,H,HH,P,R
-      REAL*8 SCALE,S,S2,TST1,TST2,PPP,RRR,SSS,TTT,UUU
+      DOUBLE PRECISION A(NM,N),D(N),E(N),Z(NM,N)
+      DOUBLE PRECISION C,C2,C3,DL1,EL1,F,G,H,HH,P,R
+      DOUBLE PRECISION  SCALE,S,S2,TST1,TST2,PPP,RRR,SSS,TTT,UUU
       
       c3=0.d0
       s2=0.d0
@@ -859,8 +859,8 @@ c     l is the output.
 c     A.J.V., 2007
       implicit none
       integer nr,n,i,ii,j,jj,k,kk
-      real*8 a(nr,nr),l(nr*(nr+1)/2)
-      real*8 aii,scal,rtemp
+      double precision a(nr,nr),l(nr*(nr+1)/2)
+      double precision aii,scal,rtemp
 
       jj=0
       do i=1,n
@@ -916,8 +916,8 @@ c     Subroutine to compute the cumulative sum.
 c     A.J.V., 2007
       implicit none
       integer i,nr,n  
-      real*8 vec(nr),vecsum(nr)
-      real*8 tmp1
+      double precision vec(nr),vecsum(nr)
+      double precision tmp1
 
       tmp1=vec(1)
       tmp1=vecsum(1)
@@ -973,7 +973,7 @@ c+++++Input
       integer l,n
 
 c+++++Output
-      real*8 q(n,n)
+      double precision q(n,n)
 
 c+++++External working space
       integer r(n)   

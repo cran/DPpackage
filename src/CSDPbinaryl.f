@@ -304,38 +304,38 @@ c=======================================================================
       implicit none 
       
 c+++++Constants
-      real*8 zero,one
+      double precision zero,one
       parameter(zero=0.d0)
       parameter(one =1.d0)
 
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)  
-      real*8 sens(nrec),spec(nrec)
-      real*8 x(nrec,p)
+      double precision sens(nrec),spec(nrec)
+      double precision x(nrec,p)
 
 c+++++Link information
       integer nlink 
-      real*8 xlink(nlink)
+      double precision xlink(nlink)
 
 c+++++Prior information
-      real*8 a0b0(4),aa0,ab0
-      real*8 betapm(p),betapv(p,p),d,ppar
+      double precision a0b0(4),aa0,ab0
+      double precision betapm(p),betapv(p,p),d,ppar
 
 c+++++MCMC parameters
       integer extra,mcmcvec(5),nburn,nskip,nsave,ntheta,ndisplay
-      real*8 propv(p,p)
+      double precision propv(p,p)
 
 c+++++Stored output
-      real*8 acrate(2),fsave(nsave,nlink)
-      real*8 randsave(nsave,nrec+1),thetasave(nsave,p+3)
-      real*8 cpo(nrec)
+      double precision acrate(2),fsave(nsave,nlink)
+      double precision randsave(nsave,nrec+1),thetasave(nsave,p+3)
+      double precision cpo(nrec)
 
 c+++++Current values of the parameters
       integer ncluster,y(nrec)
-      real*8 alpha,beta(p),theta,v(nrec)
+      double precision alpha,beta(p),theta,v(nrec)
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c+++++Working space - integers
       integer maxm,maxend,maxint
@@ -370,35 +370,35 @@ c+++++Working space - integers
       integer urn(maxint)
 
 c+++++Working space - double precision
-      real*8 area,ac(4),ac2(4) 
-      real*8 betac(p),cdflogis 
-      real*8 dgamlog
-      real*8 endp(maxend),endp2(maxend)
-      real*8 eta(nrec),etan(nrec)
-      real*8 keepbeta
-      real*8 liminf,limsup
-      real*8 limr(nrec,2)
-      real*8 logliko,loglikn,logprioro,logpriorn
-      real*8 mass(maxint)
-      real*8 massurn1(maxint),massurn2(maxint)
-      real*8 massurn3(maxint),massurn4(maxint)
-      real*8 maxu
-      real*8 nclusw
-      real*8 numc(4),numc2(4)
-      real*8 prob(maxint)
-      real*8 proburn1(maxint)
-      real*8 ratio
-      real*8 rbeta,rtslogistic2
-      real*8 thetac
-      real*8 tmp1,tmp2
-      real*8 uvec(maxm)
-      real*8 vpred
-      real*8 vnew(nrec+1)
-      real*8 vvec(maxm)
-      real*8 workm1(p,p),workm2(p,p)
-      real*8 workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p)
-      real*8 wvec(maxm)
+      double precision area,ac(4),ac2(4) 
+      double precision betac(p),cdflogis 
+      double precision dgamlog
+      double precision endp(maxend),endp2(maxend)
+      double precision eta(nrec),etan(nrec)
+      double precision keepbeta
+      double precision liminf,limsup
+      double precision limr(nrec,2)
+      double precision logliko,loglikn,logprioro,logpriorn
+      double precision mass(maxint)
+      double precision massurn1(maxint),massurn2(maxint)
+      double precision massurn3(maxint),massurn4(maxint)
+      double precision maxu
+      double precision nclusw
+      double precision numc(4),numc2(4)
+      double precision prob(maxint)
+      double precision proburn1(maxint)
+      double precision ratio
+      double precision rbeta,rtslogistic2
+      double precision thetac
+      double precision tmp1,tmp2
+      double precision uvec(maxm)
+      double precision vpred
+      double precision vnew(nrec+1)
+      double precision vvec(maxm)
+      double precision workm1(p,p),workm2(p,p)
+      double precision workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p)
+      double precision wvec(maxm)
 
 c+++++Working space - single precision
       real runif
@@ -1284,12 +1284,12 @@ c     A.J.V., 2006
 c=======================================================================                  
       implicit none
       integer nsave,nrec,npred
-      real*8 alpha(nsave),theta(nsave),v(nsave,nrec),d,ppar
-      real*8 lp(npred,nsave),out(npred,nsave)
+      double precision alpha(nsave),theta(nsave),v(nsave,nrec),d,ppar
+      double precision lp(npred,nsave),out(npred,nsave)
       integer i,j,k,count,urn,ntotal
-      real*8 area,mass
-      real*8 tmp1,tmp2,tmp3,tmp4,x
-      real*8 cdflogis,rbeta
+      double precision area,mass
+      double precision tmp1,tmp2,tmp3,tmp4,x
+      double precision cdflogis,rbeta
 
       do i=1,npred
          do j=1,nsave
@@ -1382,12 +1382,12 @@ c=======================================================================
       implicit none
       integer i,evali
       integer ncluster
-      real*8 ac(4),numc(4),theta
-      real*8 alpha,aa0,ab0
-      real*8 ac2(4)
-      real*8 dgamlog,rbeta,rgamma,eta(4),ww(5)
-      real*8 tmp1,tmp2,tmp3
-      real*8 total
+      double precision ac(4),numc(4),theta
+      double precision alpha,aa0,ab0
+      double precision ac2(4)
+      double precision dgamlog,rbeta,rgamma,eta(4),ww(5)
+      double precision tmp1,tmp2,tmp3
+      double precision total
 
       do i=1,5
          ww(i)=0.d0

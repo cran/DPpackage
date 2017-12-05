@@ -265,34 +265,34 @@ c=======================================================================
       implicit none 
 
 c+++++Constants
-      real*8 zero,one
+      double precision zero,one
       parameter(zero=0.d0)
       parameter(one =1.d0)
       
 c+++++Observed variables
       integer model,nrec,p,yobs(nrec)
-      real*8 sens(nrec),spec(nrec)
-      real*8 x(nrec,p)
+      double precision sens(nrec),spec(nrec)
+      double precision x(nrec,p)
 
 c+++++Link information
       integer nlink 
-      real*8 xlink(nlink)
+      double precision xlink(nlink)
       
 c+++++Prior information
-      real*8 a0b0(2),aa0,ab0,betapm(p),betapv(p,p)
+      double precision a0b0(2),aa0,ab0,betapm(p),betapv(p,p)
 
 c+++++MCMC parameters
       integer extra,mcmcvec(3),nburn,nskip,nsave,ndisplay
-      real*8 propv(p,p)
+      double precision propv(p,p)
 
 c+++++Stored output
-      real*8 acrate,fsave(nsave,nlink)
-      real*8 randsave(nsave,nrec+1),thetasave(nsave,p+2)
-      real*8 cpo(nrec)
+      double precision acrate,fsave(nsave,nlink)
+      double precision randsave(nsave,nrec+1),thetasave(nsave,p+2)
+      double precision cpo(nrec)
       
 c+++++Current values of the parameters
       integer ncluster,y(nrec)
-      real*8 alpha,beta(p),v(nrec)
+      double precision alpha,beta(p),v(nrec)
       
 c+++++Working space
       integer maxend,maxm
@@ -319,29 +319,29 @@ c+++++Working space
       integer seed1,seed2
       integer skipcount
 
-      real*8 area
-      real*8 betac(p),cdflogis
-      real*8 endp(maxend),endp2(maxend)
-      real*8 eta(nrec),etan(nrec)
-      real*8 keepbeta
-      real*8 limr(nrec,2)
-      real*8 liminf,limsup,logliko,loglikn,logprioro,logpriorn
-      real*8 mass(maxint),maxu
-      real*8 prob(maxint)
-      real*8 ratio,rbeta,rtslogistic2
-      real*8 tmp1,tmp2
-      real*8 uvec(maxm)
-      real*8 vpred
-      real*8 vvec(maxm),vnew(nrec+1)
-      real*8 workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
-      real*8 workv1(p),workv2(p),wvec(maxm)
+      double precision area
+      double precision betac(p),cdflogis
+      double precision endp(maxend),endp2(maxend)
+      double precision eta(nrec),etan(nrec)
+      double precision keepbeta
+      double precision limr(nrec,2)
+      double precision liminf,limsup,logliko,loglikn,logprioro,logpriorn
+      double precision mass(maxint),maxu
+      double precision prob(maxint)
+      double precision ratio,rbeta,rtslogistic2
+      double precision tmp1,tmp2
+      double precision uvec(maxm)
+      double precision vpred
+      double precision vvec(maxm),vnew(nrec+1)
+      double precision workm1(p,p),workm2(p,p),workmh1(p*(p+1)/2)
+      double precision workv1(p),workv2(p),wvec(maxm)
 
       real runif
       
       logical ainf,binf
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ initialize variables
 
@@ -989,10 +989,10 @@ c=======================================================================
 c=======================================================================                  
       implicit none
       integer nsave,nrec,npred
-      real*8 alpha(nsave),v(nsave,nrec)
-      real*8 lp(npred,nsave),out(npred,nsave)
+      double precision alpha(nsave),v(nsave,nrec)
+      double precision lp(npred,nsave),out(npred,nsave)
       integer i,j,k,count,seed1,seed2
-      real*8 cdelta,cparam,cdflogis,tmp1,tmp2,rbeta
+      double precision cdelta,cparam,cdflogis,tmp1,tmp2,rbeta
 
       call setall(seed1,seed2)
 

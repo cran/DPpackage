@@ -58,66 +58,66 @@ c=======================================================================
 c+++++Data
       integer ngrid,npred,nsubject,p,q
       integer y(nsubject,p)
-      real*8 grid(ngrid),z(nsubject,q),zpred(npred,q)
+      double precision grid(ngrid),z(nsubject,q),zpred(npred,q)
 
 c+++++Prior
       integer murand
-      real*8 a0b0(6)
-      real*8 aa0,ab0
-      real*8 b0(p-1)
-      real*8 prec1(p-1,p-1)
-      real*8 mu0(q)
-      real*8 prec2(q,q)
-      real*8 smu(q)
-      real*8 tau1
-      real*8 taus1,taus2
-      real*8 nu
-      real*8 tinv(q,q) 
-      real*8 disprior(2)
+      double precision a0b0(6)
+      double precision aa0,ab0
+      double precision b0(p-1)
+      double precision prec1(p-1,p-1)
+      double precision mu0(q)
+      double precision prec2(q,q)
+      double precision smu(q)
+      double precision tau1
+      double precision taus1,taus2
+      double precision nu
+      double precision tinv(q,q) 
+      double precision disprior(2)
   
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(p-1)
-      real*8 cpo(nsubject,p)
-      real*8 denspm(npred,ngrid)
-      real*8 randsave(nsave,nsubject+npred)
-      real*8 thetasave(nsave,2*p-1+q+(q*(q+1)/2)+2)
-      real*8 densave(nsave,npred*ngrid)
+      double precision acrate(p-1)
+      double precision cpo(nsubject,p)
+      double precision denspm(npred,ngrid)
+      double precision randsave(nsave,nsubject+npred)
+      double precision thetasave(nsave,2*p-1+q+(q*(q+1)/2)+2)
+      double precision densave(nsave,npred*ngrid)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject) 
-      real*8 beta(p-1)
-      real*8 b(nsubject)
-      real*8 dp(p-1)
-      real*8 alphaclus(nsubject+100,q)
-      real*8 sigmaclus(nsubject+100)
-      real*8 alpha
-      real*8 mu(q)
-      real*8 sigma(q,q)
-      real*8 tau2
+      double precision beta(p-1)
+      double precision b(nsubject)
+      double precision dp(p-1)
+      double precision alphaclus(nsubject+100,q)
+      double precision sigmaclus(nsubject+100)
+      double precision alpha
+      double precision mu(q)
+      double precision sigma(q,q)
+      double precision tau2
 
 c+++++External Working space - DDP part
       integer cstrt(nsubject,nsubject)
       integer ccluster(nsubject)
       integer iflagq(q)
-      real*8 adapt(p-1)
-      real*8 lsd(p-1)
-      real*8 alphawork(q)
-      real*8 densw(npred,ngrid)
-      real*8 prob(nsubject+100)
-      real*8 quadf(q,q)
-      real*8 sigmainv(q,q)
-      real*8 workmhq1(q*(q+1)/2)
-      real*8 workmhq2(q*(q+1)/2)
-      real*8 workvq1(q),workvq2(q)
-      real*8 ztz(q,q),zty(q)
+      double precision adapt(p-1)
+      double precision lsd(p-1)
+      double precision alphawork(q)
+      double precision densw(npred,ngrid)
+      double precision prob(nsubject+100)
+      double precision quadf(q,q)
+      double precision sigmainv(q,q)
+      double precision workmhq1(q*(q+1)/2)
+      double precision workmhq2(q*(q+1)/2)
+      double precision workvq1(q),workvq2(q)
+      double precision ztz(q,q),zty(q)
 
 c+++++Working space slice sampling
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
@@ -136,23 +136,23 @@ c+++++Internal Working space
       integer skipcount
       integer sprint
       integer yij
-      real*8 dbin,detlog,dnrm
-      real*8 eta,gprime
-      real*8 lposto,lpostn
-      real*8 mean
-      real*8 muwork
-      real*8 ratio,rgamma,rnorm,runif
-      real*8 ssb
-      real*8 thetac
-      real*8 tmp1,tmp2,tmp3
-      real*8 ytilde
-      real*8 sigmawork
+      double precision dbin,detlog,dnrm
+      double precision eta,gprime
+      double precision lposto,lpostn
+      double precision mean
+      double precision muwork
+      double precision ratio,rgamma,rnorm,runif
+      double precision ssb
+      double precision thetac
+      double precision tmp1,tmp2,tmp3
+      double precision ytilde
+      double precision sigmawork
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ parameters
@@ -324,7 +324,7 @@ c++++++++++ check if the user has requested an interrupt
                adapt(j)=adapt(j)/dble(50)
 
                tmp1=exp(-0.5*log(dble(iscan)))  
-               tmp1=min(0.01,tmp1)
+               tmp1=min(0.01d0,tmp1)
                if(adapt(j).gt.0.44d0)then
                     lsd(j)=lsd(j)+tmp1
                   else
@@ -510,7 +510,7 @@ c         call intpr("ncluster",-1,ncluster,1)
 c         call intpr("ss",-1,ss,nsubject)
 
 
-100      continue
+c 100      continue
 
 c+++++++++++++++++++++++++++++++++++
 c+++++++ regression coefficients +++
@@ -666,7 +666,7 @@ c         call dblepr("nu",-1,nu,1)
                end do
             end do
 
-            do i=1,q	
+            do i=1,q
                do j=1,q
                   sigma(i,j)=ztz(i,j)+tinv(i,j)
                end do
@@ -730,7 +730,7 @@ c+++++++++++++ baseline information
               
                counter=0
                do i=1,q
-                  do j=i,q	
+                  do j=i,q
                      counter=counter+1
                      thetasave(isave,2*p-1+q+counter)=sigma(i,j)
                   end do   
@@ -869,7 +869,7 @@ c+++++++++++++ Partially sampling the DP
 
                if(evali.le.ncluster)then
                   sigmawork=sigmaclus(evali)
-                  do k=1,q	
+                  do k=1,q
                      alphawork(k)=alphaclus(evali,k)
                   end do
                end if
@@ -969,16 +969,16 @@ c===============================================================================
       implicit none
       integer j,nsubject,p
       integer y(nsubject,p)
-      real*8 b(nsubject)
-      real*8 beta(p-1) 
-      real*8 dp(p-1)
-      real*8 prec(p-1,p-1)
-      real*8 b0(p-1) 
+      double precision b(nsubject)
+      double precision beta(p-1) 
+      double precision dp(p-1)
+      double precision prec(p-1,p-1)
+      double precision b0(p-1) 
 
       integer yij,i,ii,jj 
-      real*8 dbin,eta,mean,tmp1
+      double precision dbin,eta,mean,tmp1
 
-      real*8 out
+      double precision out
 
       out=0.d0         
          
@@ -1018,17 +1018,17 @@ c===============================================================================
       implicit none
       integer ind,nsubject,p,q
       integer y(nsubject,p),ss(nsubject) 
-      real*8 beta(p-1) 
-      real*8 dp(p-1)
-      real*8 alphaclus(nsubject+100,q)
-      real*8 sigmaclus(nsubject+100)
-      real*8 z(nsubject,q)
-      real*8 theta
+      double precision beta(p-1) 
+      double precision dp(p-1)
+      double precision alphaclus(nsubject+100,q)
+      double precision sigmaclus(nsubject+100)
+      double precision z(nsubject,q)
+      double precision theta
 
       integer yij,j
-      real*8 dbin,dnrm,eta,mean,tmp1,tmp2,sigmawork
+      double precision dbin,dnrm,eta,mean,tmp1,tmp2,sigmawork
 
-      real*8 out
+      double precision out
 
       tmp1=0.d0
       do j=1,q
@@ -1069,15 +1069,15 @@ c===============================================================================
       implicit none
       integer j,nsubject,p
       integer y(nsubject,p)
-      real*8 b(nsubject)
-      real*8 beta(p-1) 
-      real*8 dp(p-1)
-      real*8 disprior(2)
+      double precision b(nsubject)
+      double precision beta(p-1) 
+      double precision dp(p-1)
+      double precision disprior(2)
 
       integer yij,i,ii,jj 
-      real*8 dbin,dnrm,eta,mean,tmp1,tmp2,tmp3,tmp4
+      double precision dbin,dnrm,eta,mean,tmp1,tmp2,tmp3,tmp4
 
-      real*8 out
+      double precision out
 
       out=0.d0         
          

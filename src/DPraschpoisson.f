@@ -222,83 +222,83 @@ c=======================================================================
 c+++++Data
       integer imiss,ngrid,nmissing,nsubject,p
       integer datastr(nmissing,2),y(nsubject,p)
-      real*8 roffset(nsubject,p)
+      double precision roffset(nsubject,p)
 
 c+++++Prior 
-      real*8 aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1),psiinv
-      real*8 sb(p-1),smu
-      real*8 tau1,tau2
+      double precision aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1),psiinv
+      double precision sb(p-1),smu
+      double precision tau1,tau2
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 acrate(2)
-      real*8 cpo(nsubject,p)
-      real*8 cpov(nsubject)
-      real*8 cdfsave(nsave,ngrid)
-      real*8 randsave(nsave,nsubject+1)
-      real*8 thetasave(nsave,p+5)
+      double precision acrate(2)
+      double precision cpo(nsubject,p)
+      double precision cpov(nsubject)
+      double precision cdfsave(nsave,ngrid)
+      double precision randsave(nsave,nsubject+1)
+      double precision thetasave(nsave,p+5)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)
-      real*8 alpha,beta(p-1),b(nsubject)
-      real*8 bclus(nsubject+100)
-      real*8 mu,sigma2,sigmainv
+      double precision alpha,beta(p-1),b(nsubject)
+      double precision bclus(nsubject+100)
+      double precision mu,sigma2,sigmainv
 
 c+++++Working space - Loops
       integer ii,i,j,k
 
 c+++++Working space - Random effects
-      real*8 fsavet(ngrid)
-      real*8 cdfnorm,dnrm,grid(ngrid),thetac
-      real*8 zty,ztz,ztzinv
+      double precision fsavet(ngrid)
+      double precision cdfnorm,dnrm,grid(ngrid),thetac
+      double precision zty,ztz,ztzinv
 
 c+++++Working space - RNG
       integer rpois,seed(2),seed1,seed2
-      real*8 rgamma,rnorm
+      double precision rgamma,rnorm
       real runif
 
 c+++++Working space - MCMC
       integer iscan,isave,nscan
       integer sprint,skipcount,dispcount
-      real*8 dpoiss
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 ratio
+      double precision dpoiss
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision ratio
       
 c+++++Working space - Configurations
       integer ccluster(nsubject),evali,isample,ok 
       integer cstrt(nsubject,nsubject)
       integer ns
       integer since
-      real*8 prob(nsubject+2)
-      real*8 tmp1,tmp2,tmp3
-      real*8 theta
+      double precision prob(nsubject+2)
+      double precision tmp1,tmp2,tmp3
+      double precision theta
 
 c+++++Working space - Difficulty parameters
       integer iflagp(p-1)
-      real*8 betac(p-1)
-      real*8 detlog
-      real*8 xtx(p-1,p-1),xty(p-1)
-      real*8 workmhp((p-1)*p/2)
-      real*8 workvp(p-1)
+      double precision betac(p-1)
+      double precision detlog
+      double precision xtx(p-1,p-1),xty(p-1)
+      double precision workmhp((p-1)*p/2)
+      double precision workvp(p-1)
 
 c+++++Working space - CPO
-      real*8 workcpo(nsubject,p)
+      double precision workcpo(nsubject,p)
 
 c+++++Working space - GLM part
       integer yij
-      real*8 acrate2
-      real*8 eta,gprime,mean,offset,ytilde
+      double precision acrate2
+      double precision eta,gprime,mean,offset,ytilde
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ DP (functional parameter)
-      real*8 eps,rbeta,weight
-      real*8 mureal,sigma2real,mu2real
+      double precision eps,rbeta,weight
+      double precision mureal,sigma2real,mu2real
       parameter(eps=0.01)
 
 c++++ parameters
@@ -953,7 +953,7 @@ c     A.J.V., 2006
       integer i,j,ind,since,nsubject,ncluster,ccluster(nsubject)
       integer ss(nsubject),ii,ns
       integer cstrt(nsubject,nsubject)
-      real*8 bclus(nsubject+100),theta
+      double precision bclus(nsubject+100),theta
 
       theta=bclus(since)
       

@@ -237,48 +237,48 @@ c=======================================================================
 c+++++Data
       integer imiss,nmissing,nsubject,p
       integer datastr(nmissing,2),y(nsubject,p)
-      real*8 roffset(nsubject,p)
+      double precision roffset(nsubject,p)
 
 c+++++Density and CDF
       integer ngrid
-      real*8 grid(ngrid)
+      double precision grid(ngrid)
       
 c+++++Prior 
       integer maxm,ntprob,ntsets
-      real*8 aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1)
-      real*8 sb(p-1)
-      real*8 tau1,tau2,m,s
+      double precision aa0,ab0,a0b0(2),b0(p-1),prec(p-1,p-1)
+      double precision sb(p-1)
+      double precision tau1,tau2,m,s
 
 c+++++MCMC parameters
       integer algo
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      real*8 tune3,tune4,tune5
+      double precision tune3,tune4,tune5
 
 c+++++Output
-      real*8 acrate
-      real*8 cpo(nsubject,p)
-      real*8 cpov(nsubject)
-      real*8 densave(nsave,ngrid),cdfsave(nsave,ngrid)
-      real*8 randsave(nsave,nsubject+1)
-      real*8 thetasave(nsave,p+4)
-      real*8 bf
+      double precision acrate
+      double precision cpo(nsubject,p)
+      double precision cpov(nsubject)
+      double precision densave(nsave,ngrid),cdfsave(nsave,ngrid)
+      double precision randsave(nsave,nsubject+1)
+      double precision thetasave(nsave,p+4)
+      double precision bf
 
 c+++++Current values of the parameters
-      real*8 alpha,beta(p-1),b(nsubject)
-      real*8 mu,sigma2
-      real*8 probmat(ntsets,maxm)
+      double precision alpha,beta(p-1),b(nsubject)
+      double precision mu,sigma2
+      double precision probmat(ntsets,maxm)
 
 c+++++Working space - Polya tree
       integer ptcount(ntprob)
       integer kvec(maxm)
-      real*8 prob(ntsets)
+      double precision prob(ntsets)
 
 c+++++Working space - Difficulty parameters
       integer iflagp(p-1)
-      real*8 betac(p-1)
-      real*8 xtx(p-1,p-1),xty(p-1)
-      real*8 workmhp((p-1)*p/2)
-      real*8 workvp(p-1)
+      double precision betac(p-1)
+      double precision xtx(p-1,p-1),xty(p-1)
+      double precision workmhp((p-1)*p/2)
+      double precision workvp(p-1)
 
 c+++++RN
       integer seed(2),seed1,seed2
@@ -286,19 +286,19 @@ c+++++RN
 c+++++Working space - General
       integer i,i1,i2,ii,intlp,j,jj,j1,j2,je2,k,k1,k2,ll,evali
       integer n1,n2,sprint
-      real*8 dbet,dlnrm
-      real*8 quan
-      real*8 tmp1,tmp2,tmp3,tmp4
+      double precision dbet,dlnrm
+      double precision quan
+      double precision tmp1,tmp2,tmp3,tmp4
 
 c+++++Working space - Random effects
       integer imax,imin
-      real*8 thetac
-      real*8 zty,ztz,ztzinv
+      double precision thetac
+      double precision zty,ztz,ztzinv
 
 c+++++Working space - Ditributions and RNG
-      real*8 rbeta,rgamma,rnorm,rtnorm
+      double precision rbeta,rgamma,rnorm,rtnorm
       real runif
-      real*8 dnrm,dbin,cdfnorm,invcdfnorm
+      double precision dnrm,dbin,cdfnorm,invcdfnorm
 
 c+++++Working space - MCMC
       integer iscan,isave,nscan
@@ -306,35 +306,35 @@ c+++++Working space - MCMC
 
 c+++++Working space - GLM part
       integer yij
-      real*8 acrate2
-      real*8 eta,gprime,mean,offset,ytilde
+      double precision acrate2
+      double precision eta,gprime,mean,offset,ytilde
 
 c+++++Polya tree
       integer kphi
-      real*8 mureal
-      real*8 mu2real
-      real*8 sigma2real
-      real*8 liminf,limsup
+      double precision mureal
+      double precision mu2real
+      double precision sigma2real
+      double precision liminf,limsup
 
 c+++++Working space - MH 
       integer nu
-      real*8 alphac,sigma2c,muc
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 ratio,ssb
-      real*8 logdenom
-      real*8 lognumer
-      real*8 numerBF
-      real*8 denomBF
+      double precision alphac,sigma2c,muc
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision ratio,ssb
+      double precision logdenom
+      double precision lognumer
+      double precision numerBF
+      double precision denomBF
 
 c+++++Working space slice sampling
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)
@@ -1248,15 +1248,15 @@ c===============================================================================
       integer i
       integer nsubject,p,y(nsubject,p)
       integer maxm,ntsets
-      real*8 roffset(nsubject,p) 
-      real*8 mu,sigma2
-      real*8 bi,beta(p-1)
-      real*8 prob(ntsets)
+      double precision roffset(nsubject,p) 
+      double precision mu,sigma2
+      double precision bi,beta(p-1)
+      double precision prob(ntsets)
  
       integer j,yij,kphi
-      real*8 cdfnorm,dnrm,dbin,eta,mean,tmp1,tmp2
+      double precision cdfnorm,dnrm,dbin,eta,mean,tmp1,tmp2
 
-      real*8 out
+      double precision out
 
       out=0.d0
       do j=1,p
@@ -1295,16 +1295,16 @@ c===============================================================================
       implicit none
       integer j,nsubject,p
       integer y(nsubject,p)
-      real*8 roffset(nsubject,p)
-      real*8 b(nsubject)
-      real*8 beta(p-1) 
-      real*8 prec(p-1,p-1)
-      real*8 b0(p-1) 
+      double precision roffset(nsubject,p)
+      double precision b(nsubject)
+      double precision beta(p-1) 
+      double precision prec(p-1,p-1)
+      double precision b0(p-1) 
 
       integer yij,i,jj 
-      real*8 dbin,eta,mean,tmp1
+      double precision dbin,eta,mean,tmp1
 
-      real*8 out
+      double precision out
 
       out=0.d0         
          

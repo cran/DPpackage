@@ -112,31 +112,31 @@ c=======================================================================
       implicit none
 c++++ data
       integer nrec,p
-      real*8 x(nrec,p)
-      real*8 y(nrec)
+      double precision x(nrec,p)
+      double precision y(nrec)
 
 c++++ prior
-      real*8 tau1,tau2
-      real*8 ms(p)
-      real*8 sbeta0i(p,p)
+      double precision tau1,tau2
+      double precision ms(p)
+      double precision sbeta0i(p,p)
      
 c++++ current value
-      real*8 beta(p)
-      real*8 sigma2
+      double precision beta(p)
+      double precision sigma2
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++output
-      real*8 cpo(nrec,2)
-      real*8 thetasave(nsave,p+2)
+      double precision cpo(nrec,2)
+      double precision thetasave(nsave,p+2)
 
 c+++++External Working space
       integer iflagp(p)
-      real*8 betam(p)
-      real*8 workmh(p*(p+1)/2)
-      real*8 xtx(p,p)
-      real*8 xty(p)
+      double precision betam(p)
+      double precision workmh(p*(p+1)/2)
+      double precision xtx(p,p)
+      double precision xty(p)
 
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
@@ -148,12 +148,12 @@ c+++++Internal Working space
       integer nscan
       integer skipcount
       integer sprint
-      real*8 dnrm
-      real*8 rgamma
-      real*8 tmp1,tmp2,tmp3
+      double precision dnrm
+      double precision rgamma
+      double precision tmp1,tmp2,tmp3
       
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)

@@ -23,7 +23,7 @@ c
 c=======================================================================
       implicit none
       integer dim,i,ier,j,k,k1,k2,m
-      real*8 a(dim,dim),d
+      double precision a(dim,dim),d
 
       ier=1
  
@@ -63,17 +63,17 @@ c=======================================================================
 
 c+++++Input
       integer ind,m
-      real*8 a(m,m)
+      double precision a(m,m)
 
 c+++++Working
       integer maxm
       parameter(maxm=100)
       integer i,j,k,ier
       integer counter
-      real*8 aw2(maxm,maxm),tmp1
+      double precision aw2(maxm,maxm),tmp1
 
 c+++++Output
-      real*8 aw(m,m),perm(m,m) 
+      double precision aw(m,m),perm(m,m) 
 
 c+++++Algorithm
 

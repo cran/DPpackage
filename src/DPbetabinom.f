@@ -126,37 +126,37 @@ c=======================================================================
       implicit none
 c++++ data
       integer nrec
-      real*8 y(nrec,2)
+      double precision y(nrec,2)
 
 c++++ prediction
       integer ngrid
-      real*8 grid(ngrid)
+      double precision grid(ngrid)
 
 c++++ prior
-      real*8 a0,b0
-      real*8 a1,b1
+      double precision a0,b0
+      double precision a1,b1
       
 c++++ current value
       integer ncluster
       integer ss(nrec)
-      real*8 alpha
-      real*8 p(nrec+1)
+      double precision alpha
+      double precision p(nrec+1)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++output
-      real*8 cpo(nrec,2)
-      real*8 densm(ngrid)
-      real*8 thetasave(nsave,3)
-      real*8 randsave(nsave,nrec+1)
+      double precision cpo(nrec,2)
+      double precision densm(ngrid)
+      double precision thetasave(nsave,3)
+      double precision randsave(nsave,nrec+1)
 
 c+++++External Working space
       integer ccluster(nrec)
       integer cstrt(nrec,nrec)
-      real*8 prob(nrec+1)
-      real*8 lprob(nrec+1)
-      real*8 workcpo(nrec)
+      double precision prob(nrec+1)
+      double precision lprob(nrec+1)
+      double precision workcpo(nrec)
 
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
@@ -171,17 +171,17 @@ c+++++Internal Working space
       integer since
       integer skipcount
       integer sprint
-      real*8 dbin,dbet
-      real*8 mbetabin
-      real*8 pwork
-      real*8 tmp1,tmp2,tmp3
+      double precision dbin,dbet
+      double precision mbetabin
+      double precision pwork
+      double precision tmp1,tmp2,tmp3
       
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 
 c++++ DP (functional parameter)
-      real*8 eps,rbeta
+      double precision eps,rbeta
       parameter(eps=0.01)
 
 c++++ parameters
@@ -441,10 +441,10 @@ c=======================================================================
       implicit none
       integer ind,since,nrec,ncluster,ccluster(nrec)
       integer ss(nrec),cstrt(nrec,nrec)
-      real*8 p(nrec+1)
+      double precision p(nrec+1)
  
       integer i,ii,j,ns
-      real*8 pwork
+      double precision pwork
       
       pwork=p(since) 
 
@@ -476,9 +476,9 @@ c=======================================================================
       double precision function mbetabin(a1,b1,x1,x2)
 c=======================================================================
       implicit none
-      real*8 a1,b1
-      real*8 x1,x2
-      real*8 dgamlog
+      double precision a1,b1
+      double precision x1,x2
+      double precision dgamlog
       mbetabin=dgamlog(a1+x1)+dgamlog(b1+x2)+dgamlog(a1+b1)
       mbetabin=mbetabin-dgamlog(a1+b1+x1+x2)
       mbetabin=mbetabin-dgamlog(a1)-dgamlog(b1)
@@ -492,14 +492,14 @@ c=======================================================================
 c=======================================================================
       implicit none
       integer maxn,n
-      real*8 lprob(maxn),aprob(maxn)
+      double precision lprob(maxn),aprob(maxn)
 
 c+++++internal working space 
       integer evali
       
 c+++++internal working space 
       integer cond,i
-      real*8 mmax,tmp1
+      double precision mmax,tmp1
       real runif
       
       mmax=lprob(1)

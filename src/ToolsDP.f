@@ -32,7 +32,7 @@ c     A.J.V., 2005
       implicit none
       integer i,j,ind,since,nsubject,q,ncluster,ccluster(nsubject)
       integer ss(nsubject),cstrt(nsubject,nsubject)
-      real*8 bclus(nsubject,q),theta(q)
+      double precision bclus(nsubject,q),theta(q)
 
       integer ns,ii
 
@@ -80,7 +80,7 @@ c     A.J.V., 2005
       implicit none
       integer i,j,ind,since,nrec,ncluster,ccluster(nrec)
       integer ss(nrec),cstrt(nrec,nrec)
-      real*8 bclus(nrec),theta
+      double precision bclus(nrec),theta
 
       integer ns,ii
 

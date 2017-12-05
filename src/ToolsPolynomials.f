@@ -23,7 +23,7 @@ c
 c     A.J.V. 2007 
 c=======================================================================
       implicit none 
-      real*8 x
+      double precision x
       iceil=int(x)
       if(x.le.0.0)return
       if(float(iceil).ne.x)iceil=iceil+1
@@ -43,12 +43,12 @@ c=======================================================================
 
 c+++++ Input
        integer n
-       real*8 x,pn,pd
+       double precision x,pn,pd
        dimension pn(0:n),pd(0:n)
 
 c+++++ Working
        integer k
-       real*8 p0,p1,pf
+       double precision p0,p1,pf
 
 c+++++ Algorithm
        pn(0)=1.0d0
@@ -85,12 +85,12 @@ c=======================================================================
 
 c+++++ Input
        integer n
-       real*8 x,pn
+       double precision x,pn
        dimension pn(0:n)
 
 c+++++ Working
        integer k
-       real*8 p0,p1,pf
+       double precision p0,p1,pf
 
 c+++++ Algorithm
        pn(0)=1.0d0
@@ -125,12 +125,12 @@ c=======================================================================
 
 c+++++ Input
        integer nrec,n
-       real*8 x(nrec),z(nrec,n+1),pn
+       double precision x(nrec),z(nrec,n+1),pn
        dimension pn(0:n)
 
 c+++++ Working
        integer i,j
-       real*8 xmin,xmax,zwork          
+       double precision xmin,xmax,zwork          
 
 c+++++ Algorithm
    

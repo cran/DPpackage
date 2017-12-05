@@ -35,47 +35,48 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nvar
-      real*8 y(nrec,nvar)
-      real*8 sigma2e(nrec,nvar*(nvar+1)/2)
+      double precision y(nrec,nvar)
+      double precision sigma2e(nrec,nvar*(nvar+1)/2)
 
 c+++++Prior 
       integer nu,m1rand,s1rand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 psiinv(nvar,nvar)
-      real*8 s2inv(nvar,nvar),s2invm2(nvar)
+      double precision aa0,ab0,a0b0(2)
+      double precision psiinv(nvar,nvar)
+      double precision s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,(nrec+1)*nvar)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+2)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,(nrec+1)*nvar)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+2)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,m1(nvar),s1(nvar,nvar)
-      real*8 muclus(nrec+1,nvar)
+      double precision alpha,m1(nvar),s1(nvar,nvar)
+      double precision muclus(nrec+1,nvar)
       
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++External working space
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       integer iflag(nvar)
       integer seed(2)
-      real*8 s1inv(nvar,nvar)
-      real*8 s1invm1(nvar) 
-      real*8 sigma2ei(nrec,nvar*(nvar+1)/2)
-      real*8 theta(nvar)
-      real*8 workm1(nvar,nvar),workm2(nvar,nvar),workm3(nvar,nvar)
-      real*8 workmh1(nvar*(nvar+1)/2) 
-      real*8 workmh2(nvar*(nvar+1)/2) 
-      real*8 workv1(nvar),workv2(nvar)
-      real*8 ywork(nvar)
+      double precision s1inv(nvar,nvar)
+      double precision s1invm1(nvar) 
+      double precision sigma2ei(nrec,nvar*(nvar+1)/2)
+      double precision theta(nvar)
+      double precision workm1(nvar,nvar),workm2(nvar,nvar)
+      double precision workm3(nvar,nvar)
+      double precision workmh1(nvar*(nvar+1)/2) 
+      double precision workmh2(nvar*(nvar+1)/2) 
+      double precision workv1(nvar),workv2(nvar)
+      double precision ywork(nvar)
 
 c+++++DPM
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
-      real*8 prob(nrec+1)
+      double precision prob(nrec+1)
 
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,10 +89,10 @@ c+++++General
       integer j,k,l,j1,j2
       integer ns,nscan,nuniqs,ok,sprint
       integer seed1,seed2,since,skipcount
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
       
 c++++ Define parameters
 

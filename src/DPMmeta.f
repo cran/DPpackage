@@ -198,34 +198,34 @@ c=======================================================================
 
 c+++++Data
       integer nrec,nfixed,p
-      real*8 y(nrec),x(nrec,p),sigma2e(nrec)
+      double precision y(nrec),x(nrec,p),sigma2e(nrec)
 
 c+++++Prior 
       integer murand,sigmarand
-      real*8 aa0,ab0,a0b0(2) 
-      real*8 prec(p,p),sb(p)
-      real*8 tau01,tau02,tau11,tau12,tau(4)
-      real*8 smu,psiinv
+      double precision aa0,ab0,a0b0(2) 
+      double precision prec(p,p),sb(p)
+      double precision tau01,tau02,tau11,tau12,tau(4)
+      double precision smu,psiinv
 
 c+++++MCMC parameters
       integer mcmc(5),nburn,nskip,nsave,ndisplay
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha
-      real*8 beta(p)
-      real*8 b(nrec)
-      real*8 mu(nrec)
-      real*8 sigma
-      real*8 mub
-      real*8 sigmab
+      double precision alpha
+      double precision beta(p)
+      double precision b(nrec)
+      double precision mu(nrec)
+      double precision sigma
+      double precision mub
+      double precision sigmab
 
 c+++++Output
       integer clustsave(nsave,nrec) 
-      real*8 cpo(nrec,2)
-      real*8 randsave(nsave,nrec+1)
-      real*8 musave(nsave,nrec)
-      real*8 thetasave(nsave,nfixed+6)
+      double precision cpo(nrec,2)
+      double precision randsave(nsave,nrec+1)
+      double precision musave(nsave,nrec)
+      double precision thetasave(nsave,nfixed+6)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -236,17 +236,17 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++fixed effects
       integer iflagp(p)
-      real*8 workmhp(p*(p+1)/2),workmp(p,p),workvp(p)
-      real*8 xty(p)
+      double precision workmhp(p*(p+1)/2),workmp(p,p),workvp(p)
+      double precision xty(p)
 
 c+++++DPM
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
-      real*8 prob(nrec+1)
+      double precision prob(nrec+1)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p),bsave(nrec)
+      double precision mc(5)
+      double precision betasave(p),bsave(nrec)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -256,26 +256,26 @@ c+++++General
       integer evali,ii,i,j,k,ns 
       integer ok
       integer since,sprint 
-      real*8 betar
-      real*8 theta,tmp1,tmp2,tmp3
-      real*8 ztz,zty
-      real*8 sigmainv,sigmabinv
+      double precision betar
+      double precision theta,tmp1,tmp2,tmp3
+      double precision ztz,zty
+      double precision sigmainv,sigmabinv
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,rnorm,rgamma
+      double precision dnrm,rnorm,rgamma
 
 c+++++DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)

@@ -36,14 +36,14 @@ c=======================================================================
 
 c+++++ Input
        integer maxn,maxr
-       real*8 mu0,sd0,mu1,sd1
+       double precision mu0,sd0,mu1,sd1
  
 c+++++ Output
-       real*8 sba(maxn,maxr)
+       double precision sba(maxn,maxr)
 
 c+++++ Internal working space
        integer i,j,nn
-       real*8 rnorm,rtnorm,ll,uu
+       double precision rnorm,rtnorm,ll,uu
        logical linf,lsup
 
 c+++++ Algorithm
@@ -102,18 +102,18 @@ c=======================================================================
 
 c+++++ Input
        integer maxn,maxr,maxc
-       real*8 sba(maxn,maxr)
+       double precision sba(maxn,maxr)
  
 c+++++ External working space
-       real*8 f(maxn-1,maxc-1)
+       double precision f(maxn-1,maxc-1)
 
 c+++++ Output
-       real*8 theta(maxc)
-       real*8 w(maxc)
+       double precision theta(maxc)
+       double precision w(maxc)
 
 c+++++ Internal working space
        integer count,i,j,nn
-       real*8 ll,uu
+       double precision ll,uu
 
 c+++++ Algorithm
 
@@ -171,7 +171,7 @@ c
 c     Alejandro Jara, 2010. 
 c=======================================================================      
       implicit none
-      real*8 x
+      double precision x
       ceil=x
       if(ceil.lt.x) ceil=ceil+1
       end  
@@ -206,13 +206,13 @@ c=======================================================================
 
 c++++ Input
       integer maxn,maxc,nrec
-      real*8 y(nrec) 
-      real*8 w(maxc)
-      real*8 theta(maxc)
-      real*8 sigma2(maxc)
+      double precision y(nrec) 
+      double precision w(maxc)
+      double precision theta(maxc)
+      double precision sigma2(maxc)
 
 c++++ External working space
-      real*8 prob(maxc)
+      double precision prob(maxc)
 
 c++++ Output
       integer ccluster(maxc)
@@ -221,7 +221,7 @@ c++++ Output
 
 c++++ Internal working space
       integer i,ind,j
-      real*8 dnrm
+      double precision dnrm
 
 c++++ Algorithm
 
@@ -258,13 +258,13 @@ c=======================================================================
 
 c++++ Input
       integer maxn,maxc,nrec
-      real*8 y(nrec) 
-      real*8 w(maxc)
-      real*8 theta(maxc)
-      real*8 sigma2
+      double precision y(nrec) 
+      double precision w(maxc)
+      double precision theta(maxc)
+      double precision sigma2
 
 c++++ External working space
-      real*8 prob(maxc)
+      double precision prob(maxc)
 
 c++++ Output
       integer ccluster(maxc)
@@ -273,7 +273,7 @@ c++++ Output
 
 c++++ Internal working space
       integer i,ind,j
-      real*8 dnrm
+      double precision dnrm
 
 c++++ Algorithm
 
@@ -314,16 +314,16 @@ c++++ Input
       integer ccluster(maxc)
       integer cstrt(maxc,nrec)
       integer ss(nrec)
-      real*8 y(nrec) 
-      real*8 theta(maxc)
-      real*8 tau1,tau2
+      double precision y(nrec) 
+      double precision theta(maxc)
+      double precision tau1,tau2
 
 c++++ Output
-      real*8 sigma2(maxc)
+      double precision sigma2(maxc)
 
 c++++ Internal working space
       integer i,ind,j,nr,ns
-      real*8 rgamma,sse,tmp1
+      double precision rgamma,sse,tmp1
 
 c++++ Algorithm
 
@@ -363,16 +363,16 @@ c++++ Input
       integer ccluster(maxc)
       integer cstrt(maxc,nrec)
       integer ss(nrec)
-      real*8 y(nrec) 
-      real*8 theta(maxc)
-      real*8 tau1,tau2
+      double precision y(nrec) 
+      double precision theta(maxc)
+      double precision tau1,tau2
 
 c++++ Output
-      real*8 sigma2
+      double precision sigma2
 
 c++++ Internal working space
       integer i,ind,j,nr,ns
-      real*8 rgamma,sse,tmp1
+      double precision rgamma,sse,tmp1
 
 c++++ Algorithm
 
@@ -409,15 +409,15 @@ c=======================================================================
 
 c++++ Input
       integer maxc
-      real*8 sigma2(maxc)
-      real*8 tau1,taus1,taus2
+      double precision sigma2(maxc)
+      double precision tau1,taus1,taus2
 
 c++++ Output
-      real*8 tau2
+      double precision tau2
 
 c++++ Internal working space
       integer i
-      real*8 tmp1,rgamma
+      double precision tmp1,rgamma
 
 c++++ Algorithm
 
@@ -497,16 +497,16 @@ c++++ Input
       integer cind,ii,maxn,maxc,nrec,isw,ism
       integer ccluster(maxc)
       integer cstrt(maxc,nrec)
-      real*8 xx,sigma2c,w(maxc)
-      real*8 mu0,sigma20,mu1,sigma21
-      real*8 y(nrec)
+      double precision xx,sigma2c,w(maxc)
+      double precision mu0,sigma20,mu1,sigma21
+      double precision y(nrec)
 
 c++++ Output
-      real*8 out
+      double precision out
  
 c++++ Internal working space
       integer i,ns
-      real*8 dnrm
+      double precision dnrm
 
 c++++ Algorithm
 
@@ -553,40 +553,40 @@ c=======================================================================
 
 c++++ Data
       integer nrec
-      real*8 y(nrec)
+      double precision y(nrec)
 
 c++++ Prior
       integer maxn,maxr,maxc
-      real*8 mu0,sigma20
-      real*8 mu1,sigma21
+      double precision mu0,sigma20
+      double precision mu1,sigma21
 
 c++++ Current state of the chain (cluster info)
       integer ccluster(maxc)
       integer cstrt(maxc,nrec)
-      real*8 sigma2(maxc)
+      double precision sigma2(maxc)
 
 c++++ External working space
       integer possv(maxn)
-      real*8 f(maxn-1,maxc-1)
+      double precision f(maxn-1,maxc-1)
 
 c++++ Input/Output (RSBA elements)
-      real*8 sba(maxn,maxr)
-      real*8 theta(maxc)
-      real*8 w(maxc)
+      double precision sba(maxn,maxr)
+      double precision theta(maxc)
+      double precision w(maxc)
 
 c++++ Internal working space
       integer cind
       integer i,isw,ism,j,k,nb,ns
-      real*8 tmp1
+      double precision tmp1
 
 c++++ RNG and distributions
       real runif
 
 c++++ Working space slice sampling
       integer evali
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c++++ Algorithm
 
@@ -799,19 +799,19 @@ c=======================================================================
 
 c+++++ Input
        integer maxn,maxr
-       real*8 mu1,sigma21
-       real*8 sba(maxn,maxr)
-       real*8 m1,s1
+       double precision mu1,sigma21
+       double precision sba(maxn,maxr)
+       double precision m1,s1
  
 c+++++ Output
-       real*8 lpost
+       double precision lpost
 
 c+++++ Internal working space
        integer i,j,nn
-       real*8 ll,uu,xx
-       real*8 tmp1,tmp2,tmp3,tmp4
-       real*8 cdfnorm,dnrm
-       real*8 sd1
+       double precision ll,uu,xx
+       double precision tmp1,tmp2,tmp3,tmp4
+       double precision cdfnorm,dnrm
+       double precision sd1
 
 c+++++ Algorithm
 
@@ -866,19 +866,19 @@ c=======================================================================
 
 c+++++ Input
        integer maxn,maxr
-       real*8 mu1,sigma21
-       real*8 sba(maxn,maxr)
-       real*8 tauh1,tauh2
+       double precision mu1,sigma21
+       double precision sba(maxn,maxr)
+       double precision tauh1,tauh2
  
 c+++++ Output
-       real*8 lpost
+       double precision lpost
 
 c+++++ Internal working space
        integer i,j,nn
-       real*8 ll,uu,xx
-       real*8 tmp1,tmp2,tmp3,tmp4
-       real*8 cdfnorm,dnrm
-       real*8 sd1
+       double precision ll,uu,xx
+       double precision tmp1,tmp2,tmp3,tmp4
+       double precision cdfnorm,dnrm
+       double precision sd1
 c+++++ Algorithm
 
        lpost=0.d0
@@ -931,17 +931,17 @@ c=======================================================================
 
 c+++++ Input
        integer maxn,maxr,nrec
-       real*8 mu0,sd0,mu1,sd1
-       real*8 y(nrec)
+       double precision mu0,sd0,mu1,sd1
+       double precision y(nrec)
  
 c+++++ Output
-       real*8 sba(maxn,maxr)
+       double precision sba(maxn,maxr)
 
 c+++++ Internal working space
        integer i,ii,j,nn
        integer count
-       real*8 rnorm,rtnorm,ll,uu
-       real*8 tmp1
+       double precision rnorm,rtnorm,ll,uu
+       double precision tmp1
        logical linf,lsup
 
 c+++++ Algorithm

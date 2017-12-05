@@ -28,17 +28,17 @@ c++++ External parameters
       integer nsave,npred,ngrid,tband
 
 c++++ External working
-      real*8 fs(ngrid)
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,ngrid)
+      double precision fs(ngrid)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,ngrid)
 
 c++++ Output      
-      real*8 llower(npred,ngrid)
-      real*8 lupper(npred,ngrid)
+      double precision llower(npred,ngrid)
+      double precision lupper(npred,ngrid)
 
 c++++ Internal parameters
-      real*8 alpha
-      real*8 aupp(2),alow(2)
+      double precision alpha
+      double precision aupp(2),alow(2)
 
 c++++ Internal working
       integer i,ii,j,jj,k,l   
@@ -101,17 +101,17 @@ c++++ External parameters
       integer nsave,npred,ngrid,tband
 
 c++++ External working
-      real*8 fs(ngrid)
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,ngrid)
+      double precision fs(ngrid)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,ngrid)
 
 c++++ Output      
-      real*8 llower(npred,ngrid)
-      real*8 lupper(npred,ngrid)
+      double precision llower(npred,ngrid)
+      double precision lupper(npred,ngrid)
 
 c++++ Internal parameters
-      real*8 alpha
-      real*8 aupp(2),alow(2)
+      double precision alpha
+      double precision aupp(2),alow(2)
 
 c++++ Internal working
       integer i,ii,j,jj,k,l   
@@ -169,32 +169,32 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ntlr,npred,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2
-      real*8 xtfpred(npred,ptf)
-      real*8 xcepred(npred,pce)
-      real*8 qqnum(3)
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2
+      double precision xtfpred(npred,ptf)
+      double precision xcepred(npred,pce)
+      double precision qqnum(3)
 
 c++++ Output
-      real*8 qquanm(npred,3)
-      real*8 qquanw(npred,3)
+      double precision qquanm(npred,3)
+      double precision qquanw(npred,3)
 
 c++++ External working space
       integer k(maxm)
-      real*8 prob(2**maxm)
-      real*8 probc(2**maxm)
+      double precision prob(2**maxm)
+      double precision probc(2**maxm)
     
 c++++ working space - scalar
       integer i,ii,j,j1,j2,k1,k2,ll,m
       integer kphi
       integer nsets 
       integer poss1,poss2,poss3
-      real*8 invcdfnorm
-      real*8 dinvnorm
-      real*8 loglik
-      real*8 qworks,qworkr,qworkr2
-      real*8 tmp1,tmp2,tmp3
+      double precision invcdfnorm
+      double precision dinvnorm
+      double precision loglik
+      double precision qworks,qworkr,qworkr2
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
 
@@ -353,32 +353,32 @@ c=======================================================================
 c++++ Input
       integer ii  
       integer maxm,ntlr,nrec,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2
-      real*8 xtf(nrec,ptf)
-      real*8 xce(nrec,pce)
-      real*8 val
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2
+      double precision xtf(nrec,ptf)
+      double precision xce(nrec,pce)
+      double precision val
 
 c++++ Output
-      real*8 cdfval
+      double precision cdfval
 
 c++++ External working space
       integer k(maxm)
-      real*8 prob(2**maxm)
-      real*8 probc(2**maxm)
+      double precision prob(2**maxm)
+      double precision probc(2**maxm)
 
 c++++ Internal working space - scalar
       integer i,j,j1,j2,k1,k2,ll,m
       integer kphi
       integer nsets 
       integer possi
-      real*8 cdfnorm
-      real*8 loglik
-      real*8 accsum
-      real*8 cdfw
-      real*8 tmp1,tmp2,tmp3
-      real*8 ee  
+      double precision cdfnorm
+      double precision loglik
+      double precision accsum
+      double precision cdfw
+      double precision tmp1,tmp2,tmp3
+      double precision ee  
 
 c++++ Algorithm
 
@@ -518,15 +518,15 @@ c=======================================================================
 c++++ Input
       integer ii
       integer maxm,nrec,ntlr,ntprob,pce,ptf
-      real*8 yc
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2
-      real*8 xce(nrec,pce)  
-      real*8 xtf(nrec,ptf)
+      double precision yc
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2
+      double precision xce(nrec,pce)  
+      double precision xtf(nrec,ptf)
 
 c++++ Output
-      real*8 loglik
+      double precision loglik
 
 c++++ External working space
       integer k(maxm)
@@ -534,9 +534,9 @@ c++++ External working space
 c++++ Internal working space
       integer i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 tmp1,tmp2,tmp3
+      double precision cdfnorm
+      double precision dnrm
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
 
@@ -617,16 +617,16 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ngrid,ntlr,ntprob,npred,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 grid(ngrid)
-      real*8 sigma2
-      real*8 xtfpred(npred,ptf)
-      real*8 xcepred(npred,pce)
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision grid(ngrid)
+      double precision sigma2
+      double precision xtfpred(npred,ptf)
+      double precision xcepred(npred,pce)
 
 c++++ Output
-      real*8 densw(npred,ngrid)
-      real*8 densm(npred,ngrid)
+      double precision densw(npred,ngrid)
+      double precision densm(npred,ngrid)
 
 c++++ External working space
       integer k(maxm)
@@ -634,11 +634,11 @@ c++++ External working space
 c++++ Internal working space
       integer ii,jj,i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 dnrm
-      real*8 cdfnorm
-      real*8 tmp
-      real*8 loglik
-      real*8 tmp1,tmp2,tmp3
+      double precision dnrm
+      double precision cdfnorm
+      double precision tmp
+      double precision loglik
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
 
@@ -730,17 +730,17 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ntlr,ntprob,nrec,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 y(nrec)
-      real*8 sigma2
-      real*8 xtf(nrec,ptf)
-      real*8 xce(nrec,pce)
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision y(nrec)
+      double precision sigma2
+      double precision xtf(nrec,ptf)
+      double precision xce(nrec,pce)
 
 c++++ Output
       integer nobsbc(ntprob)
       integer obsbc(ntprob,nrec)
-      real*8 loglik
+      double precision loglik
 
 c++++ External working space
       integer k(maxm)
@@ -748,9 +748,9 @@ c++++ External working space
 c++++ Internal working space
       integer i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 tmp1,tmp2,tmp3
+      double precision cdfnorm
+      double precision dnrm
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
  
@@ -850,19 +850,19 @@ c++++ Input
       integer kk,ii,jj,n1,n2
       integer maxm,ntlr,ntprob,nrec,ptf
       integer obsbc(ntprob,nrec)
-      real*8 betatf(ntlr,ptf)
-      real*8 c0(ptf,ptf)
-      real*8 xtf(nrec,ptf)
+      double precision betatf(ntlr,ptf)
+      double precision c0(ptf,ptf)
+      double precision xtf(nrec,ptf)
 
 c++++ External working space
       integer iflagp(ptf)
-      real*8 beta(ptf)
-      real*8 xtx(ptf,ptf)
-      real*8 xty(ptf)
+      double precision beta(ptf)
+      double precision xtx(ptf,ptf)
+      double precision xty(ptf)
 
 c++++ Working space
       integer i,j,k,ll,nhr
-      real*8 eta,gprime,mu,pr,tmp1,ytilde
+      double precision eta,gprime,mu,pr,tmp1,ytilde
 
 c++++ Algorithm
 
@@ -969,16 +969,16 @@ c=======================================================================
 c++++ Input
       integer kk
       integer maxm,ntlr,ntprob,ptf
-      real*8 betatf(ntlr,ptf)
-      real*8 c0(ptf,ptf)
+      double precision betatf(ntlr,ptf)
+      double precision c0(ptf,ptf)
 
 c++++ Exetrnal working space
       integer iflagp(ptf)
-      real*8 beta(ptf)
-      real*8 betam(ptf)
-      real*8 xtx(ptf,ptf)
-      real*8 workmhp(ptf*(ptf+1)/2)
-      real*8 workvp(ptf)
+      double precision beta(ptf)
+      double precision betam(ptf)
+      double precision xtx(ptf,ptf)
+      double precision workmhp(ptf*(ptf+1)/2)
+      double precision workvp(ptf)
 
 c++++ Working space
       integer i,j
@@ -1014,29 +1014,29 @@ c++++ Input
       integer kk,ii,jj,n1,n2
       integer maxm,ntlr,ntprob,nrec,ptf
       integer obsbc(ntprob,nrec)
-      real*8 betatf(ntlr,ptf)
-      real*8 xtf(nrec,ptf)
-      real*8 c0(ptf,ptf)
+      double precision betatf(ntlr,ptf)
+      double precision xtf(nrec,ptf)
+      double precision c0(ptf,ptf)
 
 c++++ Output
       integer accept
 
 c++++ External working space
       integer iflagp(ptf)
-      real*8 beta(ptf)
-      real*8 betam(ptf)
-      real*8 betac(ptf)
-      real*8 xtx(ptf,ptf)
-      real*8 xty(ptf)
-      real*8 workmhp(ptf*(ptf+1)/2)
+      double precision beta(ptf)
+      double precision betam(ptf)
+      double precision betac(ptf)
+      double precision xtx(ptf,ptf)
+      double precision xty(ptf)
+      double precision workmhp(ptf*(ptf+1)/2)
 
 c++++ Internal working space
       integer i,j,k,ll
-      real*8 eta,gprime,mu,pr,tmp1,ytilde
-      real*8 lratio,luni
-      real*8 logliko,loglikn
-      real*8 logprioro,logpriorn
-      real*8 logcgko,logcgkn
+      double precision eta,gprime,mu,pr,tmp1,ytilde
+      double precision lratio,luni
+      double precision logliko,loglikn
+      double precision logprioro,logpriorn
+      double precision logcgko,logcgkn
       real runif
 
 c++++ Algorithm
@@ -1268,29 +1268,29 @@ c++++ Input
       integer kk,ii,jj,n1,n2
       integer maxm,ntlr,ntprob,nrec,ptf
       integer obsbc(ntprob,nrec)
-      real*8 betatf(ntlr,ptf)
-      real*8 xtf(nrec,ptf)
-      real*8 c0(ptf,ptf)
+      double precision betatf(ntlr,ptf)
+      double precision xtf(nrec,ptf)
+      double precision c0(ptf,ptf)
 
 c++++ Output
       integer accept
 
 c++++ External working space
       integer iflagp(ptf)
-      real*8 beta(ptf)
-      real*8 xtx(ptf,ptf)
+      double precision beta(ptf)
+      double precision xtx(ptf,ptf)
 
 c++++ Internal working space
       integer i,j
-      real*8 tmp1
-      real*8 uni
+      double precision tmp1
+      double precision uni
       real runif
 
 c++++ Working space slice sampling
       integer evali
-      real*8 rexpo,re,uwork
-      real*8 logy,xx0,xx1,llim,rlim
-      real*8 grlim,gllim,gxx0,gxx1
+      double precision rexpo,re,uwork
+      double precision logy,xx0,xx1,llim,rlim
+      double precision grlim,gllim,gxx0,gxx1
 
 c++++ Algorithm
 
@@ -1409,18 +1409,18 @@ c=======================================================================
 c++++ Input
       integer ii,jj,ptf,n1,n2,nrec,ntprob 
       integer obsbc(ntprob,nrec)
-      real*8 beta(ptf)
-      real*8 xtx(ptf,ptf)
-      real*8 xtf(nrec,ptf)
+      double precision beta(ptf)
+      double precision xtx(ptf,ptf)
+      double precision xtf(nrec,ptf)
 
 c++++ Output
-      real*8 logp
+      double precision logp
  
 c++++ Working space
       integer i,j,ll
-      real*8 eta
-      real*8 loglikn
-      real*8 logpriorn
+      double precision eta
+      double precision loglikn
+      double precision logpriorn
 
 c++++ Algorithm
 
@@ -1476,20 +1476,20 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ntlr,ntprob,nrec,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 y(nrec)
-      real*8 sigma2
-      real*8 xtf(nrec,ptf)
-      real*8 xce(nrec,pce)
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision y(nrec)
+      double precision sigma2
+      double precision xtf(nrec,ptf)
+      double precision xce(nrec,pce)
 
-      real*8 betacepm(pce)
-      real*8 precce(pce,pce)
+      double precision betacepm(pce)
+      double precision precce(pce,pce)
 
 c++++ Output
       integer nobsbc(ntprob)
       integer obsbc(ntprob,nrec)
-      real*8 logpost
+      double precision logpost
 
 c++++ External working space
       integer k(maxm)
@@ -1497,11 +1497,11 @@ c++++ External working space
 c++++ Internal working space
       integer i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 tmp1,tmp2,tmp3
-      real*8 loglikn
-      real*8 logpriorn 
+      double precision cdfnorm
+      double precision dnrm
+      double precision tmp1,tmp2,tmp3
+      double precision loglikn
+      double precision logpriorn 
 
 c++++ Algorithm
  
@@ -1611,16 +1611,16 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ngrid,ntlr,ntprob,npred,pce,ptf
-      real*8 betace(pce)
-      real*8 betatf(ntlr,ptf)
-      real*8 grid(ngrid)
-      real*8 sigma2
-      real*8 xtfpred(npred,ptf)
-      real*8 xcepred(npred,pce)
+      double precision betace(pce)
+      double precision betatf(ntlr,ptf)
+      double precision grid(ngrid)
+      double precision sigma2
+      double precision xtfpred(npred,ptf)
+      double precision xcepred(npred,pce)
 
 c++++ Output
-      real*8 densw(npred,ngrid)
-      real*8 densm(npred,ngrid)
+      double precision densw(npred,ngrid)
+      double precision densm(npred,ngrid)
 
 c++++ External working space
       integer k(maxm)
@@ -1628,11 +1628,11 @@ c++++ External working space
 c++++ Internal working space
       integer ii,jj,i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 dnrm
-      real*8 cdfnorm
-      real*8 tmp
-      real*8 loglik
-      real*8 tmp1,tmp2,tmp3
+      double precision dnrm
+      double precision cdfnorm
+      double precision tmp
+      double precision loglik
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
 
@@ -1724,16 +1724,16 @@ c++++ External parameters
       integer nsave,npred,tband
 
 c++++ External working
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,npred)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,npred)
 
 c++++ Output      
-      real*8 llower(npred,3)
-      real*8 lupper(npred,3)
+      double precision llower(npred,3)
+      double precision lupper(npred,3)
 
 c++++ Internal parameters
-      real*8 alpha
-      real*8 aupp(2),alow(2)
+      double precision alpha
+      double precision aupp(2),alow(2)
 
 c++++ Internal working
       integer i,ii,j,jj,k,l   
@@ -1784,16 +1784,16 @@ c++++ External parameters
       integer nsave,npred,tband
 
 c++++ External working
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,npred)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,npred)
 
 c++++ Output      
-      real*8 llower(npred,3)
-      real*8 lupper(npred,3)
+      double precision llower(npred,3)
+      double precision lupper(npred,3)
 
 c++++ Internal parameters
-      real*8 alpha
-      real*8 aupp(2),alow(2)
+      double precision alpha
+      double precision aupp(2),alow(2)
 
 c++++ Internal working
       integer i,ii,j,jj,k,l   
@@ -1845,16 +1845,16 @@ c++++ External parameters
       integer nsave,npred,tband
 
 c++++ External working
-      real*8 worksam(nsave)
-      real*8 worksam2(nsave,npred)
+      double precision worksam(nsave)
+      double precision worksam2(nsave,npred)
 
 c++++ Output      
-      real*8 llower(npred,3)
-      real*8 lupper(npred,3)
+      double precision llower(npred,3)
+      double precision lupper(npred,3)
 
 c++++ Internal parameters
-      real*8 alpha
-      real*8 aupp(2),alow(2)
+      double precision alpha
+      double precision aupp(2),alow(2)
 
 c++++ Internal working
       integer i,ii,j,jj,k,l   
@@ -1896,13 +1896,13 @@ c++++ Algorithm
 c+++++++++++++++++++++++++++++++++++++++
 c a routine written by john herrero
 c+++++++++++++++++++++++++++++++++++++++
-      real*8 function dinvnorm(p)
-      real*8 p,p_low,p_high
-      real*8 a1,a2,a3,a4,a5,a6
-      real*8 b1,b2,b3,b4,b5
-      real*8 c1,c2,c3,c4,c5,c6
-      real*8 d1,d2,d3,d4
-      real*8 z,q,r
+      double precision function dinvnorm(p)
+      double precision p,p_low,p_high
+      double precision a1,a2,a3,a4,a5,a6
+      double precision b1,b2,b3,b4,b5
+      double precision c1,c2,c3,c4,c5,c6
+      double precision d1,d2,d3,d4
+      double precision z,q,r
       a1=-39.6968302866538
       a2=220.946098424521
       a3=-275.928510446969
@@ -1959,15 +1959,15 @@ c=======================================================================
 
 c++++ Input
       integer maxm,ntlr,ntprob,nsubject,ptf
-      real*8 betatf(ntlr,ptf)
-      real*8 b(nsubject)
-      real*8 sigma2b
-      real*8 xtf(nsubject,ptf)
+      double precision betatf(ntlr,ptf)
+      double precision b(nsubject)
+      double precision sigma2b
+      double precision xtf(nsubject,ptf)
 
 c++++ Output
       integer nobsbc(ntprob)
       integer obsbc(ntprob,nsubject)
-      real*8 loglik
+      double precision loglik
 
 c++++ External working space
       integer k(maxm)
@@ -1975,9 +1975,9 @@ c++++ External working space
 c++++ Internal working space
       integer i,j,j1,j2,k1,k2,m,ll
       integer kphi
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 tmp1,tmp2,tmp3
+      double precision cdfnorm
+      double precision dnrm
+      double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
  
@@ -2072,15 +2072,15 @@ c++++ Input
       integer maxm,maxni,nrec,nsubject,ntlr,ntprob,p,ptf
       integer datastr(nsubject,maxni+1)
       integer y(nrec)
-      real*8 bc
-      real*8 beta(p)
-      real*8 betatf(ntlr,ptf)
-      real*8 sigma2b
-      real*8 x(nrec,p+1)  
-      real*8 xtf(nsubject,ptf)
+      double precision bc
+      double precision beta(p)
+      double precision betatf(ntlr,ptf)
+      double precision sigma2b
+      double precision x(nrec,p+1)  
+      double precision xtf(nsubject,ptf)
 
 c++++ Output
-      real*8 logpost
+      double precision logpost
 
 c++++ External working space
       integer k(maxm)
@@ -2089,12 +2089,12 @@ c++++ Internal working space
       integer i,j,j1,j2,k1,k2,m,ni,ll
       integer kphi
       integer yij
-      real*8 cdfnorm
-      real*8 dnrm
-      real*8 dpoiss
-      real*8 eta
-      real*8 tmp1,tmp2,tmp3
-      real*8 logprior,loglik
+      double precision cdfnorm
+      double precision dnrm
+      double precision dpoiss
+      double precision eta
+      double precision tmp1,tmp2,tmp3
+      double precision logprior,loglik
 
 c++++ Algorithm
 

@@ -211,36 +211,37 @@ c=======================================================================
 c+++++Data
       integer nrec,nvar
       integer tint(nrec,nvar)
-      real*8 llower(nrec,nvar)
-      real*8 lupper(nrec,nvar)
+      double precision llower(nrec,nvar)
+      double precision lupper(nrec,nvar)
 
 c+++++Functionals
       integer ngrid,ngridb
-      real*8 grid(ngrid,nvar)
+      double precision grid(ngrid,nvar)
  
 c+++++Prior 
       integer nuvec(2),nu1,nu2,m1rand
-      real*8 aa0,ab0,a0b0(2)
-      real*8 psiinv2(nvar,nvar)
-      real*8 tau(2),tau1,tau2
-      real*8 s2inv(nvar,nvar),s2invm2(nvar)
+      double precision aa0,ab0,a0b0(2)
+      double precision psiinv2(nvar,nvar)
+      double precision tau(2),tau1,tau2
+      double precision s2inv(nvar,nvar),s2invm2(nvar)
 
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Current values of the parameters
       integer ncluster,ss(nrec)
-      real*8 alpha,k0,m1(nvar)
-      real*8 muclus(nrec+100,nvar)
-      real*8 psi1(nvar,nvar),psiinv1(nvar,nvar)
-      real*8 sigmaclus(nrec+100,nvar*(nvar+1)/2)
-      real*8 y(nrec,nvar)
+      double precision alpha,k0,m1(nvar)
+      double precision muclus(nrec+100,nvar)
+      double precision psi1(nvar,nvar),psiinv1(nvar,nvar)
+      double precision sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision y(nrec,nvar)
  
 c+++++Output
-      real*8 randsave(nsave,(nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
-      real*8 thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
-      real*8 fbiv(ngridb)
-      real*8 funi(ngrid,nvar)
+      double precision randsave(nsave,
+     1 (nrec+2)*nvar+(nrec+1)*nvar*(nvar+1)/2)
+      double precision thetasave(nsave,nvar+nvar*(nvar+1)/2+3)
+      double precision fbiv(ngridb)
+      double precision funi(ngrid,nvar)
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -250,22 +251,22 @@ c+++++External working space
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++Latent 
-      real*8 muwork(nvar)
-      real*8 sigmawork(nvar,nvar)
-      real*8 workm1(nvar,nvar)
-      real*8 workm2(nvar,nvar)
-      real*8 workm3(nvar,nvar)
-      real*8 workv1(nvar)
-      real*8 workv2(nvar)
+      double precision muwork(nvar)
+      double precision sigmawork(nvar,nvar)
+      double precision workm1(nvar,nvar)
+      double precision workm2(nvar,nvar)
+      double precision workm3(nvar,nvar)
+      double precision workv1(nvar)
+      double precision workv2(nvar)
 
 c+++++DP
       integer ccluster(nrec)
       integer cstrt(nrec,nrec)
       integer iflag(nvar)
-      real*8 prob(nrec+100)
-      real*8 ywork(nvar)
-      real*8 workmh1(nvar*(nvar+1)/2)
-      real*8 workmh2(nvar*(nvar+1)/2)
+      double precision prob(nrec+100)
+      double precision ywork(nvar)
+      double precision workmh1(nvar*(nvar+1)/2)
+      double precision workmh2(nvar*(nvar+1)/2)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -276,29 +277,29 @@ c+++++General
       integer i1,j1
       integer evali,i,ii,j,jj,k,l,nuniqs,nuwork,ns,ok,since,sprint
       integer ihmssf
-      real*8 tmp1,tmp2,tmp3
+      double precision tmp1,tmp2,tmp3
 
 c+++++Bivariate density
       integer iflagd(2)
-      real*8 gridd(2)
-      real*8 mud(2)
-      real*8 sigmad1(2,2)
-      real*8 tpi 
+      double precision gridd(2)
+      double precision mud(2)
+      double precision sigmad1(2,2)
+      double precision tpi 
 
 c+++++Latent variables
-      real*8 slow,supp  
+      double precision slow,supp  
       logical ainf,binf
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dnrm,dlnrm,cdfnorm
-      real*8 cdflnorm,rgamma,rtnorm,rbeta,dbet
+      double precision dnrm,dlnrm,cdfnorm
+      double precision cdflnorm,rgamma,rtnorm,rbeta,dbet
       real runif
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)
@@ -1061,8 +1062,9 @@ c=======================================================================
       implicit none
       integer i,j,ind,since,nrec,nvar,ncluster,ccluster(nrec)
       integer ss(nrec),cstrt(nrec,nrec)
-      real*8 muclus(nrec+100,nvar),sigmaclus(nrec+100,nvar*(nvar+1)/2)
-      real*8 workv1(nvar),workmh1(nvar*(nvar+1)/2)
+      double precision muclus(nrec+100,nvar),
+     1  sigmaclus(nrec+100,nvar*(nvar+1)/2)
+      double precision workv1(nvar),workmh1(nvar*(nvar+1)/2)
 
       integer ns,ii,nt
 

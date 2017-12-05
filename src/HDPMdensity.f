@@ -64,41 +64,41 @@ c=======================================================================
 c++++ data
       integer nrec,nvar,nstudy
       integer study(nrec)
-      real*8 y(nrec,nvar)
+      double precision y(nrec,nvar)
 
 c++++ prediction
       integer ngrid
-      real*8 grid(ngrid,nvar)
+      double precision grid(ngrid,nvar)
 
 c++++ prior
       integer nu,nub,sameps,sammu,samsb
-      real*8 a0b0(nstudy+1,2)
-      real*8 tinv(nvar,nvar)
-      real*8 m0(nvar),prec0(nvar,nvar)
-      real*8 tbinv(nvar,nvar)
-      real*8 aebe(2)
-      real*8 pieps(2)
+      double precision a0b0(nstudy+1,2)
+      double precision tinv(nvar,nvar)
+      double precision m0(nvar),prec0(nvar,nvar)
+      double precision tbinv(nvar,nvar)
+      double precision aebe(2)
+      double precision pieps(2)
 
 c++++ current value
       integer ncluster
       integer ss(nrec)
       integer sc(nrec)
-      real*8 alpha(nstudy+1)
-      real*8 muclus(nrec+100,nvar)
-      real*8 sigma(nvar,nvar)
-      real*8 mub(nvar)
-      real*8 sigmab(nvar,nvar)
-      real*8 eps
+      double precision alpha(nstudy+1)
+      double precision muclus(nrec+100,nvar)
+      double precision sigma(nvar,nvar)
+      double precision mub(nvar)
+      double precision sigmab(nvar,nvar)
+      double precision eps
 
 c++++ mcmc
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c++++ output
-      real*8 densmc(nstudy+1,nvar*ngrid)
-      real*8 densms(nstudy,nvar*ngrid)
-      real*8 thetasave(nsave,nvar*(nvar+1)+1+
+      double precision densmc(nstudy+1,nvar*ngrid)
+      double precision densms(nstudy,nvar*ngrid)
+      double precision thetasave(nsave,nvar*(nvar+1)+1+
      &                 nstudy+1+nvar)
-      real*8 randsave(nsave,nstudy)
+      double precision randsave(nsave,nstudy)
   
 c++++ seeds
       integer seed1,seed2,seed(2)
@@ -109,17 +109,17 @@ c++++ external working space
       integer scstrt(nstudy+1,nrec)
       integer sccluster(nstudy+1)
       integer iflagp(nvar)
-      real*8 ywork(nvar)
-      real*8 muwork(nvar)
-      real*8 sigmainv(nvar,nvar)
-      real*8 sigmabinv(nvar,nvar)
-      real*8 sigmawork(nvar,nvar)
-      real*8 prob(nrec+100)
-      real*8 quadf(nvar,nvar)
-      real*8 workm1(nvar,nvar)
-      real*8 workmh1(nvar*(nvar+1)/2)
-      real*8 workmh2(nvar*(nvar+1)/2)
-      real*8 workv1(nvar)
+      double precision ywork(nvar)
+      double precision muwork(nvar)
+      double precision sigmainv(nvar,nvar)
+      double precision sigmabinv(nvar,nvar)
+      double precision sigmawork(nvar,nvar)
+      double precision prob(nrec+100)
+      double precision quadf(nvar,nvar)
+      double precision workm1(nvar,nvar)
+      double precision workmh1(nvar*(nvar+1)/2)
+      double precision workmh2(nvar*(nvar+1)/2)
+      double precision workv1(nvar)
 
 c++++ internal working space - General
       integer i,ii,j,jj,k,kk,l,ok
@@ -132,9 +132,9 @@ c++++ internal working space - General
       integer since
       integer skipcount
       integer sprint
-      real*8 dnrm
-      real*8 tmp1,tmp2,tmp3,tmp4,tmp5
-      real*8 rbeta,lbetaf
+      double precision dnrm
+      double precision tmp1,tmp2,tmp3,tmp4,tmp5
+      double precision rbeta,lbetaf
 
 c++++ internal working space - WDP
       integer studyind
@@ -142,7 +142,7 @@ c++++ internal working space - WDP
       integer ncj,nc0
 
 c++++ CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++++++++++++++++++++++++
 c     initialize variables
@@ -916,7 +916,7 @@ c=======================================================================
       integer cstrt(nrec,nrec)
       integer ccluster(nrec)
       integer sc(nrec)
-      real*8 muclus(nrec+100,nvar)
+      double precision muclus(nrec+100,nvar)
 
       integer i,j,ns,ii,jj,ok
 

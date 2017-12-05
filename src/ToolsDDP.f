@@ -21,27 +21,27 @@ c+++++Parameters
       integer cstrt(nsubject,nsubject)
       integer ss(nsubject)
       
-      real*8 alpha
-      real*8 y(nsubject)
-      real*8 x(nsubject,p)
-      real*8 mub(p)
-      real*8 sigma2k
-      real*8 sigmab(p,p)
-      real*8 sigmabinv(p,p)
+      double precision alpha
+      double precision y(nsubject)
+      double precision x(nsubject,p)
+      double precision mub(p)
+      double precision sigma2k
+      double precision sigmab(p,p)
+      double precision sigmabinv(p,p)
 
 c+++++Working external
       integer iflagc(p)
-      real*8 prob(nsubject+1)
-      real*8 theta(p)
-      real*8 ztz(p,p)
-      real*8 zty(p)
+      double precision prob(nsubject+1)
+      double precision theta(p)
+      double precision ztz(p,p)
+      double precision zty(p)
 
 c+++++Working internal
       integer evali,i,j,k,l,m,ok
       integer ns
       integer since
-      real*8 tmp1,tmp2,tmp3
-      real*8 dnrm
+      double precision tmp1,tmp2,tmp3
+      double precision dnrm
 
 c+++++Algorithm
 
@@ -203,26 +203,26 @@ c+++++Parameters
       integer ccluster(nsubject)
       integer cstrt(nsubject,nsubject)
       
-      real*8 y(nsubject)
-      real*8 x(nsubject,p)
+      double precision y(nsubject)
+      double precision x(nsubject,p)
       
-      real*8 b(nsubject,p)
-      real*8 sigma2k
-      real*8 mub(p)
-      real*8 sigmabinv(p,p)
+      double precision b(nsubject,p)
+      double precision sigma2k
+      double precision mub(p)
+      double precision sigmabinv(p,p)
 
 c+++++Working external
       integer iflagc(p)
-      real*8 theta(p)
-      real*8 workvc(p)
-      real*8 workmhc(p*(p+1)/2)
-      real*8 ztz(p,p)
-      real*8 zty(p)
+      double precision theta(p)
+      double precision workvc(p)
+      double precision workmhc(p*(p+1)/2)
+      double precision ztz(p,p)
+      double precision zty(p)
 
 c+++++Working internal
       integer j,k,l,m
       integer ns
-      real*8 tmp1
+      double precision tmp1
 
 c+++++Algorithm
 
@@ -332,32 +332,32 @@ c+++++Parameters
       integer ss(nsubject)
       integer possi(nvar,p)
       
-      real*8 alpha
-      real*8 y(nsubject,nvar)
-      real*8 x(nsubject,p)
-      real*8 mub(nvar*p)
-      real*8 sigmak(nvar,nvar)      
-      real*8 sigmakinv(nvar,nvar)            
-      real*8 sigmab(nvar*p,nvar*p)
-      real*8 sigmabinv(nvar*p,nvar*p)
+      double precision alpha
+      double precision y(nsubject,nvar)
+      double precision x(nsubject,p)
+      double precision mub(nvar*p)
+      double precision sigmak(nvar,nvar)      
+      double precision sigmakinv(nvar,nvar)            
+      double precision sigmab(nvar*p,nvar*p)
+      double precision sigmabinv(nvar*p,nvar*p)
 
 c+++++Working external
       integer iflagn(nvar)
       integer iflagc(nvar*p)
-      real*8 prob(nsubject+1)
-      real*8 theta(nvar*p)
-      real*8 workmn(nvar,nvar)      
-      real*8 workvn(nvar)
-      real*8 workvn2(nvar)
-      real*8 ztz(nvar*p,nvar*p)
-      real*8 zty(nvar*p)
+      double precision prob(nsubject+1)
+      double precision theta(nvar*p)
+      double precision workmn(nvar,nvar)      
+      double precision workvn(nvar)
+      double precision workvn2(nvar)
+      double precision ztz(nvar*p,nvar*p)
+      double precision zty(nvar*p)
 
 c+++++Working internal
       integer evali,i,ii,j,jj,k,l,m,ok
       integer ns
       integer pos1,pos2
       integer since
-      real*8 tmp1,tmp2
+      double precision tmp1,tmp2
 
 c+++++Algorithm
 
@@ -553,27 +553,27 @@ c+++++Parameters
       integer cstrt(nsubject,nsubject)
       integer possi(nvar,p)
       
-      real*8 y(nsubject,nvar)
-      real*8 x(nsubject,p)
+      double precision y(nsubject,nvar)
+      double precision x(nsubject,p)
       
-      real*8 b(nsubject,nvar*p)
-      real*8 sigmakinv(nvar,nvar)            
-      real*8 mub(nvar*p)
-      real*8 sigmabinv(nvar*p,nvar*p)
+      double precision b(nsubject,nvar*p)
+      double precision sigmakinv(nvar,nvar)            
+      double precision mub(nvar*p)
+      double precision sigmabinv(nvar*p,nvar*p)
 
 c+++++Working external
       integer iflagc(nvar*p)
-      real*8 theta(nvar*p)
-      real*8 workvc(nvar*p)
-      real*8 workmhc(nvar*p*(nvar*p+1)/2)
-      real*8 ztz(nvar*p,nvar*p)
-      real*8 zty(nvar*p)
+      double precision theta(nvar*p)
+      double precision workvc(nvar*p)
+      double precision workmhc(nvar*p*(nvar*p+1)/2)
+      double precision ztz(nvar*p,nvar*p)
+      double precision zty(nvar*p)
 
 c+++++Working internal
       integer ii,j,jj,k,l,m
       integer ns
       integer pos1,pos2
-      real*8 tmp1
+      double precision tmp1
 
 c+++++Algorithm
 

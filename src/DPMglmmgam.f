@@ -264,38 +264,38 @@ c=======================================================================
 c+++++Data
       integer maxni,nrec,nsubject,nfixed,p,q,subject(nrec)
       integer datastr(nsubject,maxni+1)
-      real*8 roffset(nrec),x(nrec,p),z(nrec,q),y(nrec)
+      double precision roffset(nrec),x(nrec,p),z(nrec,q),y(nrec)
       
 c+++++Prior 
       integer nu01,nu02,nu(3) 
-      real*8 aa0,ab0,a0b0(2) 
-      real*8 prec(p,p),sb(p,2)
-      real*8 tinv1(q,q)
-      real*8 smu(q),psiinv(q,q)
-      real*8 tinv2(q,q)
-      real*8 tau(2),tau1,tau2
+      double precision aa0,ab0,a0b0(2) 
+      double precision prec(p,p),sb(p,2)
+      double precision tinv1(q,q)
+      double precision smu(q),psiinv(q,q)
+      double precision tinv2(q,q)
+      double precision tau(2),tau1,tau2
       
 c+++++MCMC parameters
       integer mcmc(3),nburn,nskip,nsave,ndisplay
 
 c+++++Output
       integer clustsave(nsave,nsubject) 
-      real*8 acrate(3),cpo(nrec,2)
-      real*8 randsave(nsave,q*(nsubject+1))
-      real*8 musave(nsave,q*nsubject)
-      real*8 thetasave(nsave,q+nfixed+1+q+(q*(q+1))+2)
+      double precision acrate(3),cpo(nrec,2)
+      double precision randsave(nsave,q*(nsubject+1))
+      double precision musave(nsave,q*nsubject)
+      double precision thetasave(nsave,q+nfixed+1+q+(q*(q+1))+2)
 
 c+++++Current values of the parameters
       integer ncluster,ss(nsubject)
-      real*8 alpha
-      real*8 beta(p)
-      real*8 b(nsubject,q)
-      real*8 betar(q)
-      real*8 mu(nsubject,q)
-      real*8 sigma(q,q),sigmainv(q,q)
-      real*8 mub(q)
-      real*8 sigmab(q,q),sigmabinv(q,q)
-      real*8 v
+      double precision alpha
+      double precision beta(p)
+      double precision b(nsubject,q)
+      double precision betar(q)
+      double precision mu(nsubject,q)
+      double precision sigma(q,q),sigmainv(q,q)
+      double precision mub(q)
+      double precision sigmab(q,q),sigmabinv(q,q)
+      double precision v
 
 c+++++Seeds
       integer seed(2),seed1,seed2
@@ -306,31 +306,31 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++fixed effects
       integer iflagp(p) 
-      real*8 betac(p)
-      real*8 workmhp(p*(p+1)/2)
-      real*8 workvp(p)
-      real*8 xtx(p,p)
-      real*8 xty(p)
+      double precision betac(p)
+      double precision workmhp(p*(p+1)/2)
+      double precision workvp(p)
+      double precision xtx(p,p)
+      double precision xty(p)
 
 c+++++random effects
       integer iflagr(q) 
-      real*8 ztz(q,q),zty(q)
-      real*8 theta(q),thetac(q)
-      real*8 workmr(q,q)      
-      real*8 workmhr(q*(q+1)/2),workmhr2(q*(q+1)/2)
-      real*8 workvr(q)      
+      double precision ztz(q,q),zty(q)
+      double precision theta(q),thetac(q)
+      double precision workmr(q,q)      
+      double precision workmhr(q*(q+1)/2),workmhr2(q*(q+1)/2)
+      double precision workvr(q)      
 
 c+++++DPM
       integer cstrt(nsubject,nsubject)
       integer ccluster(nsubject)
-      real*8 prob(nsubject+1)
+      double precision prob(nsubject+1)
 
 c+++++Kernel
-      real*8 quadf(q,q)
+      double precision quadf(q,q)
 
 c++++ model's performance
-      real*8 mc(5)
-      real*8 betasave(p+1),bsave(nsubject,q)
+      double precision mc(5)
+      double precision betasave(p+1),bsave(nsubject,q)
 
 c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++Internal working space
@@ -340,42 +340,42 @@ c+++++General
       integer evali,ii,i,j,k,l,m,ni,ns 
       integer ok
       integer since,sprint 
-      real*8 acrate2
-      real*8 eta,gprime
-      real*8 mean
-      real*8 logcgkn,logcgko
-      real*8 loglikn,logliko
-      real*8 logpriorn,logprioro
-      real*8 offset
-      real*8 ratio
-      real*8 tmp1,tmp2,tmp3,tmp4
-      real*8 ytilde
-      real*8 yij            
+      double precision acrate2
+      double precision eta,gprime
+      double precision mean
+      double precision logcgkn,logcgko
+      double precision loglikn,logliko
+      double precision logpriorn,logprioro
+      double precision offset
+      double precision ratio
+      double precision tmp1,tmp2,tmp3,tmp4
+      double precision ytilde
+      double precision yij            
 
 c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      real*8 dlnrm,rtlnorm
+      double precision dlnrm,rtlnorm
       real runif
 
 c+++++DP (functional parameter)
-      real*8 eps,rbeta,weight
+      double precision eps,rbeta,weight
       parameter(eps=0.01)
 
 c++++ model's performance
-      real*8 dbarc,dbar,dhat,pd,lpml
+      double precision dbarc,dbar,dhat,pd,lpml
 
 c+++++dispersion parameter
-      real*8 logp
-      real*8 slogy,symu,slogmu
-      real*8 targetp
-      real*8 trigamm 
-      real*8 tune4
-      real*8 vnew
+      double precision logp
+      double precision slogy,symu,slogmu
+      double precision targetp
+      double precision trigamm 
+      double precision tune4
+      double precision vnew
 
 c+++++CPU time
-      real*8 sec00,sec0,sec1,sec
+      double precision sec00,sec0,sec1,sec
 
 c++++ parameters
       nburn=mcmc(1)
