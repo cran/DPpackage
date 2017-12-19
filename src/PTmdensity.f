@@ -307,7 +307,7 @@ c+++++Working space - General
       integer parti(nvar)
       integer pprn,sprint
       integer whicho(nrec),whichn(nrec)
-      double precision detlogl,detloglc,detlog1,detlog2,detlog3
+      double precision detlogl,detloglc,detlog1,detlog2
       double precision limw(nvar),linf(nvar),lsup(nvar)
       double precision mass(narea)
       double precision prob
@@ -339,7 +339,7 @@ c+++++Working space - MH steps
 
 c+++++Working space - Random number generator
       integer seed(2),seed1,seed2
-      double precision rtnorm,rtlnorm,rnorm
+      double precision rtnorm,rnorm
       real runif
 
 c++++ initialize variables

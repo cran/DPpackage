@@ -310,7 +310,7 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c+++++General
       integer count,i,i1,ii,j,j1,k
       integer sprint
-      double precision tmp1,tmp2
+      double precision tmp1
 
 c+++++Distributions
       double precision dbet,dpoiss

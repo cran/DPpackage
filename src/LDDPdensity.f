@@ -306,7 +306,7 @@ c++++ internal working space
       integer count
       integer isample
       integer i,ii,j,k,l,ok
-      integer j1,j2,j3,j4
+      integer j1,j2,j3
       integer dispcount
       integer evali
       integer iscan
@@ -322,7 +322,7 @@ c++++ internal working space
       double precision muwork
       double precision sigmawork
       double precision tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7
-      double precision tmp9,rocacum
+      double precision rocacum
    
 c++++ DP (functional parameter)
       double precision eps,rbeta,weight

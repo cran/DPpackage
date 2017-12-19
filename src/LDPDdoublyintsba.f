@@ -91,7 +91,6 @@ c+++++Current values of the parameters
 
 c+++++Output
       double precision acrate(2)
-      double precision dptest
       double precision f(npred*2*nvar,ngrid)
       double precision h(npred*2*nvar,ngrid)
       double precision thetasave(nsave,2*nvar*(2*nvar+1)/2+ 
@@ -149,9 +148,8 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++General
       integer i,ii,j,k,l,sprint
-      double precision tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,ratio
-      double precision astar,astarc
-      double precision bpc
+      double precision tmp1,tmp2,tmp3,tmp4,ratio
+      double precision astar
 
       double precision acan,bcan,uni
       double precision logpn,logpo,logcgkn,logcgko
@@ -168,7 +166,7 @@ c+++++MCMC
 
 c+++++RNG and distributions
       double precision dnrm,dlnrm,cdfnorm
-      double precision cdflnorm,rtnorm,rbeta,dbet
+      double precision cdflnorm,rtnorm,rbeta
       real runif
 
 c+++++CPU time
@@ -846,7 +844,7 @@ c+++++Working external
       double precision zty(nvar*(p+q))
 
 c+++++Working internal
-      integer ii,j,jj,k,l,m
+      integer ii,j,jj,k,l
       integer ns
       integer pos1,pos2
       double precision tmp1

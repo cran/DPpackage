@@ -252,7 +252,6 @@ c+++++Prior
 c+++++MCMC parameters
       integer algo
       integer mcmc(3),nburn,nskip,nsave,ndisplay
-      double precision tune3,tune4,tune5
 
 c+++++Output
       double precision acrate
@@ -284,20 +283,17 @@ c+++++RN
       integer seed(2),seed1,seed2
 
 c+++++Working space - General
-      integer i,i1,i2,ii,intlp,j,jj,j1,j2,je2,k,k1,k2,ll,evali
+      integer i,i1,ii,j,jj,j1,j2,k1,evali
       integer n1,n2,sprint
-      double precision dbet,dlnrm
-      double precision quan
+      double precision dbet
       double precision tmp1,tmp2,tmp3,tmp4
 
 c+++++Working space - Random effects
-      integer imax,imin
       double precision thetac
-      double precision zty,ztz,ztzinv
 
 c+++++Working space - Ditributions and RNG
       integer rpois
-      double precision rbeta,rgamma,rnorm,rtnorm
+      double precision rbeta,rtnorm
       real runif
       double precision dnrm,dpoiss,cdfnorm,invcdfnorm
 
@@ -307,7 +303,6 @@ c+++++Working space - MCMC
 
 c+++++Working space - GLM part
       integer yij
-      double precision acrate2
       double precision eta,gprime,mean,offset,ytilde
 
 c+++++Polya tree
@@ -318,12 +313,10 @@ c+++++Polya tree
       double precision liminf,limsup
 
 c+++++Working space - MH 
-      integer nu
-      double precision alphac,sigma2c,muc
       double precision logcgkn,logcgko
       double precision loglikn,logliko
       double precision logpriorn,logprioro
-      double precision ratio,ssb
+      double precision ratio
       double precision logdenom
       double precision lognumer
       double precision numerBF
@@ -332,7 +325,7 @@ c+++++Working space - MH
 c+++++Working space slice sampling
       double precision rexpo,re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c+++++CPU time
       double precision sec00,sec0,sec1,sec
@@ -1358,7 +1351,7 @@ c===============================================================================
       double precision probmat(ntsets,maxm)
 
       integer i,i1,j,j1,k1,ii,jj,n1,n2
-      double precision tmp1,tmp1c,tmp2,tmp3,tmp4,lbetaf
+      double precision tmp1,tmp1c,tmp2,tmp4,lbetaf
 
       double precision out
 

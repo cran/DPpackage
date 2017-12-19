@@ -94,7 +94,6 @@ c+++++Internal working space
       double precision tmp1,tmp2
       double precision tmp3
       double precision tmp5,tmp6
-      double precision tmpv
 
 c+++++Algorihtm
 

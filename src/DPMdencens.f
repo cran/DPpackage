@@ -294,9 +294,8 @@ c+++++MCMC
       integer dispcount,isave,iscan,nscan,skipcount 
 
 c+++++RNG and distributions
-      double precision dnrm,dlnrm,cdfnorm
-      double precision cdflnorm,rgamma,rtnorm,rbeta,dbet
-      real runif
+      double precision dnrm
+      double precision rgamma,rtnorm
 
 c+++++CPU time
       double precision sec00,sec0,sec1,sec

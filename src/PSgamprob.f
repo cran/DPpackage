@@ -243,7 +243,6 @@ c+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 c+++++Fixed effects
       integer iflagp(p) 
-      double precision workmp1(p,p),workmp2(p,p)
       double precision workmhp1(p*(p+1)/2)
       double precision workvp1(p)
       double precision xtx(p,p),xty(p)

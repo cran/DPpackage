@@ -136,7 +136,7 @@ c+++++Internal Working space
       integer sprint
       integer yij
       double precision acrate2
-      double precision dbin,detlog,dnrm
+      double precision dbin,dnrm
       double precision eta,gprime
       double precision logcgkn,logcgko
       double precision loglikn,logliko
@@ -145,7 +145,6 @@ c+++++Internal Working space
       double precision muwork
       double precision offset
       double precision ratio,rgamma,rnorm,runif
-      double precision ssb
       double precision thetac
       double precision tmp1,tmp2,tmp3
       double precision ytilde

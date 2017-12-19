@@ -918,7 +918,7 @@ c=======================================================================
       integer sc(nrec)
       double precision muclus(nrec+100,nvar)
 
-      integer i,j,ns,ii,jj,ok
+      integer i,j,ns,ii
 
       do i=since+1,ncluster
 

@@ -85,12 +85,12 @@ c+++++Current values of the parameters
       double precision wdp(maxn),vdp(maxn)
 
 c+++++Working space - General
-      integer i,ii,j,k
+      integer i,ii,j
       integer sprint
       integer ns,ok
       double precision ztz,zty
       double precision dpoiss,dnrm,cdfnorm
-      double precision tmp1,tmp2,tmp3
+      double precision tmp1,tmp2
       double precision muwork,sigmawork
       double precision mureal,sigma2real
 
@@ -120,17 +120,16 @@ c+++++DPM
 
 c+++++Working space - GLM part
       integer yij
-      double precision acrate2
       double precision eta,offset,gprime,ytilde,mean
        
 c+++++Working space - MH 
-      double precision bc,logcgkn,logcgko,logliko,loglikn,ratio
+      double precision logcgkn,logcgko,logliko,loglikn,ratio
       double precision logpriorn,logprioro 
 
 c+++++Working space slice sampling
       double precision rexpo,re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c+++++CPU time
       double precision sec00,sec0,sec1,sec
@@ -724,7 +723,7 @@ c===============================================================================
       double precision bi,beta(p-1)
  
       integer j,yij
-      double precision dnrm,dpoiss,eta,mean,tmp1,tmp2
+      double precision dnrm,dpoiss,eta,mean
 
       double precision out
 

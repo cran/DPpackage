@@ -85,12 +85,12 @@ c+++++Current values of the parameters
       double precision wdp(maxn),vdp(maxn)
 
 c+++++Working space - General
-      integer i,ii,j,k
+      integer i,ii,j
       integer sprint
       integer ns,ok
       double precision ztz,zty
       double precision dbin,dnrm,cdfnorm
-      double precision tmp1,tmp2,tmp3
+      double precision tmp1,tmp2
       double precision muwork,sigmawork
       double precision mureal,sigma2real
 

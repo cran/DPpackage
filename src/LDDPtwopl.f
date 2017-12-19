@@ -117,7 +117,7 @@ c+++++External Working space - DDP part
 c+++++Working space slice sampling
       double precision rexpo,re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c+++++External Working space - RNG
       integer seed(2),seed1,seed2
@@ -136,16 +136,14 @@ c+++++Internal Working space
       integer skipcount
       integer sprint
       integer yij
-      double precision dbin,detlog,dnrm
-      double precision eta,gprime
+      double precision dbin,dnrm
+      double precision eta
       double precision lposto,lpostn
       double precision mean
       double precision muwork
-      double precision ratio,rgamma,rnorm,runif
-      double precision ssb
+      double precision rgamma,rnorm,runif
       double precision thetac
       double precision tmp1,tmp2,tmp3
-      double precision ytilde
       double precision sigmawork
 
 c+++++CPU time
@@ -1074,8 +1072,8 @@ c===============================================================================
       double precision dp(p-1)
       double precision disprior(2)
 
-      integer yij,i,ii,jj 
-      double precision dbin,dnrm,eta,mean,tmp1,tmp2,tmp3,tmp4
+      integer yij,i
+      double precision dnrm,eta,tmp1,tmp4
 
       double precision out
 

@@ -322,7 +322,7 @@ c++++ Output
       double precision sigma2(maxc)
 
 c++++ Internal working space
-      integer i,ind,j,nr,ns
+      integer i,j,ns
       double precision rgamma,sse,tmp1
 
 c++++ Algorithm
@@ -371,7 +371,7 @@ c++++ Output
       double precision sigma2
 
 c++++ Internal working space
-      integer i,ind,j,nr,ns
+      integer i,j,ns
       double precision rgamma,sse,tmp1
 
 c++++ Algorithm
@@ -454,7 +454,7 @@ c++++ Output
       integer ismean,nb,possv(maxn)
 
 c++++ Internal working space
-      integer i,ind,jj,nr,out
+      integer i,ind,jj,out
 
 c++++ Algorithm
    
@@ -576,7 +576,7 @@ c++++ Input/Output (RSBA elements)
 
 c++++ Internal working space
       integer cind
-      integer i,isw,ism,j,k,nb,ns
+      integer i,isw,ism,j,k,nb
       double precision tmp1
 
 c++++ RNG and distributions
@@ -586,7 +586,7 @@ c++++ Working space slice sampling
       integer evali
       double precision rexpo,re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c++++ Algorithm
 
@@ -940,7 +940,7 @@ c+++++ Output
 c+++++ Internal working space
        integer i,ii,j,nn
        integer count
-       double precision rnorm,rtnorm,ll,uu
+       double precision rtnorm,ll,uu
        double precision tmp1
        logical linf,lsup
 

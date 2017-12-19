@@ -110,7 +110,7 @@ c++++ Working space - slice sampling
       integer evali
       double precision rexpo,re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c+++++Adaptive MH for sigma
       integer nadaptive,nu
@@ -895,9 +895,8 @@ c+++++Output
       double precision out
 
 c+++++Internal working space
-      integer i,j,j1,j2,k,k1,ind
+      integer i,j1
       integer n1,n2
-      double precision tmp1,tmp2
    
 c+++++Algorithm
 

@@ -34,9 +34,7 @@ c++++ output
       integer kmat(np,nlevel)
 
 c++++ internal workspace
-      integer n1,n2,dnrm
       integer i,ind,j,j1,j2,k1
-      double precision loglikn
       double precision cdfnorm
       double precision tmp1,tmp2
 
@@ -103,10 +101,9 @@ c++++ output
       double precision lgw(np)
 
 c++++ internal workspace
-      integer n1,n2,dnrm
+      integer n1,n2
       integer i,j
       double precision loglikn
-      double precision tmp1,tmp2
 
 c++++ algorithm
 
@@ -148,7 +145,7 @@ c=======================================================================
       implicit none
  
 c++++ input
-      integer np,nvar,nlevel,ntint
+      integer np,nvar,nlevel
       double precision cpar
       integer kmat(np,nlevel)
 
@@ -156,10 +153,8 @@ c++++ output
       double precision eval
 
 c++++ internal workspace
-      integer n1,n2,dnrm
+      integer n1,n2
       integer i,j
-      double precision loglikn
-      double precision tmp1,tmp2
 
 c++++ algorithm
 
@@ -412,9 +407,8 @@ c++++ output
       integer eval
 
 c++++ internal workspace
-      integer n1,n2,dnrm
+      integer n1,n2
       integer i,ind,j,j1,j2,k,k1
-      double precision loglikn
       double precision cdfnorm
       double precision tmp1,tmp2
 

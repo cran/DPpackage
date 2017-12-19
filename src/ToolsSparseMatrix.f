@@ -350,8 +350,8 @@ c     prints a small sparse  matrix (a,ia,ja) of rank isize<=12
 c
 c     A.J.V. 2007
 c=======================================================================
-      double precision a(1),x(12,12)
-      integer ia(1),ja(1),isize,i,j
+      double precision a(*),x(12,12)
+      integer ia(*),ja(*),isize,i,j
 
       if(isize.gt.12) then
          call rexit("matrix too large to print")
@@ -388,8 +388,8 @@ c     prints a small sparse  matrix (a,ia,ja) of rank isize<=12
 c
 c     A.J.V. 2007
 c=======================================================================
-      double precision a(1),x(12,12)
-      integer ia(1),ju(1),iju(1),isize,i,j
+      double precision a(*),x(12,12)
+      integer ia(*),ju(*),iju(*),isize,i,j
 
       if(isize.gt.12) then
          call rexit("matrix too large to print")      
@@ -426,7 +426,7 @@ c     rank isize<=12
 c
 c     A.J.V. 2007
 c=======================================================================
-      integer ia(1),ja(1),isize,i,j,x(12,12)
+      integer ia(*),ja(*),isize,i,j,x(12,12)
 
       if(isize.gt.12) then
          call rexit("matrix too large to print")
@@ -462,8 +462,8 @@ c     diagonals
 c
 c     A.J.V. 2007
 c=======================================================================
-      integer n,ia(1),ja(1),i,j,inddiag
-      double precision a(1)
+      integer n,ia(*),ja(*),i,j,inddiag
+      double precision a(*)
 
       do i=1,n
          inddiag=0
@@ -489,7 +489,7 @@ c     ia-ja-a.
 c
 c     A.J.V. 2007
 c=======================================================================
-      integer n,ia(1),ja(1),l1,l2,i,j,msglev
+      integer n,ia(*),ja(*),l1,l2,i,j,msglev
       double precision tracediag,a(1)
       data msglev/0/
 
@@ -531,8 +531,8 @@ c
 c
 c     A.J.V. 2007
 c=======================================================================
-      integer n,ia(1),ja(1),n1,ib(1),jb(1),ix,iy,i,j,msglev
-      double precision tracematrix,a(1),b(1),tmp(1),tl,td,tu
+      integer n,ia(*),ja(*),n1,ib(*),jb(*),ix,iy,i,j,msglev
+      double precision tracematrix,a(*),b(*),tmp(*),tl,td,tu
       data msglev/0/
 
       do i=1,n

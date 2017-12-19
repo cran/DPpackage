@@ -251,8 +251,8 @@ c+++++Working space - Loops
 
 c+++++Working space - Random effects
       double precision fsavet(ngrid)
-      double precision cdfnorm,dnrm,grid(ngrid),thetac
-      double precision zty,ztz,ztzinv
+      double precision dnrm,grid(ngrid),thetac
+      double precision zty,ztz
 
 c+++++Working space - RNG
       integer rpois,seed(2),seed1,seed2
@@ -280,7 +280,6 @@ c+++++Working space - Configurations
 c+++++Working space - Difficulty parameters
       integer iflagp(p-1)
       double precision betac(p-1)
-      double precision detlog
       double precision xtx(p-1,p-1),xty(p-1)
       double precision workmhp((p-1)*p/2)
       double precision workvp(p-1)

@@ -41,7 +41,7 @@ c++++ Internal parameters
       double precision aupp(2),alow(2)
 
 c++++ Internal working
-      integer i,ii,j,jj,k,l   
+      integer i,ii,j,l   
 
 c++++ Algorithm
 
@@ -114,7 +114,7 @@ c++++ Internal parameters
       double precision aupp(2),alow(2)
 
 c++++ Internal working
-      integer i,ii,j,jj,k,l   
+      integer i,ii,j,l   
 
 c++++ Algorithm
 
@@ -191,9 +191,8 @@ c++++ working space - scalar
       integer nsets 
       integer poss1,poss2,poss3
       double precision invcdfnorm
-      double precision dinvnorm
       double precision loglik
-      double precision qworks,qworkr,qworkr2
+      double precision qworkr
       double precision tmp1,tmp2,tmp3
 
 c++++ Algorithm
@@ -632,7 +631,7 @@ c++++ External working space
       integer k(maxm)
 
 c++++ Internal working space
-      integer ii,jj,i,j,j1,j2,k1,k2,m,ll
+      integer ii,jj,i,j,j1,k1,k2,m,ll
       integer kphi
       double precision dnrm
       double precision cdfnorm
@@ -862,7 +861,7 @@ c++++ External working space
 
 c++++ Working space
       integer i,j,k,ll,nhr
-      double precision eta,gprime,mu,pr,tmp1,ytilde
+      double precision eta,gprime,mu,tmp1,ytilde
 
 c++++ Algorithm
 
@@ -1032,7 +1031,7 @@ c++++ External working space
 
 c++++ Internal working space
       integer i,j,k,ll
-      double precision eta,gprime,mu,pr,tmp1,ytilde
+      double precision eta,mu,tmp1,ytilde
       double precision lratio,luni
       double precision logliko,loglikn
       double precision logprioro,logpriorn
@@ -1288,9 +1287,9 @@ c++++ Internal working space
 
 c++++ Working space slice sampling
       integer evali
-      double precision rexpo,re,uwork
+      double precision re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c++++ Algorithm
 
@@ -1626,7 +1625,7 @@ c++++ External working space
       integer k(maxm)
 
 c++++ Internal working space
-      integer ii,jj,i,j,j1,j2,k1,k2,m,ll
+      integer ii,jj,i,j,j1,k1,k2,m,ll
       integer kphi
       double precision dnrm
       double precision cdfnorm
@@ -1736,7 +1735,7 @@ c++++ Internal parameters
       double precision aupp(2),alow(2)
 
 c++++ Internal working
-      integer i,ii,j,jj,k,l   
+      integer i,ii,l   
 
 c++++ Algorithm
 
@@ -1796,7 +1795,7 @@ c++++ Internal parameters
       double precision aupp(2),alow(2)
 
 c++++ Internal working
-      integer i,ii,j,jj,k,l   
+      integer i,ii,l   
 
 c++++ Algorithm
 
@@ -1857,7 +1856,7 @@ c++++ Internal parameters
       double precision aupp(2),alow(2)
 
 c++++ Internal working
-      integer i,ii,j,jj,k,l   
+      integer i,ii,l   
 
 c++++ Algorithm
 
@@ -2068,7 +2067,7 @@ c     Alejandro Jara, 2008
 c=======================================================================
       implicit none
 c++++ Input
-      integer ii,glmm
+      integer ii
       integer maxm,maxni,nrec,nsubject,ntlr,ntprob,p,ptf
       integer datastr(nsubject,maxni+1)
       integer y(nrec)

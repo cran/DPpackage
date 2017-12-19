@@ -133,32 +133,21 @@ c++++ external working space - vector and matrices
  
 c++++ internal working space
       integer accept
-      integer i,ii,i1,j,jj,j1,j2,k1,ll,l1,l2,mm
+      integer i,ii,i1,j,jj,j1,j2,k1,ll,mm
       integer d1,d2
       integer dispcount,iscan,isave
       integer ntot,n1,n2
       integer nscan,skipcount
       integer sprint
       double precision acrate
-      double precision alnorm
-      double precision alphac
-      double precision dnrm
-      double precision dinvnorm
-      double precision liminf
-      double precision limsup
       double precision loglikn,logliko
       double precision logpriorn,logprioro
       double precision logcgkn,logcgko
-      double precision luni,lratio
-      double precision qqnum
       double precision ratio
       double precision rgamma
-      double precision rnorm
       real runif
-      double precision tmp1,tmp2,tmp3
+      double precision tmp1,tmp2
       double precision uni
-      double precision ya
-      double precision yc
   
       integer yij
       double precision dpoiss
@@ -173,9 +162,9 @@ c++++ CPU time
 
 c++++ Working space slice sampling
       integer evali
-      double precision rexpo,re,uwork
+      double precision re,uwork
       double precision logy,xx0,xx1,llim,rlim
-      double precision grlim,gllim,gxx0,gxx1
+      double precision grlim,gllim,gxx1
 
 c++++ initializing variables
 
