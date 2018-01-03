@@ -1,6 +1,6 @@
 Package: DPpackage
-Version: 1.1-7.2
-Date: 2017-12-05
+Version: 1.1-7.3
+Date: 2018-01-03
 Title: Bayesian Nonparametric Modeling in R
 Authors@R: c(person("Alejandro", "Jara", role = c("aut", "cre"), email
         = "atjara@uc.cl"), person("Timothy", "Hanson", role = "ctb",
@@ -39,9 +39,9 @@ Author: Alejandro Jara [aut, cre], Timothy Hanson [ctb], Fernando
         Quintana [ctb], Peter Mueller [ctb], Gary Rosner [ctb]
 Maintainer: ORPHANED
 NeedsCompilation: yes
-Packaged: 2017-12-19 11:19:23 UTC; ripley
+Packaged: 2018-01-03 08:51:59 UTC; ripley
 X-CRAN-Original-Maintainer: Alejandro Jara <atjara@uc.cl>
 X-CRAN-Comment: Orphaned and corrected on 2017-09-15 as errors were not
         corrected despite repeated reminders.
 Repository: CRAN
-Date/Publication: 2017-12-19 12:14:27 UTC
+Date/Publication: 2018-01-03 09:34:32 UTC

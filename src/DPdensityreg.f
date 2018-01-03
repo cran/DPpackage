@@ -1078,9 +1078,9 @@ c+++++++++++++ Partially sampling the DP and computing the cond. dist.
                      fs(j)=num(i,j)/denom(i)
                      denspm(i,j)=denspm(i,j)+fs(j)
                   end do
-c                  write(1) (fs(j),j=1,ngrid)
+                  write(1) (fs(j),j=1,ngrid)
                end do 
-c               write(2) (fm(j),j=1,npred)
+               write(2) (fm(j),j=1,npred)
  
 c+++++++++++++ cpo
 

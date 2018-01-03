@@ -665,10 +665,10 @@ c+++++++++++++ predictions
 
                   meanfpm(i1)=meanfpm(i1)+fm(i1)
 
-c                  write(1) (fw2(i1,j1),j1=1,ngrid)
+                  write(1) (fw2(i1,j1),j1=1,ngrid)
                end do
 
-c               write(2) (fm(i),i=1,npred)
+               write(2) (fm(i),i=1,npred)
 
 c+++++++++++++ print
                skipcount = 0

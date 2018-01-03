@@ -1049,11 +1049,11 @@ c+++++++++++++ Partially sampling the DP (and CPO).
                      ii=ii+1
                      survsave(isave,ii)=survpl(i,j)
                   end do
-c                 write(1) (denspl(i,j),j=1,ngrid)
-c                  write(3) (survpl(i,j),j=1,ngrid)
-c                  write(4) (hazpl(i,j),j=1,ngrid)
+                  write(1) (denspl(i,j),j=1,ngrid)
+                  write(3) (survpl(i,j),j=1,ngrid)
+                  write(4) (hazpl(i,j),j=1,ngrid)
                end do 
-c               write(2) (fm(i),i=1,npred)
+               write(2) (fm(i),i=1,npred)
 
 c+++++++++++++ lpml
 

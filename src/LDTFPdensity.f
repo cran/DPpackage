@@ -772,7 +772,7 @@ c++++++++++++ density
      &                       sigma2,densl,densm,k)
 
               do i=1,npredden
-c                 write(1) (densl(i,j),j=1,ngrid)
+                 write(1) (densl(i,j),j=1,ngrid)
               end do   
 
 c++++++++++++ survival function
@@ -787,7 +787,7 @@ c++++++++++++ survival function
                     survmm(i,j)=survmm(i,j)+1.d0-tmp3
                     survml(i,j)=1.d0-tmp3
                  end do
-c                 write(2) (survml(i,j),j=1,ngrid) 
+                 write(2) (survml(i,j),j=1,ngrid) 
               end do   
 
 
@@ -814,9 +814,9 @@ c++++++++++++ quantiles
      &                           sigma2,xtfpredm,xcepredm,
      &                           qmm,qml,k,prob,probc,quans)
 
-c              write(3) (qml(j,1),j=1,npredmed)
-c              write(4) (qml(j,2),j=1,npredmed)
-c              write(5) (qml(j,3),j=1,npredmed)
+              write(3) (qml(j,1),j=1,npredmed)
+              write(4) (qml(j,2),j=1,npredmed)
+              write(5) (qml(j,3),j=1,npredmed)
 
 c++++++++++++ print
               skipcount = 0

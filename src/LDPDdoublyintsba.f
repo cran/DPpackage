@@ -624,11 +624,11 @@ c++++++++++++++++++++++++++++++++++
 
 c+++++++++++++ random effects (in a file)
                do i=1,maxm
-c                  write(1) (b(i,j),j=1,nvar*(p+q))
+                  write(1) (b(i,j),j=1,nvar*(p+q))
                end do   
 
 c+++++++++++++ configurations (in a file)
-c               write(2) (ss(i),i=1,nsubject) 
+               write(2) (ss(i),i=1,nsubject) 
 
 c+++++++++++++ predictive survival information
 
@@ -673,8 +673,8 @@ c+++++++++++++ predictive survival information
                      call fmedian_sba(j,nvar,ngrid,fw,grid,tmp1)
                      randsave(isave,ii)=tmp1
 
-c                     write(3) (fw(k),k=1,ngrid)
-c                     write(4) (fw2(k),k=1,ngrid)
+                     write(3) (fw(k),k=1,ngrid)
+                     write(4) (fw2(k),k=1,ngrid)
 
                   end do
                end do   
@@ -717,7 +717,7 @@ c+++++++++++++ PY informartion
                end if
 
 c+++++++++++++ parameters (in a file)
-c               write(5)(thetasave(isave,j),j=1,k)
+               write(5)(thetasave(isave,j),j=1,k)
 
 c+++++++++++++ print
                skipcount = 0

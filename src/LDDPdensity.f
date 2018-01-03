@@ -406,7 +406,7 @@ c++++ cluster structure
          cstrt(ss(i),ccluster(ss(i)))=i
       end do
  
-c      write(3) nrec,p
+      write(3) nrec,p
 
       do iscan=1,nscan
 
@@ -959,8 +959,8 @@ c+++++++++++++ Partially sampling the DP and CPO computation.
                      denspm(i,j)=denspm(i,j)+denspl(i,j)
                      cdfpm(i,j)=cdfpm(i,j)+cdfpl(i,j)
                   end do
-c                  write(1) (denspl(i,j),j=1,ngrid)
-c                  write(3) (cdfpl(i,j),j=1,ngrid)
+                  write(1) (denspl(i,j),j=1,ngrid)
+                  write(3) (cdfpl(i,j),j=1,ngrid)
 
                   if(rocc.eq.2)then
 
@@ -972,9 +972,9 @@ c                  write(3) (cdfpl(i,j),j=1,ngrid)
                      end do 
                      aucsave(isave,i)=rocacum/dble(nroc)
                   end if
-c                  write(9) (rocpl(i,j),j=1,nroc)
+                  write(9) (rocpl(i,j),j=1,nroc)
                end do 
-c               write(2) (fm(i),i=1,npred)
+               write(2) (fm(i),i=1,npred)
 
 
                if(rocc.eq.1)then
@@ -1068,7 +1068,7 @@ c               write(2) (fm(i),i=1,npred)
 c                        call dblepr("quan",-1,tmp7,1)
                      end do
 
-c                     write(8) (rocquan(j),j=1,nroc)
+                     write(8) (rocquan(j),j=1,nroc)
                   end do
                end if
 

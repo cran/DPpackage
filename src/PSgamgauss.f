@@ -612,7 +612,7 @@ c                        end if
                         pssave(ll,2)=tmp1-tmp2
                      end do
                   end do
-c                  write(unit=1)(pssave(j,2),j=1,nsmooth*ngrid)
+                  write(unit=1)(pssave(j,2),j=1,nsmooth*ngrid)
                end if
 
 c+++++++++++++ cpo

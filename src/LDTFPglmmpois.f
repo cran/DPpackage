@@ -780,7 +780,7 @@ c++++++++++++ density
      &                       sigma2b,densl,densm,k)
 
               do i=1,npred
-c                 write(1) (densl(i,j),j=1,ngrid)
+                 write(1) (densl(i,j),j=1,ngrid)
               end do   
 
 c++++++++++++ cpo
@@ -812,9 +812,9 @@ c++++++++++++ quantiles
      &                           sigma2b,xtfpred,xpred,
      &                           qmm,qml,k,prob,probc,quans)
 
-c              write(3) (qml(j,1),j=1,npred)
-c              write(4) (qml(j,2),j=1,npred)
-c              write(5) (qml(j,3),j=1,npred)
+              write(3) (qml(j,1),j=1,npred)
+              write(4) (qml(j,2),j=1,npred)
+              write(5) (qml(j,3),j=1,npred)
 
 c++++++++++++ print
               skipcount = 0
