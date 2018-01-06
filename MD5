@@ -1,4 +1,4 @@
-aa01384d104dad757cf3d0c420a75f60 *DESCRIPTION
+e1b0f80b8de97885af0724ec2580c870 *DESCRIPTION
 90979d7343e5a7409d6c4e3305d1697a *NAMESPACE
 9766191f184f9a6d6d6a9334cd6b6a98 *R/BDPdensity.R
 830affe407722219be02ab462011a74a *R/CSDPbinary.R
@@ -258,4 +258,4 @@ b5b6906bbff45ab472bde801bdf52fe6 *src/ToolsRandlib.f
 2ed8cc915705e1996910c8581f85ffb6 *src/ToolsStat.f
 f3ff582664eb9d0e647cf5a701dd7230 *src/ToolsSweep.f
 a80423dfe2681319246a2fa7d4592f71 *src/ToolsTDP.f
-c6dc8a1d2e8ce6c4b2f05503f74fac3c *src/init.c
+8d1dcbd0d0f49a69f3d6e4726a4da2da *src/init.c
